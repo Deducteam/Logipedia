@@ -1,0 +1,2072 @@
+#NAME permutation.
+
+def injn :
+  sttfa.etap 
+    (sttfa.p 
+       (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+          (sttfa.arrow nat.nat sttfa.bool)))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  sttfa.forall nat.nat 
+    (i:(sttfa.etap (sttfa.p nat.nat)) =>
+     sttfa.forall nat.nat 
+       (j:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (nat.le i n) 
+          (sttfa.impl (nat.le j n) 
+             (sttfa.impl (logic.eq nat.nat (f i) (f j)) 
+                (logic.eq nat.nat i j))))).
+
+def injn_Sn_n :
+  sttfa.eps 
+    (sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        sttfa.forall nat.nat 
+          (n:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (permutation.injn f (nat.S n)) (permutation.injn f n))))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  H:(sttfa.eps (permutation.injn f (nat.S n))) =>
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  j:(sttfa.etap (sttfa.p nat.nat)) =>
+  lei:(sttfa.eps (nat.le i n)) =>
+  lej:(sttfa.eps (nat.le j n)) =>
+  eqf:(sttfa.eps (logic.eq nat.nat (f i) (f j))) =>
+  H i j (nat.le_S i n lei) (nat.le_S j n lej) 
+    (logic.rewrite_l nat.nat (f i) 
+       (__:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat (f i) __) 
+       (logic.refl nat.nat (f i)) (f j) eqf).
+
+def permut :
+  sttfa.etap 
+    (sttfa.p 
+       (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+          (sttfa.arrow nat.nat sttfa.bool)))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  connectives.And 
+    (sttfa.forall nat.nat 
+       (i:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (nat.le i m) (nat.le (f i) m))) (permutation.injn f m).
+
+def transpose :
+  sttfa.etap 
+    (sttfa.p 
+       (sttfa.arrow nat.nat 
+          (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))))
+  :=
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  j:(sttfa.etap (sttfa.p nat.nat)) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  bool.match_bool_type nat.nat j 
+    (bool.match_bool_type nat.nat i n (nat.eqb n j)) (nat.eqb n i).
+
+def transpose_i_j_i :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (i:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat 
+          (j:(sttfa.etap (sttfa.p nat.nat)) =>
+           logic.eq nat.nat (permutation.transpose i j i) j)))
+  :=
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  j:(sttfa.etap (sttfa.p nat.nat)) =>
+  logic.eq_ind_r bool.bool bool.true 
+    (x:(sttfa.etap (sttfa.p bool.bool)) =>
+     logic.eq nat.nat 
+       (bool.match_bool_type nat.nat j 
+          (bool.match_bool_type nat.nat i i (nat.eqb i j)) x) j) 
+    (bool.eq_match_bool_type_true nat.nat j 
+       (bool.match_bool_type nat.nat i i (nat.eqb i j)) 
+       (y:(sttfa.etap (sttfa.p nat.nat)) =>
+        logic.eq nat.nat 
+          (bool.match_bool_type nat.nat j 
+             (bool.match_bool_type nat.nat i i (nat.eqb i j)) bool.true) y) 
+       (logic.refl nat.nat 
+          (bool.match_bool_type nat.nat j 
+             (bool.match_bool_type nat.nat i i (nat.eqb i j)) bool.true))) 
+    (nat.eqb i i) (nat.eqb_n_n i).
+
+def transpose_i_j_j :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (i:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat 
+          (j:(sttfa.etap (sttfa.p nat.nat)) =>
+           logic.eq nat.nat (permutation.transpose i j j) i)))
+  :=
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  j:(sttfa.etap (sttfa.p nat.nat)) =>
+  logic.match_Or_prop (logic.eq bool.bool (nat.eqb j i) bool.true) 
+    (logic.eq bool.bool (nat.eqb j i) bool.false) 
+    (logic.eq nat.nat 
+       (bool.match_bool_type nat.nat j 
+          (bool.match_bool_type nat.nat i j (nat.eqb j j)) (nat.eqb j i)) i) 
+    (Hc:(sttfa.eps (logic.eq bool.bool (nat.eqb j i) bool.true)) =>
+     logic.eq_ind_r bool.bool bool.true 
+       (x:(sttfa.etap (sttfa.p bool.bool)) =>
+        logic.eq nat.nat 
+          (bool.match_bool_type nat.nat j 
+             (bool.match_bool_type nat.nat i j (nat.eqb j j)) x) i) 
+       (bool.sym_eq_match_bool_type_true nat.nat j 
+          (bool.match_bool_type nat.nat i j (nat.eqb j j)) 
+          (y:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat y i) 
+          (logic.eq_ind_r nat.nat i 
+             (x:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat x i) 
+             (logic.refl nat.nat i) j (nat.eqb_true_to_eq j i Hc))) 
+       (nat.eqb j i) Hc) 
+    (Hc:(sttfa.eps (logic.eq bool.bool (nat.eqb j i) bool.false)) =>
+     logic.eq_ind_r bool.bool bool.false 
+       (x:(sttfa.etap (sttfa.p bool.bool)) =>
+        logic.eq nat.nat 
+          (bool.match_bool_type nat.nat j 
+             (bool.match_bool_type nat.nat i j (nat.eqb j j)) x) i) 
+       (logic.eq_ind_r bool.bool bool.true 
+          (x:(sttfa.etap (sttfa.p bool.bool)) =>
+           logic.eq nat.nat 
+             (bool.match_bool_type nat.nat j 
+                (bool.match_bool_type nat.nat i j x) bool.false) i) 
+          (bool.sym_eq_match_bool_type_false nat.nat j 
+             (bool.match_bool_type nat.nat i j bool.true) 
+             (y:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat y i) 
+             (bool.eq_match_bool_type_true nat.nat i j 
+                (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq nat.nat 
+                   (bool.match_bool_type nat.nat i j bool.true) y) 
+                (bool.eq_match_bool_type_false nat.nat j 
+                   (bool.match_bool_type nat.nat i j bool.true) 
+                   (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                    logic.eq nat.nat 
+                      (bool.match_bool_type nat.nat i j bool.true) y) 
+                   (bool.eq_match_bool_type_false nat.nat j 
+                      (bool.match_bool_type nat.nat i j bool.true) 
+                      (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat y 
+                         (bool.match_bool_type nat.nat j 
+                            (bool.match_bool_type nat.nat i j bool.true) 
+                            bool.false)) 
+                      (logic.refl nat.nat 
+                         (bool.match_bool_type nat.nat j 
+                            (bool.match_bool_type nat.nat i j bool.true) 
+                            bool.false)))))) (nat.eqb j j) (nat.eqb_n_n j)) 
+       (nat.eqb j i) Hc) (bool.true_or_false (nat.eqb j i)).
+
+def transpose_i_j_j_i :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (i:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat 
+          (j:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.forall nat.nat 
+             (n:(sttfa.etap (sttfa.p nat.nat)) =>
+              logic.eq nat.nat (permutation.transpose i j n) 
+                (permutation.transpose j i n)))))
+  :=
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  j:(sttfa.etap (sttfa.p nat.nat)) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  logic.match_Or_prop (logic.eq bool.bool (nat.eqb n i) bool.true) 
+    (logic.eq bool.bool (nat.eqb n i) bool.false) 
+    (logic.eq nat.nat 
+       (bool.match_bool_type nat.nat j 
+          (bool.match_bool_type nat.nat i n (nat.eqb n j)) (nat.eqb n i)) 
+       (bool.match_bool_type nat.nat i 
+          (bool.match_bool_type nat.nat j n (nat.eqb n i)) (nat.eqb n j))) 
+    (Hni:(sttfa.eps (logic.eq bool.bool (nat.eqb n i) bool.true)) =>
+     logic.eq_ind_r bool.bool bool.true 
+       (x:(sttfa.etap (sttfa.p bool.bool)) =>
+        logic.eq nat.nat 
+          (bool.match_bool_type nat.nat j 
+             (bool.match_bool_type nat.nat i n (nat.eqb n j)) x) 
+          (bool.match_bool_type nat.nat i 
+             (bool.match_bool_type nat.nat j n x) (nat.eqb n j))) 
+       (logic.match_Or_prop (logic.eq bool.bool (nat.eqb n j) bool.true) 
+          (logic.eq bool.bool (nat.eqb n j) bool.false) 
+          (logic.eq nat.nat 
+             (bool.match_bool_type nat.nat j 
+                (bool.match_bool_type nat.nat i n (nat.eqb n j)) bool.true) 
+             (bool.match_bool_type nat.nat i 
+                (bool.match_bool_type nat.nat j n bool.true) (nat.eqb n j))) 
+          (Hnj:(sttfa.eps (logic.eq bool.bool (nat.eqb n j) bool.true)) =>
+           logic.eq_ind_r bool.bool bool.true 
+             (x:(sttfa.etap (sttfa.p bool.bool)) =>
+              logic.eq nat.nat 
+                (bool.match_bool_type nat.nat j 
+                   (bool.match_bool_type nat.nat i n x) bool.true) 
+                (bool.match_bool_type nat.nat i 
+                   (bool.match_bool_type nat.nat j n bool.true) x)) 
+             (bool.sym_eq_match_bool_type_true nat.nat j 
+                (bool.match_bool_type nat.nat i n bool.true) 
+                (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq nat.nat y 
+                   (bool.match_bool_type nat.nat i 
+                      (bool.match_bool_type nat.nat j n bool.true) bool.true)) 
+                (bool.sym_eq_match_bool_type_true nat.nat i 
+                   (bool.match_bool_type nat.nat j n bool.true) 
+                   (y:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat j y) 
+                   (logic.eq_ind nat.nat n 
+                      (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat j x_1) 
+                      (logic.eq_ind nat.nat n 
+                         (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat x_1 n) (logic.refl nat.nat n) j 
+                         (nat.eqb_true_to_eq n j Hnj)) i 
+                      (nat.eqb_true_to_eq n i Hni)))) (nat.eqb n j) Hnj) 
+          (Hnj:(sttfa.eps (logic.eq bool.bool (nat.eqb n j) bool.false)) =>
+           logic.eq_ind_r bool.bool bool.false 
+             (x:(sttfa.etap (sttfa.p bool.bool)) =>
+              logic.eq nat.nat 
+                (bool.match_bool_type nat.nat j 
+                   (bool.match_bool_type nat.nat i n x) bool.true) 
+                (bool.match_bool_type nat.nat i 
+                   (bool.match_bool_type nat.nat j n bool.true) x)) 
+             (bool.sym_eq_match_bool_type_false nat.nat i n 
+                (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq nat.nat 
+                   (bool.match_bool_type nat.nat j y bool.true) 
+                   (bool.match_bool_type nat.nat i 
+                      (bool.match_bool_type nat.nat j n bool.true) bool.false)) 
+                (bool.sym_eq_match_bool_type_false nat.nat i 
+                   (bool.match_bool_type nat.nat j n bool.true) 
+                   (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                    logic.eq nat.nat 
+                      (bool.match_bool_type nat.nat j n bool.true) y) 
+                   (bool.sym_eq_match_bool_type_true nat.nat j n 
+                      (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat 
+                         (bool.match_bool_type nat.nat j n bool.true) y) 
+                      (bool.sym_eq_match_bool_type_true nat.nat j n 
+                         (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat y j) (logic.refl nat.nat j))))) 
+             (nat.eqb n j) Hnj) (bool.true_or_false (nat.eqb n j))) 
+       (nat.eqb n i) Hni) 
+    (Hni:(sttfa.eps (logic.eq bool.bool (nat.eqb n i) bool.false)) =>
+     logic.eq_ind_r bool.bool bool.false 
+       (x:(sttfa.etap (sttfa.p bool.bool)) =>
+        logic.eq nat.nat 
+          (bool.match_bool_type nat.nat j 
+             (bool.match_bool_type nat.nat i n (nat.eqb n j)) x) 
+          (bool.match_bool_type nat.nat i 
+             (bool.match_bool_type nat.nat j n x) (nat.eqb n j))) 
+       (logic.match_Or_prop (logic.eq bool.bool (nat.eqb n j) bool.true) 
+          (logic.eq bool.bool (nat.eqb n j) bool.false) 
+          (logic.eq nat.nat 
+             (bool.match_bool_type nat.nat j 
+                (bool.match_bool_type nat.nat i n (nat.eqb n j)) bool.false) 
+             (bool.match_bool_type nat.nat i 
+                (bool.match_bool_type nat.nat j n bool.false) (nat.eqb n j))) 
+          (Hnj:(sttfa.eps (logic.eq bool.bool (nat.eqb n j) bool.true)) =>
+           logic.eq_ind_r bool.bool bool.true 
+             (x:(sttfa.etap (sttfa.p bool.bool)) =>
+              logic.eq nat.nat 
+                (bool.match_bool_type nat.nat j 
+                   (bool.match_bool_type nat.nat i n x) bool.false) 
+                (bool.match_bool_type nat.nat i 
+                   (bool.match_bool_type nat.nat j n bool.false) x)) 
+             (bool.sym_eq_match_bool_type_false nat.nat j 
+                (bool.match_bool_type nat.nat i n bool.true) 
+                (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq nat.nat y 
+                   (bool.match_bool_type nat.nat i 
+                      (bool.match_bool_type nat.nat j n bool.false) bool.true)) 
+                (bool.sym_eq_match_bool_type_false nat.nat j n 
+                   (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                    logic.eq nat.nat 
+                      (bool.match_bool_type nat.nat i n bool.true) 
+                      (bool.match_bool_type nat.nat i y bool.true)) 
+                   (bool.sym_eq_match_bool_type_true nat.nat i n 
+                      (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat 
+                         (bool.match_bool_type nat.nat i n bool.true) y) 
+                      (bool.sym_eq_match_bool_type_true nat.nat i n 
+                         (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat y i) (logic.refl nat.nat i))))) 
+             (nat.eqb n j) Hnj) 
+          (Hnj:(sttfa.eps (logic.eq bool.bool (nat.eqb n j) bool.false)) =>
+           logic.eq_ind_r bool.bool bool.false 
+             (x:(sttfa.etap (sttfa.p bool.bool)) =>
+              logic.eq nat.nat 
+                (bool.match_bool_type nat.nat j 
+                   (bool.match_bool_type nat.nat i n x) bool.false) 
+                (bool.match_bool_type nat.nat i 
+                   (bool.match_bool_type nat.nat j n bool.false) x)) 
+             (bool.sym_eq_match_bool_type_false nat.nat i n 
+                (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq nat.nat 
+                   (bool.match_bool_type nat.nat j y bool.false) 
+                   (bool.match_bool_type nat.nat i 
+                      (bool.match_bool_type nat.nat j n bool.false) 
+                      bool.false)) 
+                (bool.sym_eq_match_bool_type_false nat.nat j n 
+                   (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                    logic.eq nat.nat 
+                      (bool.match_bool_type nat.nat j n bool.false) 
+                      (bool.match_bool_type nat.nat i y bool.false)) 
+                   (bool.sym_eq_match_bool_type_false nat.nat j n 
+                      (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat y 
+                         (bool.match_bool_type nat.nat i n bool.false)) 
+                      (bool.sym_eq_match_bool_type_false nat.nat i n 
+                         (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat n y) (logic.refl nat.nat n))))) 
+             (nat.eqb n j) Hnj) (bool.true_or_false (nat.eqb n j))) 
+       (nat.eqb n i) Hni) (bool.true_or_false (nat.eqb n i)).
+
+def transpose_transpose :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (i:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat 
+          (j:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.forall nat.nat 
+             (n:(sttfa.etap (sttfa.p nat.nat)) =>
+              logic.eq nat.nat 
+                (permutation.transpose i j (permutation.transpose i j n)) n))))
+  :=
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  j:(sttfa.etap (sttfa.p nat.nat)) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  logic.match_Or_prop (logic.eq bool.bool (nat.eqb n i) bool.true) 
+    (logic.eq bool.bool (nat.eqb n i) bool.false) 
+    (logic.eq nat.nat 
+       (bool.match_bool_type nat.nat j 
+          (bool.match_bool_type nat.nat i 
+             (bool.match_bool_type nat.nat j 
+                (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                (nat.eqb n i)) 
+             (nat.eqb 
+                (bool.match_bool_type nat.nat j 
+                   (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                   (nat.eqb n i)) j)) 
+          (nat.eqb 
+             (bool.match_bool_type nat.nat j 
+                (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                (nat.eqb n i)) i)) n) 
+    (Hni:(sttfa.eps (logic.eq bool.bool (nat.eqb n i) bool.true)) =>
+     logic.eq_ind_r bool.bool bool.true 
+       (x:(sttfa.etap (sttfa.p bool.bool)) =>
+        logic.eq nat.nat 
+          (bool.match_bool_type nat.nat j 
+             (bool.match_bool_type nat.nat i 
+                (bool.match_bool_type nat.nat j 
+                   (bool.match_bool_type nat.nat i n (nat.eqb n j)) x) 
+                (nat.eqb 
+                   (bool.match_bool_type nat.nat j 
+                      (bool.match_bool_type nat.nat i n (nat.eqb n j)) x) j)) 
+             (nat.eqb 
+                (bool.match_bool_type nat.nat j 
+                   (bool.match_bool_type nat.nat i n (nat.eqb n j)) x) i)) n) 
+       (bool.sym_eq_match_bool_type_true nat.nat j 
+          (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+          (y:(sttfa.etap (sttfa.p nat.nat)) =>
+           logic.eq nat.nat 
+             (bool.match_bool_type nat.nat j 
+                (bool.match_bool_type nat.nat i 
+                   (bool.match_bool_type nat.nat j 
+                      (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                      bool.true) 
+                   (nat.eqb 
+                      (bool.match_bool_type nat.nat j 
+                         (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                         bool.true) j)) (nat.eqb y i)) n) 
+          (bool.sym_eq_match_bool_type_true nat.nat j 
+             (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+             (y:(sttfa.etap (sttfa.p nat.nat)) =>
+              logic.eq nat.nat 
+                (bool.match_bool_type nat.nat j 
+                   (bool.match_bool_type nat.nat i 
+                      (bool.match_bool_type nat.nat j 
+                         (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                         bool.true) (nat.eqb y j)) (nat.eqb j i)) n) 
+             (bool.sym_eq_match_bool_type_true nat.nat j 
+                (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq nat.nat 
+                   (bool.match_bool_type nat.nat j 
+                      (bool.match_bool_type nat.nat i y (nat.eqb j j)) 
+                      (nat.eqb j i)) n) 
+                (logic.match_Or_prop 
+                   (logic.eq bool.bool (nat.eqb j i) bool.true) 
+                   (logic.eq bool.bool (nat.eqb j i) bool.false) 
+                   (logic.eq nat.nat 
+                      (bool.match_bool_type nat.nat j 
+                         (bool.match_bool_type nat.nat i j (nat.eqb j j)) 
+                         (nat.eqb j i)) n) 
+                   (Hji:
+                    (sttfa.eps (logic.eq bool.bool (nat.eqb j i) bool.true)) =>
+                    logic.eq_ind_r bool.bool bool.true 
+                      (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                       logic.eq nat.nat 
+                         (bool.match_bool_type nat.nat j 
+                            (bool.match_bool_type nat.nat i j (nat.eqb j j)) 
+                            x) n) 
+                      (bool.sym_eq_match_bool_type_true nat.nat j 
+                         (bool.match_bool_type nat.nat i j (nat.eqb j j)) 
+                         (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat y n) 
+                         (logic.eq_ind_r nat.nat i 
+                            (x:(sttfa.etap (sttfa.p nat.nat)) =>
+                             logic.eq nat.nat j x) 
+                            (nat.eqb_true_to_eq j i Hji) n 
+                            (nat.eqb_true_to_eq n i Hni))) (nat.eqb j i) Hji) 
+                   (Hji:
+                    (sttfa.eps (logic.eq bool.bool (nat.eqb j i) bool.false)) =>
+                    logic.eq_ind_r bool.bool bool.false 
+                      (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                       logic.eq nat.nat 
+                         (bool.match_bool_type nat.nat j 
+                            (bool.match_bool_type nat.nat i j (nat.eqb j j)) 
+                            x) n) 
+                      (bool.sym_eq_match_bool_type_false nat.nat j 
+                         (bool.match_bool_type nat.nat i j (nat.eqb j j)) 
+                         (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat y n) 
+                         (logic.eq_ind_r bool.bool bool.true 
+                            (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                             logic.eq nat.nat 
+                               (bool.match_bool_type nat.nat i j x) n) 
+                            (bool.sym_eq_match_bool_type_true nat.nat i j 
+                               (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                                logic.eq nat.nat y n) 
+                               (logic.sym_eq nat.nat n i 
+                                  (nat.eqb_true_to_eq n i Hni))) 
+                            (nat.eqb j j) (nat.eqb_n_n j))) (nat.eqb j i) Hji) 
+                   (bool.true_or_false (nat.eqb j i)))))) (nat.eqb n i) Hni) 
+    (Hni:(sttfa.eps (logic.eq bool.bool (nat.eqb n i) bool.false)) =>
+     logic.eq_ind_r bool.bool bool.false 
+       (x:(sttfa.etap (sttfa.p bool.bool)) =>
+        logic.eq nat.nat 
+          (bool.match_bool_type nat.nat j 
+             (bool.match_bool_type nat.nat i 
+                (bool.match_bool_type nat.nat j 
+                   (bool.match_bool_type nat.nat i n (nat.eqb n j)) x) 
+                (nat.eqb 
+                   (bool.match_bool_type nat.nat j 
+                      (bool.match_bool_type nat.nat i n (nat.eqb n j)) x) j)) 
+             (nat.eqb 
+                (bool.match_bool_type nat.nat j 
+                   (bool.match_bool_type nat.nat i n (nat.eqb n j)) x) i)) n) 
+       (bool.sym_eq_match_bool_type_false nat.nat j 
+          (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+          (y:(sttfa.etap (sttfa.p nat.nat)) =>
+           logic.eq nat.nat 
+             (bool.match_bool_type nat.nat j 
+                (bool.match_bool_type nat.nat i 
+                   (bool.match_bool_type nat.nat j 
+                      (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                      bool.false) 
+                   (nat.eqb 
+                      (bool.match_bool_type nat.nat j 
+                         (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                         bool.false) j)) (nat.eqb y i)) n) 
+          (bool.sym_eq_match_bool_type_false nat.nat j 
+             (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+             (y:(sttfa.etap (sttfa.p nat.nat)) =>
+              logic.eq nat.nat 
+                (bool.match_bool_type nat.nat j 
+                   (bool.match_bool_type nat.nat i 
+                      (bool.match_bool_type nat.nat j 
+                         (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                         bool.false) (nat.eqb y j)) 
+                   (nat.eqb (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                      i)) n) 
+             (bool.sym_eq_match_bool_type_false nat.nat j 
+                (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq nat.nat 
+                   (bool.match_bool_type nat.nat j 
+                      (bool.match_bool_type nat.nat i y 
+                         (nat.eqb 
+                            (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                            j)) 
+                      (nat.eqb 
+                         (bool.match_bool_type nat.nat i n (nat.eqb n j)) i)) 
+                   n) 
+                (logic.match_Or_prop 
+                   (logic.eq bool.bool (nat.eqb n j) bool.true) 
+                   (logic.eq bool.bool (nat.eqb n j) bool.false) 
+                   (logic.eq nat.nat 
+                      (bool.match_bool_type nat.nat j 
+                         (bool.match_bool_type nat.nat i 
+                            (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                            (nat.eqb 
+                               (bool.match_bool_type nat.nat i n 
+                                  (nat.eqb n j)) j)) 
+                         (nat.eqb 
+                            (bool.match_bool_type nat.nat i n (nat.eqb n j)) 
+                            i)) n) 
+                   (Hnj:
+                    (sttfa.eps (logic.eq bool.bool (nat.eqb n j) bool.true)) =>
+                    logic.eq_ind_r bool.bool bool.true 
+                      (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                       logic.eq nat.nat 
+                         (bool.match_bool_type nat.nat j 
+                            (bool.match_bool_type nat.nat i 
+                               (bool.match_bool_type nat.nat i n x) 
+                               (nat.eqb (bool.match_bool_type nat.nat i n x) 
+                                  j)) 
+                            (nat.eqb (bool.match_bool_type nat.nat i n x) i)) 
+                         n) 
+                      (bool.sym_eq_match_bool_type_true nat.nat i n 
+                         (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat 
+                            (bool.match_bool_type nat.nat j 
+                               (bool.match_bool_type nat.nat i 
+                                  (bool.match_bool_type nat.nat i n bool.true) 
+                                  (nat.eqb 
+                                     (bool.match_bool_type nat.nat i n 
+                                        bool.true) j)) (nat.eqb y i)) n) 
+                         (bool.sym_eq_match_bool_type_true nat.nat i n 
+                            (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                             logic.eq nat.nat 
+                               (bool.match_bool_type nat.nat j 
+                                  (bool.match_bool_type nat.nat i 
+                                     (bool.match_bool_type nat.nat i n 
+                                        bool.true) (nat.eqb y j)) 
+                                  (nat.eqb i i)) n) 
+                            (bool.sym_eq_match_bool_type_true nat.nat i n 
+                               (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                                logic.eq nat.nat 
+                                  (bool.match_bool_type nat.nat j 
+                                     (bool.match_bool_type nat.nat i y 
+                                        (nat.eqb i j)) (nat.eqb i i)) n) 
+                               (logic.eq_ind_r bool.bool bool.true 
+                                  (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                                   logic.eq nat.nat 
+                                     (bool.match_bool_type nat.nat j 
+                                        (bool.match_bool_type nat.nat i i 
+                                           (nat.eqb i j)) x) n) 
+                                  (bool.sym_eq_match_bool_type_true nat.nat 
+                                     j 
+                                     (bool.match_bool_type nat.nat i i 
+                                        (nat.eqb i j)) 
+                                     (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                                      logic.eq nat.nat y n) 
+                                     (logic.sym_eq nat.nat n j 
+                                        (nat.eqb_true_to_eq n j Hnj))) 
+                                  (nat.eqb i i) (nat.eqb_n_n i))))) 
+                      (nat.eqb n j) Hnj) 
+                   (Hnj:
+                    (sttfa.eps (logic.eq bool.bool (nat.eqb n j) bool.false)) =>
+                    logic.eq_ind_r bool.bool bool.false 
+                      (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                       logic.eq nat.nat 
+                         (bool.match_bool_type nat.nat j 
+                            (bool.match_bool_type nat.nat i 
+                               (bool.match_bool_type nat.nat i n x) 
+                               (nat.eqb (bool.match_bool_type nat.nat i n x) 
+                                  j)) 
+                            (nat.eqb (bool.match_bool_type nat.nat i n x) i)) 
+                         n) 
+                      (bool.sym_eq_match_bool_type_false nat.nat i n 
+                         (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat 
+                            (bool.match_bool_type nat.nat j 
+                               (bool.match_bool_type nat.nat i 
+                                  (bool.match_bool_type nat.nat i n 
+                                     bool.false) 
+                                  (nat.eqb 
+                                     (bool.match_bool_type nat.nat i n 
+                                        bool.false) j)) (nat.eqb y i)) n) 
+                         (bool.sym_eq_match_bool_type_false nat.nat i n 
+                            (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                             logic.eq nat.nat 
+                               (bool.match_bool_type nat.nat j 
+                                  (bool.match_bool_type nat.nat i 
+                                     (bool.match_bool_type nat.nat i n 
+                                        bool.false) (nat.eqb y j)) 
+                                  (nat.eqb n i)) n) 
+                            (bool.sym_eq_match_bool_type_false nat.nat i n 
+                               (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                                logic.eq nat.nat 
+                                  (bool.match_bool_type nat.nat j 
+                                     (bool.match_bool_type nat.nat i y 
+                                        (nat.eqb n j)) (nat.eqb n i)) n) 
+                               (logic.eq_ind_r bool.bool bool.false 
+                                  (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                                   logic.eq nat.nat 
+                                     (bool.match_bool_type nat.nat j 
+                                        (bool.match_bool_type nat.nat i n 
+                                           (nat.eqb n j)) x) n) 
+                                  (logic.eq_ind_r bool.bool bool.false 
+                                     (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                                      logic.eq nat.nat 
+                                        (bool.match_bool_type nat.nat j 
+                                           (bool.match_bool_type nat.nat i n 
+                                              x) bool.false) n) 
+                                     (bool.eq_match_bool_type_false nat.nat 
+                                        i n 
+                                        (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                                         logic.eq nat.nat 
+                                           (bool.match_bool_type nat.nat j 
+                                              (bool.match_bool_type nat.nat 
+                                                 i n bool.false) bool.false) 
+                                           y) 
+                                        (bool.eq_match_bool_type_false 
+                                           nat.nat j 
+                                           (bool.match_bool_type nat.nat i n 
+                                              bool.false) 
+                                           (y:
+                                            (sttfa.etap (sttfa.p nat.nat)) =>
+                                            logic.eq nat.nat 
+                                              (bool.match_bool_type nat.nat 
+                                                 j 
+                                                 (bool.match_bool_type 
+                                                    nat.nat i n bool.false) 
+                                                 bool.false) y) 
+                                           (logic.refl nat.nat 
+                                              (bool.match_bool_type nat.nat 
+                                                 j 
+                                                 (bool.match_bool_type 
+                                                    nat.nat i n bool.false) 
+                                                 bool.false)))) 
+                                     (nat.eqb n j) Hnj) (nat.eqb n i) Hni)))) 
+                      (nat.eqb n j) Hnj) (bool.true_or_false (nat.eqb n j)))))) 
+       (nat.eqb n i) Hni) (bool.true_or_false (nat.eqb n i)).
+
+def injective_transpose :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (i:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat 
+          (j:(sttfa.etap (sttfa.p nat.nat)) =>
+           relations.injective nat.nat nat.nat (permutation.transpose i j))))
+  :=
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  j:(sttfa.etap (sttfa.p nat.nat)) =>
+  x:(sttfa.etap (sttfa.p nat.nat)) =>
+  y:(sttfa.etap (sttfa.p nat.nat)) =>
+  auto:
+  (sttfa.eps 
+     (logic.eq nat.nat (permutation.transpose i j x) 
+        (permutation.transpose i j y))) =>
+  logic.rewrite_r nat.nat y 
+    (__:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat __ y) 
+    (logic.refl nat.nat y) x 
+    (logic.rewrite_l nat.nat 
+       (permutation.transpose i j (permutation.transpose i j x)) 
+       (__:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat __ y) 
+       (logic.rewrite_r nat.nat (permutation.transpose i j y) 
+          (__:(sttfa.etap (sttfa.p nat.nat)) =>
+           logic.eq nat.nat (permutation.transpose i j __) y) 
+          (permutation.transpose_transpose i j y) 
+          (permutation.transpose i j x) auto) x 
+       (permutation.transpose_transpose i j x)).
+
+def permut_S_to_permut_transpose :
+  sttfa.eps 
+    (sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        sttfa.forall nat.nat 
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (permutation.permut f (nat.S m)) 
+             (permutation.permut 
+                (n:(sttfa.etap (sttfa.p nat.nat)) =>
+                 permutation.transpose (f (nat.S m)) (nat.S m) (f n)) m))))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  _clearme:(sttfa.eps (permutation.permut f (nat.S m))) =>
+  logic.match_And_prop 
+    (sttfa.forall nat.nat 
+       (i:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (nat.le i (nat.S m)) (nat.le (f i) (nat.S m)))) 
+    (permutation.injn f (nat.S m)) 
+    (permutation.permut 
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        permutation.transpose (f (nat.S m)) (nat.S m) (f n)) m) 
+    (permf1:
+     (sttfa.eps 
+        (sttfa.forall nat.nat 
+           (i:(sttfa.etap (sttfa.p nat.nat)) =>
+            sttfa.impl (nat.le i (nat.S m)) (nat.le (f i) (nat.S m))))) =>
+     permf2:(sttfa.eps (permutation.injn f (nat.S m))) =>
+     z:(sttfa.etap (sttfa.p sttfa.bool)) =>
+     f2:
+     (sttfa.eps 
+        (sttfa.impl 
+           (sttfa.forall nat.nat 
+              (x:(sttfa.etap (sttfa.p nat.nat)) =>
+               sttfa.impl (nat.le x m) 
+                 (nat.le 
+                    (permutation.transpose (f (nat.S m)) (nat.S m) (f x)) m))) 
+           (sttfa.impl 
+              (permutation.injn 
+                 (n:(sttfa.etap (sttfa.p nat.nat)) =>
+                  permutation.transpose (f (nat.S m)) (nat.S m) (f n)) m) z))) =>
+     f2 
+       (i:(sttfa.etap (sttfa.p nat.nat)) =>
+        leim:(sttfa.eps (nat.le i m)) =>
+        logic.eq_ind_r bool.bool bool.false 
+          (x:(sttfa.etap (sttfa.p bool.bool)) =>
+           nat.le 
+             (bool.match_bool_type nat.nat (nat.S m) 
+                (bool.match_bool_type nat.nat (f (nat.S m)) (f i) 
+                   (nat.eqb (f i) (nat.S m))) x) m) 
+          (bool.sym_eq_match_bool_type_false nat.nat (nat.S m) 
+             (bool.match_bool_type nat.nat (f (nat.S m)) (f i) 
+                (nat.eqb (f i) (nat.S m))) 
+             (y:(sttfa.etap (sttfa.p nat.nat)) => nat.le y m) 
+             (logic.match_Or_prop (nat.lt (f i) (nat.S m)) 
+                (logic.eq nat.nat (f i) (nat.S m)) 
+                (nat.le 
+                   (bool.match_bool_type nat.nat (f (nat.S m)) (f i) 
+                      (nat.eqb (f i) (nat.S m))) m) 
+                (Hfi:(sttfa.eps (nat.lt (f i) (nat.S m))) =>
+                 logic.eq_ind_r bool.bool bool.false 
+                   (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                    nat.le 
+                      (bool.match_bool_type nat.nat (f (nat.S m)) (f i) x) m) 
+                   (bool.sym_eq_match_bool_type_false nat.nat (f (nat.S m)) 
+                      (f i) (y:(sttfa.etap (sttfa.p nat.nat)) => nat.le y m) 
+                      (nat.le_S_S_to_le (f i) m Hfi)) 
+                   (nat.eqb (f i) (nat.S m)) 
+                   (nat.not_eq_to_eqb_false (f i) (nat.S m) 
+                      (nat.lt_to_not_eq (f i) (nat.S m) Hfi))) 
+                (Hfi:(sttfa.eps (logic.eq nat.nat (f i) (nat.S m))) =>
+                 logic.eq_ind_r bool.bool bool.true 
+                   (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                    nat.le 
+                      (bool.match_bool_type nat.nat (f (nat.S m)) (f i) x) m) 
+                   (bool.sym_eq_match_bool_type_true nat.nat (f (nat.S m)) 
+                      (f i) (y:(sttfa.etap (sttfa.p nat.nat)) => nat.le y m) 
+                      (logic.match_Or_prop (nat.lt (f (nat.S m)) (nat.S m)) 
+                         (logic.eq nat.nat (f (nat.S m)) (nat.S m)) 
+                         (nat.le (f (nat.S m)) m) 
+                         (H:(sttfa.eps (nat.lt (f (nat.S m)) (nat.S m))) =>
+                          nat.le_S_S_to_le (f (nat.S m)) m H) 
+                         (H:
+                          (sttfa.eps 
+                             (logic.eq nat.nat (f (nat.S m)) (nat.S m))) =>
+                          logic.falsity (nat.le (f (nat.S m)) m) 
+                            (logic.absurd (logic.eq nat.nat i (nat.S m)) 
+                               (permf2 i (nat.S m) (nat.le_S i m leim) 
+                                  (nat.le_n (nat.S m)) 
+                                  (logic.rewrite_l nat.nat (f i) 
+                                     (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                                      logic.eq nat.nat (f i) (f __)) 
+                                     (logic.rewrite_r nat.nat (f i) 
+                                        (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                                         logic.eq nat.nat (f i) __) 
+                                        (logic.refl nat.nat (f i)) (f (f i)) 
+                                        (logic.rewrite_r nat.nat (nat.S m) 
+                                           (__:
+                                            (sttfa.etap (sttfa.p nat.nat)) =>
+                                            logic.eq nat.nat (f (f i)) __) 
+                                           (logic.rewrite_r nat.nat 
+                                              (nat.S m) 
+                                              (__:
+                                               (sttfa.etap (sttfa.p nat.nat)) =>
+                                               logic.eq nat.nat (f __) 
+                                                 (nat.S m)) H (f i) Hfi) 
+                                           (f i) Hfi)) (nat.S m) Hfi)) 
+                               (logic.not_to_not 
+                                  (logic.eq nat.nat i (nat.S m)) 
+                                  (nat.le (nat.S m) m) 
+                                  (auto:
+                                   (sttfa.eps (logic.eq nat.nat i (nat.S m))) =>
+                                   logic.eq_coerc (nat.le i m) 
+                                     (nat.le (nat.S m) m) leim 
+                                     (logic.rewrite_l nat.nat i 
+                                        (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                                         logic.eq sttfa.bool (nat.le i m) 
+                                           (nat.le __ m)) 
+                                        (logic.refl sttfa.bool (nat.le i m)) 
+                                        (nat.S m) auto)) 
+                                  (nat.lt_to_not_le m (nat.S m) 
+                                     (nat.le_n (nat.S m)))))) 
+                         (nat.le_to_or_lt_eq (f (nat.S m)) (nat.S m) 
+                            (permf1 (nat.S m) (nat.le_n (nat.S m)))))) 
+                   (nat.eqb (f i) (nat.S m)) 
+                   (nat.eq_to_eqb_true (f i) (nat.S m) Hfi)) 
+                (nat.le_to_or_lt_eq (f i) (nat.S m) 
+                   (permf1 i (nat.le_S i m leim))))) 
+          (nat.eqb (f i) (f (nat.S m))) 
+          (nat.not_eq_to_eqb_false (f i) (f (nat.S m)) 
+             (H:(sttfa.eps (logic.eq nat.nat (f i) (f (nat.S m)))) =>
+              logic.absurd (logic.eq nat.nat i (nat.S m)) 
+                (permf2 i (nat.S m) (nat.le_S i m leim) (nat.le_n (nat.S m)) 
+                   H) (nat.lt_to_not_eq i (nat.S m) (nat.le_S_S i m leim))))) 
+       (a:(sttfa.etap (sttfa.p nat.nat)) =>
+        b:(sttfa.etap (sttfa.p nat.nat)) =>
+        leam:(sttfa.eps (nat.le a m)) =>
+        lebm:(sttfa.eps (nat.le b m)) =>
+        H:
+        (sttfa.eps 
+           (logic.eq nat.nat 
+              (permutation.transpose (f (nat.S m)) (nat.S m) (f a)) 
+              (permutation.transpose (f (nat.S m)) (nat.S m) (f b)))) =>
+        permf2 a b (nat.le_S a m leam) (nat.le_S b m lebm) 
+          (permutation.injective_transpose (f (nat.S m)) (nat.S m) (f a) 
+             (f b) H))) _clearme.
+
+def bijn :
+  sttfa.etap 
+    (sttfa.p 
+       (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+          (sttfa.arrow nat.nat sttfa.bool)))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  sttfa.forall nat.nat 
+    (m:(sttfa.etap (sttfa.p nat.nat)) =>
+     sttfa.impl (nat.le m n) 
+       (connectives.Ex nat.nat 
+          (p:(sttfa.etap (sttfa.p nat.nat)) =>
+           connectives.And (nat.le p n) (logic.eq nat.nat (f p) m)))).
+
+def eq_to_bijn :
+  sttfa.eps 
+    (sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+          (g:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+           sttfa.forall nat.nat 
+             (n:(sttfa.etap (sttfa.p nat.nat)) =>
+              sttfa.impl 
+                (sttfa.forall nat.nat 
+                   (i:(sttfa.etap (sttfa.p nat.nat)) =>
+                    sttfa.impl (nat.le i n) (logic.eq nat.nat (f i) (g i)))) 
+                (sttfa.impl (permutation.bijn f n) (permutation.bijn g n))))))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  g:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  H:
+  (sttfa.eps 
+     (sttfa.forall nat.nat 
+        (i:(sttfa.etap (sttfa.p nat.nat)) =>
+         sttfa.impl (nat.le i n) (logic.eq nat.nat (f i) (g i))))) =>
+  bijf:(sttfa.eps (permutation.bijn f n)) =>
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  lein:(sttfa.eps (nat.le i n)) =>
+  logic.match_ex_prop nat.nat 
+    (p:(sttfa.etap (sttfa.p nat.nat)) =>
+     connectives.And (nat.le p n) (logic.eq nat.nat (f p) i)) 
+    (connectives.Ex nat.nat 
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        connectives.And (nat.le p n) (logic.eq nat.nat (g p) i))) 
+    (a:(sttfa.etap (sttfa.p nat.nat)) =>
+     _clearme:
+     (sttfa.eps (connectives.And (nat.le a n) (logic.eq nat.nat (f a) i))) =>
+     logic.match_And_prop (nat.le a n) (logic.eq nat.nat (f a) i) 
+       (connectives.Ex nat.nat 
+          (p:(sttfa.etap (sttfa.p nat.nat)) =>
+           connectives.And (nat.le p n) (logic.eq nat.nat (g p) i))) 
+       (lean:(sttfa.eps (nat.le a n)) =>
+        fa:(sttfa.eps (logic.eq nat.nat (f a) i)) =>
+        z:(sttfa.etap (sttfa.p sttfa.bool)) =>
+        f2:
+        (sttfa.eps 
+           (sttfa.forall nat.nat 
+              (x:(sttfa.etap (sttfa.p nat.nat)) =>
+               sttfa.impl 
+                 (connectives.And (nat.le x n) (logic.eq nat.nat (g x) i)) z))) =>
+        f2 a 
+          (z0:(sttfa.etap (sttfa.p sttfa.bool)) =>
+           f3:
+           (sttfa.eps 
+              (sttfa.impl (nat.le a n) 
+                 (sttfa.impl (logic.eq nat.nat (g a) i) z0))) =>
+           f3 lean 
+             (logic.eq_ind nat.nat (f a) 
+                (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq nat.nat (g a) x_1) 
+                (logic.sym_eq nat.nat (f a) (g a) (H a lean)) i fa))) 
+       _clearme) (bijf i lein).
+
+def bijn_n_Sn :
+  sttfa.eps 
+    (sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        sttfa.forall nat.nat 
+          (n:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (permutation.bijn f n) 
+             (sttfa.impl (logic.eq nat.nat (f (nat.S n)) (nat.S n)) 
+                (permutation.bijn f (nat.S n))))))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  bijf:(sttfa.eps (permutation.bijn f n)) =>
+  fS:(sttfa.eps (logic.eq nat.nat (f (nat.S n)) (nat.S n))) =>
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  lein:(sttfa.eps (nat.le i (nat.S n))) =>
+  logic.match_Or_prop (nat.lt i (nat.S n)) (logic.eq nat.nat i (nat.S n)) 
+    (connectives.Ex nat.nat 
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        connectives.And (nat.le p (nat.S n)) (logic.eq nat.nat (f p) i))) 
+    (Hi:(sttfa.eps (nat.lt i (nat.S n))) =>
+     logic.match_ex_prop nat.nat 
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        connectives.And (nat.le p n) (logic.eq nat.nat (f p) i)) 
+       (connectives.Ex nat.nat 
+          (p:(sttfa.etap (sttfa.p nat.nat)) =>
+           connectives.And (nat.le p (nat.S n)) (logic.eq nat.nat (f p) i))) 
+       (a:(sttfa.etap (sttfa.p nat.nat)) =>
+        _clearme:
+        (sttfa.eps (connectives.And (nat.le a n) (logic.eq nat.nat (f a) i))) =>
+        logic.match_And_prop (nat.le a n) (logic.eq nat.nat (f a) i) 
+          (connectives.Ex nat.nat 
+             (p:(sttfa.etap (sttfa.p nat.nat)) =>
+              connectives.And (nat.le p (nat.S n)) (logic.eq nat.nat (f p) i))) 
+          (lean:(sttfa.eps (nat.le a n)) =>
+           fa:(sttfa.eps (logic.eq nat.nat (f a) i)) =>
+           z:(sttfa.etap (sttfa.p sttfa.bool)) =>
+           f4:
+           (sttfa.eps 
+              (sttfa.forall nat.nat 
+                 (x:(sttfa.etap (sttfa.p nat.nat)) =>
+                  sttfa.impl 
+                    (connectives.And (nat.le x (nat.S n)) 
+                       (logic.eq nat.nat (f x) i)) z))) =>
+           f4 a 
+             (z0:(sttfa.etap (sttfa.p sttfa.bool)) =>
+              f5:
+              (sttfa.eps 
+                 (sttfa.impl (nat.le a (nat.S n)) 
+                    (sttfa.impl (logic.eq nat.nat (f a) i) z0))) =>
+              f5 (nat.le_S a n lean) 
+                (logic.rewrite_r nat.nat i 
+                   (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                    logic.eq nat.nat __ i) (logic.refl nat.nat i) (f a) fa))) 
+          _clearme) (bijf i (nat.le_S_S_to_le i n Hi))) 
+    (Hi:(sttfa.eps (logic.eq nat.nat i (nat.S n))) =>
+     z:(sttfa.etap (sttfa.p sttfa.bool)) =>
+     f6:
+     (sttfa.eps 
+        (sttfa.forall nat.nat 
+           (x:(sttfa.etap (sttfa.p nat.nat)) =>
+            sttfa.impl 
+              (connectives.And (nat.le x (nat.S n)) 
+                 (logic.eq nat.nat (f x) i)) z))) =>
+     f6 i 
+       (z0:(sttfa.etap (sttfa.p sttfa.bool)) =>
+        f7:
+        (sttfa.eps 
+           (sttfa.impl (nat.le i (nat.S n)) 
+              (sttfa.impl (logic.eq nat.nat (f i) i) z0))) =>
+        f7 
+          (logic.eq_coerc (nat.le i i) (nat.le i (nat.S n)) (nat.le_n i) 
+             (logic.rewrite_l nat.nat i 
+                (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq sttfa.bool (nat.le i i) (nat.le i __)) 
+                (logic.refl sttfa.bool (nat.le i i)) (nat.S n) Hi)) 
+          (logic.rewrite_r nat.nat i 
+             (__:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat __ i) 
+             (logic.refl nat.nat i) (f i) 
+             (logic.rewrite_r nat.nat (nat.S n) 
+                (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq nat.nat (f i) __) 
+                (logic.rewrite_r nat.nat (nat.S n) 
+                   (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                    logic.eq nat.nat (f __) (nat.S n)) fS i Hi) i Hi)))) 
+    (nat.le_to_or_lt_eq i (nat.S n) lein).
+
+def bijn_fg :
+  sttfa.eps 
+    (sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+          (g:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+           sttfa.forall nat.nat 
+             (n:(sttfa.etap (sttfa.p nat.nat)) =>
+              sttfa.impl (permutation.bijn f n) 
+                (sttfa.impl (permutation.bijn g n) 
+                   (permutation.bijn 
+                      (p:(sttfa.etap (sttfa.p nat.nat)) => f (g p)) n))))))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  g:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  bijf:(sttfa.eps (permutation.bijn f n)) =>
+  bijg:(sttfa.eps (permutation.bijn g n)) =>
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  lein:(sttfa.eps (nat.le i n)) =>
+  logic.match_ex_prop nat.nat 
+    (p:(sttfa.etap (sttfa.p nat.nat)) =>
+     connectives.And (nat.le p n) (logic.eq nat.nat (f p) i)) 
+    (connectives.Ex nat.nat 
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        connectives.And (nat.le p n) (logic.eq nat.nat (f (g p)) i))) 
+    (a:(sttfa.etap (sttfa.p nat.nat)) =>
+     _clearme:
+     (sttfa.eps (connectives.And (nat.le a n) (logic.eq nat.nat (f a) i))) =>
+     logic.match_And_prop (nat.le a n) (logic.eq nat.nat (f a) i) 
+       (connectives.Ex nat.nat 
+          (p:(sttfa.etap (sttfa.p nat.nat)) =>
+           connectives.And (nat.le p n) (logic.eq nat.nat (f (g p)) i))) 
+       (lean:(sttfa.eps (nat.le a n)) =>
+        ga:(sttfa.eps (logic.eq nat.nat (f a) i)) =>
+        logic.match_ex_prop nat.nat 
+          (p:(sttfa.etap (sttfa.p nat.nat)) =>
+           connectives.And (nat.le p n) (logic.eq nat.nat (g p) a)) 
+          (connectives.Ex nat.nat 
+             (p:(sttfa.etap (sttfa.p nat.nat)) =>
+              connectives.And (nat.le p n) (logic.eq nat.nat (f (g p)) i))) 
+          (b:(sttfa.etap (sttfa.p nat.nat)) =>
+           _clearme0:
+           (sttfa.eps 
+              (connectives.And (nat.le b n) (logic.eq nat.nat (g b) a))) =>
+           logic.match_And_prop (nat.le b n) (logic.eq nat.nat (g b) a) 
+             (connectives.Ex nat.nat 
+                (p:(sttfa.etap (sttfa.p nat.nat)) =>
+                 connectives.And (nat.le p n) (logic.eq nat.nat (f (g p)) i))) 
+             (lebn:(sttfa.eps (nat.le b n)) =>
+              gb:(sttfa.eps (logic.eq nat.nat (g b) a)) =>
+              z:(sttfa.etap (sttfa.p sttfa.bool)) =>
+              f2:
+              (sttfa.eps 
+                 (sttfa.forall nat.nat 
+                    (x:(sttfa.etap (sttfa.p nat.nat)) =>
+                     sttfa.impl 
+                       (connectives.And (nat.le x n) 
+                          (logic.eq nat.nat (f (g x)) i)) z))) =>
+              f2 b 
+                (z0:(sttfa.etap (sttfa.p sttfa.bool)) =>
+                 f3:
+                 (sttfa.eps 
+                    (sttfa.impl (nat.le b n) 
+                       (sttfa.impl (logic.eq nat.nat (f (g b)) i) z0))) =>
+                 f3 lebn 
+                   (logic.rewrite_r nat.nat a 
+                      (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat (f __) i) 
+                      (logic.rewrite_r nat.nat i 
+                         (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat __ i) (logic.refl nat.nat i) 
+                         (f a) ga) (g b) gb))) _clearme0) (bijg a lean)) 
+       _clearme) (bijf i lein).
+
+def bijn_transpose :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat 
+          (i:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.forall nat.nat 
+             (j:(sttfa.etap (sttfa.p nat.nat)) =>
+              sttfa.impl (nat.le i n) 
+                (sttfa.impl (nat.le j n) 
+                   (permutation.bijn (permutation.transpose i j) n))))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  j:(sttfa.etap (sttfa.p nat.nat)) =>
+  lein:(sttfa.eps (nat.le i n)) =>
+  lejn:(sttfa.eps (nat.le j n)) =>
+  a:(sttfa.etap (sttfa.p nat.nat)) =>
+  lean:(sttfa.eps (nat.le a n)) =>
+  logic.match_Or_prop (logic.eq bool.bool (nat.eqb a i) bool.true) 
+    (logic.eq bool.bool (nat.eqb a i) bool.false) 
+    (connectives.Ex nat.nat 
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        connectives.And (nat.le p n) 
+          (logic.eq nat.nat (permutation.transpose i j p) a))) 
+    (Hi:(sttfa.eps (logic.eq bool.bool (nat.eqb a i) bool.true)) =>
+     z:(sttfa.etap (sttfa.p sttfa.bool)) =>
+     f3:
+     (sttfa.eps 
+        (sttfa.forall nat.nat 
+           (x:(sttfa.etap (sttfa.p nat.nat)) =>
+            sttfa.impl 
+              (connectives.And (nat.le x n) 
+                 (logic.eq nat.nat (permutation.transpose i j x) a)) z))) =>
+     f3 j 
+       (z0:(sttfa.etap (sttfa.p sttfa.bool)) =>
+        f4:
+        (sttfa.eps 
+           (sttfa.impl (nat.le j n) 
+              (sttfa.impl (logic.eq nat.nat (permutation.transpose i j j) a) 
+                 z0))) =>
+        f4 lejn 
+          (logic.eq_ind_r nat.nat i 
+             (x:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat x a) 
+             (logic.sym_eq nat.nat a i (nat.eqb_true_to_eq a i Hi)) 
+             (permutation.transpose i j j) (permutation.transpose_i_j_j i j)))) 
+    (Hi:(sttfa.eps (logic.eq bool.bool (nat.eqb a i) bool.false)) =>
+     logic.match_Or_prop (logic.eq bool.bool (nat.eqb a j) bool.true) 
+       (logic.eq bool.bool (nat.eqb a j) bool.false) 
+       (connectives.Ex nat.nat 
+          (p:(sttfa.etap (sttfa.p nat.nat)) =>
+           connectives.And (nat.le p n) 
+             (logic.eq nat.nat (permutation.transpose i j p) a))) 
+       (Hj:(sttfa.eps (logic.eq bool.bool (nat.eqb a j) bool.true)) =>
+        z:(sttfa.etap (sttfa.p sttfa.bool)) =>
+        f5:
+        (sttfa.eps 
+           (sttfa.forall nat.nat 
+              (x:(sttfa.etap (sttfa.p nat.nat)) =>
+               sttfa.impl 
+                 (connectives.And (nat.le x n) 
+                    (logic.eq nat.nat (permutation.transpose i j x) a)) z))) =>
+        f5 i 
+          (z0:(sttfa.etap (sttfa.p sttfa.bool)) =>
+           f:
+           (sttfa.eps 
+              (sttfa.impl (nat.le i n) 
+                 (sttfa.impl 
+                    (logic.eq nat.nat (permutation.transpose i j i) a) z0))) =>
+           f lein 
+             (logic.eq_ind_r nat.nat j 
+                (x:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat x a) 
+                (logic.sym_eq nat.nat a j (nat.eqb_true_to_eq a j Hj)) 
+                (permutation.transpose i j i) 
+                (permutation.transpose_i_j_i i j)))) 
+       (Hj:(sttfa.eps (logic.eq bool.bool (nat.eqb a j) bool.false)) =>
+        z:(sttfa.etap (sttfa.p sttfa.bool)) =>
+        f7:
+        (sttfa.eps 
+           (sttfa.forall nat.nat 
+              (x:(sttfa.etap (sttfa.p nat.nat)) =>
+               sttfa.impl 
+                 (connectives.And (nat.le x n) 
+                    (logic.eq nat.nat (permutation.transpose i j x) a)) z))) =>
+        f7 a 
+          (z0:(sttfa.etap (sttfa.p sttfa.bool)) =>
+           f:
+           (sttfa.eps 
+              (sttfa.impl (nat.le a n) 
+                 (sttfa.impl 
+                    (logic.eq nat.nat (permutation.transpose i j a) a) z0))) =>
+           f lean 
+             (logic.eq_ind_r bool.bool bool.false 
+                (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                 logic.eq nat.nat 
+                   (bool.match_bool_type nat.nat j 
+                      (bool.match_bool_type nat.nat i a (nat.eqb a j)) x) a) 
+                (logic.eq_ind_r bool.bool bool.false 
+                   (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                    logic.eq nat.nat 
+                      (bool.match_bool_type nat.nat j 
+                         (bool.match_bool_type nat.nat i a x) bool.false) a) 
+                   (bool.eq_match_bool_type_false nat.nat i a 
+                      (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat 
+                         (bool.match_bool_type nat.nat j 
+                            (bool.match_bool_type nat.nat i a bool.false) 
+                            bool.false) y) 
+                      (bool.eq_match_bool_type_false nat.nat j 
+                         (bool.match_bool_type nat.nat i a bool.false) 
+                         (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat 
+                            (bool.match_bool_type nat.nat j 
+                               (bool.match_bool_type nat.nat i a bool.false) 
+                               bool.false) y) 
+                         (logic.refl nat.nat 
+                            (bool.match_bool_type nat.nat j 
+                               (bool.match_bool_type nat.nat i a bool.false) 
+                               bool.false)))) (nat.eqb a j) Hj) 
+                (nat.eqb a i) Hi))) (bool.true_or_false (nat.eqb a j))) 
+    (bool.true_or_false (nat.eqb a i)).
+
+def permut_to_bijn :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+          (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+           sttfa.impl (permutation.permut f n) (permutation.bijn f n))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  nat.nat_ind 
+    (_x_365:(sttfa.etap (sttfa.p nat.nat)) =>
+     sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        sttfa.impl (permutation.permut f _x_365) (permutation.bijn f _x_365))) 
+    (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+     _clearme:
+     (sttfa.eps 
+        (connectives.And 
+           (sttfa.forall nat.nat 
+              (i:(sttfa.etap (sttfa.p nat.nat)) =>
+               sttfa.impl (nat.le i nat.O) (nat.le (f i) nat.O))) 
+           (sttfa.forall nat.nat 
+              (i:(sttfa.etap (sttfa.p nat.nat)) =>
+               sttfa.forall nat.nat 
+                 (j:(sttfa.etap (sttfa.p nat.nat)) =>
+                  sttfa.impl (nat.le i nat.O) 
+                    (sttfa.impl (nat.le j nat.O) 
+                       (sttfa.impl (logic.eq nat.nat (f i) (f j)) 
+                          (logic.eq nat.nat i j)))))))) =>
+     logic.match_And_prop 
+       (sttfa.forall nat.nat 
+          (i:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.le i nat.O) (nat.le (f i) nat.O))) 
+       (sttfa.forall nat.nat 
+          (i:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.forall nat.nat 
+             (j:(sttfa.etap (sttfa.p nat.nat)) =>
+              sttfa.impl (nat.le i nat.O) 
+                (sttfa.impl (nat.le j nat.O) 
+                   (sttfa.impl (logic.eq nat.nat (f i) (f j)) 
+                      (logic.eq nat.nat i j)))))) 
+       (sttfa.forall nat.nat 
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.le m nat.O) 
+             (connectives.Ex nat.nat 
+                (p:(sttfa.etap (sttfa.p nat.nat)) =>
+                 connectives.And (nat.le p nat.O) (logic.eq nat.nat (f p) m))))) 
+       (H:
+        (sttfa.eps 
+           (sttfa.forall nat.nat 
+              (i:(sttfa.etap (sttfa.p nat.nat)) =>
+               sttfa.impl (nat.le i nat.O) (nat.le (f i) nat.O)))) =>
+        H1:
+        (sttfa.eps 
+           (sttfa.forall nat.nat 
+              (i:(sttfa.etap (sttfa.p nat.nat)) =>
+               sttfa.forall nat.nat 
+                 (j:(sttfa.etap (sttfa.p nat.nat)) =>
+                  sttfa.impl (nat.le i nat.O) 
+                    (sttfa.impl (nat.le j nat.O) 
+                       (sttfa.impl (logic.eq nat.nat (f i) (f j)) 
+                          (logic.eq nat.nat i j))))))) =>
+        m:(sttfa.etap (sttfa.p nat.nat)) =>
+        lem0:(sttfa.eps (nat.le m nat.O)) =>
+        z:(sttfa.etap (sttfa.p sttfa.bool)) =>
+        f8:
+        (sttfa.eps 
+           (sttfa.forall nat.nat 
+              (x:(sttfa.etap (sttfa.p nat.nat)) =>
+               sttfa.impl 
+                 (connectives.And (nat.le x nat.O) (logic.eq nat.nat (f x) m)) 
+                 z))) =>
+        f8 nat.O 
+          (z0:(sttfa.etap (sttfa.p sttfa.bool)) =>
+           f80:
+           (sttfa.eps 
+              (sttfa.impl (nat.le nat.O nat.O) 
+                 (sttfa.impl (logic.eq nat.nat (f nat.O) m) z0))) =>
+           f80 (nat.le_O_n nat.O) 
+             (nat.le_n_O_elim m lem0 (logic.eq nat.nat (f nat.O)) 
+                (logic.sym_eq nat.nat nat.O (f nat.O) 
+                   (nat.le_n_O_to_eq (f nat.O) (H nat.O (nat.le_O_n nat.O))))))) 
+       _clearme) 
+    (m:(sttfa.etap (sttfa.p nat.nat)) =>
+     Hind:
+     (sttfa.eps 
+        (sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+           (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+            sttfa.impl (permutation.permut f m) (permutation.bijn f m)))) =>
+     f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+     permf:(sttfa.eps (permutation.permut f (nat.S m))) =>
+     permutation.eq_to_bijn 
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        permutation.transpose (f (nat.S m)) (nat.S m) 
+          (permutation.transpose (f (nat.S m)) (nat.S m) (f p))) f (nat.S m) 
+       (i:(sttfa.etap (sttfa.p nat.nat)) =>
+        lei:(sttfa.eps (nat.le i (nat.S m))) =>
+        permutation.transpose_transpose (f (nat.S m)) (nat.S m) (f i)) 
+       (permutation.bijn_fg (permutation.transpose (f (nat.S m)) (nat.S m)) 
+          (__:(sttfa.etap (sttfa.p nat.nat)) =>
+           permutation.transpose (f (nat.S m)) (nat.S m) (f __)) (nat.S m) 
+          (logic.match_And_prop 
+             (sttfa.forall nat.nat 
+                (i:(sttfa.etap (sttfa.p nat.nat)) =>
+                 sttfa.impl (nat.le i (nat.S m)) (nat.le (f i) (nat.S m)))) 
+             (permutation.injn f (nat.S m)) 
+             (permutation.bijn 
+                (permutation.transpose (f (nat.S m)) (nat.S m)) (nat.S m)) 
+             (lef:
+              (sttfa.eps 
+                 (sttfa.forall nat.nat 
+                    (i:(sttfa.etap (sttfa.p nat.nat)) =>
+                     sttfa.impl (nat.le i (nat.S m)) (nat.le (f i) (nat.S m))))) =>
+              __:(sttfa.eps (permutation.injn f (nat.S m))) =>
+              permutation.bijn_transpose (nat.S m) (f (nat.S m)) (nat.S m) 
+                (lef (nat.S m) (nat.le_n (nat.S m))) (nat.le_n (nat.S m))) 
+             permf) 
+          (permutation.bijn_n_Sn 
+             (__:(sttfa.etap (sttfa.p nat.nat)) =>
+              permutation.transpose (f (nat.S m)) (nat.S m) (f __)) m 
+             (Hind 
+                (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                 permutation.transpose (f (nat.S m)) (nat.S m) (f __)) 
+                (permutation.permut_S_to_permut_transpose f m permf)) 
+             (logic.eq_ind_r bool.bool bool.true 
+                (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                 logic.eq nat.nat 
+                   (bool.match_bool_type nat.nat (nat.S m) 
+                      (bool.match_bool_type nat.nat (f (nat.S m)) 
+                         (f (nat.S m)) (nat.eqb (f (nat.S m)) (nat.S m))) x) 
+                   (nat.S m)) 
+                (bool.eq_match_bool_type_true nat.nat (nat.S m) 
+                   (bool.match_bool_type nat.nat (f (nat.S m)) (f (nat.S m)) 
+                      (nat.eqb (f (nat.S m)) (nat.S m))) 
+                   (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                    logic.eq nat.nat 
+                      (bool.match_bool_type nat.nat (nat.S m) 
+                         (bool.match_bool_type nat.nat (f (nat.S m)) 
+                            (f (nat.S m)) (nat.eqb (f (nat.S m)) (nat.S m))) 
+                         bool.true) y) 
+                   (logic.refl nat.nat 
+                      (bool.match_bool_type nat.nat (nat.S m) 
+                         (bool.match_bool_type nat.nat (f (nat.S m)) 
+                            (f (nat.S m)) (nat.eqb (f (nat.S m)) (nat.S m))) 
+                         bool.true))) (nat.eqb (f (nat.S m)) (f (nat.S m))) 
+                (nat.eqb_n_n (f (nat.S m))))))) n.
+
+invert_permut :
+  sttfa.etap 
+    (sttfa.p 
+       (sttfa.arrow nat.nat 
+          (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+             (sttfa.arrow nat.nat nat.nat)))).
+
+invert_permut_body :
+  sttfa.etap 
+    (sttfa.p 
+       (sttfa.arrow nat.nat 
+          (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+             (sttfa.arrow nat.nat nat.nat)))).
+
+eq_invert_permut :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.leibniz 
+          (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+             (sttfa.arrow nat.nat nat.nat)) (permutation.invert_permut n) 
+          (nat.filter_nat_type 
+             (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                (sttfa.arrow nat.nat nat.nat)) 
+             permutation.invert_permut_body n))).
+
+def sym_eq_invert_permut :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.leibniz 
+          (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+             (sttfa.arrow nat.nat nat.nat)) 
+          (nat.filter_nat_type 
+             (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                (sttfa.arrow nat.nat nat.nat)) 
+             permutation.invert_permut_body n) (permutation.invert_permut n)))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  sttfa.sym_leibniz 
+    (sttfa.arrow (sttfa.arrow nat.nat nat.nat) (sttfa.arrow nat.nat nat.nat)) 
+    (permutation.invert_permut n) 
+    (nat.filter_nat_type 
+       (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+          (sttfa.arrow nat.nat nat.nat)) permutation.invert_permut_body n) 
+    (permutation.eq_invert_permut n).
+
+eq_invert_permut_body_O :
+  sttfa.eps 
+    (sttfa.leibniz 
+       (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+          (sttfa.arrow nat.nat nat.nat)) 
+       (permutation.invert_permut_body nat.O) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        m:(sttfa.etap (sttfa.p nat.nat)) =>
+        bool.match_bool_type nat.nat nat.O nat.O (nat.eqb m (f nat.O)))).
+
+def sym_eq_invert_permut_body_O :
+  sttfa.eps 
+    (sttfa.leibniz 
+       (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+          (sttfa.arrow nat.nat nat.nat)) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        m:(sttfa.etap (sttfa.p nat.nat)) =>
+        bool.match_bool_type nat.nat nat.O nat.O (nat.eqb m (f nat.O))) 
+       (permutation.invert_permut_body nat.O))
+  :=
+  sttfa.sym_leibniz 
+    (sttfa.arrow (sttfa.arrow nat.nat nat.nat) (sttfa.arrow nat.nat nat.nat)) 
+    (permutation.invert_permut_body nat.O) 
+    (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+     m:(sttfa.etap (sttfa.p nat.nat)) =>
+     bool.match_bool_type nat.nat nat.O nat.O (nat.eqb m (f nat.O))) 
+    permutation.eq_invert_permut_body_O.
+
+eq_invert_permut_body_S :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.leibniz 
+          (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+             (sttfa.arrow nat.nat nat.nat)) 
+          (permutation.invert_permut_body (nat.S n)) 
+          (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+           m:(sttfa.etap (sttfa.p nat.nat)) =>
+           bool.match_bool_type nat.nat (nat.S n) 
+             (permutation.invert_permut n f m) (nat.eqb m (f (nat.S n)))))).
+
+def sym_eq_invert_permut_body_S :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.leibniz 
+          (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+             (sttfa.arrow nat.nat nat.nat)) 
+          (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+           m:(sttfa.etap (sttfa.p nat.nat)) =>
+           bool.match_bool_type nat.nat (nat.S n) 
+             (permutation.invert_permut n f m) (nat.eqb m (f (nat.S n)))) 
+          (permutation.invert_permut_body (nat.S n))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  sttfa.sym_leibniz 
+    (sttfa.arrow (sttfa.arrow nat.nat nat.nat) (sttfa.arrow nat.nat nat.nat)) 
+    (permutation.invert_permut_body (nat.S n)) 
+    (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+     m:(sttfa.etap (sttfa.p nat.nat)) =>
+     bool.match_bool_type nat.nat (nat.S n) 
+       (permutation.invert_permut n f m) (nat.eqb m (f (nat.S n)))) 
+    (permutation.eq_invert_permut_body_S n).
+
+def invert_permut_f :
+  sttfa.eps 
+    (sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        sttfa.forall nat.nat 
+          (n:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.forall nat.nat 
+             (m:(sttfa.etap (sttfa.p nat.nat)) =>
+              sttfa.impl (nat.le m n) 
+                (sttfa.impl (permutation.injn f n) 
+                   (logic.eq nat.nat (permutation.invert_permut n f (f m)) m))))))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  lenm:(sttfa.eps (nat.le m n)) =>
+  nat.le_ind m 
+    (x_417:(sttfa.etap (sttfa.p nat.nat)) =>
+     sttfa.impl (permutation.injn f x_417) 
+       (logic.eq nat.nat (permutation.invert_permut x_417 f (f m)) m)) 
+    (nat.match_nat_prop 
+       (__:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (permutation.injn f __) 
+          (logic.eq nat.nat (permutation.invert_permut __ f (f __)) __)) 
+       (permutation.sym_eq_invert_permut nat.O 
+          (y:
+           (sttfa.etap 
+              (sttfa.p 
+                 (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                    (sttfa.arrow nat.nat nat.nat)))) =>
+           sttfa.impl (permutation.injn f nat.O) 
+             (logic.eq nat.nat (y f (f nat.O)) nat.O)) 
+          (nat.sym_eq_filter_nat_type_O 
+             (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                (sttfa.arrow nat.nat nat.nat)) 
+             permutation.invert_permut_body 
+             (y:
+              (sttfa.etap 
+                 (sttfa.p 
+                    (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                       (sttfa.arrow nat.nat nat.nat)))) =>
+              sttfa.impl (permutation.injn f nat.O) 
+                (logic.eq nat.nat (y f (f nat.O)) nat.O)) 
+             (permutation.sym_eq_invert_permut_body_O 
+                (y:
+                 (sttfa.etap 
+                    (sttfa.p 
+                       (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                          (sttfa.arrow nat.nat nat.nat)))) =>
+                 sttfa.impl (permutation.injn f nat.O) 
+                   (logic.eq nat.nat (y f (f nat.O)) nat.O)) 
+                (logic.eq_ind_r bool.bool bool.true 
+                   (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                    sttfa.impl 
+                      (sttfa.forall nat.nat 
+                         (i:(sttfa.etap (sttfa.p nat.nat)) =>
+                          sttfa.forall nat.nat 
+                            (j:(sttfa.etap (sttfa.p nat.nat)) =>
+                             sttfa.impl (nat.le i nat.O) 
+                               (sttfa.impl (nat.le j nat.O) 
+                                  (sttfa.impl (logic.eq nat.nat (f i) (f j)) 
+                                     (logic.eq nat.nat i j)))))) 
+                      (logic.eq nat.nat 
+                         (bool.match_bool_type nat.nat nat.O nat.O x) nat.O)) 
+                   (auto:
+                    (sttfa.eps 
+                       (sttfa.forall nat.nat 
+                          (i:(sttfa.etap (sttfa.p nat.nat)) =>
+                           sttfa.forall nat.nat 
+                             (j:(sttfa.etap (sttfa.p nat.nat)) =>
+                              sttfa.impl (nat.le i nat.O) 
+                                (sttfa.impl (nat.le j nat.O) 
+                                   (sttfa.impl 
+                                      (logic.eq nat.nat (f i) (f j)) 
+                                      (logic.eq nat.nat i j))))))) =>
+                    bool.eq_match_bool_type_true nat.nat nat.O nat.O 
+                      (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat 
+                         (bool.match_bool_type nat.nat nat.O nat.O bool.true) 
+                         y) 
+                      (logic.refl nat.nat 
+                         (bool.match_bool_type nat.nat nat.O nat.O bool.true))) 
+                   (nat.eqb (f nat.O) (f nat.O)) (nat.eqb_n_n (f nat.O)))))) 
+       (a:(sttfa.etap (sttfa.p nat.nat)) =>
+        permutation.sym_eq_invert_permut (nat.S a) 
+          (y:
+           (sttfa.etap 
+              (sttfa.p 
+                 (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                    (sttfa.arrow nat.nat nat.nat)))) =>
+           sttfa.impl (permutation.injn f (nat.S a)) 
+             (logic.eq nat.nat (y f (f (nat.S a))) (nat.S a))) 
+          (nat.sym_eq_filter_nat_type_S 
+             (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                (sttfa.arrow nat.nat nat.nat)) 
+             permutation.invert_permut_body a 
+             (y:
+              (sttfa.etap 
+                 (sttfa.p 
+                    (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                       (sttfa.arrow nat.nat nat.nat)))) =>
+              sttfa.impl (permutation.injn f (nat.S a)) 
+                (logic.eq nat.nat (y f (f (nat.S a))) (nat.S a))) 
+             (permutation.sym_eq_invert_permut_body_S a 
+                (y:
+                 (sttfa.etap 
+                    (sttfa.p 
+                       (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                          (sttfa.arrow nat.nat nat.nat)))) =>
+                 sttfa.impl (permutation.injn f (nat.S a)) 
+                   (logic.eq nat.nat (y f (f (nat.S a))) (nat.S a))) 
+                (logic.eq_ind_r bool.bool bool.true 
+                   (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                    sttfa.impl 
+                      (sttfa.forall nat.nat 
+                         (i:(sttfa.etap (sttfa.p nat.nat)) =>
+                          sttfa.forall nat.nat 
+                            (j:(sttfa.etap (sttfa.p nat.nat)) =>
+                             sttfa.impl (nat.le i (nat.S a)) 
+                               (sttfa.impl (nat.le j (nat.S a)) 
+                                  (sttfa.impl (logic.eq nat.nat (f i) (f j)) 
+                                     (logic.eq nat.nat i j)))))) 
+                      (logic.eq nat.nat 
+                         (bool.match_bool_type nat.nat (nat.S a) 
+                            (permutation.invert_permut a f (f (nat.S a))) x) 
+                         (nat.S a))) 
+                   (auto:
+                    (sttfa.eps 
+                       (sttfa.forall nat.nat 
+                          (i:(sttfa.etap (sttfa.p nat.nat)) =>
+                           sttfa.forall nat.nat 
+                             (j:(sttfa.etap (sttfa.p nat.nat)) =>
+                              sttfa.impl (nat.le i (nat.S a)) 
+                                (sttfa.impl (nat.le j (nat.S a)) 
+                                   (sttfa.impl 
+                                      (logic.eq nat.nat (f i) (f j)) 
+                                      (logic.eq nat.nat i j))))))) =>
+                    bool.eq_match_bool_type_true nat.nat (nat.S a) 
+                      (permutation.invert_permut a f (f (nat.S a))) 
+                      (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat 
+                         (bool.match_bool_type nat.nat (nat.S a) 
+                            (permutation.invert_permut a f (f (nat.S a))) 
+                            bool.true) y) 
+                      (logic.refl nat.nat 
+                         (bool.match_bool_type nat.nat (nat.S a) 
+                            (permutation.invert_permut a f (f (nat.S a))) 
+                            bool.true))) 
+                   (nat.eqb (f (nat.S a)) (f (nat.S a))) 
+                   (nat.eqb_n_n (f (nat.S a))))))) m) 
+    (m0:(sttfa.etap (sttfa.p nat.nat)) =>
+     permutation.sym_eq_invert_permut (nat.S m0) 
+       (y:
+        (sttfa.etap 
+           (sttfa.p 
+              (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                 (sttfa.arrow nat.nat nat.nat)))) =>
+        sttfa.impl (nat.le m m0) 
+          (sttfa.impl 
+             (sttfa.impl (permutation.injn f m0) 
+                (logic.eq nat.nat (permutation.invert_permut m0 f (f m)) m)) 
+             (sttfa.impl (permutation.injn f (nat.S m0)) 
+                (logic.eq nat.nat (y f (f m)) m)))) 
+       (nat.sym_eq_filter_nat_type_S 
+          (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+             (sttfa.arrow nat.nat nat.nat)) permutation.invert_permut_body 
+          m0 
+          (y:
+           (sttfa.etap 
+              (sttfa.p 
+                 (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                    (sttfa.arrow nat.nat nat.nat)))) =>
+           sttfa.impl (nat.le m m0) 
+             (sttfa.impl 
+                (sttfa.impl (permutation.injn f m0) 
+                   (logic.eq nat.nat (permutation.invert_permut m0 f (f m)) m)) 
+                (sttfa.impl (permutation.injn f (nat.S m0)) 
+                   (logic.eq nat.nat (y f (f m)) m)))) 
+          (permutation.sym_eq_invert_permut_body_S m0 
+             (y:
+              (sttfa.etap 
+                 (sttfa.p 
+                    (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                       (sttfa.arrow nat.nat nat.nat)))) =>
+              sttfa.impl (nat.le m m0) 
+                (sttfa.impl 
+                   (sttfa.impl (permutation.injn f m0) 
+                      (logic.eq nat.nat 
+                         (permutation.invert_permut m0 f (f m)) m)) 
+                   (sttfa.impl (permutation.injn f (nat.S m0)) 
+                      (logic.eq nat.nat (y f (f m)) m)))) 
+             (lem:(sttfa.eps (nat.le m m0)) =>
+              H:
+              (sttfa.eps 
+                 (sttfa.impl (permutation.injn f m0) 
+                    (logic.eq nat.nat (permutation.invert_permut m0 f (f m)) 
+                       m))) =>
+              H1:(sttfa.eps (permutation.injn f (nat.S m0))) =>
+              logic.eq_ind_r bool.bool bool.false 
+                (x:(sttfa.etap (sttfa.p bool.bool)) =>
+                 logic.eq nat.nat 
+                   (bool.match_bool_type nat.nat (nat.S m0) 
+                      (permutation.invert_permut m0 f (f m)) x) m) 
+                (bool.sym_eq_match_bool_type_false nat.nat (nat.S m0) 
+                   (permutation.invert_permut m0 f (f m)) 
+                   (y:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat y m) 
+                   (H (permutation.injn_Sn_n f m0 H1))) 
+                (nat.eqb (f m) (f (nat.S m0))) 
+                (nat.not_eq_to_eqb_false (f m) (f (nat.S m0)) 
+                   (eqf:
+                    (sttfa.eps (logic.eq nat.nat (f m) (f (nat.S m0)))) =>
+                    logic.absurd (logic.eq nat.nat m (nat.S m0)) 
+                      (H1 m (nat.S m0) (nat.le_S m m0 lem) 
+                         (nat.le_n (nat.S m0)) 
+                         (logic.rewrite_l nat.nat (f m) 
+                            (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                             logic.eq nat.nat (f m) __) 
+                            (logic.refl nat.nat (f m)) (f (nat.S m0)) eqf)) 
+                      (nat.lt_to_not_eq m (nat.S m0) (nat.le_S_S m m0 lem)))))))) 
+    n lenm.
+
+def let_clause_1063 :
+  sttfa.eps 
+    (sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        sttfa.forall nat.nat 
+          (n:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (permutation.permut f n) 
+             (sttfa.forall nat.nat 
+                (i:(sttfa.etap (sttfa.p nat.nat)) =>
+                 sttfa.forall nat.nat 
+                   (j:(sttfa.etap (sttfa.p nat.nat)) =>
+                    sttfa.impl (nat.le i n) 
+                      (sttfa.impl (nat.le j n) 
+                         (sttfa.forall nat.nat 
+                            (a:(sttfa.etap (sttfa.p nat.nat)) =>
+                             sttfa.impl 
+                               (connectives.And (nat.le a n) 
+                                  (logic.eq nat.nat (f a) i)) 
+                               (sttfa.impl (nat.le a n) 
+                                  (sttfa.impl (logic.eq nat.nat (f a) i) 
+                                     (sttfa.forall nat.nat 
+                                        (b:(sttfa.etap (sttfa.p nat.nat)) =>
+                                         sttfa.impl 
+                                           (connectives.And (nat.le b n) 
+                                              (logic.eq nat.nat (f b) j)) 
+                                           (sttfa.impl (nat.le b n) 
+                                              (sttfa.impl 
+                                                 (logic.eq nat.nat (f b) j) 
+                                                 (sttfa.impl 
+                                                    (sttfa.forall nat.nat 
+                                                       (i0:
+                                                        (sttfa.etap 
+                                                           (sttfa.p nat.nat)) =>
+                                                        sttfa.impl 
+                                                          (nat.le i0 n) 
+                                                          (nat.le (f i0) n))) 
+                                                    (sttfa.impl 
+                                                       (permutation.injn f n) 
+                                                       (sttfa.impl 
+                                                          (logic.eq nat.nat 
+                                                             a b) 
+                                                          (logic.eq nat.nat 
+                                                             (f a) j)))))))))))))))))))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  permf:(sttfa.eps (permutation.permut f n)) =>
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  j:(sttfa.etap (sttfa.p nat.nat)) =>
+  lein:(sttfa.eps (nat.le i n)) =>
+  lejn:(sttfa.eps (nat.le j n)) =>
+  a:(sttfa.etap (sttfa.p nat.nat)) =>
+  _clearme:
+  (sttfa.eps (connectives.And (nat.le a n) (logic.eq nat.nat (f a) i))) =>
+  lean:(sttfa.eps (nat.le a n)) =>
+  fa:(sttfa.eps (logic.eq nat.nat (f a) i)) =>
+  b:(sttfa.etap (sttfa.p nat.nat)) =>
+  _clearme0:
+  (sttfa.eps (connectives.And (nat.le b n) (logic.eq nat.nat (f b) j))) =>
+  lebn:(sttfa.eps (nat.le b n)) =>
+  fb:(sttfa.eps (logic.eq nat.nat (f b) j)) =>
+  __:
+  (sttfa.eps 
+     (sttfa.forall nat.nat 
+        (i0:(sttfa.etap (sttfa.p nat.nat)) =>
+         sttfa.impl (nat.le i0 n) (nat.le (f i0) n)))) =>
+  injf:(sttfa.eps (permutation.injn f n)) =>
+  auto:(sttfa.eps (logic.eq nat.nat a b)) =>
+  logic.rewrite_r nat.nat b 
+    (__1:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat (f __1) j) fb a 
+    auto.
+
+def let_clause_1068 :
+  sttfa.eps 
+    (sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        sttfa.forall nat.nat 
+          (n:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (permutation.permut f n) 
+             (sttfa.forall nat.nat 
+                (i:(sttfa.etap (sttfa.p nat.nat)) =>
+                 sttfa.forall nat.nat 
+                   (j:(sttfa.etap (sttfa.p nat.nat)) =>
+                    sttfa.impl (nat.le i n) 
+                      (sttfa.impl (nat.le j n) 
+                         (sttfa.forall nat.nat 
+                            (a:(sttfa.etap (sttfa.p nat.nat)) =>
+                             sttfa.impl 
+                               (connectives.And (nat.le a n) 
+                                  (logic.eq nat.nat (f a) i)) 
+                               (sttfa.impl (nat.le a n) 
+                                  (sttfa.impl (logic.eq nat.nat (f a) i) 
+                                     (sttfa.forall nat.nat 
+                                        (b:(sttfa.etap (sttfa.p nat.nat)) =>
+                                         sttfa.impl 
+                                           (connectives.And (nat.le b n) 
+                                              (logic.eq nat.nat (f b) j)) 
+                                           (sttfa.impl (nat.le b n) 
+                                              (sttfa.impl 
+                                                 (logic.eq nat.nat (f b) j) 
+                                                 (sttfa.impl 
+                                                    (sttfa.forall nat.nat 
+                                                       (i0:
+                                                        (sttfa.etap 
+                                                           (sttfa.p nat.nat)) =>
+                                                        sttfa.impl 
+                                                          (nat.le i0 n) 
+                                                          (nat.le (f i0) n))) 
+                                                    (sttfa.impl 
+                                                       (permutation.injn f n) 
+                                                       (sttfa.impl 
+                                                          (logic.eq nat.nat 
+                                                             a b) 
+                                                          (logic.eq nat.nat 
+                                                             (f a) i)))))))))))))))))))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  permf:(sttfa.eps (permutation.permut f n)) =>
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  j:(sttfa.etap (sttfa.p nat.nat)) =>
+  lein:(sttfa.eps (nat.le i n)) =>
+  lejn:(sttfa.eps (nat.le j n)) =>
+  a:(sttfa.etap (sttfa.p nat.nat)) =>
+  _clearme:
+  (sttfa.eps (connectives.And (nat.le a n) (logic.eq nat.nat (f a) i))) =>
+  lean:(sttfa.eps (nat.le a n)) =>
+  fa:(sttfa.eps (logic.eq nat.nat (f a) i)) =>
+  b:(sttfa.etap (sttfa.p nat.nat)) =>
+  _clearme0:
+  (sttfa.eps (connectives.And (nat.le b n) (logic.eq nat.nat (f b) j))) =>
+  lebn:(sttfa.eps (nat.le b n)) =>
+  fb:(sttfa.eps (logic.eq nat.nat (f b) j)) =>
+  __:
+  (sttfa.eps 
+     (sttfa.forall nat.nat 
+        (i0:(sttfa.etap (sttfa.p nat.nat)) =>
+         sttfa.impl (nat.le i0 n) (nat.le (f i0) n)))) =>
+  injf:(sttfa.eps (permutation.injn f n)) =>
+  auto:(sttfa.eps (logic.eq nat.nat a b)) =>
+  logic.rewrite_l nat.nat j 
+    (__1:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat (f a) __1) 
+    (permutation.let_clause_1063 f n permf i j lein lejn a _clearme lean fa 
+       b _clearme0 lebn fb __ injf auto) i 
+    (logic.rewrite_l nat.nat (f a) 
+       (__1:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat __1 i) fa j 
+       (permutation.let_clause_1063 f n permf i j lein lejn a _clearme lean 
+          fa b _clearme0 lebn fb __ injf auto)).
+
+def injective_invert_permut :
+  sttfa.eps 
+    (sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        sttfa.forall nat.nat 
+          (n:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (permutation.permut f n) 
+             (permutation.injn (permutation.invert_permut n f) n))))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  permf:(sttfa.eps (permutation.permut f n)) =>
+  i:(sttfa.etap (sttfa.p nat.nat)) =>
+  j:(sttfa.etap (sttfa.p nat.nat)) =>
+  lein:(sttfa.eps (nat.le i n)) =>
+  lejn:(sttfa.eps (nat.le j n)) =>
+  logic.match_ex_prop nat.nat 
+    (p:(sttfa.etap (sttfa.p nat.nat)) =>
+     connectives.And (nat.le p n) (logic.eq nat.nat (f p) i)) 
+    (sttfa.impl 
+       (logic.eq nat.nat (permutation.invert_permut n f i) 
+          (permutation.invert_permut n f j)) (logic.eq nat.nat i j)) 
+    (a:(sttfa.etap (sttfa.p nat.nat)) =>
+     _clearme:
+     (sttfa.eps (connectives.And (nat.le a n) (logic.eq nat.nat (f a) i))) =>
+     logic.match_And_prop (nat.le a n) (logic.eq nat.nat (f a) i) 
+       (sttfa.impl 
+          (logic.eq nat.nat (permutation.invert_permut n f i) 
+             (permutation.invert_permut n f j)) (logic.eq nat.nat i j)) 
+       (lean:(sttfa.eps (nat.le a n)) =>
+        fa:(sttfa.eps (logic.eq nat.nat (f a) i)) =>
+        logic.match_ex_prop nat.nat 
+          (p:(sttfa.etap (sttfa.p nat.nat)) =>
+           connectives.And (nat.le p n) (logic.eq nat.nat (f p) j)) 
+          (sttfa.impl 
+             (logic.eq nat.nat (permutation.invert_permut n f i) 
+                (permutation.invert_permut n f j)) (logic.eq nat.nat i j)) 
+          (b:(sttfa.etap (sttfa.p nat.nat)) =>
+           _clearme0:
+           (sttfa.eps 
+              (connectives.And (nat.le b n) (logic.eq nat.nat (f b) j))) =>
+           logic.match_And_prop (nat.le b n) (logic.eq nat.nat (f b) j) 
+             (sttfa.impl 
+                (logic.eq nat.nat (permutation.invert_permut n f i) 
+                   (permutation.invert_permut n f j)) (logic.eq nat.nat i j)) 
+             (lebn:(sttfa.eps (nat.le b n)) =>
+              fb:(sttfa.eps (logic.eq nat.nat (f b) j)) =>
+              logic.match_And_prop 
+                (sttfa.forall nat.nat 
+                   (i1:(sttfa.etap (sttfa.p nat.nat)) =>
+                    sttfa.impl (nat.le i1 n) (nat.le (f i1) n))) 
+                (permutation.injn f n) 
+                (sttfa.impl 
+                   (logic.eq nat.nat (permutation.invert_permut n f i) 
+                      (permutation.invert_permut n f j)) 
+                   (logic.eq nat.nat i j)) 
+                (__:
+                 (sttfa.eps 
+                    (sttfa.forall nat.nat 
+                       (i0:(sttfa.etap (sttfa.p nat.nat)) =>
+                        sttfa.impl (nat.le i0 n) (nat.le (f i0) n)))) =>
+                 injf:(sttfa.eps (permutation.injn f n)) =>
+                 logic.eq_ind nat.nat (f a) 
+                   (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
+                    sttfa.impl 
+                      (logic.eq nat.nat (permutation.invert_permut n f x_1) 
+                         (permutation.invert_permut n f j)) 
+                      (logic.eq nat.nat x_1 j)) 
+                   (logic.eq_ind nat.nat (f b) 
+                      (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
+                       sttfa.impl 
+                         (logic.eq nat.nat 
+                            (permutation.invert_permut n f (f a)) 
+                            (permutation.invert_permut n f x_1)) 
+                         (logic.eq nat.nat (f a) x_1)) 
+                      (logic.eq_ind_r nat.nat a 
+                         (x:(sttfa.etap (sttfa.p nat.nat)) =>
+                          sttfa.impl 
+                            (logic.eq nat.nat x 
+                               (permutation.invert_permut n f (f b))) 
+                            (logic.eq nat.nat (f a) (f b))) 
+                         (logic.eq_ind_r nat.nat b 
+                            (x:(sttfa.etap (sttfa.p nat.nat)) =>
+                             sttfa.impl (logic.eq nat.nat a x) 
+                               (logic.eq nat.nat (f a) (f b))) 
+                            (auto:(sttfa.eps (logic.eq nat.nat a b)) =>
+                             logic.rewrite_r nat.nat i 
+                               (__1:(sttfa.etap (sttfa.p nat.nat)) =>
+                                logic.eq nat.nat __1 (f b)) 
+                               (logic.rewrite_l nat.nat a 
+                                  (__1:(sttfa.etap (sttfa.p nat.nat)) =>
+                                   logic.eq nat.nat i (f __1)) 
+                                  (logic.rewrite_r nat.nat i 
+                                     (__1:(sttfa.etap (sttfa.p nat.nat)) =>
+                                      logic.eq nat.nat i __1) 
+                                     (logic.refl nat.nat i) (f a) 
+                                     (permutation.let_clause_1068 f n permf 
+                                        i j lein lejn a _clearme lean fa b 
+                                        _clearme0 lebn fb __ injf auto)) b 
+                                  auto) (f a) 
+                               (permutation.let_clause_1068 f n permf i j 
+                                  lein lejn a _clearme lean fa b _clearme0 
+                                  lebn fb __ injf auto)) 
+                            (permutation.invert_permut n f (f b)) 
+                            (permutation.invert_permut_f f n b lebn injf)) 
+                         (permutation.invert_permut n f (f a)) 
+                         (permutation.invert_permut_f f n a lean injf)) j fb) 
+                   i fa) permf) _clearme0) 
+          (permutation.permut_to_bijn n f permf j lejn)) _clearme) 
+    (permutation.permut_to_bijn n f permf i lein).
+
+def permut_invert_permut :
+  sttfa.eps 
+    (sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        sttfa.forall nat.nat 
+          (n:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (permutation.permut f n) 
+             (permutation.permut (permutation.invert_permut n f) n))))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  permf:(sttfa.eps (permutation.permut f n)) =>
+  z:(sttfa.etap (sttfa.p sttfa.bool)) =>
+  f9:
+  (sttfa.eps 
+     (sttfa.impl 
+        (sttfa.forall nat.nat 
+           (x:(sttfa.etap (sttfa.p nat.nat)) =>
+            sttfa.impl (nat.le x n) 
+              (nat.le (permutation.invert_permut n f x) n))) 
+        (sttfa.impl (permutation.injn (permutation.invert_permut n f) n) z))) =>
+  f9 
+    (i:(sttfa.etap (sttfa.p nat.nat)) =>
+     lein:(sttfa.eps (nat.le i n)) =>
+     nat.nat_ind 
+       (_x_365:(sttfa.etap (sttfa.p nat.nat)) =>
+        nat.le (permutation.invert_permut _x_365 f i) _x_365) 
+       (permutation.sym_eq_invert_permut nat.O 
+          (y:
+           (sttfa.etap 
+              (sttfa.p 
+                 (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                    (sttfa.arrow nat.nat nat.nat)))) =>
+           nat.le (y f i) nat.O) 
+          (nat.sym_eq_filter_nat_type_O 
+             (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                (sttfa.arrow nat.nat nat.nat)) 
+             permutation.invert_permut_body 
+             (y:
+              (sttfa.etap 
+                 (sttfa.p 
+                    (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                       (sttfa.arrow nat.nat nat.nat)))) =>
+              nat.le (y f i) nat.O) 
+             (permutation.sym_eq_invert_permut_body_O 
+                (y:
+                 (sttfa.etap 
+                    (sttfa.p 
+                       (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                          (sttfa.arrow nat.nat nat.nat)))) =>
+                 nat.le (y f i) nat.O) 
+                (bool.match_bool_prop 
+                   (__:(sttfa.etap (sttfa.p bool.bool)) =>
+                    nat.le (bool.match_bool_type nat.nat nat.O nat.O __) 
+                      nat.O) 
+                   (bool.eq_match_bool_type_true nat.nat nat.O nat.O 
+                      (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                       nat.le 
+                         (bool.match_bool_type nat.nat nat.O nat.O bool.true) 
+                         y) 
+                      (nat.le_n 
+                         (bool.match_bool_type nat.nat nat.O nat.O bool.true))) 
+                   (bool.eq_match_bool_type_false nat.nat nat.O nat.O 
+                      (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                       nat.le 
+                         (bool.match_bool_type nat.nat nat.O nat.O bool.false) 
+                         y) 
+                      (nat.le_n 
+                         (bool.match_bool_type nat.nat nat.O nat.O bool.false))) 
+                   (nat.eqb i (f nat.O)))))) 
+       (n1:(sttfa.etap (sttfa.p nat.nat)) =>
+        permutation.sym_eq_invert_permut (nat.S n1) 
+          (y:
+           (sttfa.etap 
+              (sttfa.p 
+                 (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                    (sttfa.arrow nat.nat nat.nat)))) =>
+           sttfa.impl (nat.le (permutation.invert_permut n1 f i) n1) 
+             (nat.le (y f i) (nat.S n1))) 
+          (nat.sym_eq_filter_nat_type_S 
+             (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                (sttfa.arrow nat.nat nat.nat)) 
+             permutation.invert_permut_body n1 
+             (y:
+              (sttfa.etap 
+                 (sttfa.p 
+                    (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                       (sttfa.arrow nat.nat nat.nat)))) =>
+              sttfa.impl (nat.le (permutation.invert_permut n1 f i) n1) 
+                (nat.le (y f i) (nat.S n1))) 
+             (permutation.sym_eq_invert_permut_body_S n1 
+                (y:
+                 (sttfa.etap 
+                    (sttfa.p 
+                       (sttfa.arrow (sttfa.arrow nat.nat nat.nat) 
+                          (sttfa.arrow nat.nat nat.nat)))) =>
+                 sttfa.impl (nat.le (permutation.invert_permut n1 f i) n1) 
+                   (nat.le (y f i) (nat.S n1))) 
+                (Hind:
+                 (sttfa.eps (nat.le (permutation.invert_permut n1 f i) n1)) =>
+                 bool.match_bool_prop 
+                   (__:(sttfa.etap (sttfa.p bool.bool)) =>
+                    nat.le 
+                      (bool.match_bool_type nat.nat (nat.S n1) 
+                         (permutation.invert_permut n1 f i) __) (nat.S n1)) 
+                   (bool.eq_match_bool_type_true nat.nat (nat.S n1) 
+                      (permutation.invert_permut n1 f i) 
+                      (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                       nat.le 
+                         (bool.match_bool_type nat.nat (nat.S n1) 
+                            (permutation.invert_permut n1 f i) bool.true) y) 
+                      (nat.le_n 
+                         (bool.match_bool_type nat.nat (nat.S n1) 
+                            (permutation.invert_permut n1 f i) bool.true))) 
+                   (bool.sym_eq_match_bool_type_false nat.nat (nat.S n1) 
+                      (permutation.invert_permut n1 f i) 
+                      (y:(sttfa.etap (sttfa.p nat.nat)) =>
+                       nat.le y (nat.S n1)) 
+                      (nat.le_S (permutation.invert_permut n1 f i) n1 Hind)) 
+                   (nat.eqb i (f (nat.S n1))))))) n) 
+    (permutation.injective_invert_permut f n permf).
+
+def f_invert_permut :
+  sttfa.eps 
+    (sttfa.forall (sttfa.arrow nat.nat nat.nat) 
+       (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+        sttfa.forall nat.nat 
+          (n:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.forall nat.nat 
+             (m:(sttfa.etap (sttfa.p nat.nat)) =>
+              sttfa.impl (nat.le m n) 
+                (sttfa.impl (permutation.permut f n) 
+                   (logic.eq nat.nat (f (permutation.invert_permut n f m)) m))))))
+  :=
+  f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  lemn:(sttfa.eps (nat.le m n)) =>
+  permf:(sttfa.eps (permutation.permut f n)) =>
+  logic.match_And_prop 
+    (sttfa.forall nat.nat 
+       (i:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (nat.le i n) (nat.le (permutation.invert_permut n f i) n))) 
+    (permutation.injn (permutation.invert_permut n f) n) 
+    (logic.eq nat.nat (f (permutation.invert_permut n f m)) m) 
+    (Hle:
+     (sttfa.eps 
+        (sttfa.forall nat.nat 
+           (i:(sttfa.etap (sttfa.p nat.nat)) =>
+            sttfa.impl (nat.le i n) 
+              (nat.le (permutation.invert_permut n f i) n)))) =>
+     Hinj:(sttfa.eps (permutation.injn (permutation.invert_permut n f) n)) =>
+     logic.match_And_prop 
+       (sttfa.forall nat.nat 
+          (i:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.le i n) (nat.le (f i) n))) (permutation.injn f n) 
+       (logic.eq nat.nat (f (permutation.invert_permut n f m)) m) 
+       (lef:
+        (sttfa.eps 
+           (sttfa.forall nat.nat 
+              (i:(sttfa.etap (sttfa.p nat.nat)) =>
+               sttfa.impl (nat.le i n) (nat.le (f i) n)))) =>
+        injf:(sttfa.eps (permutation.injn f n)) =>
+        permutation.injective_invert_permut f n permf 
+          (f (permutation.invert_permut n f m)) m 
+          (lef (permutation.invert_permut n f m) (Hle m lemn)) lemn 
+          (permutation.invert_permut_f f n (permutation.invert_permut n f m) 
+             (Hle m lemn) injf)) permf) 
+    (permutation.permut_invert_permut f n permf).
+

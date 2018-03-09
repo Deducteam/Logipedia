@@ -1,0 +1,51 @@
+#NAME fact.
+
+fact : sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat)).
+
+fact_body : sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat)).
+
+eq_fact :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.leibniz nat.nat (fact.fact n) 
+          (nat.filter_nat_type nat.nat fact.fact_body n))).
+
+def sym_eq_fact :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.leibniz nat.nat (nat.filter_nat_type nat.nat fact.fact_body n) 
+          (fact.fact n)))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  sttfa.sym_leibniz nat.nat (fact.fact n) 
+    (nat.filter_nat_type nat.nat fact.fact_body n) (fact.eq_fact n).
+
+eq_fact_body_O :
+  sttfa.eps (sttfa.leibniz nat.nat (fact.fact_body nat.O) (nat.S nat.O)).
+
+def sym_eq_fact_body_O :
+  sttfa.eps (sttfa.leibniz nat.nat (nat.S nat.O) (fact.fact_body nat.O))
+  :=
+  sttfa.sym_leibniz nat.nat (fact.fact_body nat.O) (nat.S nat.O) 
+    fact.eq_fact_body_O.
+
+eq_fact_body_S :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.leibniz nat.nat (fact.fact_body (nat.S n)) 
+          (nat.times (fact.fact n) (nat.S n)))).
+
+def sym_eq_fact_body_S :
+  sttfa.eps 
+    (sttfa.forall nat.nat 
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.leibniz nat.nat (nat.times (fact.fact n) (nat.S n)) 
+          (fact.fact_body (nat.S n))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  sttfa.sym_leibniz nat.nat (fact.fact_body (nat.S n)) 
+    (nat.times (fact.fact n) (nat.S n)) (fact.eq_fact_body_S n).
+

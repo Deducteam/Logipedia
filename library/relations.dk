@@ -1,0 +1,139 @@
+#NAME relations.
+
+def reflexive :
+  sttfa.etap 
+    (sttfa.forallK 
+       (A:sttfa.type =>
+        sttfa.p 
+          (sttfa.arrow (sttfa.arrow A (sttfa.arrow A sttfa.bool)) sttfa.bool)))
+  :=
+  A:sttfa.type =>
+  R:(sttfa.etap (sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))) =>
+  sttfa.forall A (x:(sttfa.etap (sttfa.p A)) => R x x).
+
+def transitive :
+  sttfa.etap 
+    (sttfa.forallK 
+       (A:sttfa.type =>
+        sttfa.p 
+          (sttfa.arrow (sttfa.arrow A (sttfa.arrow A sttfa.bool)) sttfa.bool)))
+  :=
+  A:sttfa.type =>
+  R:(sttfa.etap (sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))) =>
+  sttfa.forall A 
+    (x:(sttfa.etap (sttfa.p A)) =>
+     sttfa.forall A 
+       (y:(sttfa.etap (sttfa.p A)) =>
+        sttfa.forall A 
+          (z:(sttfa.etap (sttfa.p A)) =>
+           sttfa.impl (R x y) (sttfa.impl (R y z) (R x z))))).
+
+def RC :
+  sttfa.etap 
+    (sttfa.forallK 
+       (A:sttfa.type =>
+        sttfa.p 
+          (sttfa.arrow (sttfa.arrow A (sttfa.arrow A sttfa.bool)) 
+             (sttfa.arrow A (sttfa.arrow A sttfa.bool)))))
+  :=
+  A:sttfa.type =>
+  R:(sttfa.etap (sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))) =>
+  x:(sttfa.etap (sttfa.p A)) =>
+  y:(sttfa.etap (sttfa.p A)) => connectives.Or (R x y) (logic.eq A x y).
+
+def RC_reflexive :
+  sttfa.eps 
+    (sttfa.forallP 
+       (A:sttfa.type =>
+        sttfa.forall (sttfa.arrow A (sttfa.arrow A sttfa.bool)) 
+          (R:
+           (sttfa.etap (sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))) =>
+           relations.reflexive A (relations.RC A R))))
+  :=
+  A:sttfa.type =>
+  R:(sttfa.etap (sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))) =>
+  x:(sttfa.etap (sttfa.p A)) =>
+  z:(sttfa.etap (sttfa.p sttfa.bool)) =>
+  l:(sttfa.eps (sttfa.impl (R x x) z)) =>
+  r:(sttfa.eps (sttfa.impl (logic.eq A x x) z)) => r (logic.refl A x).
+
+def injective :
+  sttfa.etap 
+    (sttfa.forallK 
+       (A:sttfa.type =>
+        sttfa.forallK 
+          (B:sttfa.type => sttfa.p (sttfa.arrow (sttfa.arrow A B) sttfa.bool))))
+  :=
+  A:sttfa.type =>
+  B:sttfa.type =>
+  f:(sttfa.etap (sttfa.p (sttfa.arrow A B))) =>
+  sttfa.forall A 
+    (x:(sttfa.etap (sttfa.p A)) =>
+     sttfa.forall A 
+       (y:(sttfa.etap (sttfa.p A)) =>
+        sttfa.impl (logic.eq B (f x) (f y)) (logic.eq A x y))).
+
+def commutative :
+  sttfa.etap 
+    (sttfa.forallK 
+       (A:sttfa.type =>
+        sttfa.p (sttfa.arrow (sttfa.arrow A (sttfa.arrow A A)) sttfa.bool)))
+  :=
+  A:sttfa.type =>
+  f:(sttfa.etap (sttfa.p (sttfa.arrow A (sttfa.arrow A A)))) =>
+  sttfa.forall A 
+    (x:(sttfa.etap (sttfa.p A)) =>
+     sttfa.forall A 
+       (y:(sttfa.etap (sttfa.p A)) => logic.eq A (f x y) (f y x))).
+
+def associative :
+  sttfa.etap 
+    (sttfa.forallK 
+       (A:sttfa.type =>
+        sttfa.p (sttfa.arrow (sttfa.arrow A (sttfa.arrow A A)) sttfa.bool)))
+  :=
+  A:sttfa.type =>
+  f:(sttfa.etap (sttfa.p (sttfa.arrow A (sttfa.arrow A A)))) =>
+  sttfa.forall A 
+    (x:(sttfa.etap (sttfa.p A)) =>
+     sttfa.forall A 
+       (y:(sttfa.etap (sttfa.p A)) =>
+        sttfa.forall A 
+          (z:(sttfa.etap (sttfa.p A)) =>
+           logic.eq A (f (f x y) z) (f x (f y z))))).
+
+def monotonic :
+  sttfa.etap 
+    (sttfa.forallK 
+       (A:sttfa.type =>
+        sttfa.p 
+          (sttfa.arrow (sttfa.arrow A (sttfa.arrow A sttfa.bool)) 
+             (sttfa.arrow (sttfa.arrow A A) sttfa.bool))))
+  :=
+  A:sttfa.type =>
+  R:(sttfa.etap (sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))) =>
+  f:(sttfa.etap (sttfa.p (sttfa.arrow A A))) =>
+  sttfa.forall A 
+    (x:(sttfa.etap (sttfa.p A)) =>
+     sttfa.forall A 
+       (y:(sttfa.etap (sttfa.p A)) => sttfa.impl (R x y) (R (f x) (f y)))).
+
+def distributive :
+  sttfa.etap 
+    (sttfa.forallK 
+       (A:sttfa.type =>
+        sttfa.p 
+          (sttfa.arrow (sttfa.arrow A (sttfa.arrow A A)) 
+             (sttfa.arrow (sttfa.arrow A (sttfa.arrow A A)) sttfa.bool))))
+  :=
+  A:sttfa.type =>
+  f:(sttfa.etap (sttfa.p (sttfa.arrow A (sttfa.arrow A A)))) =>
+  g:(sttfa.etap (sttfa.p (sttfa.arrow A (sttfa.arrow A A)))) =>
+  sttfa.forall A 
+    (x:(sttfa.etap (sttfa.p A)) =>
+     sttfa.forall A 
+       (y:(sttfa.etap (sttfa.p A)) =>
+        sttfa.forall A 
+          (z:(sttfa.etap (sttfa.p A)) =>
+           logic.eq A (f x (g y z)) (g (f x y) (f x z))))).
+
