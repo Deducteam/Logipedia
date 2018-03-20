@@ -6,6 +6,12 @@ _build/
 # Dedukti files.
 *.dko
 .library_depend
+*.stt
+# LaTeX files.
+*.aux
+*.log
+*.pdf
+*.tex
 # Editor temporary files.
 *~
 \#*\#

@@ -18,10 +18,17 @@ theories/sttfa.dko: theories/sttfa.dk
 
 #### Running examples ##############################################
 
-examples: theories/sttfa.dko main.native
-	@for f in $(wildcard examples/*.dk); do \
-		./main.native -I theories $$f ; \
-	done;
+EXADKS = $(wildcard examples/*.dk)
+
+examples: $(EXADKS:.dk=.stt) $(EXADKS:.dk=.pdf)
+
+examples/%.dko examples/%.stt examples/%.tex: examples/%.dk theories/sttfa.dko main.native
+	@echo "[STT] $<"
+	@./main.native -I theories $<
+
+examples/%.pdf: examples/%.tex
+	@echo "[PDF] $@"
+	@pdflatex -output-directory=examples $< > /dev/null
 
 #### Producing the Dedukti library #################################
 
