@@ -19,7 +19,7 @@ theories/sttfa.dko: theories/sttfa.dk
 #### Running examples ##############################################
 
 examples: theories/sttfa.dko main.native
-	for f in $(wildcard examples/*.dk); do \
+	@for f in $(wildcard examples/*.dk); do \
 		./main.native -I theories $$f ; \
 	done;
 
@@ -49,5 +49,6 @@ clean:
 distclean: clean
 	@find . -name "*~" -exec rm {} \;
 	@find . -name "*.dko" -exec rm {} \;
+	@find . -name "*.stt" -exec rm {} \;
 
 .PHONY: all clean distclean examples library
