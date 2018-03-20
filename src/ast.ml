@@ -31,31 +31,31 @@ type te  = ForallP of ty_var * te
 
 type ty_ctx = ty_var list
 
-type te_ctx =
-  { ty:ty_var list;
-    var: (te_var * _ty) list;
-  }
+type te_ctx = (te_var * _ty) list
 
-type proof_ctx =
-  {
-    ctx:te_ctx;
-    hyp: te list
-  }
+module TeSet = Set.Make(struct type t = _te let compare = compare end)
+
+type hyp = TeSet.t
+
 
 type judgment =
   {
-    hyp:proof_ctx;
+    ty:ty_ctx;
+    te:te_ctx;
+    hyp:hyp;
     thm:te;
   }
 
 type proof =
   | Assume of judgment
+  | Lemma of judgment
+  | Conv of judgment * proof
   | ImplE of judgment * proof * proof
   | ImplI of judgment * proof
-  | ForallE of judgment * proof * te
+  | ForallE of judgment * proof * _te
   | ForallI of judgment * proof
-  | ForallTE of judgment * proof * ty
-  | ForallTI of judgment * proof
+  | ForallPE of judgment * proof * _ty
+  | ForallPI of judgment * proof
 
 type arity = int
 

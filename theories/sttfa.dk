@@ -40,7 +40,7 @@ def leibniz : etap (forallK (X:type => p (arrow X (arrow X bool)))) :=
     X:type  =>
     x:eta X =>
     y:eta X =>
-    forall (arrow X bool) (P : (eta (arrow X bool)) => impl (P x) (P y)).
+    forall (arrow X bool) (P : eta (arrow X bool) => impl (P x) (P y)).
 
 def refl : eps (forallP (X => forall X (x:eta X => leibniz X x x))) :=
     X:type  =>

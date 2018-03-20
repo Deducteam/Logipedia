@@ -8,6 +8,8 @@ val sttfa_etap : Basic.ident
 
 val sttfa_p : Basic.ident
 
+val sttfa_eta : Basic.ident
+
 val sttfa_arrow : Basic.ident
 
 val sttfa_forall : Basic.ident

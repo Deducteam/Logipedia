@@ -19,7 +19,7 @@ let mk_entry md e =
       | Err e -> Errors.fail_env_error e
     end
   | Def _ -> failwith "Definition without types are not supported"
-  | Rules(rs) -> failwith "Rules are not part of the logic"
+  | Rules(rs) -> failwith "Rules are not part of the sttforall logic"
   | Name _ -> ()
   | _ -> failwith "Commands are not supported"
 
