@@ -32,12 +32,18 @@ let run_on_file file =
   if not (Env.export ()) then
     Errors.fail dloc "Fail to export module '%a'." pp_mident md;
   Confluence.finalize ();
-  let file = (try Filename.chop_extension file with _ -> file) ^ ".stt" in
+  let prefix = try Filename.chop_extension file with _ -> file in
+  let stt_file = prefix ^ ".stt" in
   Print.current_module := string_of_mident md;
-  let oc = open_out file in
-  Printf.fprintf oc "%a%!" Print.print_ast ast;
+  let oc = open_out stt_file in
+  Print.print_ast oc ast;
   close_out oc;
-  Errors.success "File '%s' was successfully written." file
+  Errors.success "File '%s' was successfully written." stt_file;
+  let tex_file = prefix ^ ".tex" in
+  let oc = open_out tex_file in
+  Printf.fprintf oc "%a%!" Print.print_ast_tex ast;
+  close_out oc;
+  Errors.success "File '%s' was successfully written." tex_file
 
 let _ =
   let options = Arg.align

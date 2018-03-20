@@ -1,9 +1,15 @@
 open Ast
 
+let tex_mode : bool ref = ref false
 let current_module : string ref = ref ""
 
+let sanitize_name : string -> string = fun n ->
+  String.concat "\\_" (String.split_on_char '_' n)
+
 let print_name : out_channel -> name -> unit = fun oc (m,n) ->
-  output_string oc (if m = !current_module then n else m ^ "." ^ n)
+  let name = if m = !current_module then n else m ^ "." ^ n in
+  let name = if !tex_mode then sanitize_name name else name in
+  output_string oc name
 
 let print__ty : out_channel -> _ty -> unit =
   let rec print is_atom oc _ty =
@@ -18,7 +24,7 @@ let print__ty : out_channel -> _ty -> unit =
         print_name oc op;
         List.iter (Printf.fprintf oc " %a" (print true)) l
     | Prop       ->
-        output_string oc "ο"
+        output_string oc "Prop"
   in
   print false
 
@@ -104,20 +110,124 @@ let print_proof : out_channel -> proof -> unit = fun oc prf ->
   print "  " oc prf;
   Printf.fprintf oc "QED\n%!"
 
-let print_item : out_channel -> item -> unit = fun oc it ->
-  let out fmt = Printf.fprintf oc fmt in
-  match it with
-  | TyOpDef(op,ar)      ->
-      out "%a has arity %i\n%!" print_name op ar
-  | Parameter(n,ty)     ->
-      out "%a : %a\n%!" print_name n print_ty ty
-  | Definition(n,ty,te) ->
-      out "%a : %a := %a\n%!" print_name n print_ty ty print_te te
-  | Axiom(n,te)         ->
-      out "Axiom %a := %a\n%!" print_name n print_te te
-  | Theorem(n,te,prf)   ->
-      out "Theorem %a := %a\n" print_name n print_te te;
-      print_proof oc prf
-
 let print_ast : out_channel -> ast -> unit = fun oc ast ->
+  tex_mode := false;
+  let print_item oc it =
+    let out fmt = Printf.fprintf oc fmt in
+    match it with
+    | TyOpDef(op,ar)      ->
+        out "%a has arity %i\n%!" print_name op ar
+    | Parameter(n,ty)     ->
+        out "%a : %a\n%!" print_name n print_ty ty
+    | Definition(n,ty,te) ->
+        out "%a : %a := %a\n%!" print_name n print_ty ty print_te te
+    | Axiom(n,te)         ->
+        out "Axiom %a := %a\n%!" print_name n print_te te
+    | Theorem(n,te,prf)   ->
+        out "Theorem %a := %a\n" print_name n print_te te;
+        print_proof oc prf
+  in
   List.iter (print_item oc) ast
+
+(* Printing LaTeX. *)
+
+let print_proof_tex : out_channel -> proof -> unit = fun oc prf ->
+  let line fmt = Printf.fprintf oc (fmt ^^ "\n") in
+  let rec print prf =
+    let line fmt = Printf.fprintf oc ("  " ^^ fmt ^^ "\n") in
+    match prf with
+    | Assume(j)         ->
+        line "\\AxiomC{}";
+        line "\\RightLabel{Assume}";
+        line "\\UnaryInfC{$%a$}" print_judgment j
+    | Lemma(j)          ->
+        line "\\AxiomC{}";
+        line "\\RightLabel{Lemma}";
+        line "\\UnaryInfC{$%a$}" print_judgment j
+    | Conv(j,p)         ->
+        print p;
+        line "\\RightLabel{Conv}";
+        line "\\UnaryInfC{$%a$}" print_judgment j
+    | ImplE(j,p,q)      ->
+        print p; print q;
+        line "\\RightLabel{$⇒_\\text{E}$}";
+        line "\\BinaryInfC{$%a$}" print_judgment j
+    | ImplI(j,p)        ->
+        print p;
+        line "\\RightLabel{$⇒_\\text{I}$}";
+        line "\\UnaryInfC{$%a$}" print_judgment j
+    | ForallE(j,p,_te)  ->
+        print p;
+        line "\\AxiomC{}";
+        line "\\UnaryInfC{$%a$}" print__te _te; (* FIXME *)
+        line "\\RightLabel{$∀_\\text{E}$}";
+        line "\\BinaryInfC{$%a$}" print_judgment j
+    | ForallI(j,p)      ->
+        print p;
+        line "\\RightLabel{$∀_\\text{I}$}";
+        line "\\UnaryInfC{$%a$}" print_judgment j
+    | ForallPE(j,p,_ty) ->
+        print p;
+        line "\\AxiomC{}";
+        line "\\UnaryInfC{$%a$}" print__ty _ty; (* FIXME *)
+        line "\\RightLabel{$∀P_\\text{E}$}";
+        line "\\BinaryInfC{$%a$}" print_judgment j
+    | ForallPI(j,p)     ->
+        print p;
+        line "\\RightLabel{$∀P_\\text{I}$}";
+        line "\\UnaryInfC{$%a$}" print_judgment j
+  in
+  line "\\begin{prooftree}";
+  print prf;
+  line "\\end{prooftree}"
+
+let print_ast_tex : out_channel -> ast -> unit = fun oc ast ->
+  tex_mode := true;
+  let line fmt = Printf.fprintf oc (fmt ^^ "\n") in
+  let print_item it =
+    match it with
+    | TyOpDef(op,ar)      ->
+        line "\\noindent";
+        line "The type \\texttt{%a} has $%i$ parameters."
+          print_name op ar;
+        line ""
+    | Parameter(n,ty)     ->
+        line "\\noindent";
+        line "The constant \\texttt{%a} has type $%a$."
+          print_name n print_ty ty;
+        line ""
+    | Definition(n,ty,te) ->
+        line "\\noindent";
+        line "The symbol \\texttt{%a} of type $%a$ is defined as $%a$."
+          print_name n print_ty ty print_te te;
+        line ""
+    | Axiom(n,te)         ->
+        line "\\noindent";
+        line "\\textbf{Axiom} \\texttt{%a}: $%a$." print_name n print_te te;
+        line ""
+    | Theorem(n,te,prf)   ->
+        line "\\noindent";
+        line "\\textbf{Theorem} \\texttt{%a}: $%a$." print_name n print_te te;
+        line "";
+        line "\\noindent";
+        line "\\textit{Proof:}";
+        print_proof_tex oc prf;
+        line "";
+  in
+  line "\\documentclass[a4paper]{article}";
+  line "\\usepackage{fullpage}";
+  line "\\usepackage{bussproofs}";
+  line "\\usepackage{amssymb}";
+  line "\\usepackage{amsmath}";
+  line "\\usepackage{amsthm}";
+  line "\\usepackage[mathletters]{ucs}";
+  line "\\usepackage[utf8x]{inputenc}";
+  line "";
+  line "\\title{Generated document for module \\texttt{%s}}" !current_module;
+  line "\\date{}";
+  line "";
+  line "\\begin{document}";
+  line "\\maketitle";
+  line "";
+  List.iter print_item ast;
+  line "\\end{document}"

@@ -49,6 +49,10 @@ clean:
 distclean: clean
 	@find . -name "*~" -exec rm {} \;
 	@find . -name "*.dko" -exec rm {} \;
-	@find . -name "*.stt" -exec rm {} \;
+	@find examples -name "*.stt" -exec rm {} \;
+	@find examples -name "*.aux" -exec rm {} \;
+	@find examples -name "*.log" -exec rm {} \;
+	@find examples -name "*.pdf" -exec rm {} \;
+	@find examples -name "*.tex" -exec rm {} \;
 
 .PHONY: all clean distclean examples library
