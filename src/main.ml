@@ -37,14 +37,18 @@ let run_on_file export file =
 
 
 let _ =
-  let export  = ref false in
+  let export = ref false in
+  let output = ref None in
   let options = Arg.align
     [ ( "-e"
       , Arg.Set export
       , " Generates an object file (\".dko\")" )
     ; ( "-I"
       , Arg.String Basic.add_path
-      , " Add folder to Dedukti path" ) ]
+      , " Add folder to Dedukti path" )
+    ; ( "-o"
+      , Arg.String (fun s -> output := Some(s))
+      , " Output file for the printer") ]
   in
   let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
   let usage = usage ^ "Available options:" in
@@ -53,9 +57,7 @@ let _ =
     Arg.parse options (fun f -> files := f :: !files) usage;
     List.rev !files
   in
-  try
-    List.iter (run_on_file !export) files;
-  with
+  try List.iter (run_on_file !export) files with
   | Parse_error(loc,msg) ->
       let (l,c) = of_loc loc in
       Printf.eprintf "Parse error at (%i,%i): %s\n" l c msg;
