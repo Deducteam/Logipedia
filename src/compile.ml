@@ -107,8 +107,7 @@ let rec arity_of te =
 
 let get_arity env lc name =
   match Env.get_type lc name with
-  | OK ty ->
-    arity_of (compile_wrapped_type env ty)
+  | OK ty   -> arity_of (compile_wrapped_type env ty)
   | Err err -> Errors.fail_signature_error err
 
 
