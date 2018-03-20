@@ -91,6 +91,8 @@ let compile_wrapped_type env (ty:Term.term)  =
   match ty with
   | Term.App(cst, a, []) when is_sttfa_const sttfa_etap cst  ->
     compile_type env a
+  | Term.App(cst, a, []) when is_sttfa_const sttfa_eta cst ->
+    Ty(compile__type env a)
   | _ -> Format.eprintf "%a@." Pp.print_term ty; assert false
 
 let add_te_var env var ty ty' = {env with
