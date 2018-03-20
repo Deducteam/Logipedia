@@ -1,4 +1,5 @@
 DKCHECK=dkcheck
+DKDEP=dkdep
 ML  := $(wildcard src/*.ml)
 MLI := $(wildcard src/*.mli)
 all: main.native
@@ -16,7 +17,15 @@ examples: sttfa.dko main.native
 		./main.native $$f ; \
 	done;
 
+library: .depend $(wildcard library/*.dko)
+
+library/%.dko: sttfa.dko library/%.dk .depend
+	$(DKCHECK) $<
+
+.depend: $(wildcard library/*.dk)
+	@$(DKDEP) --ignore $^ -o $@
+
 clean:
 	ocamlbuild -clean
 
-.PHONY: main.native clean examples
+.PHONY: main.native clean examples .depend library
