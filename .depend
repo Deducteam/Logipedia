@@ -1,15 +1,15 @@
-library/div_mod.dko : library/div_mod.dk 
-library/relations.dko : library/relations.dk 
-library/primes.dko : library/primes.dk 
-library/fact.dko : library/fact.dk 
-library/cong.dko : library/cong.dk 
-library/permutation.dko : library/permutation.dk 
-library/exp.dko : library/exp.dk 
-library/bigops.dko : library/bigops.dk 
-library/nat.dko : library/nat.dk 
-library/gcd.dko : library/gcd.dk 
-library/bool.dko : library/bool.dk 
-library/logic.dko : library/logic.dk 
-library/connectives.dko : library/connectives.dk 
-library/fermat.dko : library/fermat.dk 
-library/sigma_pi.dko : library/sigma_pi.dk 
+library/div_mod.dko : library/div_mod.dk library/bool.dko library/connectives.dko library/logic.dko library/nat.dko theories/sttfa.dko
+library/relations.dko : library/relations.dk library/connectives.dko library/logic.dko theories/sttfa.dko
+library/primes.dko : library/primes.dk library/bool.dko library/connectives.dko library/div_mod.dko library/logic.dko library/nat.dko library/relations.dko theories/sttfa.dko
+library/fact.dko : library/fact.dk library/nat.dko theories/sttfa.dko
+library/bool.dko : library/bool.dk library/connectives.dko library/logic.dko library/relations.dko theories/sttfa.dko
+library/permutation.dko : library/permutation.dk library/bool.dko library/connectives.dko library/logic.dko library/nat.dko library/relations.dko theories/sttfa.dko
+library/exp.dko : library/exp.dk library/nat.dko theories/sttfa.dko
+library/bigops.dko : library/bigops.dk library/bool.dko library/connectives.dko library/div_mod.dko library/logic.dko library/nat.dko theories/sttfa.dko
+library/nat.dko : library/nat.dk library/bool.dko library/connectives.dko library/logic.dko library/relations.dko theories/sttfa.dko
+library/cong.dko : library/cong.dk library/div_mod.dko library/logic.dko library/nat.dko library/primes.dko library/relations.dko theories/sttfa.dko
+library/gcd.dko : library/gcd.dk library/bool.dko library/connectives.dko library/div_mod.dko library/logic.dko library/nat.dko library/primes.dko theories/sttfa.dko
+library/logic.dko : library/logic.dk library/connectives.dko theories/sttfa.dko
+library/connectives.dko : library/connectives.dk theories/sttfa.dko
+library/fermat.dko : library/fermat.dk library/bigops.dko library/bool.dko library/cong.dko library/connectives.dko library/div_mod.dko library/exp.dko library/fact.dko library/gcd.dko library/logic.dko library/nat.dko library/permutation.dko library/primes.dko library/sigma_pi.dko theories/sttfa.dko
+library/sigma_pi.dko : library/sigma_pi.dk library/bigops.dko library/bool.dko library/exp.dko library/logic.dko library/nat.dko theories/sttfa.dko

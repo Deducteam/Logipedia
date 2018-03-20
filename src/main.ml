@@ -26,8 +26,7 @@ let mk_entry md e =
 let run_on_file export file =
   let input = open_in file in
   debug 1 "Processing file '%s'..." file;
-  let md = mk_mident file in
-  Env.init md;
+  let md = Env.init file in
   Confluence.initialize ();
   handle_channel md (mk_entry md) input;
   Errors.success "File '%s' was successfully checked." file;
@@ -38,11 +37,15 @@ let run_on_file export file =
 
 
 let _ =
-  let export       = ref false in
-  let options = [
-    ( "-e"
+  let export  = ref false in
+  let options = Arg.align
+    [ ( "-e"
       , Arg.Set export
-      , " Generates an object file (\".dko\")" )] in
+      , " Generates an object file (\".dko\")" )
+    ; ( "-I"
+      , Arg.String Basic.add_path
+      , " Add folder to Dedukti path" ) ]
+  in
   let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
   let usage = usage ^ "Available options:" in
   let files =
