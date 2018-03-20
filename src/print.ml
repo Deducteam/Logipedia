@@ -177,9 +177,9 @@ let print_proof_tex : out_channel -> proof -> unit = fun oc prf ->
         line "\\RightLabel{$∀P_\\text{I}$}";
         line "\\UnaryInfC{$%a$}" print_judgment j
   in
-  line "\\begin{prooftree}";
+  line "\\begin{scprooftree}{0.2}";
   print prf;
-  line "\\end{prooftree}"
+  line "\\end{scprooftree}"
 
 let print_ast_tex : out_channel -> ast -> unit = fun oc ast ->
   tex_mode := true;
@@ -216,12 +216,17 @@ let print_ast_tex : out_channel -> ast -> unit = fun oc ast ->
   in
   line "\\documentclass[a4paper]{article}";
   line "\\usepackage{fullpage}";
+  line "\\usepackage{graphicx}";
   line "\\usepackage{bussproofs}";
   line "\\usepackage{amssymb}";
   line "\\usepackage{amsmath}";
   line "\\usepackage{amsthm}";
   line "\\usepackage[mathletters]{ucs}";
   line "\\usepackage[utf8x]{inputenc}";
+  line "";
+  line "\\newenvironment{scprooftree}[1]%%";
+  line "  {\\gdef\\scalefactor{#1}\\begin{center}\\proofSkipAmount\\leavevmode}%%";
+  line "  {\\scalebox{\\scalefactor}{\\DisplayProof}\\proofSkipAmount \\end{center} }";
   line "";
   line "\\title{Generated document for module \\texttt{%s}}" !current_module;
   line "\\date{}";
