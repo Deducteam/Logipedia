@@ -240,37 +240,24 @@ and compile_args env f f' arg =
     | Err err -> Errors.fail_env_error err
   in
   let tyf' = compile_wrapped_term env tyf in
+  let fa = Term.mk_App f arg [] in
+  let te = match Env.infer ~ctx:env.dk fa with
+    | OK te -> Env.unsafe_reduction ~red:beta_only te
+    | Err err -> Errors.fail_env_error err
+  in
+  let te' = compile_wrapped_term env te in
+  let j = {thmf with thm = te'} in
+  let f' = if tyf' = thmf.thm then f' else Conv({thmf with thm = tyf'},f') in
   match tyf' with
   | ForallP _ ->
-    let arg' = compile__type env arg in
-    let fa = Term.mk_App f arg [] in
-    let te = match Env.infer ~ctx:env.dk fa with
-      | OK te -> Env.unsafe_reduction ~red:beta_only te
-      | Err err -> Errors.fail_env_error err
-    in
-    let te' = compile_wrapped_term env te in
-    let j = {thmf with thm = te'} in
-    fa, (j, ForallPE(j, f', arg'))
+    let arg = compile__type env arg in
+    fa,(j,ForallPE(j,f',arg))
   | Te(Forall _) ->
-    let arg' = compile__term env arg in
-    let fa = Term.mk_App f arg [] in
-    let te =  match Env.infer ~ctx:env.dk fa with
-      | OK te -> Env.unsafe_reduction ~red:beta_only te
-      | Err err -> Errors.fail_env_error err
-    in
-    let te' = compile_wrapped_term env te in
-    let j = {thmf with thm = te'} in
-    fa, (j, ForallE(j, f', arg'))
+    let arg = compile__term env arg in
+    fa,(j,ForallE(j,f',arg))
   | Te(Impl _) ->
     let _,arg' = compile_proof env arg in
-    let fa = Term.mk_App f arg [] in
-    let te = match Env.infer ~ctx:env.dk fa with
-      | OK te -> Env.unsafe_reduction ~red:beta_only te
-      | Err err -> Errors.fail_env_error err
-    in
-    let te' = compile_wrapped_term env te in
-    let j = {thmf with thm = te'} in
-    fa, (j, ImplE(j, f', arg'))
+    fa,(j, ImplE(j, f', arg'))
   | _ -> Format.eprintf "%a@." Pp.print_term f; assert false
 
 let compile_declaration name ty =
