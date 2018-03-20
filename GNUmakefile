@@ -25,28 +25,26 @@ examples: theories/sttfa.dko main.native
 
 #### Producing the Dedukti library #################################
 
-LIBDKS  = $(wildcard library/*.dk)
+LIBDKS = $(wildcard library/*.dk)
 
 library: $(LIBDKS:.dk=.dko)
 
-library/%.dko: library/%.dk .depend
+library/%.dko: library/%.dk .library_depend
 	$(DKCHECK) -I library -I theories -e $<
 
-.depend: $(wildcard library/*.dk)
+.library_depend: $(wildcard library/*.dk)
 	@echo "[DEP] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
 
-ifneq ($(MAKECMDGOALS), clean)
-ifneq ($(MAKECMDGOALS), distclean)
--include .depend
-endif
+ifeq ($(MAKECMDGOALS), library)
+-include .library_depend
 endif
 
 #### Cleaning targets ##############################################
 
 clean:
 	@ocamlbuild -clean -quiet
-	@rm -f .depend
+	@rm -f .library_depend
 
 distclean: clean
 	@find . -name "*~" -exec rm {} \;
