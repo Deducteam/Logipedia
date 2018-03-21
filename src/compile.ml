@@ -20,7 +20,9 @@ let empty_env =
     prf = [];
   }
 
-let soi = string_of_ident
+let soi i s= Format.sprintf "%s%d" (string_of_ident s) i
+
+let soi s = Format.sprintf "%s" (string_of_ident s)
 
 let of_name name = string_of_mident (md name), string_of_ident (id name)
 
@@ -257,7 +259,8 @@ and compile_args env f f' arg =
     let arg = compile__term env arg in
     fa,(j,ForallE(j,f',arg))
   | Te(Impl _) ->
-    let _,arg' = compile_proof env arg in
+    let j',arg' = compile_proof env arg in
+    let j = {j with hyp = TeSet.union j.hyp j'.hyp} in
     fa,(j, ImplE(j, f', arg'))
   | _ -> Format.eprintf "%a@." Pp.print_term f; assert false
 

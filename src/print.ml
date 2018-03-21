@@ -43,7 +43,7 @@ let print__te : out_channel -> _te -> unit =
     | App(_,_) when is_atom ->
         Printf.fprintf oc "(%a)" (print false) _te
     | App(t,u)      ->
-        Printf.fprintf oc "%a %a" (print false) t (print true) u
+        Printf.fprintf oc "%a~%a" (print false) t (print true) u
     | Forall(x,a,t) ->
         Printf.fprintf oc "∀%s:%a.%a" x print__ty a (print false) t
     | Impl(t,u)     ->
@@ -65,14 +65,25 @@ let print_te_ctx : out_channel -> te_ctx -> unit = fun oc ctx ->
   match ctx with
   | []         -> ()
   | [(x,_ty)]  ->
-      Printf.fprintf oc "%s : %a " x print__ty _ty
+      Printf.fprintf oc "%s" x
   | (x,_ty)::l ->
-      Printf.fprintf oc "%s : %a" x print__ty _ty;
-      List.iter (fun (x,a) -> Printf.fprintf oc "; %s : %a" x print__ty a) l;
+      Printf.fprintf oc "%s" x;
+      List.iter (fun (x,a) -> Printf.fprintf oc "; %s" x) l;
+      Printf.fprintf oc " "
+
+let print_hyp : out_channel -> hyp -> unit = fun oc hyp ->
+  let l = TeSet.elements hyp in
+  match l with
+  | []         -> ()
+  | [x]  ->
+      Printf.fprintf oc "%a" print__te x
+  | x::l ->
+      Printf.fprintf oc "%a" print__te x;
+      List.iter (fun x -> Printf.fprintf oc "; %a" print__te x) l;
       Printf.fprintf oc " "
 
 let print_judgment : out_channel -> judgment -> unit = fun oc j ->
-  Printf.fprintf oc "%a⊢ %a" print_te_ctx j.te print_te j.thm
+  Printf.fprintf oc "%a;%a⊢ %a" print_te_ctx j.te print_hyp j.hyp print_te j.thm
 
 let print_proof : out_channel -> proof -> unit = fun oc prf ->
   Printf.fprintf oc "Proof:\n%!";
@@ -93,7 +104,7 @@ let print_proof : out_channel -> proof -> unit = fun oc prf ->
         Printf.fprintf oc "%sImplI    %a\n" off print_judgment j;
         print (off ^ " ") oc p
     | ForallE(j,p,_te)  ->
-        Printf.fprintf oc "%sForallI  %a\n" off print_judgment j;
+        Printf.fprintf oc "%sForallE  %a\n" off print_judgment j;
         print (off ^ " ") oc p;
         Printf.fprintf oc "%s%a\n" off print__te _te
     | ForallI(j,p)      ->
@@ -158,20 +169,16 @@ let print_proof_tex : out_channel -> proof -> unit = fun oc prf ->
         line "\\UnaryInfC{$%a$}" print_judgment j
     | ForallE(j,p,_te)  ->
         print p;
-        line "\\AxiomC{}";
-        line "\\UnaryInfC{$%a$}" print__te _te; (* FIXME *)
         line "\\RightLabel{$∀_\\text{E}$}";
-        line "\\BinaryInfC{$%a$}" print_judgment j
+        line "\\UnaryInfC{$%a$}" print_judgment j
     | ForallI(j,p)      ->
         print p;
         line "\\RightLabel{$∀_\\text{I}$}";
         line "\\UnaryInfC{$%a$}" print_judgment j
     | ForallPE(j,p,_ty) ->
         print p;
-        line "\\AxiomC{}";
-        line "\\UnaryInfC{$%a$}" print__ty _ty; (* FIXME *)
         line "\\RightLabel{$∀P_\\text{E}$}";
-        line "\\BinaryInfC{$%a$}" print_judgment j
+        line "\\UnaryInfC{$%a$}" print_judgment j
     | ForallPI(j,p)     ->
         print p;
         line "\\RightLabel{$∀P_\\text{I}$}";
