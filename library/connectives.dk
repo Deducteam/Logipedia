@@ -1,9 +1,7 @@
-#NAME connectives.
-
 def True :
   sttfa.etap (sttfa.p sttfa.bool)
   :=
-  sttfa.forall sttfa.bool 
+  sttfa.forall sttfa.bool
     (z:(sttfa.etap (sttfa.p sttfa.bool)) => sttfa.impl z z).
 
 def False :
@@ -12,7 +10,7 @@ def False :
   sttfa.forall sttfa.bool (z:(sttfa.etap (sttfa.p sttfa.bool)) => z).
 
 def Imp :
-  sttfa.etap 
+  sttfa.etap
     (sttfa.p (sttfa.arrow sttfa.bool (sttfa.arrow sttfa.bool sttfa.bool)))
   :=
   x:(sttfa.etap (sttfa.p sttfa.bool)) =>
@@ -24,40 +22,39 @@ def Not :
   x:(sttfa.etap (sttfa.p sttfa.bool)) => sttfa.impl x connectives.False.
 
 def And :
-  sttfa.etap 
+  sttfa.etap
     (sttfa.p (sttfa.arrow sttfa.bool (sttfa.arrow sttfa.bool sttfa.bool)))
   :=
   x:(sttfa.etap (sttfa.p sttfa.bool)) =>
   y:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  sttfa.forall sttfa.bool 
+  sttfa.forall sttfa.bool
     (z:(sttfa.etap (sttfa.p sttfa.bool)) =>
      sttfa.impl (sttfa.impl x (sttfa.impl y z)) z).
 
 def Or :
-  sttfa.etap 
+  sttfa.etap
     (sttfa.p (sttfa.arrow sttfa.bool (sttfa.arrow sttfa.bool sttfa.bool)))
   :=
   x:(sttfa.etap (sttfa.p sttfa.bool)) =>
   y:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  sttfa.forall sttfa.bool 
+  sttfa.forall sttfa.bool
     (z:(sttfa.etap (sttfa.p sttfa.bool)) =>
      sttfa.impl (sttfa.impl x z) (sttfa.impl (sttfa.impl y z) z)).
 
 def Ex :
-  sttfa.etap 
-    (sttfa.forallK 
+  sttfa.etap
+    (sttfa.forallK
        (A:sttfa.type =>
         sttfa.p (sttfa.arrow (sttfa.arrow A sttfa.bool) sttfa.bool)))
   :=
   A:sttfa.type =>
   f:(sttfa.etap (sttfa.p (sttfa.arrow A sttfa.bool))) =>
-  sttfa.forall sttfa.bool 
+  sttfa.forall sttfa.bool
     (z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-     sttfa.impl 
+     sttfa.impl
        (sttfa.forall A (x:(sttfa.etap (sttfa.p A)) => sttfa.impl (f x) z)) z).
 
 def I :
   sttfa.eps connectives.True
   :=
   z:(sttfa.etap (sttfa.p sttfa.bool)) => p:(sttfa.eps z) => p.
-

@@ -235,7 +235,7 @@ let print_ast_tex : out_channel -> ast -> unit = fun oc ast ->
   line "  {\\gdef\\scalefactor{#1}\\begin{center}\\proofSkipAmount\\leavevmode}%%";
   line "  {\\scalebox{\\scalefactor}{\\DisplayProof}\\proofSkipAmount \\end{center} }";
   line "";
-  line "\\title{Generated document for module \\texttt{%s}}" !current_module;
+  line "\\title{Generated document for module \\texttt{%s}}" (sanitize_name !current_module);
   line "\\date{}";
   line "";
   line "\\begin{document}";
