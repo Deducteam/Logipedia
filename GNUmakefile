@@ -34,10 +34,15 @@ examples/%.pdf: examples/%.tex
 
 LIBDKS = $(wildcard library/*.dk)
 
-library: $(LIBDKS:.dk=.dko)
+library: $(LIBDKS:.dk=.dko) $(LIBDKS:.dk=.pdf)
 
-library/%.dko: library/%.dk .library_depend
-	$(DKCHECK) -I library -I theories -e $<
+library/%.dko library/%.stt library/%.tex: library/%.dk .library_depend main.native
+	@echo "[STT] $<"
+	@./main.native -I library -I theories $<
+
+library/%.pdf: library/%.tex
+	@echo "[PDF] $@"
+	@pdflatex -halt-on-error -output-directory=library $< > /dev/null
 
 .library_depend: $(wildcard library/*.dk)
 	@echo "[DEP] $@"
