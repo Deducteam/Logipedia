@@ -6,6 +6,7 @@ type proof_ctx = (ident * _te) list
 
 type env =
   {
+    k   : int;
     dk  : Term.typed_context;
     ty  : ty_ctx;
     te  : te_ctx;
@@ -14,15 +15,20 @@ type env =
 
 let empty_env =
   {
+    k   = 0;
     dk  = [];
     ty  = [];
     te  = [];
     prf = [];
   }
 
-let soi i s= Format.sprintf "%s%d" (string_of_ident s) i
+let soi = string_of_ident
 
-let soi s = Format.sprintf "%s" (string_of_ident s)
+let rec gen_fresh ctx x c =
+  let x' = if c < 0 then x else x^(string_of_int c) in
+  if List.exists (fun (_,v,_) -> (soi v) = x') ctx then gen_fresh ctx x (c+1) else mk_ident x'
+
+let gen_fresh env x = gen_fresh env.dk (soi x) (-1)
 
 let of_name name = string_of_mident (md name), string_of_ident (id name)
 
@@ -48,6 +54,10 @@ let compile_tyop tyop =
     of_name name
   | _ -> assert false
 
+let get env n =
+  let (_,x,_) = List.nth env.dk n in
+  soi x
+
 let rec compile__type env _ty =
   match _ty with
   | Term.Const(_,cst) when is_sttfa_const sttfa_prop _ty -> Prop
@@ -56,8 +66,8 @@ let rec compile__type env _ty =
     let right' = compile__type env right in
     Arrow(left',right')
   | Term.DB(_,var,n) ->
-    assert (List.mem (soi var) env.ty);
-    TyVar(soi var)
+    let var = get env n in
+    TyVar(var)
   | Term.App(tyop,a,args) ->
     let tyop' = compile_tyop tyop in
     let args' = List.map (fun x -> compile__type env x) (a::args) in
@@ -66,6 +76,7 @@ let rec compile__type env _ty =
   | _ -> assert false
 
 let add_ty_var env var = {env with
+                          k  = env.k + 1;
                           ty = (soi var)::env.ty;
                           dk =
                             (dloc,
@@ -73,9 +84,10 @@ let add_ty_var env var = {env with
                              Term.mk_Const dloc (mk_name sttfa_module sttfa_type))::env.dk
                          }
 
-let rec compile_type env ty =
+let rec compile_type (env:env) ty =
   match ty with
   | Term.App(c, Term.Lam(_, var, _, ty), []) when is_sttfa_const sttfa_forall_kind_type c ->
+    let var = gen_fresh env var in
     let ty' = compile_type (add_ty_var env var) ty in
     ForallK(soi var, ty')
   | Term.App(c, a, []) when is_sttfa_const sttfa_p c -> Ty(compile__type env a)
@@ -98,6 +110,7 @@ let compile_wrapped_type env (ty:Term.term)  =
   | _ -> Format.eprintf "%a@." Pp.print_term ty; assert false
 
 let add_te_var env var ty ty' = {env with
+                                 k = env.k + 1;
                                  te = (soi var, ty')::env.te;
                                  dk = (dloc, var, ty)::env.dk}
 
@@ -116,16 +129,19 @@ let get_arity env lc name =
 let rec compile__term env _te =
   match _te with
   | Term.DB(_,var,n) ->
-    assert (List.mem_assoc (soi var) env.te);
-    TeVar(soi var)
+    let var = get env n in
+    TeVar(var)
   | Term.Lam(_,id, Some cst, _te) when is_sttfa_const sttfa_type cst ->
+    let id   = gen_fresh env id in
     let _te' = compile__term (add_ty_var env id) _te in
     AbsTy(soi id, _te')
   | Term.Lam(_,id, Some _ty, _te) ->
+    let id   = gen_fresh env id in
     let _ty' = compile_wrapped__type env _ty in
     let _te' = compile__term (add_te_var env id _ty _ty') _te in
     Abs(soi id, _ty', _te')
   | Term.App(cst, _ty, [Term.Lam(_,id, Some _, _te)]) when is_sttfa_const sttfa_forall cst ->
+    let id   = gen_fresh env id in
     let _ty' = compile__type env _ty in
     let _te' = compile__term (add_te_var env id _ty _ty') _te in
     Forall(soi id, _ty', _te')
@@ -153,7 +169,7 @@ let rec compile__term env _te =
 let rec compile_term env te =
   match te with
   | Term.App(cst, Term.Lam(_,x, Some ty, te), []) when is_sttfa_const sttfa_forall_kind_prop cst ->
-    assert (is_sttfa_const sttfa_type ty);
+    let x = gen_fresh env x in
     let te' = compile_term (add_ty_var env x) te in
     ForallP(soi x, te')
   | _ ->  Te(compile__term env te)
@@ -194,6 +210,7 @@ let debug : Reduction.red_cfg = let open Reduction in {default_cfg with select =
 
 let add_prf_ctx env id _te _te' =
   { env with
+    k = env.k + 1;
     prf = (id,_te')::env.prf;
     dk = (Basic.dloc, id, _te)::env.dk
   }
@@ -202,17 +219,19 @@ let add_prf_ctx env id _te _te' =
 let rec compile_proof env proof =
   match proof with
   | Term.DB(_,var,n) ->
-    assert(List.mem_assoc var env.prf);
-    let te' = List.assoc var env.prf in
+    let var = get env n in
+    let te' = List.assoc (mk_ident var) env.prf in
     let j = make_judgment env (TeSet.singleton te') (Te te') in
     j, Assume(j)
   | Term.Lam(_,id, Some cst, _te) when is_sttfa_const sttfa_type cst ->
+    let id = gen_fresh env id in
     let jp, proof = compile_proof (add_ty_var env id) _te in
     let j = make_judgment env jp.hyp (ForallP(soi id, jp.thm)) in
     j,ForallPI(j,proof)
   | Term.Lam(_,id, Some (Term.App(cst,_,_) as _ty), _te) when (is_sttfa_const sttfa_etap cst ||
                                                                is_sttfa_const sttfa_eta cst) ->
     let _ty' = compile_wrapped__type env _ty in
+    let id = gen_fresh env id in
     let jp, proof = compile_proof (add_te_var env id _ty _ty') _te in
     let j = make_judgment env jp.hyp (Te(Forall(soi id, _ty', extract_te jp.thm))) in
     j, ForallI(j, proof)
