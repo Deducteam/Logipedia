@@ -68,7 +68,7 @@ let print_te_ctx : out_channel -> te_ctx -> unit = fun oc ctx ->
       Printf.fprintf oc "%s" x
   | (x,_ty)::l ->
       Printf.fprintf oc "%s" x;
-      List.iter (fun (x,a) -> Printf.fprintf oc "; %s" x) l;
+      List.iter (fun (x,a) -> Printf.fprintf oc ", %s" x) l;
       Printf.fprintf oc " "
 
 let print_hyp : out_channel -> hyp -> unit = fun oc hyp ->
@@ -83,7 +83,7 @@ let print_hyp : out_channel -> hyp -> unit = fun oc hyp ->
       Printf.fprintf oc " "
 
 let print_judgment : out_channel -> judgment -> unit = fun oc j ->
-  Printf.fprintf oc "%a;%a⊢ %a" print_te_ctx j.te print_hyp j.hyp print_te j.thm
+  Printf.fprintf oc "%a;%a⊢ %a" print_te_ctx (List.rev j.te) print_hyp j.hyp print_te j.thm
 
 let print_proof : out_channel -> proof -> unit = fun oc prf ->
   Printf.fprintf oc "Proof:\n%!";
