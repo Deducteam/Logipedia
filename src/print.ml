@@ -43,7 +43,8 @@ let print__te : out_channel -> _te -> unit =
     | App(_,_) when is_atom ->
         Printf.fprintf oc "(%a)" (print false) _te
     | App(t,u)      ->
-        Printf.fprintf oc "%a~%a" (print false) t (print true) u
+        let sep = if !tex_mode then "~" else " " in
+        Printf.fprintf oc "%a%s%a" (print false) t sep (print true) u
     | Forall(x,a,t) ->
         Printf.fprintf oc "∀%s:%a.%a" x print__ty a (print false) t
     | Impl(t,u)     ->
@@ -63,27 +64,30 @@ let rec print_te : out_channel -> te -> unit = fun oc te ->
 
 let print_te_ctx : out_channel -> te_ctx -> unit = fun oc ctx ->
   match ctx with
-  | []         -> ()
+  | []         ->
+      Printf.fprintf oc "∅"
   | [(x,_ty)]  ->
       Printf.fprintf oc "%s" x
   | (x,_ty)::l ->
       Printf.fprintf oc "%s" x;
-      List.iter (fun (x,a) -> Printf.fprintf oc "; %s" x) l;
+      List.iter (fun (x,a) -> Printf.fprintf oc ", %s" x) l;
       Printf.fprintf oc " "
 
 let print_hyp : out_channel -> hyp -> unit = fun oc hyp ->
   let l = TeSet.elements hyp in
   match l with
-  | []         -> ()
+  | []         ->
+      Printf.fprintf oc "∅"
   | [x]  ->
       Printf.fprintf oc "%a" print__te x
   | x::l ->
       Printf.fprintf oc "%a" print__te x;
-      List.iter (fun x -> Printf.fprintf oc "; %a" print__te x) l;
+      List.iter (fun x -> Printf.fprintf oc ", %a" print__te x) l;
       Printf.fprintf oc " "
 
 let print_judgment : out_channel -> judgment -> unit = fun oc j ->
-  Printf.fprintf oc "%a;%a⊢ %a" print_te_ctx j.te print_hyp j.hyp print_te j.thm
+  Printf.fprintf oc "%a; %a ⊢ %a"
+    print_te_ctx j.te print_hyp j.hyp print_te j.thm
 
 let print_proof : out_channel -> proof -> unit = fun oc prf ->
   Printf.fprintf oc "Proof:\n%!";
