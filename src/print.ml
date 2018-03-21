@@ -3,6 +3,8 @@ open Ast
 let tex_mode : bool ref = ref false
 let current_module : string ref = ref ""
 
+let forallp = "\\rotatebox[origin=c]{180}{\\ensuremath{\\mathcal{A}}}"
+
 let sanitize_name : string -> string = fun n ->
   String.concat "\\_" (String.split_on_char '_' n)
 
@@ -59,7 +61,7 @@ let print__te : out_channel -> _te -> unit =
 
 let rec print_te : out_channel -> te -> unit = fun oc te ->
   match te with
-  | ForallP(x,te) -> Printf.fprintf oc "∀%s.%a" x print_te te
+  | ForallP(x,te) -> Printf.fprintf oc "%s%s.%a" forallp x print_te te
   | Te(_te)       -> print__te oc _te
 
 let print_te_ctx : out_channel -> te_ctx -> unit = fun oc ctx ->
@@ -115,11 +117,11 @@ let print_proof : out_channel -> proof -> unit = fun oc prf ->
         Printf.fprintf oc "%sForallI  %a\n" off print_judgment j;
         print (off ^ " ") oc p
     | ForallPE(j,p,_ty) ->
-        Printf.fprintf oc "%sForallPE %a\n" off print_judgment j;
+        Printf.fprintf oc "%s%sE %a\n" off forallp print_judgment j;
         print (off ^ " ") oc p;
         Printf.fprintf oc "%s%a\n" off print__ty _ty
     | ForallPI(j,p)     ->
-        Printf.fprintf oc "%sForallPI %a\n" off print_judgment j;
+        Printf.fprintf oc "%s%sI %a\n" off forallp print_judgment j;
         print (off ^ " ") oc p
   in
   print "  " oc prf;
@@ -181,11 +183,11 @@ let print_proof_tex : out_channel -> proof -> unit = fun oc prf ->
         line "\\UnaryInfC{$%a$}" print_judgment j
     | ForallPE(j,p,_ty) ->
         print p;
-        line "\\RightLabel{$∀P_\\text{E}$}";
+        line "\\RightLabel{$%s_\\text{E}$}" forallp;
         line "\\UnaryInfC{$%a$}" print_judgment j
     | ForallPI(j,p)     ->
         print p;
-        line "\\RightLabel{$∀P_\\text{I}$}";
+        line "\\RightLabel{$%s_\\text{I}$}" forallp;
         line "\\UnaryInfC{$%a$}" print_judgment j
   in
   line "\\begin{scprooftree}{0.2}";
@@ -230,6 +232,7 @@ let print_ast_tex : out_channel -> ast -> unit = fun oc ast ->
   line "\\usepackage{graphicx}";
   line "\\usepackage{bussproofs}";
   line "\\usepackage{amssymb}";
+  line "\\usepackage{rotate}";
   line "\\usepackage{amsmath}";
   line "\\usepackage{amsthm}";
   line "\\usepackage[mathletters]{ucs}";
