@@ -29,7 +29,7 @@ examples/%.dko examples/%.stt examples/%.tex: examples/%.dk theories/sttfa.dko m
 
 examples/%.pdf: examples/%.tex
 	@echo "[PDF] $@"
-	@pdflatex -output-directory=examples $< > /dev/null
+	@pdflatex -output-directory=examples $< > /dev/null || echo "ERROR on $@"
 
 #### Producing the Dedukti library #################################
 
@@ -43,9 +43,9 @@ library/%.dko library/%.stt library/%.tex: library/%.dk .library_depend main.nat
 
 library/%.pdf: library/%.tex
 	@echo "[PDF] $@"
-	@pdflatex -halt-on-error -output-directory=library $< > /dev/null
+	@pdflatex -halt-on-error -output-directory=library $< > /dev/null || echo "ERROR on $@"
 
-.library_depend: $(wildcard library/*.dk)
+.library_depend: $(wildcard library/*.dk theories/*.dk examples/*.dk) 
 	@echo "[DEP] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
 
