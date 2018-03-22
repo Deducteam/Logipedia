@@ -43,7 +43,10 @@ let _ =
   let options = Arg.align
     [ ( "-I"
       , Arg.String Basic.add_path
-      , " Add folder to Dedukti path" ) ]
+      , " Add folder to Dedukti path" )
+    ; ( "--with-types"
+      , Arg.Set Print.with_types
+      , "Print types on binders and in the proof judgments") ]
   in
   let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
   let usage = usage ^ "Available options:" in

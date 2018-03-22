@@ -2,6 +2,9 @@ open Ast
 
 let tex_mode : bool ref = ref false
 let current_module : string ref = ref ""
+let with_types = ref false
+
+let forallp = "\\rotatebox[origin=c]{180}{\\ensuremath{\\mathcal{A}}}"
 
 let sanitize_name : string -> string = fun n ->
   String.concat "\\_" (String.split_on_char '_' n)
@@ -39,14 +42,20 @@ let print__te : out_channel -> _te -> unit =
     | TeVar(x)      ->
         output_string oc x
     | Abs(x,a,t)    ->
-        Printf.fprintf oc "λ%s:%a.%a" x print__ty a (print false) t
+      if !with_types then
+        Printf.fprintf oc "λ%s^{%a}.%a" x print__ty a (print false) t
+      else
+        Printf.fprintf oc "λ%s.%a" x (print false) t
     | App(_,_) when is_atom ->
         Printf.fprintf oc "(%a)" (print false) _te
     | App(t,u)      ->
         let sep = if !tex_mode then "\\;" else " " in
         Printf.fprintf oc "%a%s%a" (print false) t sep (print true) u
     | Forall(x,a,t) ->
-        Printf.fprintf oc "∀%s:%a.%a" x print__ty a (print false) t
+      if !with_types then
+        Printf.fprintf oc "∀%s^{%a}.%a" x print__ty a (print false) t
+      else
+        Printf.fprintf oc "∀%s.%a" x (print false) t
     | Impl(t,u)     ->
         Printf.fprintf oc "(%a ⇒ %a)" (print false) t (print false) u
     | AbsTy(x,t)    ->
@@ -59,19 +68,42 @@ let print__te : out_channel -> _te -> unit =
 
 let rec print_te : out_channel -> te -> unit = fun oc te ->
   match te with
-  | ForallP(x,te) -> Printf.fprintf oc "∀%s.%a" x print_te te
+  | ForallP(x,te) -> Printf.fprintf oc "%s%s.%a" forallp x print_te te
   | Te(_te)       -> print__te oc _te
+
+let print__ty_ctx : out_channel -> ty_ctx -> unit = fun oc ctx ->
+  match ctx with
+  | []         ->
+      Printf.fprintf oc "∅"
+  | [(_ty)]  ->
+      Printf.fprintf oc "%s" _ty
+  | (_ty)::l ->
+      Printf.fprintf oc "%s" _ty;
+      List.iter (fun _ty -> Printf.fprintf oc ", %s" _ty) l;
+      Printf.fprintf oc " "
 
 let print_te_ctx : out_channel -> te_ctx -> unit = fun oc ctx ->
   match ctx with
   | []         ->
       Printf.fprintf oc "∅"
   | [(x,_ty)]  ->
+    if !with_types then
+      Printf.fprintf oc "%s:%a" x print__ty _ty
+    else
       Printf.fprintf oc "%s" x
   | (x,_ty)::l ->
-      Printf.fprintf oc "%s" x;
-      List.iter (fun (x,a) -> Printf.fprintf oc ", %s" x) l;
-      Printf.fprintf oc " "
+    if !with_types then
+      begin
+        Printf.fprintf oc "%s:%a" x print__ty _ty;
+        List.iter (fun (x,_) -> Printf.fprintf oc ", %s:%a" x print__ty _ty) l;
+        Printf.fprintf oc " "
+      end
+    else
+      begin
+        Printf.fprintf oc "%s" x;
+        List.iter (fun (x,_) -> Printf.fprintf oc ", %s" x) l;
+        Printf.fprintf oc " "
+      end
 
 let print_hyp : out_channel -> hyp -> unit = fun oc hyp ->
   let l = TeSet.elements hyp in
@@ -86,6 +118,10 @@ let print_hyp : out_channel -> hyp -> unit = fun oc hyp ->
       Printf.fprintf oc " "
 
 let print_judgment : out_channel -> judgment -> unit = fun oc j ->
+  if !with_types then
+    Printf.fprintf oc "%a; %a; %a ⊢ %a"
+    print__ty_ctx (List.rev j.ty) print_te_ctx (List.rev j.te) print_hyp j.hyp print_te j.thm
+  else
   Printf.fprintf oc "%a; %a ⊢ %a"
     print_te_ctx (List.rev j.te) print_hyp j.hyp print_te j.thm
 
@@ -115,11 +151,11 @@ let print_proof : out_channel -> proof -> unit = fun oc prf ->
         Printf.fprintf oc "%sForallI  %a\n" off print_judgment j;
         print (off ^ " ") oc p
     | ForallPE(j,p,_ty) ->
-        Printf.fprintf oc "%sForallPE %a\n" off print_judgment j;
+        Printf.fprintf oc "%s%sE %a\n" off forallp print_judgment j;
         print (off ^ " ") oc p;
         Printf.fprintf oc "%s%a\n" off print__ty _ty
     | ForallPI(j,p)     ->
-        Printf.fprintf oc "%sForallPI %a\n" off print_judgment j;
+        Printf.fprintf oc "%s%sI %a\n" off forallp print_judgment j;
         print (off ^ " ") oc p
   in
   print "  " oc prf;
@@ -181,11 +217,11 @@ let print_proof_tex : out_channel -> proof -> unit = fun oc prf ->
         line "\\UnaryInfC{$%a$}" print_judgment j
     | ForallPE(j,p,_ty) ->
         print p;
-        line "\\RightLabel{$∀P_\\text{E}$}";
+        line "\\RightLabel{$%s_\\text{E}$}" forallp;
         line "\\UnaryInfC{$%a$}" print_judgment j
     | ForallPI(j,p)     ->
         print p;
-        line "\\RightLabel{$∀P_\\text{I}$}";
+        line "\\RightLabel{$%s_\\text{I}$}" forallp;
         line "\\UnaryInfC{$%a$}" print_judgment j
   in
   line "\\begin{scprooftree}{0.2}";
@@ -234,6 +270,7 @@ let print_ast_tex : out_channel -> ast -> unit = fun oc ast ->
   line "\\usepackage{graphicx}";
   line "\\usepackage{bussproofs}";
   line "\\usepackage{amssymb}";
+  line "\\usepackage{rotate}";
   line "\\usepackage{amsmath}";
   line "\\usepackage{amsthm}";
   line "\\usepackage[mathletters]{ucs}";
