@@ -43,7 +43,7 @@ let print__te : out_channel -> _te -> unit =
     | App(_,_) when is_atom ->
         Printf.fprintf oc "(%a)" (print false) _te
     | App(t,u)      ->
-        let sep = if !tex_mode then "~" else " " in
+        let sep = if !tex_mode then "\\;" else " " in
         Printf.fprintf oc "%a%s%a" (print false) t sep (print true) u
     | Forall(x,a,t) ->
         Printf.fprintf oc "∀%s:%a.%a" x print__ty a (print false) t
@@ -225,7 +225,11 @@ let print_ast_tex : out_channel -> ast -> unit = fun oc ast ->
         print_proof_tex oc prf;
         line "";
   in
-  line "\\documentclass[a4paper]{article}";
+  line "\\documentclass{article}";
+  (*
+  line "\\setlength{\\pdfpagewidth}{1000pt}";
+  line "\\setlength{\\paperwidth}{1000pt}";
+  *)
   line "\\usepackage{fullpage}";
   line "\\usepackage{graphicx}";
   line "\\usepackage{bussproofs}";
