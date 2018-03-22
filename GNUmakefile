@@ -14,7 +14,8 @@ _build/src/main.native: $(wildcard src/*.ml src/*.mli)
 #### Producing the theory file #####################################
 
 theories/sttfa.dko: theories/sttfa.dk
-	$(DKCHECK) -e $^
+	@echo "[DKC] $^"
+	@$(DKCHECK) -e $^
 
 #### Running examples ##############################################
 
@@ -48,8 +49,10 @@ library/%.pdf: library/%.tex
 	@echo "[DEP] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
 
-ifeq ($(MAKECMDGOALS), library)
+ifneq ($(MAKECMDGOALS), clean)
+ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend
+endif
 endif
 
 #### Cleaning targets ##############################################
