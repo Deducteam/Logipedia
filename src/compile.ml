@@ -222,7 +222,7 @@ let rec compile_proof env proof =
       let id = gen_fresh env id in
       let jp, proof = compile_proof (add_ty_var env id) _te in
       let j = make_judgment env jp.hyp (ForallP (soi id, jp.thm)) in
-      (j, ForallPI (j, proof))
+      (j, ForallPI (j, proof, soi id))
   | Term.Lam (_, id, Some (Term.App (cst, _, _) as _ty), _te)
     when is_sttfa_const sttfa_etap cst || is_sttfa_const sttfa_eta cst ->
       let _ty' = compile_wrapped__type env _ty in
@@ -232,7 +232,7 @@ let rec compile_proof env proof =
         make_judgment env jp.hyp
           (Te (Forall (soi id, _ty', extract_te jp.thm)))
       in
-      (j, ForallI (j, proof))
+      (j, ForallI (j, proof, soi id))
   | Term.Lam (_, id, Some (Term.App (cst, _, _) as _te), prf)
     when is_sttfa_const sttfa_eps cst ->
       let _te' = compile_wrapped__term env _te in

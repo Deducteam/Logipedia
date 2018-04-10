@@ -48,9 +48,9 @@ type proof =
   | ImplE of judgment * proof * proof
   | ImplI of judgment * proof
   | ForallE of judgment * proof * _te
-  | ForallI of judgment * proof
+  | ForallI of judgment * proof * te_var
   | ForallPE of judgment * proof * _ty
-  | ForallPI of judgment * proof
+  | ForallPI of judgment * proof * ty_var
 
 type arity = int
 
@@ -61,4 +61,10 @@ type item =
   | Theorem of name * te * proof
   | TyOpDef of tyOp * arity
 
-type ast = item list
+module QSet = Set.Make (struct
+  type t = string
+
+  let compare = compare
+end)
+
+type ast = {dep: QSet.t; items: item list}
