@@ -320,8 +320,8 @@ let compile_definition name ty term =
       Definition
         (of_name name, compile_type empty_env a, compile_term empty_env term)
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eps cst ->
-      Theorem
-        ( of_name name
-        , compile_term empty_env a
-        , snd @@ compile_proof empty_env term )
+      let j, proof = compile_proof empty_env term in
+      let a' = compile_term empty_env a in
+      let proof' = if j.thm = a' then proof else Conv (j, proof) in
+      Theorem (of_name name, compile_term empty_env a, proof')
   | _ -> assert false
