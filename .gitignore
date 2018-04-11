@@ -16,3 +16,11 @@ _build/
 *~
 \#*\#
 .\#*
+
+*.pvs
+*.prf
+*.summary
+pensebete
+pvsbin/
+.pvscontext
+pvs-strategies
