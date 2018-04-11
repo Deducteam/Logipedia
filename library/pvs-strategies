@@ -1,11 +1,22 @@
-(defstep id-flatten ()
+(defstep sttfa-impl-i ()
   (then (expand "id" 1 1) (flatten 1))
-  "Core flatten" "Flattening")
+  "[sttfa] ImplI" "Applying ImplI")
 
-(defstep id-skolem (name)
+(defstep sttfa-forall-i (name)
   (then (expand "id" 1 1) (skolem 1 name))
-  "Core skolem" "Skolemizing")
+  "[sttfa] ForallI" "Applying ForallI")
 
-(defstep id-inst (a)
+(defstep sttfa-lemma (name)
+  (then (lemma name) (assert))
+  "[sttfa] Lemma" "Applying Lemma")
+
+(defstrat sttfa-forall-e (cut te step)
+  (spread
+   (case cut)
+   ((then (do-rewrite) (expand "id" -1 1) (inst -1 te) (assert))
+    (then (hide 2) (do-rewrite) step)))
+  "[stta] ForallE")
+
+(defstep sttfa-inst (a)
   (then (expand "id" -1 1) (inst -1 a) (assert))
   "Core inst" "Instantiation")

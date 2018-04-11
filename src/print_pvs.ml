@@ -15,7 +15,7 @@ let sanitize_name_pvs : string -> string =
   if String.equal n "True" || String.equal n "False" || String.equal n "Imp"
      || String.equal n "Not" || String.equal n "And" || String.equal n "Or"
      || String.equal n "Ex"
-  then "Id_" ^ n
+  then "sttfa_" ^ n
   else if String.equal n "__" then "x__"
   else n
 
@@ -36,8 +36,8 @@ let print__ty_pvs : out_channel -> _ty -> unit =
     | TyOp (op, l) -> ()
     (*        print_name oc op;
           List.iter (Printf.fprintf oc " %a" (print true)) l *)
-    | Prop ->
-        output_string oc "Prop"
+    | Prop       ->
+        output_string oc "bool"
   in
   print false
 
@@ -61,7 +61,6 @@ let rec print_type_list_pvs : out_channel -> _ty list -> unit =
   | [a] -> print__ty_pvs oc a
   | a :: l ->
       print__ty_pvs oc a ; Printf.fprintf oc "," ; print_type_list_pvs oc l
-
 
 let rec print_type_list_b_pvs : out_channel -> _ty list -> unit =
  fun oc ty ->
@@ -213,35 +212,35 @@ let print_proof_pvs : out_channel -> proof -> unit =
  fun oc prf ->
   let rec print acc oc prf =
     match prf with
-    | Assume j -> Printf.fprintf oc "(propax)"
-    | Lemma ((_, s), j) ->
-        Printf.fprintf oc "(then (lemma \"%s%a\") (assert))" s
-          print_type_list_b_pvs acc
-    | Conv (j, p, _) -> print acc oc p
-    | ImplE (j, p, q) ->
-        let pc = conclusion_pvs p in
-        let qc = conclusion_pvs q in
-        Printf.fprintf oc
-          "(spread (case \"%a\" \"%a\") ((grind) (then (hide 2) (do-rewrite) \
-           %a) (then (hide 2) (do-rewrite) %a)))" print_te_pvs pc print_te_pvs
-          qc (print acc) q (print acc) p
-    | ImplI (j, p) ->
-        Printf.fprintf oc "(id-flatten)" ;
-        print acc oc p
-    | ForallE (j, p, _te) ->
-        let pc = conclusion_pvs p in
-        Printf.fprintf oc
-          "(spread (case \"%a\") ((then (do-rewrite) (id-inst \"%a\")) (then \
-           (hide 2) (do-rewrite) %a)))" print_te_pvs pc print__te_pvs _te
-          (print acc) p
-    | ForallI (j, p, n) ->
-        Printf.fprintf oc "(id-skolem \"%s\")" n ;
-        (print acc) oc p
-    | ForallPE (j, p, _ty) -> print (_ty :: acc) oc p
-    | ForallPI (j, p, n) -> print acc oc p
-  in
-  Printf.fprintf oc "%%|- (then (do-rewrite)" ;
-  print [] oc prf ;
+    | Assume(j)         -> Printf.fprintf oc "(propax)" 
+    | Lemma((_,s),j)    -> Printf.fprintf oc "(sttfa-lemma \"%s%a\")" s print_type_list_b_pvs acc
+    | Conv(j,p,_)         -> print acc oc p
+    | ImplE(j,p,q)      ->
+      let pc = conclusion_pvs p
+      in let qc = conclusion_pvs q
+      in Printf.fprintf oc "(spread (case \"%a\" \"%a\") ((grind) (then (hide 2) (do-rewrite) %a) (then (hide 2) (do-rewrite) %a)))"
+        print_te_pvs pc
+        print_te_pvs qc
+        (print acc) q
+        (print acc) p 
+
+    | ImplI(j,p)        -> Printf.fprintf oc "(sttfa-impl-i)";
+                           print acc oc p
+    | ForallE(j,p,_te)  ->
+
+      let pc = conclusion_pvs p
+      in Printf.fprintf oc "(spread (case \"%a\") ((then (do-rewrite) (sttfa-inst \"%a\")) (then (hide 2) (do-rewrite) %a)))"
+        print_te_pvs pc
+        print__te_pvs _te
+        (print acc) p
+
+    | ForallI(j,p,n)      -> Printf.fprintf oc "(sttfa-forall-i \"%s\")" n;
+                            (print acc) oc p
+    | ForallPE(j,p,_ty) ->  print (_ty::acc) oc p
+    | ForallPI(j,p,n)     -> print acc oc p
+  in 
+  Printf.fprintf oc "%%|- (then (do-rewrite)";
+  print [] oc prf;
   Printf.fprintf oc ")\n"
 
 
@@ -278,21 +277,23 @@ let print_ast_pvs : out_channel -> string -> ast -> unit =
         line ""
   in
   let pf = "_sttfa" in
-  let postfix s = s ^ pf in
-  line "%s%s : THEORY" prefix pf ;
-  line "BEGIN" ;
+  let postfix s = s^pf in
+  line "%s : THEORY" (postfix prefix);
+  line "BEGIN";
   let deps oc deps =
     let l = QSet.elements (QSet.remove "sttfa" deps) in
     let l = List.map postfix l in
     let rec deps oc l =
-      match l with
-      | [] -> Printf.fprintf oc "STP"
-      | [x] -> Printf.fprintf oc "%s" x
-      | x :: t -> Printf.fprintf oc "%s, %a" x deps t
+        match l with
+        | [] -> assert false
+        | [x] -> Printf.fprintf oc "%s" x
+        | x::t -> Printf.fprintf oc "%s,%a" x deps t
     in
-    deps oc l
+    match l with
+    | [] -> ()
+    | _ -> line "IMPORTING %a" deps l
   in
-  line "IMPORTING %a" deps ast.dep ;
-  line "" ;
-  List.iter print_item ast.items ;
+  deps oc ast.dep ;
+  line "";
+  List.iter print_item ast.items;
   line "END %s_sttfa" prefix

@@ -84,7 +84,7 @@ let run_on_file file =
   if not (Env.export ()) then
     Errors.fail dloc "Fail to export module '%a'." pp_mident md ;
   Confluence.finalize () ;
-  Print.current_module := string_of_mident md ;
+  Print_pvs.current_module := string_of_mident md ;
   let prefix = try Filename.chop_extension file with _ -> file in
   let stt_file = prefix ^ ".stt" in
   let oc = open_out stt_file in
@@ -97,15 +97,14 @@ let run_on_file file =
   let stt_file = prefix ^ ".pvs" in
   let oc = open_out stt_file in
   Print_pvs.print_ast_pvs oc prefix ast ;
-  close_out oc
-
+  close_out oc 
 
 let _ =
   let options =
     Arg.align
       [ ("-I", Arg.String Basic.add_path, " Add folder to Dedukti path")
       ; ( "--with-types"
-        , Arg.Set Print.with_types
+        , Arg.Set Print_pvs.with_types
         , "Print types on binders and in the proof judgments" ) ]
   in
   let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
