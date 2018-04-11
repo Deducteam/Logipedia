@@ -41,11 +41,7 @@ type hyp = TeSet.t
 
 type judgment = {ty: ty_ctx; te: te_ctx; hyp: hyp; thm: te}
 
-type path = int list
-
-type rule = Beta | Delta of name
-
-type rewrite = path * rule
+type rewrite = Delta of name | Beta
 
 type rewrite_seq = rewrite list
 
