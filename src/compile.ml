@@ -268,6 +268,7 @@ module Tracer = struct
   let to_name (md, id) = mk_name (mk_mident md) (mk_ident id)
 
   let rec compare__term left right =
+    Printf.printf "l:%a\nr:%a\n" Print.print__te left Print.print__te right ;
     match (left, right) with
     | TeVar _, TeVar _ -> raise Equal
     | Cst (cst, _), Cst (cst', _) -> (
@@ -297,7 +298,10 @@ module Tracer = struct
             else (`Right, of_name @@ get_cst _tel')
         | OK Some _ -> (side, cst)
         | Err err -> Errors.fail_signature_error err
-      with Equal -> compare__term _ter _ter' )
+      with Equal ->
+        try compare__term _ter _ter' with Failure _ ->
+          let cst = get_cst _tel in
+          (`Left, of_name cst) )
     | _, App (_tel, _) -> (`Right, of_name (get_cst _tel))
     | App (_tel, _), _ -> (`Left, of_name (get_cst _tel))
     | _ ->
@@ -417,7 +421,7 @@ and compile_args_aux env f tyf thmf f' arg =
   let fa = Term.mk_App f arg [] in
   let te =
     match Env.infer ~ctx:env.dk fa with
-    | OK te -> Env.unsafe_reduction ~red:beta_delta_only te
+    | OK te -> Env.unsafe_reduction ~red:beta_only te
     | Err err -> Errors.fail_env_error err
   in
   let te' = compile_wrapped_term env te in
@@ -444,7 +448,7 @@ and compile_args_aux env f tyf thmf f' arg =
           (Decompile.decompile_term 0 denv tyf')
           (Decompile.decompile_term 0 denv (Te (Impl (a', b'))))
       in
-      let f' = Conv (thmf', f', {left= []; right= []}) in
+      let f' = Conv (thmf', f', trace) in
       (*
       if j'.thm <> Te l then
         (
