@@ -42,7 +42,9 @@ let rec decompile_type k ctx ty =
         []
 
 
-let to__type _ty = Term.mk_App (to_const sttfa_eta) _ty []
+let to__type _ty =
+  Term.mk_App (to_const sttfa_etap) (Term.mk_App (to_const sttfa_p) _ty []) []
+
 
 (* ASSUMPTION: the set of ty_var and te_var are disjoint *)
 let rec decompile__term k ctx _te =
@@ -51,13 +53,13 @@ let rec decompile__term k ctx _te =
   | Abs (x, _ty, _te) ->
       let ctx' = x :: ctx in
       Term.mk_Lam dloc (mk_ident x)
-        (Some (to__type (decompile__type k ctx' _ty)))
+        (Some (to__type (decompile__type k ctx _ty)))
         (decompile__term (k + 1) ctx' _te)
   | App (tel, ter) ->
       Term.mk_App (decompile__term k ctx tel) (decompile__term k ctx ter) []
   | Forall (te_var, _ty, _te) ->
       let ctx' = te_var :: ctx in
-      let _ty' = decompile__type k ctx' _ty in
+      let _ty' = decompile__type k ctx _ty in
       let _te' = decompile__term (k + 1) ctx' _te in
       Term.mk_App (to_const sttfa_forall) _ty'
         [Term.mk_Lam dloc (mk_ident te_var) (Some (to__type _ty')) _te']

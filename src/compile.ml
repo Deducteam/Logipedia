@@ -265,17 +265,39 @@ module Tracer = struct
 
   exception Equal
 
+  let to_name (md, id) = mk_name (mk_mident md) (mk_ident id)
+
   let rec compare__term left right =
     match (left, right) with
     | TeVar _, TeVar _ -> raise Equal
-    | Cst (cst, _), Cst (cst', _) ->
-        if cst = cst' then raise Equal else failwith "todo3"
+    | Cst (cst, _), Cst (cst', _) -> (
+        if cst = cst' then raise Equal
+        else
+          let name = to_name cst in
+          let name' = to_name cst' in
+          match (Env.get_dtree dloc name, Env.get_dtree dloc name') with
+          | OK Some _, OK Some _ -> (`Left, cst) (* au pif *)
+          | OK None, OK Some _ -> (`Right, cst')
+          | OK Some _, OK None -> (`Left, cst)
+          | OK None, OK none -> assert false
+          | Err err, _ -> Errors.fail_signature_error err
+          | _, Err err -> Errors.fail_signature_error err )
     | _, Cst (cst, _) -> (`Right, cst)
+    | Cst (cst, _), _ -> (`Left, cst)
     | Forall (_, _, _tel), Forall (_, _, _ter) -> compare__term _tel _ter
+    | Abs (_, _, _tel), Abs (_, _, _ter) -> compare__term _tel _ter
     | Impl (_tel, _ter), Impl (_tel', _ter') -> (
       try compare__term _tel _tel' with Equal -> compare__term _ter _ter' )
     | App (_tel, _ter), App (_tel', _ter') -> (
-      try compare__term _tel _tel' with Equal -> compare__term _ter _ter' )
+      try
+        let side, cst = compare__term _tel _tel' in
+        match Env.get_dtree dloc (to_name cst) with
+        | OK None ->
+            if side = `Right then (`Left, of_name @@ get_cst _tel)
+            else (`Right, of_name @@ get_cst _tel')
+        | OK Some _ -> (side, cst)
+        | Err err -> Errors.fail_signature_error err
+      with Equal -> compare__term _ter _ter' )
     | _, App (_tel, _) -> (`Right, of_name (get_cst _tel))
     | App (_tel, _), _ -> (`Left, of_name (get_cst _tel))
     | _ ->
@@ -299,7 +321,7 @@ module Tracer = struct
       else if side = `Left then {trace with left= Delta cst :: trace.left}
       else assert false
     in
-    let left = Env.unsafe_reduction ~red:beta_only right in
+    let left = Env.unsafe_reduction ~red:beta_only left in
     let right = Env.unsafe_reduction ~red:beta_only right in
     if Term.term_eq left right then {left= [Beta]; right= [Beta]}
     else
