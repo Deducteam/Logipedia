@@ -61,6 +61,7 @@ type item =
   | Theorem of name * te * proof
   | TyOpDef of tyOp * arity
 
+
 module QSet = Set.Make (struct
   type t = string
 
