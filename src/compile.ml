@@ -312,7 +312,7 @@ module Tracer = struct
     | _ -> failwith "todo1"
 
 
-  let rec annotate left right =
+  let rec annotate env left right =
     let add_beta trace =
       {left= Beta :: trace.left; right= Beta :: trace.right}
     in
@@ -325,8 +325,8 @@ module Tracer = struct
     let right = Env.unsafe_reduction ~red:beta_only right in
     if Term.term_eq left right then {left= [Beta]; right= [Beta]}
     else
-      let left' = compile_term empty_env left in
-      let right' = compile_term empty_env right in
+      let left' = compile_term env left in
+      let right' = compile_term env right in
       let side, (md, id) = compare_term left' right' in
       let cst = mk_name (mk_mident md) (mk_ident id) in
       let left, right =
@@ -337,7 +337,7 @@ module Tracer = struct
           (left, right)
         else assert false
       in
-      let trace = annotate left right in
+      let trace = annotate env left right in
       add_delta side (md, id) (add_beta trace)
 end
 
@@ -438,9 +438,13 @@ and compile_args_aux env f tyf thmf f' arg =
       let a' = match j'.thm with Te a -> a | _ -> assert false in
       let b' = match j.thm with Te a -> a | _ -> assert false in
       let thmf' = {thmf with thm= Te (Impl (a', b'))} in
+      let denv = List.map (fun (_, x, _) -> string_of_ident x) env.dk in
+      let trace =
+        Tracer.annotate env
+          (Decompile.decompile_term 0 denv tyf')
+          (Decompile.decompile_term 0 denv (Te (Impl (a', b'))))
+      in
       let f' = Conv (thmf', f', {left= []; right= []}) in
-      Printf.printf "l:%a\nr:%a\n" Print.print__te a' Print.print__te b' ;
-      Printf.printf "tyf:%a\n" Print.print_te tyf' ;
       (*
       if j'.thm <> Te l then
         (
@@ -499,7 +503,10 @@ let compile_definition name ty term =
         if j.thm = a' then proof
         else
           Conv
-            (j, proof, Tracer.annotate (Decompile.decompile_term 0 [] j.thm) a)
+            ( j
+            , proof
+            , Tracer.annotate empty_env (Decompile.decompile_term 0 [] j.thm) a
+            )
       in
       Theorem (of_name name, compile_term empty_env a, proof')
   | _ -> assert false
