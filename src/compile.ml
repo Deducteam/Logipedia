@@ -205,6 +205,15 @@ let beta_only : Reduction.red_cfg =
   ; select= Some (fun _ -> false) }
 
 
+let beta_delta_only : Reduction.red_cfg =
+  let open Reduction in
+  let open Rule in
+  { nb_steps= None
+  ; beta= true
+  ; strategy= Reduction.Snf
+  ; select= Some (fun cst -> match cst with Delta _ -> true | _ -> false) }
+
+
 let delta_only : Basic.name -> Reduction.red_cfg =
  fun cst ->
   let open Reduction in
@@ -276,29 +285,29 @@ let rec compile_proof env proof =
       let f' = compile_proof env f in
       snd
       @@ List.fold_left
-           (fun (f, f') a -> compile_args env f None f' a)
+           (fun (f, f') a -> compile_arg env f f' a)
            (f, f') (a :: args)
   | _ ->
       Format.eprintf "%a@." Pp.print_term proof ;
       failwith "todo"
 
 
-and compile_args env f mty f' arg =
-  let thmf, f' = f' in
+and compile_arg env f (j, f') arg =
   let tyf =
-    match mty with
-    | None -> (
-      match Env.infer ~ctx:env.dk f with
-      | OK ty -> ty
-      | Err err -> Errors.fail_env_error err )
-    | Some tyf -> tyf
+    match Env.infer ~ctx:env.dk f with
+    | OK ty -> ty
+    | Err err -> Errors.fail_env_error err
   in
-  let tyf = Env.unsafe_reduction ~red:beta_only tyf in
+  compile_args_aux env f tyf j f' arg
+
+
+and compile_args_aux env f tyf thmf f' arg =
+  let tyf = Env.unsafe_reduction ~red:beta_delta_only tyf in
   let tyf' = compile_wrapped_term env tyf in
   let fa = Term.mk_App f arg [] in
   let te =
     match Env.infer ~ctx:env.dk fa with
-    | OK te -> Env.unsafe_reduction ~red:beta_only te
+    | OK te -> Env.unsafe_reduction ~red:beta_delta_only te
     | Err err -> Errors.fail_env_error err
   in
   let te' = compile_wrapped_term env te in
@@ -319,6 +328,7 @@ and compile_args env f mty f' arg =
       let j = {j with hyp= TeSet.union j.hyp j'.hyp} in
       (fa, (j, ImplE (j, f', arg')))
   | Te tyf' ->
+      (*
       let rec get_cst tyf' =
         match tyf' with
         | App (f, a) -> get_cst f
@@ -328,7 +338,13 @@ and compile_args env f mty f' arg =
             Format.eprintf "%a@." Pp.print_term tyf ;
             assert false
       in
-      let cst = get_cst tyf' in
+      let cst = get_cst tyf' in *)
+      Format.eprintf "%a@." Pp.print_term f ;
+      Format.eprintf "%a@." Pp.print_term tyf ;
+      assert false
+
+
+(*
       Format.eprintf "%a@." Pp.print_name cst ;
       let tyf = Env.unsafe_reduction ~red:(delta_only cst) tyf in
       let tyf' = compile_wrapped_term env tyf in
@@ -336,8 +352,8 @@ and compile_args env f mty f' arg =
         Conv
           ({thmf with thm= tyf'}, f', {left= [Delta (of_name cst)]; right= []})
       in
-      compile_args env f (Some tyf) (thmf, f') arg
-
+      assert false *)
+(* compile_args_aux env f tyf (thmf, f') arg *)
 
 let compile_declaration name ty =
   Format.eprintf "Compile %a@." pp_name name ;
