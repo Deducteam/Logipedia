@@ -41,10 +41,20 @@ type hyp = TeSet.t
 
 type judgment = {ty: ty_ctx; te: te_ctx; hyp: hyp; thm: te}
 
+type path = int list
+
+type rule = Beta | Delta of name
+
+type rewrite = path * rule
+
+type rewrite_seq = rewrite list
+
+type trace = {left: rewrite_seq; right: rewrite_seq}
+
 type proof =
   | Assume of judgment
   | Lemma of name * judgment
-  | Conv of judgment * proof
+  | Conv of judgment * proof * trace
   | ImplE of judgment * proof * proof
   | ImplI of judgment * proof
   | ForallE of judgment * proof * _te

@@ -40,6 +40,12 @@ let get env n =
   soi x
 
 
+module Tracer = struct
+  let compare_term left right = failwith "todo"
+
+  let annotate left right = failwith "todo"
+end
+
 let rec compile__type env _ty =
   match _ty with
   | Term.Const (_, cst) when is_sttfa_const sttfa_prop _ty -> Prop
@@ -191,7 +197,7 @@ let make_judgment env hyp thm = {ty= env.ty; te= env.te; hyp; thm}
 
 let rec extract_te te = match te with Te _te -> _te | _ -> assert false
 
-let beta_only : Reduction.red_cfg =
+let beta_delta_only : Reduction.red_cfg =
   let open Reduction in
   { nb_steps= None
   ; beta= true
@@ -265,19 +271,22 @@ and compile_args env f f' arg =
   let thmf, f' = f' in
   let tyf =
     match Env.infer ~ctx:env.dk f with
-    | OK ty -> Env.unsafe_reduction ~red:beta_only ty
+    | OK ty -> Env.unsafe_reduction ~red:beta_delta_only ty
     | Err err -> Errors.fail_env_error err
   in
   let tyf' = compile_wrapped_term env tyf in
   let fa = Term.mk_App f arg [] in
   let te =
     match Env.infer ~ctx:env.dk fa with
-    | OK te -> Env.unsafe_reduction ~red:beta_only te
+    | OK te -> Env.unsafe_reduction ~red:beta_delta_only te
     | Err err -> Errors.fail_env_error err
   in
   let te' = compile_wrapped_term env te in
   let j = {thmf with thm= te'} in
-  let f' = if tyf' = thmf.thm then f' else Conv ({thmf with thm= tyf'}, f') in
+  let f' =
+    if tyf' = thmf.thm then f'
+    else Conv ({thmf with thm= tyf'}, f', Tracer.annotate thmf.thm tyf')
+  in
   match tyf' with
   | ForallP _ ->
       let arg = compile__type env arg in
@@ -322,6 +331,8 @@ let compile_definition name ty term =
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eps cst ->
       let j, proof = compile_proof empty_env term in
       let a' = compile_term empty_env a in
-      let proof' = if j.thm = a' then proof else Conv (j, proof) in
+      let proof' =
+        if j.thm = a' then proof else Conv (j, proof, Tracer.annotate j a')
+      in
       Theorem (of_name name, compile_term empty_env a, proof')
   | _ -> assert false

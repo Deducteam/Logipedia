@@ -132,7 +132,7 @@ let print_proof : out_channel -> proof -> unit =
     match prf with
     | Assume j -> Printf.fprintf oc "%sAssume   %a\n" off print_judgment j
     | Lemma (_, j) -> Printf.fprintf oc "%sLemma    %a\n" off print_judgment j
-    | Conv (j, p) ->
+    | Conv (j, p, _) ->
         Printf.fprintf oc "%sConv     %a\n" off print_judgment j ;
         print (off ^ " ") oc p
     | ImplE (j, p, q) ->
@@ -195,7 +195,7 @@ let print_proof_tex : out_channel -> proof -> unit =
         line "\\AxiomC{}" ;
         line "\\RightLabel{Lemma}" ;
         line "\\UnaryInfC{$%a$}" print_judgment j
-    | Conv (j, p) ->
+    | Conv (j, p, _) ->
         print p ;
         line "\\RightLabel{Conv}" ;
         line "\\UnaryInfC{$%a$}" print_judgment j
