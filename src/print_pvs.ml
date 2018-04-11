@@ -96,7 +96,7 @@ let print__te_pvs : out_channel -> _te -> unit =
     match _te with
     | TeVar x -> output_string oc (sanitize_name_pvs x)
     | Abs (x, a, t) ->
-        Printf.fprintf oc "LAMBDA(%s:%a):%a" (sanitize_name_pvs x)
+        Printf.fprintf oc "(LAMBDA(%s:%a):%a)" (sanitize_name_pvs x)
           print__ty_pvs a print t
     | App (t, u) -> Printf.fprintf oc "%a(%a)" print t print u
     | Forall (x, a, t) ->
@@ -210,26 +210,26 @@ let conclusion_pvs : proof -> te =
 
 let print_proof_pvs : out_channel -> proof -> unit =
   fun oc prf ->
-    let rec print_trace oc = fun rewrites ->
+    let rec print_trace_right oc = fun rewrites ->
       match rewrites with
       | [] -> Printf.fprintf oc ""
-      | Beta::l -> Printf.fprintf oc "(beta)%a" print_trace l
-      | (Delta _)::l -> Printf.fprintf oc "(do-rewrite)%a" print_trace l
+      | Beta::l -> Printf.fprintf oc "(beta)%a" print_trace_right l
+      | (Delta (md,id))::l -> Printf.fprintf oc "(rewrite \"%s\") %a" (sanitize_name_pvs id) print_trace_right l
     in
   let rec print acc oc prf =
     match prf with
     | Assume(j)         -> Printf.fprintf oc "(propax)" 
     | Lemma((_,s),j)    -> Printf.fprintf oc "(sttfa-lemma \"%s%a\")" s print_type_list_b_pvs acc
-    | Conv(j,p,trace)         -> Printf.fprintf oc "(then@ %a %a)"
-                                   print_trace (List.append trace.right trace.left) 
-                                   (* "(do-rewrite)" *)
-                                   (print acc) p
+    | Conv(j,p,trace)         ->
+      let pc = conclusion_pvs p in
+      Printf.fprintf oc "(sttfa-conv \"%a\" %a)"
+        print_te_pvs pc (print acc) p
     | ImplE(j,p,q)      ->
       let pc = conclusion_pvs p
       in let qc = conclusion_pvs q
       in
       (* Printf.fprintf oc "(sttfa-impl-e \"%a\" \"%a\" %a %a)" *)
-      Printf.fprintf oc "(spread (case \"%a\" \"%a\") ((grind) (then@ (hide 2) (do-rewrite) %a) (then@ (hide 2) (do-rewrite) %a)))"
+      Printf.fprintf oc "(spread (case \"%a\" \"%a\") ((grind) (then@ (hide 2) %a) (then@ (hide 2) %a)))"
         print_te_pvs pc
         print_te_pvs qc
         (print acc) q
@@ -244,8 +244,8 @@ let print_proof_pvs : out_channel -> proof -> unit =
         print__te_pvs _te
         (print acc) p
 
-    | ForallI(j,p,n)      -> Printf.fprintf oc "(sttfa-forall-i \"%s\")" n;
-                             (print acc) oc p
+    | ForallI(j,p,n)      -> Printf.fprintf oc "(then@ (sttfa-forall-i \"%s\") %a)" n
+                             (print acc) p
     | ForallPE(j,p,_ty)   -> print (_ty::acc) oc p
     | ForallPI(j,p,n)     -> print acc oc p
   in 
@@ -271,7 +271,6 @@ let print_ast_pvs : out_channel -> string -> ast -> unit =
     | Definition (n, ty, te) ->
         line "%a %a : %a = %a" print_name n print_prenex_ty_pvs ty print_ty_pvs
           ty print_te_pvs te ;
-        line "AUTO_REWRITE+ %a" print_name n ;
         line ""
     | Axiom (n, te) ->
         line "%a %a : AXIOM %a" print_name n print_prenex_te_pvs te
