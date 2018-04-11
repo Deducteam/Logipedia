@@ -433,9 +433,26 @@ and compile_args_aux env f tyf thmf f' arg =
   | Te Forall _ ->
       let arg = compile__term env arg in
       (fa, (j, ForallE (j, f', arg)))
-  | Te Impl _ ->
+  | Te Impl (l, _) ->
       let j', arg' = compile_proof env arg in
-      let j = {j with hyp= TeSet.union j.hyp j'.hyp} in
+      let a' = match j'.thm with Te a -> a | _ -> assert false in
+      let b' = match j.thm with Te a -> a | _ -> assert false in
+      let thmf' = {thmf with thm= Te (Impl (a', b'))} in
+      let f' = Conv (thmf', f', {left= []; right= []}) in
+      Printf.printf "l:%a\nr:%a\n" Print.print__te a' Print.print__te b' ;
+      Printf.printf "tyf:%a\n" Print.print_te tyf' ;
+      (*
+      if j'.thm <> Te l then
+        (
+        Printf.printf "l:%a\nr:%a\n" Print.print_te j'.thm Print.print__te l ;
+        let denv = List.map (fun (_, x, _) -> string_of_ident x) env.dk in
+        let trace =
+          Tracer.annotate
+            (Decompile.decompile_term 0 denv j'.thm)
+            (Decompile.decompile__term 0 denv l)
+        in
+        Printf.printf "after\n" ;
+                                assert false ) ; *)
       (fa, (j, ImplE (j, f', arg')))
   | Te tyf' ->
       let cst = Tracer.get_cst tyf' in
