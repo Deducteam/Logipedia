@@ -268,7 +268,6 @@ module Tracer = struct
   let to_name (md, id) = mk_name (mk_mident md) (mk_ident id)
 
   let rec compare__term left right =
-    Printf.printf "l:%a\nr:%a\n" Print.print__te left Print.print__te right ;
     match (left, right) with
     | TeVar _, TeVar _ -> raise Equal
     | Cst (cst, _), Cst (cst', _) -> (
@@ -301,7 +300,8 @@ module Tracer = struct
       with Equal ->
         try compare__term _ter _ter' with Failure _ ->
           let cst = get_cst _tel in
-          (`Left, of_name cst) )
+          (`Left, of_name cst)
+        (* UGLY *) )
     | _, App (_tel, _) -> (`Right, of_name (get_cst _tel))
     | App (_tel, _), _ -> (`Left, of_name (get_cst _tel))
     | _ ->
