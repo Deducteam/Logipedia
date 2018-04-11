@@ -1,22 +1,28 @@
+(defstep sttfa-lemma (name)
+  (lemma name)
+  "[sttfa] Lemma" "Applying Lemma")
+
 (defstep sttfa-impl-i ()
-  (then (expand "id" 1 1) (flatten 1))
+  (then@ (expand "id" 1 1) (flatten 1))
   "[sttfa] ImplI" "Applying ImplI")
 
-(defstep sttfa-forall-i (name)
-  (then (expand "id" 1 1) (skolem 1 name))
-  "[sttfa] ForallI" "Applying ForallI")
+(defstrat sttfa-impl-e (cut1 cut2 step1 step2)
+  (spread
+   (case cut1 cut2)
+   ((grind)
+    (then@ (hide 2) (do-rewrite) step1)
+    (then@ (hide 2) (do-rewrite) step2)))
+  "[sttfa] ImplE")
 
-(defstep sttfa-lemma (name)
-  (then (lemma name) (assert))
-  "[sttfa] Lemma" "Applying Lemma")
+(defstep sttfa-forall-i (name)
+  (then@ (expand "id" 1 1) (skolem 1 name))
+  "[sttfa] ForallI" "Applying ForallI")
 
 (defstrat sttfa-forall-e (cut te step)
   (spread
    (case cut)
-   ((then (do-rewrite) (expand "id" -1 1) (inst -1 te) (assert))
-    (then (hide 2) (do-rewrite) step)))
-  "[stta] ForallE")
+   ((then@ (expand "id" -1 1) (inst -1 te) (do-rewrite))
+    (then@ (hide 2) step)))
+  "[sttfa] ForallE")
 
-(defstep sttfa-inst (a)
-  (then (expand "id" -1 1) (inst -1 a) (assert))
-  "Core inst" "Instantiation")
+

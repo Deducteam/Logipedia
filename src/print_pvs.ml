@@ -209,39 +209,49 @@ let conclusion_pvs : proof -> te =
 
 
 let print_proof_pvs : out_channel -> proof -> unit =
- fun oc prf ->
+  fun oc prf ->
+    let rec print_trace oc = fun rewrites ->
+      match rewrites with
+      | [] -> Printf.fprintf oc ""
+      | Beta::l -> Printf.fprintf oc "(beta)%a" print_trace l
+      | (Delta _)::l -> Printf.fprintf oc "(do-rewrite)%a" print_trace l
+    in
   let rec print acc oc prf =
     match prf with
     | Assume(j)         -> Printf.fprintf oc "(propax)" 
     | Lemma((_,s),j)    -> Printf.fprintf oc "(sttfa-lemma \"%s%a\")" s print_type_list_b_pvs acc
-    | Conv(j,p,_)         -> print acc oc p
+    | Conv(j,p,trace)         -> Printf.fprintf oc "(then@ %a %a)"
+                                   print_trace (List.append trace.right trace.left) 
+                                   (* "(do-rewrite)" *)
+                                   (print acc) p
     | ImplE(j,p,q)      ->
       let pc = conclusion_pvs p
       in let qc = conclusion_pvs q
-      in Printf.fprintf oc "(spread (case \"%a\" \"%a\") ((grind) (then (hide 2) (do-rewrite) %a) (then (hide 2) (do-rewrite) %a)))"
+      in
+      (* Printf.fprintf oc "(sttfa-impl-e \"%a\" \"%a\" %a %a)" *)
+      Printf.fprintf oc "(spread (case \"%a\" \"%a\") ((grind) (then@ (hide 2) (do-rewrite) %a) (then@ (hide 2) (do-rewrite) %a)))"
         print_te_pvs pc
         print_te_pvs qc
         (print acc) q
         (print acc) p 
-
-    | ImplI(j,p)        -> Printf.fprintf oc "(sttfa-impl-i)";
-                           print acc oc p
+    | ImplI(j,p)        -> Printf.fprintf oc "(then@ (sttfa-impl-i) %a)"
+                           (print acc) p
     | ForallE(j,p,_te)  ->
 
       let pc = conclusion_pvs p
-      in Printf.fprintf oc "(spread (case \"%a\") ((then (do-rewrite) (sttfa-inst \"%a\")) (then (hide 2) (do-rewrite) %a)))"
+      in Printf.fprintf oc "(sttfa-forall-e \"%a\" \"%a\" %a)"
         print_te_pvs pc
         print__te_pvs _te
         (print acc) p
 
     | ForallI(j,p,n)      -> Printf.fprintf oc "(sttfa-forall-i \"%s\")" n;
-                            (print acc) oc p
-    | ForallPE(j,p,_ty) ->  print (_ty::acc) oc p
+                             (print acc) oc p
+    | ForallPE(j,p,_ty)   -> print (_ty::acc) oc p
     | ForallPI(j,p,n)     -> print acc oc p
   in 
-  Printf.fprintf oc "%%|- (then (do-rewrite)";
+  Printf.fprintf oc "%%|- ";
   print [] oc prf;
-  Printf.fprintf oc ")\n"
+  Printf.fprintf oc "\n"
 
 
 let print_ast_pvs : out_channel -> string -> ast -> unit =
