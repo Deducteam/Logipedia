@@ -49,7 +49,7 @@ library/%.pdf: library/%.tex
 
 library/%.summary: library/%.pvs
 	@echo "[SUMMARY]"
-	touch $@
+	proveit --importchain -sf $<
 
 .library_depend: $(wildcard library/*.dk theories/*.dk examples/*.dk) 
 	@echo "[DEP] $@"

@@ -15,7 +15,7 @@ let sanitize_name_pvs : string -> string =
   if String.equal n "True" || String.equal n "False" || String.equal n "Imp"
      || String.equal n "Not" || String.equal n "And" || String.equal n "Or"
      || String.equal n "Ex"
-  then "Id_" ^ n
+  then "sttfa_" ^ n
   else if String.equal n "__" then "x__"
   else n
 
@@ -224,7 +224,7 @@ let print_proof_pvs : out_channel -> proof -> unit =
         (print acc) q
         (print acc) p 
 
-    | ImplI(j,p)        -> Printf.fprintf oc "(sttfa-flatten)";
+    | ImplI(j,p)        -> Printf.fprintf oc "(sttfa-impl-i)";
                             print acc oc p
     | ForallE(j,p,_te)  ->
 
@@ -234,7 +234,7 @@ let print_proof_pvs : out_channel -> proof -> unit =
         print__te_pvs _te
         (print acc) p
 
-    | ForallI(j,p,n)      -> Printf.fprintf oc "(sttfa-skolem \"%s\")" n;
+    | ForallI(j,p,n)      -> Printf.fprintf oc "(sttfa-forall-i \"%s\")" n;
                             (print acc) oc p
     | ForallPE(j,p,_ty) ->  print (_ty::acc) oc p
     | ForallPI(j,p,n)     -> print acc oc p

@@ -1,10 +1,15 @@
-(defstep sttfa-flatten ()
+(defstep sttfa-impl-i ()
   (then (expand "id" 1 1) (flatten 1))
-  "Core flatten" "Flattening")
+  "[sttfa] ImplI" "Applying ImplI")
 
-(defstep sttfa-skolem (name)
+(defstep sttfa-forall-i (name)
   (then (expand "id" 1 1) (skolem 1 name))
-  "Core skolem" "Skolemizing")
+  "[sttfa] ForallI" "Applying ForallI")
+
+(defstep sttfa-lemma (name type)
+  (let ((nm (format nil "~a~a" name type)))
+    (then (lemma nm) (assert)))
+  "[sttfa] Lemma" "Applying Lemma") 
 
 (defstep sttfa-inst (a)
   (then (expand "id" -1 1) (inst -1 a) (assert))
