@@ -22,12 +22,12 @@ let rec decompile__type k ctx _ty =
       Term.mk_App (to_const sttfa_arrow)
         (decompile__type k ctx _tyl)
         [decompile__type k ctx _tyr]
-  | TyVar string -> Term.mk_DB dloc (mk_ident string) (find string ctx - k)
+  | TyVar string -> Term.mk_DB dloc (mk_ident string) (find string ctx)
   | TyOp (tyop, []) -> Term.mk_Const dloc (to_name tyop)
   | TyOp (tyop, _ty :: _args) ->
       Term.mk_App
         (Term.mk_Const dloc (to_name tyop))
-        (decompile__type k ctx _x)
+        (decompile__type k ctx _ty)
         (List.map (decompile__type k ctx) _args)
 
 
@@ -47,17 +47,17 @@ let to__type _ty = Term.mk_App (to_const sttfa_eta) _ty []
 (* ASSUMPTION: the set of ty_var and te_var are disjoint *)
 let rec decompile__term k ctx _te =
   match _te with
-  | TeVar x -> Term.mk_DB dloc (mk_ident x) (find x ctx - k)
+  | TeVar x -> Term.mk_DB dloc (mk_ident x) (find x ctx)
   | Abs (x, _ty, _te) ->
       let ctx' = x :: ctx in
       Term.mk_Lam dloc (mk_ident x)
-        (Some (to__type (decompile__type (k + 1) ctx' _ty)))
+        (Some (to__type (decompile__type k ctx' _ty)))
         (decompile__term (k + 1) ctx' _te)
   | App (tel, ter) ->
       Term.mk_App (decompile__term k ctx tel) (decompile__term k ctx ter) []
   | Forall (te_var, _ty, _te) ->
       let ctx' = te_var :: ctx in
-      let _ty' = decompile__type (k + 1) ctx' _ty in
+      let _ty' = decompile__type k ctx' _ty in
       let _te' = decompile__term (k + 1) ctx' _te in
       Term.mk_App (to_const sttfa_forall) _ty'
         [Term.mk_Lam dloc (mk_ident te_var) (Some (to__type _ty')) _te']

@@ -40,12 +40,6 @@ let get env n =
   soi x
 
 
-module Tracer = struct
-  let compare_term left right = failwith "todo"
-
-  let annotate left right = {left= []; right= []}
-end
-
 let rec compile__type env _ty =
   match _ty with
   | Term.Const (_, cst) when is_sttfa_const sttfa_prop _ty -> Prop
@@ -238,6 +232,93 @@ let delta_only : Basic.name -> Reduction.red_cfg =
           | _ -> false ) }
 
 
+module Tracer = struct
+  let rec get_cst tyf' =
+    match tyf' with
+    | App (f, a) -> get_cst f
+    | Cst ((md, id), _tyl) -> mk_name (mk_mident md) (mk_ident id)
+    | _ -> assert false
+
+
+  let rec equal__term map left right =
+    match (left, right) with
+    | TeVar var, TeVar var' -> List.assoc var map = var'
+    | Abs (tevar, _ty, _tel), Abs (tevar', _ty', _ter) ->
+        equal__term ((tevar, tevar') :: map) _tel _ter
+    | App (f, a), App (f', a') -> equal__term map f f' && equal__term map a a'
+    | Forall (tevar, _ty, _tel), Forall (tevar', _ty', _ter) ->
+        equal__term ((tevar, tevar') :: map) _tel _ter
+    | Impl (f, a), Impl (f', a') ->
+        equal__term map f f' && equal__term map a a'
+    | AbsTy (_, _tel), AbsTy (_, _ter) -> equal__term map _tel _ter
+    | Cst (cst, _), Cst (cst', _) -> cst = cst'
+    | _ -> false
+
+
+  let rec equal_term map left right =
+    match (left, right) with
+    | Te tel, Te ter -> equal__term map tel ter
+    | ForallP (var, tel), ForallP (var', ter) ->
+        equal_term ((var, var') :: map) tel ter
+    | _ -> false
+
+
+  exception Equal
+
+  let rec compare__term left right =
+    match (left, right) with
+    | TeVar _, TeVar _ -> raise Equal
+    | Cst (cst, _), Cst (cst', _) ->
+        if cst = cst' then raise Equal else failwith "todo3"
+    | _, Cst (cst, _) -> (`Right, cst)
+    | Forall (_, _, _tel), Forall (_, _, _ter) -> compare__term _tel _ter
+    | Impl (_tel, _ter), Impl (_tel', _ter') -> (
+      try compare__term _tel _tel' with Equal -> compare__term _ter _ter' )
+    | App (_tel, _ter), App (_tel', _ter') -> (
+      try compare__term _tel _tel' with Equal -> compare__term _ter _ter' )
+    | _, App (_tel, _) -> (`Right, of_name (get_cst _tel))
+    | App (_tel, _), _ -> (`Left, of_name (get_cst _tel))
+    | _ ->
+        Printf.printf "l:%a\nr:%a\n" Print.print__te left Print.print__te right ;
+        failwith "todo2"
+
+
+  let rec compare_term left right =
+    match (left, right) with
+    | Te left, Te right -> compare__term left right
+    | ForallP (_, left), ForallP (_, right) -> compare_term left right
+    | _ -> failwith "todo1"
+
+
+  let rec annotate left right =
+    let add_beta trace =
+      {left= Beta :: trace.left; right= Beta :: trace.right}
+    in
+    let add_delta side cst trace =
+      if side = `Right then {trace with right= Delta cst :: trace.right}
+      else if side = `Left then {trace with left= Delta cst :: trace.left}
+      else assert false
+    in
+    let left = Env.unsafe_reduction ~red:beta_only right in
+    let right = Env.unsafe_reduction ~red:beta_only right in
+    if Term.term_eq left right then {left= [Beta]; right= [Beta]}
+    else
+      let left' = compile_term empty_env left in
+      let right' = compile_term empty_env right in
+      let side, (md, id) = compare_term left' right' in
+      let cst = mk_name (mk_mident md) (mk_ident id) in
+      let left, right =
+        if side = `Right then
+          (left, Env.unsafe_reduction ~red:(delta_only cst) right)
+        else if side = `Left then
+          let left = Env.unsafe_reduction ~red:(delta_only cst) left in
+          (left, right)
+        else assert false
+      in
+      let trace = annotate left right in
+      add_delta side (md, id) (add_beta trace)
+end
+
 (*      Some (fun name -> match name with Rule.Delta _ -> true | _ -> false) } *)
 
 let debug : Reduction.red_cfg =
@@ -296,9 +377,7 @@ let rec compile_proof env proof =
       @@ List.fold_left
            (fun (f, f') a -> compile_arg env f f' a)
            (f, f') (a :: args)
-  | _ ->
-      Format.eprintf "%a@." Pp.print_term proof ;
-      failwith "todo"
+  | _ -> assert false
 
 
 and compile_arg env f (j, f') arg =
@@ -337,16 +416,7 @@ and compile_args_aux env f tyf thmf f' arg =
       let j = {j with hyp= TeSet.union j.hyp j'.hyp} in
       (fa, (j, ImplE (j, f', arg')))
   | Te tyf' ->
-      let rec get_cst tyf' =
-        match tyf' with
-        | App (f, a) -> get_cst f
-        | Cst ((md, id), _tyl) -> mk_name (mk_mident md) (mk_ident id)
-        | _ ->
-            Format.eprintf "%a@." Pp.print_term f ;
-            Format.eprintf "%a@." Pp.print_term tyf ;
-            assert false
-      in
-      let cst = get_cst tyf' in
+      let cst = Tracer.get_cst tyf' in
       let i = get_arity env dloc cst in
       let tyf = Env.unsafe_reduction ~red:(delta_only cst) tyf in
       let tyf = Env.unsafe_reduction ~red:(beta_only_n i) tyf in
@@ -387,7 +457,10 @@ let compile_definition name ty term =
       let j, proof = compile_proof empty_env term in
       let a' = compile_term empty_env a in
       let proof' =
-        if j.thm = a' then proof else Conv (j, proof, Tracer.annotate j a')
+        if j.thm = a' then proof
+        else
+          Conv
+            (j, proof, Tracer.annotate (Decompile.decompile_term 0 [] j.thm) a)
       in
       Theorem (of_name name, compile_term empty_env a, proof')
   | _ -> assert false
