@@ -213,7 +213,7 @@ let print_proof_pvs : out_channel -> proof -> unit =
   let rec print acc oc prf =
     match prf with
     | Assume(j)         -> Printf.fprintf oc "(propax)" 
-    | Lemma((_,s),j)    -> Printf.fprintf oc "(then (lemma \"%s%a\") (assert))" s print_type_list_b_pvs acc
+    | Lemma((_,s),j)    -> Printf.fprintf oc "(sttfa-lemma \"%s%a\")" s print_type_list_b_pvs acc
     | Conv(j,p,_)         -> print acc oc p
     | ImplE(j,p,q)      ->
       let pc = conclusion_pvs p

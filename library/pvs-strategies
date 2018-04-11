@@ -6,10 +6,9 @@
   (then (expand "id" 1 1) (skolem 1 name))
   "[sttfa] ForallI" "Applying ForallI")
 
-(defstep sttfa-lemma (name type)
-  (let ((nm (format nil "~a~a" name type)))
-    (then (lemma nm) (assert)))
-  "[sttfa] Lemma" "Applying Lemma") 
+(defstep sttfa-lemma (name)
+  (then (lemma name) (assert))
+  "[sttfa] Lemma" "Applying Lemma")
 
 (defstep sttfa-inst (a)
   (then (expand "id" -1 1) (inst -1 a) (assert))
