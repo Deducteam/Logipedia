@@ -225,7 +225,7 @@ let print_proof_pvs : out_channel -> proof -> unit =
         (print acc) p 
 
     | ImplI(j,p)        -> Printf.fprintf oc "(sttfa-impl-i)";
-                            print acc oc p
+                           print acc oc p
     | ForallE(j,p,_te)  ->
 
       let pc = conclusion_pvs p
