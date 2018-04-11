@@ -56,12 +56,12 @@ def sym_eq_match_bool_type_true :
               leibniz.leibniz return case_true
                 (bool.match_bool_type return case_true case_false bool.true)))))
   :=
-  return_type:sttfa.type =>
-  case_true:(sttfa.etap (sttfa.p return_type)) =>
-  case_false:(sttfa.etap (sttfa.p return_type)) =>
-  leibniz.sym_leibniz return_type
-    (bool.match_bool_type return_type case_true case_false bool.true)
-    case_true (bool.eq_match_bool_type_true return_type case_true case_false).
+  return:sttfa.type =>
+  case_true:(sttfa.etap (sttfa.p return)) =>
+  case_false:(sttfa.etap (sttfa.p return)) =>
+  leibniz.sym_leibniz return
+    (bool.match_bool_type return case_true case_false bool.true)
+    case_true (bool.eq_match_bool_type_true return case_true case_false).
 
 def sym_eq_match_bool_type_false :
   sttfa.eps
@@ -74,13 +74,13 @@ def sym_eq_match_bool_type_false :
               leibniz.leibniz return case_false
                 (bool.match_bool_type return case_true case_false bool.false)))))
   :=
-  return_type:sttfa.type =>
-  case_true:(sttfa.etap (sttfa.p return_type)) =>
-  case_false:(sttfa.etap (sttfa.p return_type)) =>
-  leibniz.sym_leibniz return_type
-    (bool.match_bool_type return_type case_true case_false bool.false)
+  return:sttfa.type =>
+  case_true:(sttfa.etap (sttfa.p return)) =>
+  case_false:(sttfa.etap (sttfa.p return)) =>
+  leibniz.sym_leibniz return
+    (bool.match_bool_type return case_true case_false bool.false)
     case_false
-    (bool.eq_match_bool_type_false return_type case_true case_false).
+    (bool.eq_match_bool_type_false return case_true case_false).
 
 def bool_discr :
   sttfa.eps
