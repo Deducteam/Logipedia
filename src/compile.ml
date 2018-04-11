@@ -205,6 +205,15 @@ let beta_only : Reduction.red_cfg =
   ; select= Some (fun _ -> false) }
 
 
+let beta_only_n : int -> Reduction.red_cfg =
+ fun i ->
+  let open Reduction in
+  { nb_steps= Some i
+  ; beta= true
+  ; strategy= Reduction.Snf
+  ; select= Some (fun _ -> false) }
+
+
 let beta_delta_only : Reduction.red_cfg =
   let open Reduction in
   let open Rule in
@@ -302,7 +311,7 @@ and compile_arg env f (j, f') arg =
 
 
 and compile_args_aux env f tyf thmf f' arg =
-  let tyf = Env.unsafe_reduction ~red:beta_delta_only tyf in
+  let tyf = Env.unsafe_reduction ~red:beta_only tyf in
   let tyf' = compile_wrapped_term env tyf in
   let fa = Term.mk_App f arg [] in
   let te =
@@ -328,7 +337,6 @@ and compile_args_aux env f tyf thmf f' arg =
       let j = {j with hyp= TeSet.union j.hyp j'.hyp} in
       (fa, (j, ImplE (j, f', arg')))
   | Te tyf' ->
-      (*
       let rec get_cst tyf' =
         match tyf' with
         | App (f, a) -> get_cst f
@@ -338,22 +346,17 @@ and compile_args_aux env f tyf thmf f' arg =
             Format.eprintf "%a@." Pp.print_term tyf ;
             assert false
       in
-      let cst = get_cst tyf' in *)
-      Format.eprintf "%a@." Pp.print_term f ;
-      Format.eprintf "%a@." Pp.print_term tyf ;
-      assert false
-
-
-(*
-      Format.eprintf "%a@." Pp.print_name cst ;
+      let cst = get_cst tyf' in
+      let i = get_arity env dloc cst in
       let tyf = Env.unsafe_reduction ~red:(delta_only cst) tyf in
+      let tyf = Env.unsafe_reduction ~red:(beta_only_n i) tyf in
       let tyf' = compile_wrapped_term env tyf in
       let f' =
         Conv
           ({thmf with thm= tyf'}, f', {left= [Delta (of_name cst)]; right= []})
       in
-      assert false *)
-(* compile_args_aux env f tyf (thmf, f') arg *)
+      compile_args_aux env f tyf thmf f' arg
+
 
 let compile_declaration name ty =
   Format.eprintf "Compile %a@." pp_name name ;
