@@ -35,15 +35,19 @@ examples/%.pdf: examples/%.tex
 
 LIBDKS = $(wildcard library/*.dk)
 
-library: $(LIBDKS:.dk=.dko) $(LIBDKS:.dk=.pdf)
+library: $(LIBDKS:.dk=.dko) $(LIBDKS:.dk=.summary)
 
-library/%.dko library/%.stt library/%.tex: library/%.dk .library_depend main.native
-	@echo "[STT] $<"
+library/%.dko library/%.stt library/%.tex library/%.pvs: library/%.dk .library_depend main.native
+	@echo "[STT,TEX,PVS] $<"
 	@./main.native -I library -I theories $<
 
 library/%.pdf: library/%.tex
 	@echo "[PDF] $@"
 	@pdflatex -halt-on-error -output-directory=library $< > /dev/null || echo "ERROR on $@"
+
+library/%.summary: library/%.pvs
+	@echo "[SUMMARY]"
+	@proveit --importchain -sf $<
 
 .library_depend: $(wildcard library/*.dk theories/*.dk examples/*.dk) 
 	@echo "[DEP] $@"
@@ -64,10 +68,16 @@ clean:
 distclean: clean
 	@find . -name "*~" -exec rm {} \;
 	@find . -name "*.dko" -exec rm {} \;
-	@find examples -name "*.stt" -exec rm {} \;
-	@find examples -name "*.aux" -exec rm {} \;
-	@find examples -name "*.log" -exec rm {} \;
-	@find examples -name "*.pdf" -exec rm {} \;
-	@find examples -name "*.tex" -exec rm {} \;
+	@find library -name "*.stt" -exec rm {} \;
+	@find library -name "*.aux" -exec rm {} \;
+	@find library -name "*.log" -exec rm {} \;
+	@find library -name "*.pdf" -exec rm {} \;
+	@find library -name "*.tex" -exec rm {} \;
+	@find library -name "*.pvs" -exec rm {} \;
+	@find library -name "*.summary" -exec rm {} \;
+	@find library -name ".pvs_context" -exec rm {} \;
+	@find library -name "*.prf" -exec rm {} \;
+	@find library/pvsbin -name "*.bin" -exec rm {} \;
+	@find library/pvsbin -name "*.dep" -exec rm {} \;
 
 .PHONY: all clean distclean examples library
