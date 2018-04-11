@@ -132,7 +132,7 @@ let print_proof : out_channel -> proof -> unit =
     match prf with
     | Assume j -> Printf.fprintf oc "%sAssume   %a\n" off print_judgment j
     | Lemma (_, j) -> Printf.fprintf oc "%sLemma    %a\n" off print_judgment j
-    | Conv (j, p) ->
+    | Conv (j, p, _) ->
         Printf.fprintf oc "%sConv     %a\n" off print_judgment j ;
         print (off ^ " ") oc p
     | ImplE (j, p, q) ->
@@ -146,14 +146,14 @@ let print_proof : out_channel -> proof -> unit =
         Printf.fprintf oc "%sForallE  %a\n" off print_judgment j ;
         print (off ^ " ") oc p ;
         Printf.fprintf oc "%s%a\n" off print__te _te
-    | ForallI (j, p) ->
+    | ForallI (j, p, _) ->
         Printf.fprintf oc "%sForallI  %a\n" off print_judgment j ;
         print (off ^ " ") oc p
     | ForallPE (j, p, _ty) ->
         Printf.fprintf oc "%s%sE %a\n" off forallp print_judgment j ;
         print (off ^ " ") oc p ;
         Printf.fprintf oc "%s%a\n" off print__ty _ty
-    | ForallPI (j, p) ->
+    | ForallPI (j, p, _) ->
         Printf.fprintf oc "%s%sI %a\n" off forallp print_judgment j ;
         print (off ^ " ") oc p
   in
@@ -176,7 +176,7 @@ let print_ast : out_channel -> ast -> unit =
         out "Theorem %a := %a\n" print_name n print_te te ;
         print_proof oc prf
   in
-  List.iter (print_item oc) ast
+  List.iter (print_item oc) ast.items
 
 
 (* Printing LaTeX. *)
@@ -195,7 +195,7 @@ let print_proof_tex : out_channel -> proof -> unit =
         line "\\AxiomC{}" ;
         line "\\RightLabel{Lemma}" ;
         line "\\UnaryInfC{$%a$}" print_judgment j
-    | Conv (j, p) ->
+    | Conv (j, p, _) ->
         print p ;
         line "\\RightLabel{Conv}" ;
         line "\\UnaryInfC{$%a$}" print_judgment j
@@ -212,7 +212,7 @@ let print_proof_tex : out_channel -> proof -> unit =
         print p ;
         line "\\RightLabel{$∀_\\text{E}$}" ;
         line "\\UnaryInfC{$%a$}" print_judgment j
-    | ForallI (j, p) ->
+    | ForallI (j, p, _) ->
         print p ;
         line "\\RightLabel{$∀_\\text{I}$}" ;
         line "\\UnaryInfC{$%a$}" print_judgment j
@@ -220,7 +220,7 @@ let print_proof_tex : out_channel -> proof -> unit =
         print p ;
         line "\\RightLabel{$%s_\\text{E}$}" forallp ;
         line "\\UnaryInfC{$%a$}" print_judgment j
-    | ForallPI (j, p) ->
+    | ForallPI (j, p, _) ->
         print p ;
         line "\\RightLabel{$%s_\\text{I}$}" forallp ;
         line "\\UnaryInfC{$%a$}" print_judgment j
@@ -292,5 +292,5 @@ let print_ast_tex : out_channel -> ast -> unit =
   line "\\begin{document}" ;
   line "\\maketitle" ;
   line "" ;
-  List.iter print_item ast ;
+  List.iter print_item ast.items ;
   line "\\end{document}"

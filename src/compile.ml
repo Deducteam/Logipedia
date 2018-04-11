@@ -40,6 +40,12 @@ let get env n =
   soi x
 
 
+module Tracer = struct
+  let compare_term left right = failwith "todo"
+
+  let annotate left right = {left= []; right= []}
+end
+
 let rec compile__type env _ty =
   match _ty with
   | Term.Const (_, cst) when is_sttfa_const sttfa_prop _ty -> Prop
@@ -196,9 +202,43 @@ let beta_only : Reduction.red_cfg =
   { nb_steps= None
   ; beta= true
   ; strategy= Reduction.Snf
-  ; select=
-      Some (fun name -> match name with Rule.Delta _ -> true | _ -> false) }
+  ; select= Some (fun _ -> false) }
 
+
+let beta_only_n : int -> Reduction.red_cfg =
+ fun i ->
+  let open Reduction in
+  { nb_steps= Some i
+  ; beta= true
+  ; strategy= Reduction.Snf
+  ; select= Some (fun _ -> false) }
+
+
+let beta_delta_only : Reduction.red_cfg =
+  let open Reduction in
+  let open Rule in
+  { nb_steps= None
+  ; beta= true
+  ; strategy= Reduction.Snf
+  ; select= Some (fun cst -> match cst with Delta _ -> true | _ -> false) }
+
+
+let delta_only : Basic.name -> Reduction.red_cfg =
+ fun cst ->
+  let open Reduction in
+  let open Rule in
+  { nb_steps= Some 1
+  ; beta= true
+  ; strategy= Reduction.Snf
+  ; select=
+      Some
+        (fun name ->
+          match name with
+          | Delta cst' -> if name_eq cst' cst then true else false
+          | _ -> false ) }
+
+
+(*      Some (fun name -> match name with Rule.Delta _ -> true | _ -> false) } *)
 
 let debug : Reduction.red_cfg =
   Reduction.{default_cfg with select= Some (fun _ -> true)}
@@ -254,30 +294,37 @@ let rec compile_proof env proof =
       let f' = compile_proof env f in
       snd
       @@ List.fold_left
-           (fun (f, f') a -> compile_args env f f' a)
+           (fun (f, f') a -> compile_arg env f f' a)
            (f, f') (a :: args)
   | _ ->
       Format.eprintf "%a@." Pp.print_term proof ;
       failwith "todo"
 
 
-and compile_args env f f' arg =
-  let thmf, f' = f' in
+and compile_arg env f (j, f') arg =
   let tyf =
     match Env.infer ~ctx:env.dk f with
-    | OK ty -> Env.unsafe_reduction ~red:beta_only ty
+    | OK ty -> ty
     | Err err -> Errors.fail_env_error err
   in
+  compile_args_aux env f tyf j f' arg
+
+
+and compile_args_aux env f tyf thmf f' arg =
+  let tyf = Env.unsafe_reduction ~red:beta_only tyf in
   let tyf' = compile_wrapped_term env tyf in
   let fa = Term.mk_App f arg [] in
   let te =
     match Env.infer ~ctx:env.dk fa with
-    | OK te -> Env.unsafe_reduction ~red:beta_only te
+    | OK te -> Env.unsafe_reduction ~red:beta_delta_only te
     | Err err -> Errors.fail_env_error err
   in
   let te' = compile_wrapped_term env te in
   let j = {thmf with thm= te'} in
-  let f' = if tyf' = thmf.thm then f' else Conv ({thmf with thm= tyf'}, f') in
+  let f' =
+    if tyf' = thmf.thm then f'
+    else Conv ({thmf with thm= tyf'}, f', {left= [Beta]; right= []})
+  in
   match tyf' with
   | ForallP _ ->
       let arg = compile__type env arg in
@@ -289,9 +336,26 @@ and compile_args env f f' arg =
       let j', arg' = compile_proof env arg in
       let j = {j with hyp= TeSet.union j.hyp j'.hyp} in
       (fa, (j, ImplE (j, f', arg')))
-  | _ ->
-      Format.eprintf "%a@." Pp.print_term f ;
-      assert false
+  | Te tyf' ->
+      let rec get_cst tyf' =
+        match tyf' with
+        | App (f, a) -> get_cst f
+        | Cst ((md, id), _tyl) -> mk_name (mk_mident md) (mk_ident id)
+        | _ ->
+            Format.eprintf "%a@." Pp.print_term f ;
+            Format.eprintf "%a@." Pp.print_term tyf ;
+            assert false
+      in
+      let cst = get_cst tyf' in
+      let i = get_arity env dloc cst in
+      let tyf = Env.unsafe_reduction ~red:(delta_only cst) tyf in
+      let tyf = Env.unsafe_reduction ~red:(beta_only_n i) tyf in
+      let tyf' = compile_wrapped_term env tyf in
+      let f' =
+        Conv
+          ({thmf with thm= tyf'}, f', {left= [Delta (of_name cst)]; right= []})
+      in
+      compile_args_aux env f tyf thmf f' arg
 
 
 let compile_declaration name ty =
@@ -320,8 +384,10 @@ let compile_definition name ty term =
       Definition
         (of_name name, compile_type empty_env a, compile_term empty_env term)
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eps cst ->
-      Theorem
-        ( of_name name
-        , compile_term empty_env a
-        , snd @@ compile_proof empty_env term )
+      let j, proof = compile_proof empty_env term in
+      let a' = compile_term empty_env a in
+      let proof' =
+        if j.thm = a' then proof else Conv (j, proof, Tracer.annotate j a')
+      in
+      Theorem (of_name name, compile_term empty_env a, proof')
   | _ -> assert false
