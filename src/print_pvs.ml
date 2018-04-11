@@ -14,9 +14,9 @@ let sanitize_name_pvs : string -> string =
  fun n ->
   if String.equal n "True" || String.equal n "False" || String.equal n "Imp"
      || String.equal n "Not" || String.equal n "And" || String.equal n "Or"
-     || String.equal n "Ex"
-  then "sttfa_" ^ n
-  else if String.equal n "__" then "x__"
+     || String.equal n "Ex" || String.equal n "true" || String.equal n "false"
+     || String.equal n "bool" || String.equal (String.sub n 0 1) "_" then
+  "sttfa_" ^ n
   else n
 
 
@@ -33,9 +33,7 @@ let print__ty_pvs : out_channel -> _ty -> unit =
     | Arrow (_, _) when is_atom -> Printf.fprintf oc "%a" (print false) _ty
     | Arrow (a, b) ->
         Printf.fprintf oc "[%a -> %a]" (print true) a (print false) b
-    | TyOp (op, l) -> ()
-    (*        print_name oc op;
-          List.iter (Printf.fprintf oc " %a" (print true)) l *)
+    | TyOp (op, l) -> print_name oc op
     | Prop       ->
         output_string oc "bool"
   in
@@ -228,8 +226,7 @@ let print_proof_pvs : out_channel -> proof -> unit =
       let pc = conclusion_pvs p
       in let qc = conclusion_pvs q
       in
-      (* Printf.fprintf oc "(sttfa-impl-e \"%a\" \"%a\" %a %a)" *)
-      Printf.fprintf oc "(spread (case \"%a\" \"%a\") ((grind) (then@ (hide 2) %a) (then@ (hide 2) %a)))"
+      Printf.fprintf oc "(sttfa-impl-e \"%a\" \"%a\" %a %a)"
         print_te_pvs pc
         print_te_pvs qc
         (print acc) q
@@ -260,11 +257,9 @@ let print_ast_pvs : out_channel -> string -> ast -> unit =
   let line fmt = Printf.fprintf oc (fmt ^^ "\n") in
   let print_item it =
     match it with
-    | TyOpDef (op, ar) -> ()
-    (*        line "\\noindent";
-        line "The type \\texttt{%a} has $%i$ parameters."
-          print_name op ar;
-          line "" *)
+    | TyOpDef (op, ar) -> Printf.fprintf oc "%a : TYPE+" print_name op;
+      line "";
+      line ""
     | Parameter (n, ty) ->
         line "%a %a: %a" print_name n print_prenex_ty_pvs ty print_ty_pvs ty ;
         line ""
