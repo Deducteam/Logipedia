@@ -285,13 +285,15 @@ let print_ast_pvs : out_channel -> string -> ast -> unit =
     let l = List.map postfix l in
     let rec deps oc l =
         match l with
-        | [] -> ()
-        | [x] -> Printf.fprintf oc "IMPORTING %s" x
-        | x::t -> Printf.fprintf oc "IMPORTING %s\n%a" x deps t
+        | [] -> assert false
+        | [x] -> Printf.fprintf oc "%s" x
+        | x::t -> Printf.fprintf oc "%s,%a" x deps t
     in
-    deps oc l
+    match l with
+    | [] -> ()
+    | _ -> line "IMPORTING %a" deps l
   in
-  line "%a" deps ast.dep;
+  deps oc ast.dep ;
   line "";
   List.iter print_item ast.items;
   line "END %s_sttfa" prefix
