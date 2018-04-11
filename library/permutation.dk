@@ -1324,7 +1324,7 @@ eq_invert_permut :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        sttfa.leibniz
+        leibniz.leibniz
           (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
              (sttfa.arrow nat.nat nat.nat)) (permutation.invert_permut n)
           (nat.filter_nat_type
@@ -1336,7 +1336,7 @@ def sym_eq_invert_permut :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        sttfa.leibniz
+        leibniz.leibniz
           (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
              (sttfa.arrow nat.nat nat.nat))
           (nat.filter_nat_type
@@ -1345,7 +1345,7 @@ def sym_eq_invert_permut :
              permutation.invert_permut_body n) (permutation.invert_permut n)))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
-  sttfa.sym_leibniz
+  leibniz.sym_leibniz
     (sttfa.arrow (sttfa.arrow nat.nat nat.nat) (sttfa.arrow nat.nat nat.nat))
     (permutation.invert_permut n)
     (nat.filter_nat_type
@@ -1355,7 +1355,7 @@ def sym_eq_invert_permut :
 
 eq_invert_permut_body_O :
   sttfa.eps
-    (sttfa.leibniz
+    (leibniz.leibniz
        (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
           (sttfa.arrow nat.nat nat.nat))
        (permutation.invert_permut_body nat.O)
@@ -1365,7 +1365,7 @@ eq_invert_permut_body_O :
 
 def sym_eq_invert_permut_body_O :
   sttfa.eps
-    (sttfa.leibniz
+    (leibniz.leibniz
        (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
           (sttfa.arrow nat.nat nat.nat))
        (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
@@ -1373,7 +1373,7 @@ def sym_eq_invert_permut_body_O :
         bool.match_bool_type nat.nat nat.O nat.O (nat.eqb m (f nat.O)))
        (permutation.invert_permut_body nat.O))
   :=
-  sttfa.sym_leibniz
+  leibniz.sym_leibniz
     (sttfa.arrow (sttfa.arrow nat.nat nat.nat) (sttfa.arrow nat.nat nat.nat))
     (permutation.invert_permut_body nat.O)
     (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
@@ -1385,7 +1385,7 @@ eq_invert_permut_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        sttfa.leibniz
+        leibniz.leibniz
           (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
              (sttfa.arrow nat.nat nat.nat))
           (permutation.invert_permut_body (nat.S n))
@@ -1398,7 +1398,7 @@ def sym_eq_invert_permut_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        sttfa.leibniz
+        leibniz.leibniz
           (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
              (sttfa.arrow nat.nat nat.nat))
           (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
@@ -1408,7 +1408,7 @@ def sym_eq_invert_permut_body_S :
           (permutation.invert_permut_body (nat.S n))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
-  sttfa.sym_leibniz
+  leibniz.sym_leibniz
     (sttfa.arrow (sttfa.arrow nat.nat nat.nat) (sttfa.arrow nat.nat nat.nat))
     (permutation.invert_permut_body (nat.S n))
     (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>

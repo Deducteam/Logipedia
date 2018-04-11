@@ -14,7 +14,7 @@ eq_gcd_aux :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
-        sttfa.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+        leibniz.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (gcd.gcd_aux p)
           (nat.filter_nat_type
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
@@ -24,31 +24,31 @@ def sym_eq_gcd_aux :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
-        sttfa.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+        leibniz.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (nat.filter_nat_type
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
              gcd.gcd_aux_body p) (gcd.gcd_aux p)))
   :=
   p:(sttfa.etap (sttfa.p nat.nat)) =>
-  sttfa.sym_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+  leibniz.sym_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
     (gcd.gcd_aux p)
     (nat.filter_nat_type (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        gcd.gcd_aux_body p) (gcd.eq_gcd_aux p).
 
 eq_gcd_aux_body_O :
   sttfa.eps
-    (sttfa.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+    (leibniz.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        (gcd.gcd_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         n:(sttfa.etap (sttfa.p nat.nat)) => m)).
 
 def sym_eq_gcd_aux_body_O :
   sttfa.eps
-    (sttfa.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+    (leibniz.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         n:(sttfa.etap (sttfa.p nat.nat)) => m) (gcd.gcd_aux_body nat.O))
   :=
-  sttfa.sym_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+  leibniz.sym_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
     (gcd.gcd_aux_body nat.O)
     (m:(sttfa.etap (sttfa.p nat.nat)) =>
      n:(sttfa.etap (sttfa.p nat.nat)) => m) gcd.eq_gcd_aux_body_O.
@@ -57,7 +57,7 @@ eq_gcd_aux_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
-        sttfa.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+        leibniz.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (gcd.gcd_aux_body (nat.S p))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            n:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -68,7 +68,7 @@ def sym_eq_gcd_aux_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
-        sttfa.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+        leibniz.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            n:(sttfa.etap (sttfa.p nat.nat)) =>
            bool.match_bool_type nat.nat n
@@ -76,7 +76,7 @@ def sym_eq_gcd_aux_body_S :
           (gcd.gcd_aux_body (nat.S p))))
   :=
   p:(sttfa.etap (sttfa.p nat.nat)) =>
-  sttfa.sym_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+  leibniz.sym_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
     (gcd.gcd_aux_body (nat.S p))
     (m:(sttfa.etap (sttfa.p nat.nat)) =>
      n:(sttfa.etap (sttfa.p nat.nat)) =>

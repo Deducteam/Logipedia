@@ -10,7 +10,7 @@ eq_exp :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.leibniz nat.nat (exp.exp n m)
+           leibniz.leibniz nat.nat (exp.exp n m)
              (nat.filter_nat_type nat.nat (exp.exp_body n) m)))).
 
 def sym_eq_exp :
@@ -19,28 +19,28 @@ def sym_eq_exp :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.leibniz nat.nat
+           leibniz.leibniz nat.nat
              (nat.filter_nat_type nat.nat (exp.exp_body n) m) (exp.exp n m))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
-  sttfa.sym_leibniz nat.nat (exp.exp n m)
+  leibniz.sym_leibniz nat.nat (exp.exp n m)
     (nat.filter_nat_type nat.nat (exp.exp_body n) m) (exp.eq_exp n m).
 
 eq_exp_body_O :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        sttfa.leibniz nat.nat (exp.exp_body n nat.O) (nat.S nat.O))).
+        leibniz.leibniz nat.nat (exp.exp_body n nat.O) (nat.S nat.O))).
 
 def sym_eq_exp_body_O :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        sttfa.leibniz nat.nat (nat.S nat.O) (exp.exp_body n nat.O)))
+        leibniz.leibniz nat.nat (nat.S nat.O) (exp.exp_body n nat.O)))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
-  sttfa.sym_leibniz nat.nat (exp.exp_body n nat.O) (nat.S nat.O)
+  leibniz.sym_leibniz nat.nat (exp.exp_body n nat.O) (nat.S nat.O)
     (exp.eq_exp_body_O n).
 
 eq_exp_body_S :
@@ -49,7 +49,7 @@ eq_exp_body_S :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.leibniz nat.nat (exp.exp_body n (nat.S m))
+           leibniz.leibniz nat.nat (exp.exp_body n (nat.S m))
              (nat.times (exp.exp n m) n)))).
 
 def sym_eq_exp_body_S :
@@ -58,12 +58,12 @@ def sym_eq_exp_body_S :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.leibniz nat.nat (nat.times (exp.exp n m) n)
+           leibniz.leibniz nat.nat (nat.times (exp.exp n m) n)
              (exp.exp_body n (nat.S m)))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
-  sttfa.sym_leibniz nat.nat (exp.exp_body n (nat.S m))
+  leibniz.sym_leibniz nat.nat (exp.exp_body n (nat.S m))
     (nat.times (exp.exp n m) n) (exp.eq_exp_body_S n m).
 
 def lt_O_exp :

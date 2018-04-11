@@ -124,7 +124,7 @@ eq_bigop_O :
   sttfa.eps
     (sttfa.forallP
        (H:sttfa.type =>
-        sttfa.leibniz
+        leibniz.leibniz
           (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
              (sttfa.arrow H
                 (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -135,7 +135,7 @@ def sym_eq_bigop_O :
   sttfa.eps
     (sttfa.forallP
        (H:sttfa.type =>
-        sttfa.leibniz
+        leibniz.leibniz
           (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
              (sttfa.arrow H
                 (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -143,7 +143,7 @@ def sym_eq_bigop_O :
           (bigops.bigop_body H nat.O) (bigops.bigop H nat.O)))
   :=
   H:sttfa.type =>
-  sttfa.sym_leibniz
+  leibniz.sym_leibniz
     (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
        (sttfa.arrow H
           (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -156,7 +156,7 @@ eq_bigop_S :
        (H:sttfa.type =>
         sttfa.forall nat.nat
           (n:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.leibniz
+           leibniz.leibniz
              (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
                 (sttfa.arrow H
                    (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -169,7 +169,7 @@ def sym_eq_bigop_S :
        (H:sttfa.type =>
         sttfa.forall nat.nat
           (n:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.leibniz
+           leibniz.leibniz
              (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
                 (sttfa.arrow H
                    (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -178,7 +178,7 @@ def sym_eq_bigop_S :
   :=
   H:sttfa.type =>
   n:(sttfa.etap (sttfa.p nat.nat)) =>
-  sttfa.sym_leibniz
+  leibniz.sym_leibniz
     (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
        (sttfa.arrow H
           (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -190,7 +190,7 @@ eq_bigop_body_O :
   sttfa.eps
     (sttfa.forallP
        (H:sttfa.type =>
-        sttfa.leibniz
+        leibniz.leibniz
           (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
              (sttfa.arrow H
                 (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -205,7 +205,7 @@ def sym_eq_bigop_body_O :
   sttfa.eps
     (sttfa.forallP
        (H:sttfa.type =>
-        sttfa.leibniz
+        leibniz.leibniz
           (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
              (sttfa.arrow H
                 (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -217,7 +217,7 @@ def sym_eq_bigop_body_O :
           (bigops.bigop_body H nat.O)))
   :=
   H:sttfa.type =>
-  sttfa.sym_leibniz
+  leibniz.sym_leibniz
     (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
        (sttfa.arrow H
           (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -235,7 +235,7 @@ eq_bigop_body_S :
        (H:sttfa.type =>
         sttfa.forall nat.nat
           (n:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.leibniz
+           leibniz.leibniz
              (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
                 (sttfa.arrow H
                    (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -255,7 +255,7 @@ def sym_eq_bigop_body_S :
        (H:sttfa.type =>
         sttfa.forall nat.nat
           (n:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.leibniz
+           leibniz.leibniz
              (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
                 (sttfa.arrow H
                    (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -271,7 +271,7 @@ def sym_eq_bigop_body_S :
   :=
   H:sttfa.type =>
   n:(sttfa.etap (sttfa.p nat.nat)) =>
-  sttfa.sym_leibniz
+  leibniz.sym_leibniz
     (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
        (sttfa.arrow H
           (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
