@@ -1,6 +1,0 @@
-STP : THEORY
-BEGIN
-
-  Prop : TYPE = bool
-
-END STP

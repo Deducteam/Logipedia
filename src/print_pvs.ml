@@ -33,7 +33,7 @@ let print__ty_pvs : out_channel -> _ty -> unit =
 (*        print_name oc op;
           List.iter (Printf.fprintf oc " %a" (print true)) l *)
     | Prop       ->
-        output_string oc "Prop"
+        output_string oc "bool"
   in
   print false
 
@@ -51,6 +51,7 @@ let rec print_type_list_pvs : out_channel -> _ty list -> unit = fun oc l ->
   match l with
   | [] -> ()
   | a::[] -> print__ty_pvs oc a
+
   | a::l -> print__ty_pvs oc a;
             Printf.fprintf oc ",";
             print_type_list_pvs oc l;;
@@ -206,17 +207,17 @@ let print_proof_pvs : out_channel -> proof -> unit = fun oc prf ->
         (print acc) q
         (print acc) p 
 
-    | ImplI(j,p)        -> Printf.fprintf oc "(id-flatten)";
+    | ImplI(j,p)        -> Printf.fprintf oc "(sttfa-flatten)";
                             print acc oc p
     | ForallE(j,p,_te)  ->
 
       let pc = conclusion_pvs p
-      in Printf.fprintf oc "(spread (case \"%a\") ((then (do-rewrite) (id-inst \"%a\")) (then (hide 2) (do-rewrite) %a)))"
+      in Printf.fprintf oc "(spread (case \"%a\") ((then (do-rewrite) (sttfa-inst \"%a\")) (then (hide 2) (do-rewrite) %a)))"
         print_te_pvs pc
         print__te_pvs _te
         (print acc) p
 
-    | ForallI(j,p,n)      -> Printf.fprintf oc "(id-skolem \"%s\")" n;
+    | ForallI(j,p,n)      -> Printf.fprintf oc "(sttfa-skolem \"%s\")" n;
                             (print acc) oc p
     | ForallPE(j,p,_ty) ->  print (_ty::acc) oc p
     | ForallPI(j,p,n)     -> print acc oc p
@@ -256,20 +257,20 @@ let print_ast_pvs : out_channel -> string -> ast -> unit = fun oc prefix ast ->
   in
   let pf = "_sttfa" in
   let postfix s = s^pf in
-  line "%s%s : THEORY" prefix pf;
+  line "%s : THEORY" (postfix prefix);
   line "BEGIN";
   let deps oc deps =
     let l = QSet.elements (QSet.remove "sttfa" deps) in
     let l = List.map postfix l in
     let rec deps oc l =
         match l with
-        | [] -> Printf.fprintf oc "STP"
-        | [x] -> Printf.fprintf oc "%s" x
-        | x::t -> Printf.fprintf oc "%s, %a" x deps t
+        | [] -> ()
+        | [x] -> Printf.fprintf oc "IMPORTING %s" x
+        | x::t -> Printf.fprintf oc "IMPORTING %s\n%a" x deps t
     in
     deps oc l
   in
-  line "IMPORTING %a" deps ast.dep;
+  line "%a" deps ast.dep;
   line "";
   List.iter print_item ast.items;
   line "END %s_sttfa" prefix

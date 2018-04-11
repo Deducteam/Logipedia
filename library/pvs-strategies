@@ -1,11 +1,11 @@
-(defstep id-flatten ()
+(defstep sttfa-flatten ()
   (then (expand "id" 1 1) (flatten 1))
   "Core flatten" "Flattening")
 
-(defstep id-skolem (name)
+(defstep sttfa-skolem (name)
   (then (expand "id" 1 1) (skolem 1 name))
   "Core skolem" "Skolemizing")
 
-(defstep id-inst (a)
+(defstep sttfa-inst (a)
   (then (expand "id" -1 1) (inst -1 a) (assert))
   "Core inst" "Instantiation")
