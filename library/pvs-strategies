@@ -28,7 +28,7 @@
    (comment "ForallE")
    (spread
     (case cut)
-    ((then@ (expand "id" -1 1) (inst -1 te))
+    ((then@ (expand "id" -1 1) (inst -1 te) (beta))
      (then@ (hide 2) step))))
   "[sttfa] ForallE")
 

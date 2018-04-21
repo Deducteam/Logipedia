@@ -9,15 +9,16 @@ let forallp = "\\rotatebox[origin=c]{180}{\\ensuremath{\\mathcal{A}}}"
 let sanitize_name : string -> string =
  fun n -> String.concat "\\_" (String.split_on_char '_' n)
 
-
-let sanitize_name_pvs : string -> string =
- fun n ->
+ let sanitize_name_pvs : string -> string =
+  fun n ->
   if String.equal n "True" || String.equal n "False" || String.equal n "Imp"
      || String.equal n "Not" || String.equal n "And" || String.equal n "Or"
      || String.equal n "Ex" || String.equal n "true" || String.equal n "false"
-     || String.equal n "bool" || String.equal (String.sub n 0 1) "_" then
+     || String.equal n "bool"
+     || String.equal n "O"
+     || String.equal (String.sub n 0 1) "_" then
   "sttfa_" ^ n
-  else n
+ else n
 
 
 let print_name : out_channel -> name -> unit =
@@ -98,7 +99,8 @@ let print__te_pvs : out_channel -> _te -> unit =
           print__ty_pvs a print t
     | App (t, u) -> Printf.fprintf oc "%a(%a)" print t print u
     | Forall (x, a, t) ->
-        Printf.fprintf oc "id(FORALL(%s:%a):%a)" x print__ty_pvs a print t
+      Printf.fprintf oc "id(FORALL(%s:%a):%a)" (sanitize_name_pvs x)
+          print__ty_pvs a print t
     | Impl (t, u) -> Printf.fprintf oc "id(%a => %a)" print t print u
     | AbsTy (x, t) -> Printf.fprintf oc "%a" print t
     | Cst (c, l) ->
@@ -208,46 +210,44 @@ let conclusion_pvs : proof -> te =
 
 let print_proof_pvs : out_channel -> proof -> unit =
   fun oc prf ->
-    let rec print_trace_right oc = fun rewrites ->
+(*    let rec print_trace_right oc = fun rewrites ->
       match rewrites with
       | [] -> Printf.fprintf oc ""
       | Beta::l -> Printf.fprintf oc "(beta)%a" print_trace_right l
       | (Delta (md,id))::l -> Printf.fprintf oc "(rewrite \"%s\") %a" (sanitize_name_pvs id) print_trace_right l
-    in
-  let rec print acc oc prf =
+      in *)
+    let rec print acc oc prf =
     match prf with
-    | Assume(j)         -> Printf.fprintf oc "(propax)" 
-    | Lemma((_,s),j)    -> Printf.fprintf oc "(sttfa-lemma \"%s%a\")" s print_type_list_b_pvs acc
+      | Assume(j)         -> Printf.fprintf oc "%%|- (propax)" 
+    | Lemma((q,s),j)    -> Printf.fprintf oc "%%|- (sttfa-lemma \"%s_sttfa.%s%a\")" q s print_type_list_b_pvs acc
     | Conv(j,p,trace)         ->
       let pc = conclusion_pvs p in
-      Printf.fprintf oc "(sttfa-conv \"%a\" %a)"
+      Printf.fprintf oc "%%|- (sttfa-conv \"%a\"\n%a)"
         print_te_pvs pc (print acc) p
     | ImplE(j,p,q)      ->
       let pc = conclusion_pvs p
       in let qc = conclusion_pvs q
       in
-      Printf.fprintf oc "(sttfa-impl-e \"%a\" \"%a\" %a %a)"
+      Printf.fprintf oc "%%|- (sttfa-impl-e \"%a\" \"%a\"\n%a\n%a)"
         print_te_pvs pc
         print_te_pvs qc
         (print acc) q
         (print acc) p 
-    | ImplI(j,p)        -> Printf.fprintf oc "(then@ (sttfa-impl-i) %a)"
+    | ImplI(j,p)        -> Printf.fprintf oc "%%|- (then@ (sttfa-impl-i)\n%a)"
                            (print acc) p
     | ForallE(j,p,_te)  ->
-
       let pc = conclusion_pvs p
-      in Printf.fprintf oc "(sttfa-forall-e \"%a\" \"%a\" %a)"
+      in Printf.fprintf oc "%%|- (sttfa-forall-e \"%a\" \"%a\"\n%a)"
         print_te_pvs pc
         print__te_pvs _te
         (print acc) p
 
-    | ForallI(j,p,n)      -> Printf.fprintf oc "(then@ (sttfa-forall-i \"%s\") %a)" n
+    | ForallI(j,p,n)      -> Printf.fprintf oc "%%|- (then@ (sttfa-forall-i \"%s\")\n%a)" (sanitize_name_pvs n)
                              (print acc) p
     | ForallPE(j,p,_ty)   -> print (_ty::acc) oc p
     | ForallPI(j,p,n)     -> print acc oc p
   in 
-  Printf.fprintf oc "%%|- ";
-  print [] oc prf;
+  print [] oc prf; 
   Printf.fprintf oc "\n"
 
 
