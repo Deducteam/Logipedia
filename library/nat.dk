@@ -2408,6 +2408,7 @@ def not_eq_O_S :
         connectives.Not (logic.eq nat.nat nat.O (nat.S n))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
+  connectives.nmk (logic.eq nat.nat nat.O (nat.S n)) (
   eqOS:(sttfa.eps (logic.eq nat.nat nat.O (nat.S n))) =>
   nat.eq_match_nat_type_O sttfa.bool connectives.False
     (p:(sttfa.etap (sttfa.p nat.nat)) => connectives.True)
@@ -2417,7 +2418,7 @@ def not_eq_O_S :
        (nat.sym_eq_match_nat_type_S sttfa.bool connectives.False
           (p:(sttfa.etap (sttfa.p nat.nat)) => connectives.True) n
           (y:(sttfa.etap (sttfa.p sttfa.bool)) => y) connectives.I) nat.O
-       eqOS).
+       eqOS)).
 
 def lt_to_not_zero :
   sttfa.eps
@@ -3590,11 +3591,12 @@ def not_le_Sn_O :
         connectives.Not (nat.le (nat.S n) nat.O)))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
+  connectives.nmk (nat.le (nat.S n) nat.O) (
   Hlen0:(sttfa.eps (nat.le (nat.S n) nat.O)) =>
   nat.eq_match_nat_type_O sttfa.bool connectives.False
     (p:(sttfa.etap (sttfa.p nat.nat)) => connectives.True)
     (y:(sttfa.etap (sttfa.p sttfa.bool)) => y)
-    (nat.lt_to_not_zero n nat.O Hlen0).
+    (nat.lt_to_not_zero n nat.O Hlen0)).
 
 def not_le_to_not_le_S_S :
   sttfa.eps
@@ -3921,7 +3923,8 @@ def lt_to_not_eq :
              (__:(sttfa.etap (sttfa.p nat.nat)) =>
               logic.eq sttfa.bool (nat.le (nat.S n) __) (nat.le (nat.S n) n))
              (logic.refl sttfa.bool (nat.le (nat.S n) n)) m auto))
-       (nat.not_le_Sn_n n)) (auto:(sttfa.eps connectives.False) => auto).
+       (nat.not_le_Sn_n n)) (connectives.nmk connectives.False
+       (auto:(sttfa.eps connectives.False) => auto)).
 
 def le_n_O_to_eq :
   sttfa.eps

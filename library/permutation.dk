@@ -783,10 +783,11 @@ def permut_S_to_permut_transpose :
                    (permf1 i (nat.le_S i m leim)))))
           (nat.eqb (f i) (f (nat.S m)))
           (nat.not_eq_to_eqb_false (f i) (f (nat.S m))
+          (connectives.nmk (logic.eq nat.nat (f i) (f (nat.S m))) (
              (H:(sttfa.eps (logic.eq nat.nat (f i) (f (nat.S m)))) =>
               logic.absurd (logic.eq nat.nat i (nat.S m))
                 (permf2 i (nat.S m) (nat.le_S i m leim) (nat.le_n (nat.S m))
-                   H) (nat.lt_to_not_eq i (nat.S m) (nat.le_S_S i m leim)))))
+                   H) (nat.lt_to_not_eq i (nat.S m) (nat.le_S_S i m leim)))))))
        (a:(sttfa.etap (sttfa.p nat.nat)) =>
         b:(sttfa.etap (sttfa.p nat.nat)) =>
         leam:(sttfa.eps (nat.le a m)) =>
@@ -1625,7 +1626,7 @@ def invert_permut_f :
                    (y:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat y m)
                    (H (permutation.injn_Sn_n f m0 H1)))
                 (nat.eqb (f m) (f (nat.S m0)))
-                (nat.not_eq_to_eqb_false (f m) (f (nat.S m0))
+                (nat.not_eq_to_eqb_false (f m) (f (nat.S m0)) (connectives.nmk (logic.eq nat.nat (f m) (f (nat.S m0)))
                    (eqf:
                     (sttfa.eps (logic.eq nat.nat (f m) (f (nat.S m0)))) =>
                     logic.absurd (logic.eq nat.nat m (nat.S m0))
@@ -1635,7 +1636,7 @@ def invert_permut_f :
                             (__:(sttfa.etap (sttfa.p nat.nat)) =>
                              logic.eq nat.nat (f m) __)
                             (logic.refl nat.nat (f m)) (f (nat.S m0)) eqf))
-                      (nat.lt_to_not_eq m (nat.S m0) (nat.le_S_S m m0 lem))))))))
+                      (nat.lt_to_not_eq m (nat.S m0) (nat.le_S_S m m0 lem)))))))))
     n lenm.
 
 def let_clause_1063 :

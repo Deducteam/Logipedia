@@ -174,7 +174,7 @@ def bool_discr :
 def not_eq_true_false :
   sttfa.eps (connectives.Not (logic.eq bool.bool bool.true bool.false))
   :=
-  Heq:(sttfa.eps (logic.eq bool.bool bool.true bool.false)) =>
+  connectives.nmk (logic.eq bool.bool bool.true bool.false) (Heq:(sttfa.eps (logic.eq bool.bool bool.true bool.false)) =>
   bool.eq_match_bool_type_false sttfa.bool
     (sttfa.forall sttfa.bool
        (P:(sttfa.etap (sttfa.p sttfa.bool)) => sttfa.impl P P))
@@ -191,7 +191,7 @@ def not_eq_true_false :
           (sttfa.forall sttfa.bool
              (P:(sttfa.etap (sttfa.p sttfa.bool)) => sttfa.impl P P))
           bool.false) (x:(sttfa.etap (sttfa.p sttfa.bool)) => x)
-       (bool.bool_discr bool.true bool.false Heq)) connectives.False.
+       (bool.bool_discr bool.true bool.false Heq)) connectives.False).
 
 def notb :
   sttfa.etap (sttfa.p (sttfa.arrow bool.bool bool.bool))

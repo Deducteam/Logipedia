@@ -520,6 +520,7 @@ def dividesb_false_to_not_divides :
               _0:
               (sttfa.eps
                  (logic.eq bool.bool (nat.eqb (nat.S a) nat.O) bool.false)) =>
+                 connectives.nmk (divides nat.O (nat.S a)) (
               _clearme:(sttfa.eps (primes.divides nat.O (nat.S a))) =>
               primes.match_divides_prop nat.O (nat.S a) connectives.False
                 (q:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -545,7 +546,7 @@ def dividesb_false_to_not_divides :
                                   (nat.times q nat.O)
                                   (nat.commutative_times nat.O q)) nat.O
                                (nat.times_n_O q)) n eqnO)) nat.O eqnO)
-                   (nat.not_eq_O_S a)) _clearme))) n eqnO)
+                   (nat.not_eq_O_S a)) _clearme)))) n eqnO)
     (nat.le_to_or_lt_eq nat.O n (nat.le_O_n n)).
 
 def decidable_divides :

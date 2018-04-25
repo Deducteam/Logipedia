@@ -26,11 +26,12 @@ def prime_to_not_divides_fact :
               sttfa.impl (nat.lt nat.O p)
                 (connectives.Not (primes.divides p y)))
              (__:(sttfa.eps (nat.le (nat.S nat.O) p)) =>
+             connectives.nmk (primes.divides p (nat.S nat.O)) (
               divp:(sttfa.eps (primes.divides p (nat.S nat.O))) =>
               logic.absurd (nat.le p (nat.S nat.O))
                 (primes.divides_to_le p (nat.S nat.O) (nat.lt_O_S nat.O) divp)
                 (nat.lt_to_not_le (nat.S nat.O) p
-                   (primes.prime_to_lt_SO p primep))))))
+                   (primes.prime_to_lt_SO p primep)))))))
     (n1:(sttfa.etap (sttfa.p nat.nat)) =>
      fact.sym_eq_fact (nat.S n1)
        (y:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -58,6 +59,7 @@ def prime_to_not_divides_fact :
                  (sttfa.impl (nat.lt n1 p)
                     (connectives.Not (primes.divides p (fact.fact n1))))) =>
               ltn1:(sttfa.eps (nat.lt (nat.S n1) p)) =>
+              connectives.nmk (primes.divides p (nat.times (fact.fact n1) (nat.S n1))) (
               Hdiv:
               (sttfa.eps
                  (primes.divides p (nat.times (fact.fact n1) (nat.S n1)))) =>
@@ -71,7 +73,7 @@ def prime_to_not_divides_fact :
                    (primes.divides_to_le p (nat.S n1) (nat.lt_O_S n1) Hdiv0)
                    (nat.lt_to_not_le (nat.S n1) p ltn1))
                 (gcd.divides_times_to_divides p (fact.fact n1) (nat.S n1)
-                   primep Hdiv))))) n.
+                   primep Hdiv)))))) n.
 
 def permut_mod :
   sttfa.eps

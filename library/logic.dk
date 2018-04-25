@@ -252,13 +252,7 @@ def eq_f2 :
 def falsity :
   sttfa.eps
     (sttfa.forall sttfa.bool
-       (t:(sttfa.etap (sttfa.p sttfa.bool)) => sttfa.impl connectives.False t))
-  :=
-  t:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  f:
-  (sttfa.eps
-     (sttfa.forall sttfa.bool (x:(sttfa.etap (sttfa.p sttfa.bool)) => x))) =>
-  f t.
+       (t:(sttfa.etap (sttfa.p sttfa.bool)) => sttfa.impl connectives.False t)).
 
 def Not_ind :
   sttfa.eps
@@ -267,12 +261,7 @@ def Not_ind :
         sttfa.forall sttfa.bool
           (Q:(sttfa.etap (sttfa.p sttfa.bool)) =>
            sttfa.impl (sttfa.impl (sttfa.impl A connectives.False) Q)
-             (sttfa.impl (connectives.Not A) Q))))
-  :=
-  A:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  Q:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  F:(sttfa.eps (sttfa.impl (sttfa.impl A connectives.False) Q)) =>
-  N:(sttfa.eps (connectives.Not A)) => F N.
+             (sttfa.impl (connectives.Not A) Q)))).
 
 def absurd :
   sttfa.eps
@@ -299,7 +288,7 @@ def not_to_not :
   B:(sttfa.etap (sttfa.p sttfa.bool)) =>
   auto:(sttfa.eps (sttfa.impl A B)) =>
   auto':(sttfa.eps (connectives.Not B)) =>
-  auto'':(sttfa.eps A) => logic.absurd B (auto auto'') auto'.
+  connectives.nmk A (auto'':(sttfa.eps A) => logic.absurd B (auto auto'') auto').
 
 def sym_not_eq :
   sttfa.eps
@@ -316,10 +305,11 @@ def sym_not_eq :
   x:(sttfa.etap (sttfa.p A)) =>
   y:(sttfa.etap (sttfa.p A)) =>
   auto:(sttfa.eps (connectives.Not (logic.eq A x y))) =>
+  connectives.nmk (logic.eq A y x) (
   auto':(sttfa.eps (logic.eq A y x)) =>
   logic.absurd (logic.eq A x y)
     (logic.rewrite_r A x (__:(sttfa.etap (sttfa.p A)) => logic.eq A x __)
-       (logic.refl A x) y auto') auto.
+       (logic.refl A x) y auto') auto).
 
 def match_And_prop :
   sttfa.eps
