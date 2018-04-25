@@ -298,7 +298,7 @@ module Tracer = struct
     | _, App (_tel, _) -> (`Right, of_name (get_cst _tel))
     | App (_tel, _), _ -> (`Left, of_name (get_cst _tel))
     | _ ->
-        Printf.printf "l:%a\nr:%a\n" Print.print__te left Print.print__te right ;
+        Printf.printf "l:%a\nr:%a\n" Print_pvs.print__te_pvs left Print_pvs.print__te_pvs right ;
         failwith "todo2"
 
 
@@ -307,7 +307,6 @@ module Tracer = struct
     | Te left, Te right -> compare__term left right
     | ForallP (_, left), ForallP (_, right) -> compare_term left right
     | _ -> failwith "todo1"
-
 
   let rec annotate env left right =
     let add_beta trace =

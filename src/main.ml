@@ -86,14 +86,6 @@ let run_on_file file =
   Confluence.finalize () ;
   Print_pvs.current_module := string_of_mident md ;
   let prefix = try Filename.chop_extension file with _ -> file in
-  let stt_file = prefix ^ ".stt" in
-  let oc = open_out stt_file in
-  Print.print_ast oc ast ;
-  close_out oc ;
-  let tex_file = prefix ^ ".tex" in
-  let oc = open_out tex_file in
-  Print.print_ast_tex oc ast ;
-  close_out oc ;
   let stt_file = prefix ^ ".pvs" in
   let oc = open_out stt_file in
   Print_pvs.print_ast_pvs oc prefix ast ;
