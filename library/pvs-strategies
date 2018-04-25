@@ -1,12 +1,30 @@
-(defstep sttfa-lemma (name)
-  (lemma name)
-  "[sttfa] Lemma"
-  "[sttfa] Applying Lemma")
+(defstrat sttfa-skolem (&optional names)
+  (let ((fm (extra-get-formula 1)))
+    (if (forall-expr? fm)
+	(let ((nm (freshname "x"))
+	      (nms (append names (list nm))))
+	  (then@ (skolem 1 nm)
+		 (sttfa-skolem nms)))
+      (let ((stp (cons 'inst (cons -1 names))))
+	stp)))
+  "[sttfa] Skolem")
 
-(defstep sttfa-impl-i ()
-  (then@ (expand "id" 1 1) (flatten 1))
-  "[sttfa] ImplI"
-  "[sttfa] Applying ImplI")
+(defstep sttfa-lemma (name)
+  (then@ (lemma name)
+         (hide-all-but (-1 1))
+	 (sttfa-skolem))
+  "[sttfa] Lemma"
+  "[sttfa] Applying Lemma ~a")
+
+(defstrat sttfa-impl-i (cut1 cut2 step)
+  (then@ 
+   (comment "ImplI")
+   (spread
+    (case cut1 cut2)
+    ((ground)
+     (then@ (hide 2) step)
+     (ground))))
+   "[sttfa] ImplI")
 
 (defstrat sttfa-impl-e (cut1 cut2 step1 step2)
   (then
@@ -19,24 +37,85 @@
   "[sttfa] ImplE")
 
 (defstep sttfa-forall-i (name)
-  (then@ (expand "id" 1 1) (skolem 1 name))
+  (skolem 1 name)
   "[sttfa] ForallI"
-  "[sttfa] Applying ForallI")
+  "[sttfa] Applying ForallI with ~a")
 
 (defstrat sttfa-forall-e (cut te step)
   (then
    (comment "ForallE")
    (spread
     (case cut)
-    ((then@ (expand "id" -1 1) (inst -1 te) (beta))
+    ((then@ (inst -1 te) (beta))
      (then@ (hide 2) step))))
   "[sttfa] ForallE")
 
-(defstrat sttfa-conv (cut step)
+(defstrat sttfa-conv (cut left right step)
   (then
    (comment "Conv")
    (spread
     (case cut)
-    ((grind)
+    ((then@ (hide-all-but (-1 1))
+	    ;; (expand* left)
+	    (let ((steps (loop for name in left collect `(expand ,name)))
+		  (steps (cons 'then steps)))
+	      (then steps))
+	    ;; (expand* right)
+	    (let ((steps (loop for name in right collect `(expand ,name)))
+		  (steps (cons 'then steps)))
+	      (then steps))
+
+	    (beta))
      (then@ (hide 2) step))))
   "[sttfa] Conv")
+
+(defun var-for-type (type)
+  (if (funtype? type)
+      (format nil "p_~a_ARROW_~a_p" (var-for-type (domain type)) (var-for-type (range type)))
+    (format nil "~a" (id type))))
+
+(defun sttfa-build-lambda-term (funtype &optional seen-types)
+  (let*((dom     (domain funtype))
+	(dom-var (var-for-type dom))
+	(ran (range  funtype))
+	(ran-var (var-for-type ran))
+	(seen-types (cons dom-var seen-types)))
+    (format nil "LAMBDA(~a:~a):~a"
+	    dom-var
+	    dom
+	    (if (member ran-var seen-types :test #'string=)
+		(format nil "~a" ran-var)
+	      (if (funtype? ran)
+		  (sttfa-build-lambda-term ran seen-types)
+		(format nil "choose({x:~a|TRUE})" ran))))))
+		
+(defhelper error (msg)
+  (printf msg)
+  "[sttfa] Strategy to signal an error to screen."
+  "")
+
+;; This strategy assumes that the formula in fnum has the form:
+;; EXISTS(x: [<type_1> -> [ <type_2> -> [...]]]) : TRUE
+;; where <FunType> ::= <type> | <type> -> <FunType>
+;; and <type> is an unstructured type.
+(defstep sttfa-nonemptiness (&optional (fnum 1))
+  (let ((ex-quantif (extra-get-expr fnum))
+	 (bindings  (bindings ex-quantif))) 
+    (if (> (length bindings) 1)
+	(error "More than one binding in target formula. Please check why the target formula has not the form EXISTS(x: [...]): TRUE")
+      (let ((type (type (car bindings))))
+	(if (funtype? type) 
+	    (let ((lambda-term (show (sttfa-build-lambda-term type))))
+	      (then
+	       (inst fnum lambda-term)
+	       (tcc)))
+	  (error "Type is not functional.")))))
+  "[sttfa] Strategy to prove nonemptyness of functional types based on nonempty types."
+  "")
+
+
+
+
+
+
+

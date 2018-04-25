@@ -14,12 +14,12 @@ let sanitize_name : string -> string =
   if String.equal n "True" || String.equal n "False" || String.equal n "Imp"
      || String.equal n "Not" || String.equal n "And" || String.equal n "Or"
      || String.equal n "Ex" || String.equal n "true" || String.equal n "false"
-     || String.equal n "bool"
+     || String.equal n "bool" || String.equal n "nat"
+     || String.equal n "fact"
      || String.equal n "O"
      || String.equal (String.sub n 0 1) "_" then
   "sttfa_" ^ n
  else n
-
 
 let print_name : out_channel -> name -> unit =
  fun oc (m, n) ->
@@ -73,9 +73,9 @@ let rec print_string_type_list_pvs : out_channel -> string list -> unit =
  fun oc l ->
   match l with
   | [] -> ()
-  | [a] -> Printf.fprintf oc "%s:TYPE" a
+  | [a] -> Printf.fprintf oc "%s:TYPE+" a
   | a :: l ->
-      Printf.fprintf oc "%s:TYPE," a ;
+      Printf.fprintf oc "%s:TYPE+," a ;
       print_string_type_list_pvs oc l
 
 
@@ -99,9 +99,14 @@ let print__te_pvs : out_channel -> _te -> unit =
           print__ty_pvs a print t
     | App (t, u) -> Printf.fprintf oc "%a(%a)" print t print u
     | Forall (x, a, t) ->
-      Printf.fprintf oc "id(FORALL(%s:%a):%a)" (sanitize_name_pvs x)
+      Printf.fprintf oc
+        "(FORALL(%s:%a):%a)"
+        (sanitize_name_pvs x)
           print__ty_pvs a print t
-    | Impl (t, u) -> Printf.fprintf oc "id(%a => %a)" print t print u
+    | Impl (t, u) -> Printf.fprintf oc
+                       "(%a => %a)"
+                       (* "id(%a => %a)" *)
+                       print t print u
     | AbsTy (x, t) -> Printf.fprintf oc "%a" print t
     | Cst (c, l) ->
         print_name oc c ;
@@ -181,7 +186,7 @@ let print_hyp : out_channel -> hyp -> unit =
       Printf.fprintf oc " "
 
 
-let print_judgment : out_channel -> judgment -> unit =
+(* let print_judgment : out_channel -> judgment -> unit =
  fun oc j ->
   if !with_types then
     Printf.fprintf oc "%a; %a; %a ⊢ %a" print__ty_ctx (List.rev j.ty)
@@ -189,6 +194,8 @@ let print_judgment : out_channel -> judgment -> unit =
   else
     Printf.fprintf oc "%a; %a ⊢ %a" print_te_ctx (List.rev j.te) print_hyp
       j.hyp print_te_pvs j.thm
+
+*)
 
 
 let conclusion_pvs : proof -> te =
@@ -208,6 +215,29 @@ let conclusion_pvs : proof -> te =
   j.thm
 
 
+exception Error 
+
+let decompose_implication = fun p -> match p with
+  | (Te (Impl(a,b))) -> (a,b)
+  |_ -> raise Error
+
+
+let rec listof = fun l -> match l with
+  | [] -> []
+  | Beta::l' -> listof l'
+  | (Delta x)::l' -> x::(listof l')
+
+let rec print_name_list = fun oc -> fun l -> match l with
+  | [] -> ()
+  | x::[] -> Printf.fprintf oc "\"";
+             print_name oc x;
+             Printf.fprintf oc "\""
+  | x::l' -> (Printf.fprintf oc "\"";
+              print_name oc x;
+              Printf.fprintf oc "\" ";
+              print_name_list oc l')             
+             
+          
 let print_proof_pvs : out_channel -> proof -> unit =
   fun oc prf ->
 (*    let rec print_trace_right oc = fun rewrites ->
@@ -222,8 +252,11 @@ let print_proof_pvs : out_channel -> proof -> unit =
     | Lemma((q,s),j)    -> Printf.fprintf oc "%%|- (sttfa-lemma \"%s_sttfa.%s%a\")" q s print_type_list_b_pvs acc
     | Conv(j,p,trace)         ->
       let pc = conclusion_pvs p in
-      Printf.fprintf oc "%%|- (sttfa-conv \"%a\"\n%a)"
-        print_te_pvs pc (print acc) p
+      Printf.fprintf oc "%%|- (sttfa-conv \"%a\" (%a) (%a)\n%a)"
+        print_te_pvs pc
+        print_name_list  (listof trace.left)
+        print_name_list  (listof trace.right)
+        (print acc) p
     | ImplE(j,p,q)      ->
       let pc = conclusion_pvs p
       in let qc = conclusion_pvs q
@@ -233,17 +266,18 @@ let print_proof_pvs : out_channel -> proof -> unit =
         print_te_pvs qc
         (print acc) q
         (print acc) p 
-    | ImplI(j,p)        -> Printf.fprintf oc "%%|- (then@ (sttfa-impl-i)\n%a)"
-                           (print acc) p
+    | ImplI(j,p)        ->
+      let (a,b) = decompose_implication j.thm
+      in Printf.fprintf oc "%%|- (sttfa-impl-i \"%a\" \"%a\"\n%a)"
+        print__te_pvs a print__te_pvs b (print acc) p 
+
     | ForallE(j,p,_te)  ->
       let pc = conclusion_pvs p
       in Printf.fprintf oc "%%|- (sttfa-forall-e \"%a\" \"%a\"\n%a)"
         print_te_pvs pc
         print__te_pvs _te
         (print acc) p
-
-    | ForallI(j,p,n)      -> Printf.fprintf oc "%%|- (then@ (sttfa-forall-i \"%s\")\n%a)" (sanitize_name_pvs n)
-                             (print acc) p
+    | ForallI(j,p,n)      -> Printf.fprintf oc "%%|- (then@ (sttfa-forall-i \"%s\")\n%a)" (sanitize_name_pvs n) (print acc) p
     | ForallPE(j,p,_ty)   -> print (_ty::acc) oc p
     | ForallPI(j,p,n)     -> print acc oc p
   in 
@@ -284,6 +318,7 @@ let print_ast_pvs : out_channel -> string -> ast -> unit =
   let postfix s = s^pf in
   line "%s : THEORY" (postfix prefix);
   line "BEGIN";
+  (*  line "%%|- *TCC* : PROOF (sttfa-nonemptiness)  QED"; *)
   let deps oc deps =
     let l = QSet.elements (QSet.remove "sttfa" deps) in
     let l = List.map postfix l in
