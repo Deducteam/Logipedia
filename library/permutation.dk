@@ -807,7 +807,7 @@ def bijn :
   sttfa.forall nat.nat
     (m:(sttfa.etap (sttfa.p nat.nat)) =>
      sttfa.impl (nat.le m n)
-       (connectives.Ex nat.nat
+       (logic.ex nat.nat
           (p:(sttfa.etap (sttfa.p nat.nat)) =>
            logic.And (nat.le p n) (logic.eq nat.nat (f p) m)))).
 
@@ -839,26 +839,22 @@ def eq_to_bijn :
   logic.match_ex_prop nat.nat
     (p:(sttfa.etap (sttfa.p nat.nat)) =>
      logic.And (nat.le p n) (logic.eq nat.nat (f p) i))
-    (connectives.Ex nat.nat
+    (logic.ex nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
         logic.And (nat.le p n) (logic.eq nat.nat (g p) i)))
     (a:(sttfa.etap (sttfa.p nat.nat)) =>
      _clearme:
      (sttfa.eps (logic.And (nat.le a n) (logic.eq nat.nat (f a) i))) =>
      logic.match_And_prop (nat.le a n) (logic.eq nat.nat (f a) i)
-       (connectives.Ex nat.nat
+       (logic.ex nat.nat
           (p:(sttfa.etap (sttfa.p nat.nat)) =>
            logic.And (nat.le p n) (logic.eq nat.nat (g p) i)))
        (lean:(sttfa.eps (nat.le a n)) =>
         fa:(sttfa.eps (logic.eq nat.nat (f a) i)) =>
-        z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-        f2:
-        (sttfa.eps
-           (sttfa.forall nat.nat
+        logic.ex_intro nat.nat
               (x:(sttfa.etap (sttfa.p nat.nat)) =>
-               sttfa.impl
-                 (logic.And (nat.le x n) (logic.eq nat.nat (g x) i)) z))) =>
-        f2 a
+                 (logic.And (nat.le x n) (logic.eq nat.nat (g x) i)))
+        a
         (logic.conj (nat.le a n) (logic.eq nat.nat (g a) i)
            lean
              (logic.eq_ind nat.nat (f a)
@@ -884,34 +880,30 @@ def bijn_n_Sn :
   i:(sttfa.etap (sttfa.p nat.nat)) =>
   lein:(sttfa.eps (nat.le i (nat.S n))) =>
   logic.match_Or_prop (nat.lt i (nat.S n)) (logic.eq nat.nat i (nat.S n))
-    (connectives.Ex nat.nat
+    (logic.ex nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
         logic.And (nat.le p (nat.S n)) (logic.eq nat.nat (f p) i)))
     (Hi:(sttfa.eps (nat.lt i (nat.S n))) =>
      logic.match_ex_prop nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
         logic.And (nat.le p n) (logic.eq nat.nat (f p) i))
-       (connectives.Ex nat.nat
+       (logic.ex nat.nat
           (p:(sttfa.etap (sttfa.p nat.nat)) =>
            logic.And (nat.le p (nat.S n)) (logic.eq nat.nat (f p) i)))
        (a:(sttfa.etap (sttfa.p nat.nat)) =>
         _clearme:
         (sttfa.eps (logic.And (nat.le a n) (logic.eq nat.nat (f a) i))) =>
         logic.match_And_prop (nat.le a n) (logic.eq nat.nat (f a) i)
-          (connectives.Ex nat.nat
+          (logic.ex nat.nat
              (p:(sttfa.etap (sttfa.p nat.nat)) =>
               logic.And (nat.le p (nat.S n)) (logic.eq nat.nat (f p) i)))
           (lean:(sttfa.eps (nat.le a n)) =>
            fa:(sttfa.eps (logic.eq nat.nat (f a) i)) =>
-           z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-           f4:
-           (sttfa.eps
-              (sttfa.forall nat.nat
+           logic.ex_intro nat.nat
                  (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                  sttfa.impl
                     (logic.And (nat.le x (nat.S n))
-                       (logic.eq nat.nat (f x) i)) z))) =>
-           f4 a
+                       (logic.eq nat.nat (f x) i)))
+           a
              (logic.conj (nat.le a (nat.S n)) (logic.eq nat.nat (f a) i)
               (nat.le_S a n lean)
                 (logic.rewrite_r nat.nat i
@@ -919,15 +911,11 @@ def bijn_n_Sn :
                     logic.eq nat.nat __ i) (logic.refl nat.nat i) (f a) fa)))
           _clearme) (bijf i (nat.le_S_S_to_le i n Hi)))
     (Hi:(sttfa.eps (logic.eq nat.nat i (nat.S n))) =>
-     z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-     f6:
-     (sttfa.eps
-        (sttfa.forall nat.nat
+    logic.ex_intro nat.nat
            (x:(sttfa.etap (sttfa.p nat.nat)) =>
-            sttfa.impl
               (logic.And (nat.le x (nat.S n))
-                 (logic.eq nat.nat (f x) i)) z))) =>
-     f6 i
+                 (logic.eq nat.nat (f x) i)))
+     i
        (logic.conj (nat.le i (nat.S n)) (logic.eq nat.nat (f i) i)
           (logic.eq_coerc (nat.le i i) (nat.le i (nat.S n)) (nat.le_n i)
              (logic.rewrite_l nat.nat i
@@ -968,14 +956,14 @@ def bijn_fg :
   logic.match_ex_prop nat.nat
     (p:(sttfa.etap (sttfa.p nat.nat)) =>
      logic.And (nat.le p n) (logic.eq nat.nat (f p) i))
-    (connectives.Ex nat.nat
+    (logic.ex nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
         logic.And (nat.le p n) (logic.eq nat.nat (f (g p)) i)))
     (a:(sttfa.etap (sttfa.p nat.nat)) =>
      _clearme:
      (sttfa.eps (logic.And (nat.le a n) (logic.eq nat.nat (f a) i))) =>
      logic.match_And_prop (nat.le a n) (logic.eq nat.nat (f a) i)
-       (connectives.Ex nat.nat
+       (logic.ex nat.nat
           (p:(sttfa.etap (sttfa.p nat.nat)) =>
            logic.And (nat.le p n) (logic.eq nat.nat (f (g p)) i)))
        (lean:(sttfa.eps (nat.le a n)) =>
@@ -983,7 +971,7 @@ def bijn_fg :
         logic.match_ex_prop nat.nat
           (p:(sttfa.etap (sttfa.p nat.nat)) =>
            logic.And (nat.le p n) (logic.eq nat.nat (g p) a))
-          (connectives.Ex nat.nat
+          (logic.ex nat.nat
              (p:(sttfa.etap (sttfa.p nat.nat)) =>
               logic.And (nat.le p n) (logic.eq nat.nat (f (g p)) i)))
           (b:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -991,20 +979,16 @@ def bijn_fg :
            (sttfa.eps
               (logic.And (nat.le b n) (logic.eq nat.nat (g b) a))) =>
            logic.match_And_prop (nat.le b n) (logic.eq nat.nat (g b) a)
-             (connectives.Ex nat.nat
+             (logic.ex nat.nat
                 (p:(sttfa.etap (sttfa.p nat.nat)) =>
                  logic.And (nat.le p n) (logic.eq nat.nat (f (g p)) i)))
              (lebn:(sttfa.eps (nat.le b n)) =>
               gb:(sttfa.eps (logic.eq nat.nat (g b) a)) =>
-              z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-              f2:
-              (sttfa.eps
-                 (sttfa.forall nat.nat
+              logic.ex_intro nat.nat
                     (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                     sttfa.impl
                        (logic.And (nat.le x n)
-                          (logic.eq nat.nat (f (g x)) i)) z))) =>
-              f2 b
+                          (logic.eq nat.nat (f (g x)) i)))
+              b
                 (logic.conj (nat.le b n) (logic.eq nat.nat (f (g b)) i)
                  lebn
                    (logic.rewrite_r nat.nat a
@@ -1037,20 +1021,16 @@ def bijn_transpose :
   lean:(sttfa.eps (nat.le a n)) =>
   logic.match_Or_prop (logic.eq bool.bool (nat.eqb a i) bool.true)
     (logic.eq bool.bool (nat.eqb a i) bool.false)
-    (connectives.Ex nat.nat
+    (logic.ex nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
         logic.And (nat.le p n)
           (logic.eq nat.nat (permutation.transpose i j p) a)))
     (Hi:(sttfa.eps (logic.eq bool.bool (nat.eqb a i) bool.true)) =>
-     z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-     f3:
-     (sttfa.eps
-        (sttfa.forall nat.nat
+    logic.ex_intro nat.nat
            (x:(sttfa.etap (sttfa.p nat.nat)) =>
-            sttfa.impl
               (logic.And (nat.le x n)
-                 (logic.eq nat.nat (permutation.transpose i j x) a)) z))) =>
-     f3 j
+                 (logic.eq nat.nat (permutation.transpose i j x) a)))
+     j
        (logic.conj (nat.le j n) (logic.eq nat.nat (permutation.transpose i j j) a)
         lejn
           (logic.eq_ind_r nat.nat i
@@ -1060,20 +1040,16 @@ def bijn_transpose :
     (Hi:(sttfa.eps (logic.eq bool.bool (nat.eqb a i) bool.false)) =>
      logic.match_Or_prop (logic.eq bool.bool (nat.eqb a j) bool.true)
        (logic.eq bool.bool (nat.eqb a j) bool.false)
-       (connectives.Ex nat.nat
+       (logic.ex nat.nat
           (p:(sttfa.etap (sttfa.p nat.nat)) =>
            logic.And (nat.le p n)
              (logic.eq nat.nat (permutation.transpose i j p) a)))
        (Hj:(sttfa.eps (logic.eq bool.bool (nat.eqb a j) bool.true)) =>
-        z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-        f5:
-        (sttfa.eps
-           (sttfa.forall nat.nat
+        logic.ex_intro nat.nat
               (x:(sttfa.etap (sttfa.p nat.nat)) =>
-               sttfa.impl
                  (logic.And (nat.le x n)
-                    (logic.eq nat.nat (permutation.transpose i j x) a)) z))) =>
-        f5 i
+                    (logic.eq nat.nat (permutation.transpose i j x) a)))
+        i
           (logic.conj (nat.le i n) (logic.eq nat.nat (permutation.transpose i j i) a)
            lein
              (logic.eq_ind_r nat.nat j
@@ -1082,15 +1058,11 @@ def bijn_transpose :
                 (permutation.transpose i j i)
                 (permutation.transpose_i_j_i i j))))
        (Hj:(sttfa.eps (logic.eq bool.bool (nat.eqb a j) bool.false)) =>
-        z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-        f7:
-        (sttfa.eps
-           (sttfa.forall nat.nat
+        logic.ex_intro nat.nat
               (x:(sttfa.etap (sttfa.p nat.nat)) =>
-               sttfa.impl
                  (logic.And (nat.le x n)
-                    (logic.eq nat.nat (permutation.transpose i j x) a)) z))) =>
-        f7 a
+                    (logic.eq nat.nat (permutation.transpose i j x) a)))
+        a
           (logic.conj (nat.le a n) (logic.eq nat.nat (permutation.transpose i j a) a)
            lean
              (logic.eq_ind_r bool.bool bool.false
@@ -1167,7 +1139,7 @@ def permut_to_bijn :
        (sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            sttfa.impl (nat.le m nat.O)
-             (connectives.Ex nat.nat
+             (logic.ex nat.nat
                 (p:(sttfa.etap (sttfa.p nat.nat)) =>
                  logic.And (nat.le p nat.O) (logic.eq nat.nat (f p) m)))))
        (H:
@@ -1187,15 +1159,10 @@ def permut_to_bijn :
                           (logic.eq nat.nat i j))))))) =>
         m:(sttfa.etap (sttfa.p nat.nat)) =>
         lem0:(sttfa.eps (nat.le m nat.O)) =>
-        z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-        f8:
-        (sttfa.eps
-           (sttfa.forall nat.nat
+        logic.ex_intro nat.nat
               (x:(sttfa.etap (sttfa.p nat.nat)) =>
-               sttfa.impl
-                 (logic.And (nat.le x nat.O) (logic.eq nat.nat (f x) m))
-                 z))) =>
-        f8 nat.O
+                 (logic.And (nat.le x nat.O) (logic.eq nat.nat (f x) m)))
+        nat.O
           (logic.conj (nat.le nat.O nat.O) (logic.eq nat.nat (f nat.O) m)
            (nat.le_O_n nat.O)
              (nat.le_n_O_elim m lem0 (logic.eq nat.nat (f nat.O))

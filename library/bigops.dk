@@ -2611,9 +2611,9 @@ def iso :
   p2:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
   f1:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
   f2:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
-  connectives.Ex (sttfa.arrow nat.nat nat.nat)
+  logic.ex (sttfa.arrow nat.nat nat.nat)
     (h:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
-     connectives.Ex (sttfa.arrow nat.nat nat.nat)
+     logic.ex (sttfa.arrow nat.nat nat.nat)
        (k:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
         logic.And
           (logic.And
@@ -2966,7 +2966,7 @@ def let_clause_10471 :
                              (sttfa.etap
                                 (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
                              sttfa.impl
-                               (connectives.Ex (sttfa.arrow nat.nat nat.nat)
+                               (logic.ex (sttfa.arrow nat.nat nat.nat)
                                   (k:
                                    (sttfa.etap
                                       (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
@@ -3145,7 +3145,7 @@ def let_clause_10471 :
   h:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
   _clearme0:
   (sttfa.eps
-     (connectives.Ex (sttfa.arrow nat.nat nat.nat)
+     (logic.ex (sttfa.arrow nat.nat nat.nat)
         (k:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
          logic.And
            (logic.And
@@ -3251,7 +3251,7 @@ def bigop_iso :
   _clearme:(sttfa.eps (bigops.iso n1 n2 p1 p2 f1 f2)) =>
   logic.match_ex_prop (sttfa.arrow nat.nat nat.nat)
     (h:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
-     connectives.Ex (sttfa.arrow nat.nat nat.nat)
+     logic.ex (sttfa.arrow nat.nat nat.nat)
        (k:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
         logic.And
           (logic.And
@@ -3270,7 +3270,7 @@ def bigop_iso :
     (h:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
      _clearme0:
      (sttfa.eps
-        (connectives.Ex (sttfa.arrow nat.nat nat.nat)
+        (logic.ex (sttfa.arrow nat.nat nat.nat)
            (k:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
             logic.And
               (logic.And

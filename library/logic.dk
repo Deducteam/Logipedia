@@ -398,7 +398,22 @@ def decidable :
   :=
   A:(sttfa.etap (sttfa.p sttfa.bool)) => logic.Or A (connectives.Not A).
 
-def match_ex_prop :
+ex :
+  sttfa.etap
+    (sttfa.forallK
+       (A:sttfa.type =>
+        sttfa.p (sttfa.arrow (sttfa.arrow A sttfa.bool) sttfa.bool))).
+
+ex_intro : sttfa.eps
+    (sttfa.forallP
+    (A:sttfa.type =>
+     sttfa.forall (sttfa.arrow A sttfa.bool)
+    (P:(sttfa.etap (sttfa.p (sttfa.arrow A sttfa.bool))) =>
+     sttfa.forall A
+    (x:(sttfa.etap (sttfa.p A)) =>
+     sttfa.impl (P x) (ex A P))))).
+
+match_ex_prop :
   sttfa.eps
     (sttfa.forallP
        (A:sttfa.type =>
@@ -409,12 +424,4 @@ def match_ex_prop :
               sttfa.impl
                 (sttfa.forall A
                    (x:(sttfa.etap (sttfa.p A)) => sttfa.impl (P x) return))
-                (sttfa.impl (connectives.Ex A P) return)))))
-  :=
-  A:sttfa.type =>
-  P:(sttfa.etap (sttfa.p (sttfa.arrow A sttfa.bool))) =>
-  return:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  case:
-  (sttfa.eps
-     (sttfa.forall A (x:(sttfa.etap (sttfa.p A)) => sttfa.impl (P x) return))) =>
-  Ex:(sttfa.eps (connectives.Ex A P)) => Ex return case.
+                (sttfa.impl (logic.ex A P) return))))).

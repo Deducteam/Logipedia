@@ -9,18 +9,5 @@ nmk : sttfa.eps (sttfa.forall sttfa.bool
                 (A : sttfa.etap (sttfa.p sttfa.bool) =>
                  sttfa.impl (sttfa.impl A False) (Not A))).
 
-def Ex :
-  sttfa.etap
-    (sttfa.forallK
-       (A:sttfa.type =>
-        sttfa.p (sttfa.arrow (sttfa.arrow A sttfa.bool) sttfa.bool)))
-  :=
-  A:sttfa.type =>
-  f:(sttfa.etap (sttfa.p (sttfa.arrow A sttfa.bool))) =>
-  sttfa.forall sttfa.bool
-    (z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-     sttfa.impl
-       (sttfa.forall A (x:(sttfa.etap (sttfa.p A)) => sttfa.impl (f x) z)) z).
-
 def I :
   sttfa.eps connectives.True.

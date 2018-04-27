@@ -1328,12 +1328,7 @@ def congruent_exp_pred_SO :
                                                      (sttfa.etap
                                                         (sttfa.p nat.nat)) =>
                                                      __)
-                                                    (z:
-                                                     (sttfa.etap
-                                                        (sttfa.p sttfa.bool)) =>
-                                                     f:
-                                                     (sttfa.eps
-                                                        (sttfa.forall
+                                                    (logic.ex_intro
                                                            (sttfa.arrow
                                                               nat.nat nat.nat)
                                                            (x:
@@ -1342,8 +1337,7 @@ def congruent_exp_pred_SO :
                                                                   (sttfa.arrow
                                                                     nat.nat
                                                                     nat.nat))) =>
-                                                            sttfa.impl
-                                                              (connectives.Ex
+                                                              (logic.ex
                                                                  (sttfa.arrow
                                                                     nat.nat
                                                                     nat.nat)
@@ -1459,21 +1453,13 @@ def congruent_exp_pred_SO :
                                                                     nat.nat)) =>
                                                                     div_mod.mod
                                                                     (nat.times
-                                                                    a _0) p))))
-                                                              z))) =>
-                                                     f
+                                                                    a _0) p)))))
                                                        (i:
                                                         (sttfa.etap
                                                            (sttfa.p nat.nat)) =>
                                                         div_mod.mod
                                                           (nat.times a i) p)
-                                                       (z0:
-                                                        (sttfa.etap
-                                                           (sttfa.p
-                                                              sttfa.bool)) =>
-                                                        f2:
-                                                        (sttfa.eps
-                                                           (sttfa.forall
+                                                       (logic.ex_intro
                                                               (sttfa.arrow
                                                                  nat.nat
                                                                  nat.nat)
@@ -1483,7 +1469,6 @@ def congruent_exp_pred_SO :
                                                                     (sttfa.arrow
                                                                     nat.nat
                                                                     nat.nat))) =>
-                                                               sttfa.impl
                                                                  (logic.And
                                                                     (
                                                                     logic.And
@@ -1606,9 +1591,7 @@ def congruent_exp_pred_SO :
                                                                     nat.nat)) =>
                                                                     div_mod.mod
                                                                     (nat.times
-                                                                    a _0) p)))
-                                                                 z0))) =>
-                                                        f2
+                                                                    a _0) p))))
                                                           (permutation.invert_permut
                                                              (nat.pred p)
                                                              (i:
