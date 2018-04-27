@@ -91,19 +91,14 @@ def permut_mod :
   a:(sttfa.etap (sttfa.p nat.nat)) =>
   primep:(sttfa.eps (primes.prime p)) =>
   ndiv:(sttfa.eps (connectives.Not (primes.divides p a))) =>
-  z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  f:
-  (sttfa.eps
-     (sttfa.impl
+  logic.conj
         (sttfa.forall nat.nat
            (x:(sttfa.etap (sttfa.p nat.nat)) =>
             sttfa.impl (nat.le x (nat.pred p))
               (nat.le (div_mod.mod (nat.times a x) p) (nat.pred p))))
-        (sttfa.impl
            (permutation.injn
               (n:(sttfa.etap (sttfa.p nat.nat)) =>
-               div_mod.mod (nat.times a n) p) (nat.pred p)) z))) =>
-  f
+               div_mod.mod (nat.times a n) p) (nat.pred p))
     (i:(sttfa.etap (sttfa.p nat.nat)) =>
      lei:(sttfa.eps (nat.le i (nat.pred p))) =>
      nat.le_S_S_to_le (div_mod.mod (nat.times a i) p) (nat.pred p)
@@ -1358,9 +1353,9 @@ def congruent_exp_pred_SO :
                                                                     (sttfa.arrow
                                                                     nat.nat
                                                                     nat.nat))) =>
-                                                                  connectives.And
+                                                                  logic.And
                                                                     (
-                                                                    connectives.And
+                                                                    logic.And
                                                                     (sttfa.forall
                                                                     nat.nat
                                                                     (i:
@@ -1489,9 +1484,9 @@ def congruent_exp_pred_SO :
                                                                     nat.nat
                                                                     nat.nat))) =>
                                                                sttfa.impl
-                                                                 (connectives.And
+                                                                 (logic.And
                                                                     (
-                                                                    connectives.And
+                                                                    logic.And
                                                                     (sttfa.forall
                                                                     nat.nat
                                                                     (i:
@@ -1623,14 +1618,8 @@ def congruent_exp_pred_SO :
                                                               div_mod.mod
                                                                 (nat.times a
                                                                    i) p))
-                                                          (z1:
-                                                           (sttfa.etap
-                                                              (sttfa.p
-                                                                 sttfa.bool)) =>
-                                                           f0:
-                                                           (sttfa.eps
-                                                              (sttfa.impl
-                                                                 (connectives.And
+                                                          (logic.conj
+                                                                 (logic.And
                                                                     (
                                                                     sttfa.forall
                                                                     nat.nat
@@ -1716,7 +1705,6 @@ def congruent_exp_pred_SO :
                                                                     (sttfa.p
                                                                     nat.nat)) =>
                                                                     _0)))
-                                                                 (sttfa.impl
                                                                     (
                                                                     bigops.sub_hk
                                                                     (permutation.invert_permut
@@ -1772,15 +1760,7 @@ def congruent_exp_pred_SO :
                                                                     div_mod.mod
                                                                     (nat.times
                                                                     a _0) p))
-                                                                    z1))) =>
-                                                           f0
-                                                             (z2:
-                                                              (sttfa.etap
-                                                                 (sttfa.p
-                                                                    sttfa.bool)) =>
-                                                              f20:
-                                                              (sttfa.eps
-                                                                 (sttfa.impl
+                                                             (logic.conj
                                                                     (
                                                                     sttfa.forall
                                                                     nat.nat
@@ -1811,8 +1791,6 @@ def congruent_exp_pred_SO :
                                                                     (div_mod.mod
                                                                     (nat.times
                                                                     a x) p)))))
-                                                                    (
-                                                                    sttfa.impl
                                                                     (bigops.sub_hk
                                                                     (i:
                                                                     (sttfa.etap
@@ -1866,8 +1844,7 @@ def congruent_exp_pred_SO :
                                                                     (sttfa.etap
                                                                     (sttfa.p
                                                                     nat.nat)) =>
-                                                                    _0)) z2))) =>
-                                                              f20
+                                                                    _0))
                                                                 (i:
                                                                  (sttfa.etap
                                                                     (
@@ -1919,16 +1896,8 @@ def congruent_exp_pred_SO :
                                                                     nat.O) i)
                                                                     bool.true)
                                                                     bool.true)) =>
-                                                                 z3:
-                                                                 (sttfa.etap
-                                                                    (
-                                                                    sttfa.p
-                                                                    sttfa.bool)) =>
-                                                                 f3:
-                                                                 (sttfa.eps
-                                                                    (
-                                                                    sttfa.impl
-                                                                    (connectives.And
+                                                                    logic.conj
+                                                                    (logic.And
                                                                     (nat.lt
                                                                     (div_mod.mod
                                                                     (nat.times
@@ -1947,7 +1916,6 @@ def congruent_exp_pred_SO :
                                                                     a i) p))
                                                                     bool.true)
                                                                     bool.true))
-                                                                    (sttfa.impl
                                                                     (logic.eq
                                                                     nat.nat
                                                                     (permutation.invert_permut
@@ -1963,17 +1931,8 @@ def congruent_exp_pred_SO :
                                                                     (div_mod.mod
                                                                     (nat.times
                                                                     a i) p))
-                                                                    i) z3))) =>
-                                                                 f3
-                                                                   (z4:
-                                                                    (
-                                                                    sttfa.etap
-                                                                    (sttfa.p
-                                                                    sttfa.bool)) =>
-                                                                    f4:
-                                                                    (
-                                                                    sttfa.eps
-                                                                    (sttfa.impl
+                                                                    i)
+                                                                   (logic.conj
                                                                     (nat.lt
                                                                     (div_mod.mod
                                                                     (nat.times
@@ -1981,7 +1940,6 @@ def congruent_exp_pred_SO :
                                                                     (nat.S
                                                                     (nat.pred
                                                                     p)))
-                                                                    (sttfa.impl
                                                                     (logic.eq
                                                                     bool.bool
                                                                     (bool.andb
@@ -1993,8 +1951,6 @@ def congruent_exp_pred_SO :
                                                                     a i) p))
                                                                     bool.true)
                                                                     bool.true)
-                                                                    z4))) =>
-                                                                    f4
                                                                     (logic.eq_ind_r
                                                                     nat.nat
                                                                     p
@@ -2457,16 +2413,8 @@ def congruent_exp_pred_SO :
                                                                     nat.O) i)
                                                                     bool.true)
                                                                     bool.true)) =>
-                                                                 z2:
-                                                                 (sttfa.etap
-                                                                    (
-                                                                    sttfa.p
-                                                                    sttfa.bool)) =>
-                                                                 f5:
-                                                                 (sttfa.eps
-                                                                    (
-                                                                    sttfa.impl
-                                                                    (connectives.And
+                                                                    logic.conj
+                                                                    (logic.And
                                                                     (nat.lt
                                                                     (permutation.invert_permut
                                                                     (nat.pred
@@ -2501,7 +2449,6 @@ def congruent_exp_pred_SO :
                                                                     i))
                                                                     bool.true)
                                                                     bool.true))
-                                                                    (sttfa.impl
                                                                     (logic.eq
                                                                     nat.nat
                                                                     (div_mod.mod
@@ -2518,17 +2465,7 @@ def congruent_exp_pred_SO :
                                                                     (nat.times
                                                                     a i0) p)
                                                                     i)) p) i)
-                                                                    z2))) =>
-                                                                 f5
-                                                                   (z3:
-                                                                    (
-                                                                    sttfa.etap
-                                                                    (sttfa.p
-                                                                    sttfa.bool)) =>
-                                                                    f6:
-                                                                    (
-                                                                    sttfa.eps
-                                                                    (sttfa.impl
+                                                                   (logic.conj
                                                                     (nat.lt
                                                                     (permutation.invert_permut
                                                                     (nat.pred
@@ -2544,7 +2481,6 @@ def congruent_exp_pred_SO :
                                                                     (nat.S
                                                                     (nat.pred
                                                                     p)))
-                                                                    (sttfa.impl
                                                                     (logic.eq
                                                                     bool.bool
                                                                     (bool.andb
@@ -2564,8 +2500,6 @@ def congruent_exp_pred_SO :
                                                                     i))
                                                                     bool.true)
                                                                     bool.true)
-                                                                    z3))) =>
-                                                                    f6
                                                                     (nat.le_S_S
                                                                     (permutation.invert_permut
                                                                     (nat.pred

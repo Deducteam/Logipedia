@@ -658,7 +658,7 @@ def prime :
   sttfa.etap (sttfa.p (sttfa.arrow nat.nat sttfa.bool))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
-  connectives.And (nat.lt (nat.S nat.O) n)
+  logic.And (nat.lt (nat.S nat.O) n)
     (sttfa.forall nat.nat
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.impl (primes.divides m n)

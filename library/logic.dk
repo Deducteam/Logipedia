@@ -311,6 +311,17 @@ def sym_not_eq :
     (logic.rewrite_r A x (__:(sttfa.etap (sttfa.p A)) => logic.eq A x __)
        (logic.refl A x) y auto') auto).
 
+And :
+  sttfa.etap
+    (sttfa.p (sttfa.arrow sttfa.bool (sttfa.arrow sttfa.bool sttfa.bool))).
+
+
+conj : sttfa.eps (sttfa.forall sttfa.bool
+                 (A : sttfa.etap (sttfa.p sttfa.bool) =>
+                  sttfa.forall sttfa.bool
+                 (B : sttfa.etap (sttfa.p sttfa.bool) =>
+                  sttfa.impl A (sttfa.impl B (And A B))))).
+
 def match_And_prop :
   sttfa.eps
     (sttfa.forall sttfa.bool
@@ -320,13 +331,7 @@ def match_And_prop :
            sttfa.forall sttfa.bool
              (return:(sttfa.etap (sttfa.p sttfa.bool)) =>
               sttfa.impl (sttfa.impl A (sttfa.impl B return))
-                (sttfa.impl (connectives.And A B) return)))))
-  :=
-  A:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  return:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  case:(sttfa.eps (sttfa.impl A (sttfa.impl B return))) =>
-  and:(sttfa.eps (connectives.And A B)) => and return case.
+                (sttfa.impl (logic.And A B) return))))).
 
 def proj1 :
   sttfa.eps
@@ -334,11 +339,11 @@ def proj1 :
        (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
         sttfa.forall sttfa.bool
           (B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-           sttfa.impl (connectives.And A B) A)))
+           sttfa.impl (logic.And A B) A)))
   :=
   A:(sttfa.etap (sttfa.p sttfa.bool)) =>
   B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  AB:(sttfa.eps (connectives.And A B)) =>
+  AB:(sttfa.eps (logic.And A B)) =>
   logic.match_And_prop A B A
     (_x_120:(sttfa.eps A) => _x_119:(sttfa.eps B) => _x_120) AB.
 
@@ -348,11 +353,11 @@ def proj2 :
        (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
         sttfa.forall sttfa.bool
           (B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-           sttfa.impl (connectives.And A B) B)))
+           sttfa.impl (logic.And A B) B)))
   :=
   A:(sttfa.etap (sttfa.p sttfa.bool)) =>
   B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  AB:(sttfa.eps (connectives.And A B)) =>
+  AB:(sttfa.eps (logic.And A B)) =>
   logic.match_And_prop A B B
     (_x_120:(sttfa.eps A) => _x_119:(sttfa.eps B) => _x_119) AB.
 
