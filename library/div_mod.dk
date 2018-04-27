@@ -10,7 +10,17 @@ mod_aux_body :
        (sttfa.arrow nat.nat
           (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat)))).
 
-eq_mod_aux :
+axiom_mod_aux :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+          (div_mod.mod_aux p)
+          (nat.filter_nat_type
+             (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+             div_mod.mod_aux_body p))).
+
+def eq_mod_aux :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -18,7 +28,13 @@ eq_mod_aux :
           (div_mod.mod_aux p)
           (nat.filter_nat_type
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
-             div_mod.mod_aux_body p))).
+             div_mod.mod_aux_body p))) :=
+p:(sttfa.etap (sttfa.p nat.nat)) =>
+leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+          (div_mod.mod_aux p)
+          (nat.filter_nat_type
+             (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+             div_mod.mod_aux_body p) (axiom_mod_aux p).
 
 def sym_eq_mod_aux :
   sttfa.eps
@@ -35,12 +51,23 @@ def sym_eq_mod_aux :
     (nat.filter_nat_type (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        div_mod.mod_aux_body p) (div_mod.eq_mod_aux p).
 
-eq_mod_aux_body_O :
+axiom_mod_aux_body_O :
+  sttfa.eps
+    (leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+       (div_mod.mod_aux_body nat.O)
+       (m:(sttfa.etap (sttfa.p nat.nat)) =>
+        n:(sttfa.etap (sttfa.p nat.nat)) => m)).
+
+def eq_mod_aux_body_O :
   sttfa.eps
     (leibniz.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        (div_mod.mod_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
-        n:(sttfa.etap (sttfa.p nat.nat)) => m)).
+        n:(sttfa.etap (sttfa.p nat.nat)) => m)) :=
+leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+       (div_mod.mod_aux_body nat.O)
+       (m:(sttfa.etap (sttfa.p nat.nat)) =>
+        n:(sttfa.etap (sttfa.p nat.nat)) => m) axiom_mod_aux_body_O.
 
 def sym_eq_mod_aux_body_O :
   sttfa.eps
@@ -53,7 +80,18 @@ def sym_eq_mod_aux_body_O :
     (m:(sttfa.etap (sttfa.p nat.nat)) =>
      n:(sttfa.etap (sttfa.p nat.nat)) => m) div_mod.eq_mod_aux_body_O.
 
-eq_mod_aux_body_S :
+axiom_mod_aux_body_S :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+          (div_mod.mod_aux_body (nat.S p))
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           n:(sttfa.etap (sttfa.p nat.nat)) =>
+           bool.match_bool_type nat.nat m
+             (div_mod.mod_aux p (nat.minus m (nat.S n)) n) (nat.leb m n)))).
+
+def eq_mod_aux_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -62,7 +100,14 @@ eq_mod_aux_body_S :
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            n:(sttfa.etap (sttfa.p nat.nat)) =>
            bool.match_bool_type nat.nat m
-             (div_mod.mod_aux p (nat.minus m (nat.S n)) n) (nat.leb m n)))).
+             (div_mod.mod_aux p (nat.minus m (nat.S n)) n) (nat.leb m n)))) :=
+p:(sttfa.etap (sttfa.p nat.nat)) =>
+leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+          (div_mod.mod_aux_body (nat.S p))
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           n:(sttfa.etap (sttfa.p nat.nat)) =>
+           bool.match_bool_type nat.nat m
+             (div_mod.mod_aux p (nat.minus m (nat.S n)) n) (nat.leb m n)) (axiom_mod_aux_body_S p).
 
 def sym_eq_mod_aux_body_S :
   sttfa.eps
@@ -104,7 +149,17 @@ div_aux_body :
        (sttfa.arrow nat.nat
           (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat)))).
 
-eq_div_aux :
+axiom_div_aux :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+          (div_mod.div_aux p)
+          (nat.filter_nat_type
+             (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+             div_mod.div_aux_body p))).
+
+def eq_div_aux :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -112,7 +167,13 @@ eq_div_aux :
           (div_mod.div_aux p)
           (nat.filter_nat_type
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
-             div_mod.div_aux_body p))).
+             div_mod.div_aux_body p))) :=
+p:(sttfa.etap (sttfa.p nat.nat)) =>
+leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+          (div_mod.div_aux p)
+          (nat.filter_nat_type
+             (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+             div_mod.div_aux_body p) (axiom_div_aux p).
 
 def sym_eq_div_aux :
   sttfa.eps
@@ -129,12 +190,23 @@ def sym_eq_div_aux :
     (nat.filter_nat_type (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        div_mod.div_aux_body p) (div_mod.eq_div_aux p).
 
-eq_div_aux_body_O :
+axiom_div_aux_body_O :
+  sttfa.eps
+    (leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+       (div_mod.div_aux_body nat.O)
+       (m:(sttfa.etap (sttfa.p nat.nat)) =>
+        n:(sttfa.etap (sttfa.p nat.nat)) => nat.O)).
+
+def eq_div_aux_body_O :
   sttfa.eps
     (leibniz.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        (div_mod.div_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
-        n:(sttfa.etap (sttfa.p nat.nat)) => nat.O)).
+        n:(sttfa.etap (sttfa.p nat.nat)) => nat.O)) :=
+leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+       (div_mod.div_aux_body nat.O)
+       (m:(sttfa.etap (sttfa.p nat.nat)) =>
+        n:(sttfa.etap (sttfa.p nat.nat)) => nat.O) axiom_div_aux_body_O.
 
 def sym_eq_div_aux_body_O :
   sttfa.eps
@@ -148,7 +220,19 @@ def sym_eq_div_aux_body_O :
     (m:(sttfa.etap (sttfa.p nat.nat)) =>
      n:(sttfa.etap (sttfa.p nat.nat)) => nat.O) div_mod.eq_div_aux_body_O.
 
-eq_div_aux_body_S :
+axiom_div_aux_body_S :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+          (div_mod.div_aux_body (nat.S p))
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           n:(sttfa.etap (sttfa.p nat.nat)) =>
+           bool.match_bool_type nat.nat nat.O
+             (nat.S (div_mod.div_aux p (nat.minus m (nat.S n)) n))
+             (nat.leb m n)))).
+
+def eq_div_aux_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -158,7 +242,15 @@ eq_div_aux_body_S :
            n:(sttfa.etap (sttfa.p nat.nat)) =>
            bool.match_bool_type nat.nat nat.O
              (nat.S (div_mod.div_aux p (nat.minus m (nat.S n)) n))
-             (nat.leb m n)))).
+             (nat.leb m n)))) :=
+p:(sttfa.etap (sttfa.p nat.nat)) =>
+leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+          (div_mod.div_aux_body (nat.S p))
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           n:(sttfa.etap (sttfa.p nat.nat)) =>
+           bool.match_bool_type nat.nat nat.O
+             (nat.S (div_mod.div_aux p (nat.minus m (nat.S n)) n))
+             (nat.leb m n)) (axiom_div_aux_body_S p).
 
 def sym_eq_div_aux_body_S :
   sttfa.eps

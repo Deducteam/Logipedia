@@ -2,12 +2,22 @@ fact : sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat)).
 
 fact_body : sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat)).
 
-eq_fact :
+axiom_fact :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.eq nat.nat (fact.fact n)
+          (nat.filter_nat_type nat.nat fact.fact_body n))).
+
+def eq_fact :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         leibniz.leibniz nat.nat (fact.fact n)
-          (nat.filter_nat_type nat.nat fact.fact_body n))).
+          (nat.filter_nat_type nat.nat fact.fact_body n))) :=
+n:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.eq_leibniz nat.nat (fact.fact n)
+          (nat.filter_nat_type nat.nat fact.fact_body n) (axiom_fact n).
 
 def sym_eq_fact :
   sttfa.eps
@@ -20,8 +30,12 @@ def sym_eq_fact :
   leibniz.sym_leibniz nat.nat (fact.fact n)
     (nat.filter_nat_type nat.nat fact.fact_body n) (fact.eq_fact n).
 
-eq_fact_body_O :
-  sttfa.eps (leibniz.leibniz nat.nat (fact.fact_body nat.O) (nat.S nat.O)).
+axiom_fact_body_O :
+  sttfa.eps (leibniz.eq nat.nat (fact.fact_body nat.O) (nat.S nat.O)).
+
+def eq_fact_body_O :
+  sttfa.eps (leibniz.leibniz nat.nat (fact.fact_body nat.O) (nat.S nat.O)) :=
+leibniz.eq_leibniz nat.nat (fact.fact_body nat.O) (nat.S nat.O) axiom_fact_body_O.
 
 def sym_eq_fact_body_O :
   sttfa.eps (leibniz.leibniz nat.nat (nat.S nat.O) (fact.fact_body nat.O))
@@ -29,12 +43,22 @@ def sym_eq_fact_body_O :
   leibniz.sym_leibniz nat.nat (fact.fact_body nat.O) (nat.S nat.O)
     fact.eq_fact_body_O.
 
-eq_fact_body_S :
+axiom_fact_body_S :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.eq nat.nat (fact.fact_body (nat.S n))
+          (nat.times (fact.fact n) (nat.S n)))).
+
+def eq_fact_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         leibniz.leibniz nat.nat (fact.fact_body (nat.S n))
-          (nat.times (fact.fact n) (nat.S n)))).
+          (nat.times (fact.fact n) (nat.S n)))) :=
+n:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.eq_leibniz nat.nat (fact.fact_body (nat.S n))
+          (nat.times (fact.fact n) (nat.S n)) (axiom_fact_body_S n).
 
 def sym_eq_fact_body_S :
   sttfa.eps
