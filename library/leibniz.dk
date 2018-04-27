@@ -1,13 +1,35 @@
-def leibniz : sttfa.etap (sttfa.forallK (X:sttfa.type => sttfa.p (sttfa.arrow X (sttfa.arrow X sttfa.bool)))) :=
-    X:sttfa.type  =>
-    x:sttfa.eta X =>
-    y:sttfa.eta X =>
-    sttfa.forall (sttfa.arrow X sttfa.bool) (P : sttfa.eta (sttfa.arrow X sttfa.bool) => sttfa.impl (P x) (P y)).
+eq :  sttfa.etap (sttfa.forallK (A:sttfa.type => sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))).
 
-def refl : sttfa.eps (sttfa.forallP (X : sttfa.type => sttfa.forall X (x:sttfa.eta X => leibniz X x x))) :=
-    X:sttfa.type  =>
-    x:sttfa.eta X =>
-    P:sttfa.eta (sttfa.arrow X sttfa.bool) =>
-    p:sttfa.eps (P x) => p.
+refl : sttfa.eps (sttfa.forallP (A:sttfa.type => sttfa.forall A
+                                    (x:sttfa.eta A => eq A x x))).
 
-def sym_leibniz : sttfa.eps (sttfa.forallP (X:sttfa.type => sttfa.forall X (x:sttfa.eta X => sttfa.forall X (y:sttfa.eta X => sttfa.impl (leibniz X x y) (leibniz X y x))))).
+def leibniz : sttfa.etap (sttfa.forallK (A:sttfa.type => sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))) :=
+A : sttfa.type =>
+x : sttfa.eta A =>
+y : sttfa.eta A => (sttfa.forall (sttfa.arrow A sttfa.bool)
+                                  (P : sttfa.eta (sttfa.arrow A sttfa.bool) =>
+                                  sttfa.impl (P x) (P y))).
+
+eq_leibniz : sttfa.eps (sttfa.forallP (A:sttfa.type =>
+                    sttfa.forall A (x:sttfa.eta A =>
+                    sttfa.forall A (y:sttfa.eta A =>
+                    sttfa.impl (eq A x y) (leibniz A x y))))).
+
+def refl_leibniz : sttfa.eps (sttfa.forallP(A:sttfa.type =>
+sttfa.forall A (x:sttfa.eta A => (leibniz A x x)))) :=
+A : sttfa.type =>
+x : sttfa.eta A =>
+P : sttfa.eta (sttfa.arrow A sttfa.bool) =>
+H : sttfa.eps (P x) => H.
+
+def sym_leibniz : sttfa.eps (sttfa.forallP (A:sttfa.type =>
+                 sttfa.forall A (x:sttfa.eta A =>
+                 sttfa.forall A (y:sttfa.eta A =>
+                 sttfa.impl (leibniz A x y) (leibniz A y x))))) :=
+A : sttfa.type =>
+x : sttfa.eta A =>
+y : sttfa.eta A =>
+eq : sttfa.eps (leibniz A x y) =>
+eq (z : sttfa.eta A => sttfa.impl (leibniz A z y) (leibniz A z x))
+                (e : sttfa.eps (leibniz A x y) => refl_leibniz A x)
+                (refl_leibniz A y).
