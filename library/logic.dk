@@ -249,44 +249,17 @@ def eq_f2 :
                     logic.eq C (f x1 y1) (f x1 __)) (logic.refl C (f x1 y1))
                    y2 E2) x2 E1) y2 E2) x2 E1) y1 E2) x1 E1.
 
-True : sttfa.etap (sttfa.p sttfa.bool).
-
-I : sttfa.eps logic.True.
-
-False : sttfa.etap (sttfa.p sttfa.bool).
-
-falsity :
-  sttfa.eps
-    (sttfa.forall sttfa.bool
-       (t:(sttfa.etap (sttfa.p sttfa.bool)) => sttfa.impl logic.False t)).
-
-Not :
-  sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool)).
-
-nmk : sttfa.eps (sttfa.forall sttfa.bool
-                (A : sttfa.etap (sttfa.p sttfa.bool) =>
-                 sttfa.impl (sttfa.impl A False) (Not A))).
-
-Not_ind :
-  sttfa.eps
-    (sttfa.forall sttfa.bool
-       (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
-        sttfa.forall sttfa.bool
-          (Q:(sttfa.etap (sttfa.p sttfa.bool)) =>
-           sttfa.impl (sttfa.impl (sttfa.impl A logic.False) Q)
-             (sttfa.impl (logic.Not A) Q)))).
-
 def absurd :
   sttfa.eps
     (sttfa.forall sttfa.bool
        (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
-        sttfa.impl A (sttfa.impl (logic.Not A) logic.False)))
+        sttfa.impl A (sttfa.impl (connectives.Not A) connectives.False)))
   :=
   A:(sttfa.etap (sttfa.p sttfa.bool)) =>
   H:(sttfa.eps A) =>
-  Hn:(sttfa.eps (logic.Not A)) =>
-  logic.Not_ind A logic.False
-    (_x_80:(sttfa.eps (sttfa.impl A logic.False)) => _x_80 H) Hn.
+  Hn:(sttfa.eps (connectives.Not A)) =>
+  connectives.Not_ind A connectives.False
+    (_x_80:(sttfa.eps (sttfa.impl A connectives.False)) => _x_80 H) Hn.
 
 def not_to_not :
   sttfa.eps
@@ -295,13 +268,13 @@ def not_to_not :
         sttfa.forall sttfa.bool
           (B:(sttfa.etap (sttfa.p sttfa.bool)) =>
            sttfa.impl (sttfa.impl A B)
-             (sttfa.impl (logic.Not B) (logic.Not A)))))
+             (sttfa.impl (connectives.Not B) (connectives.Not A)))))
   :=
   A:(sttfa.etap (sttfa.p sttfa.bool)) =>
   B:(sttfa.etap (sttfa.p sttfa.bool)) =>
   auto:(sttfa.eps (sttfa.impl A B)) =>
-  auto':(sttfa.eps (logic.Not B)) =>
-  logic.nmk A (auto'':(sttfa.eps A) => logic.absurd B (auto auto'') auto').
+  auto':(sttfa.eps (connectives.Not B)) =>
+  connectives.nmk A (auto'':(sttfa.eps A) => logic.absurd B (auto auto'') auto').
 
 def sym_not_eq :
   sttfa.eps
@@ -311,40 +284,18 @@ def sym_not_eq :
           (x:(sttfa.etap (sttfa.p A)) =>
            sttfa.forall A
              (y:(sttfa.etap (sttfa.p A)) =>
-              sttfa.impl (logic.Not (logic.eq A x y))
-                (logic.Not (logic.eq A y x))))))
+              sttfa.impl (connectives.Not (logic.eq A x y))
+                (connectives.Not (logic.eq A y x))))))
   :=
   A:sttfa.type =>
   x:(sttfa.etap (sttfa.p A)) =>
   y:(sttfa.etap (sttfa.p A)) =>
-  auto:(sttfa.eps (logic.Not (logic.eq A x y))) =>
-  logic.nmk (logic.eq A y x) (
+  auto:(sttfa.eps (connectives.Not (logic.eq A x y))) =>
+  connectives.nmk (logic.eq A y x) (
   auto':(sttfa.eps (logic.eq A y x)) =>
   logic.absurd (logic.eq A x y)
     (logic.rewrite_r A x (__:(sttfa.etap (sttfa.p A)) => logic.eq A x __)
        (logic.refl A x) y auto') auto).
-
-And :
-  sttfa.etap
-    (sttfa.p (sttfa.arrow sttfa.bool (sttfa.arrow sttfa.bool sttfa.bool))).
-
-
-conj : sttfa.eps (sttfa.forall sttfa.bool
-                 (A : sttfa.etap (sttfa.p sttfa.bool) =>
-                  sttfa.forall sttfa.bool
-                 (B : sttfa.etap (sttfa.p sttfa.bool) =>
-                  sttfa.impl A (sttfa.impl B (And A B))))).
-
-match_And_prop :
-  sttfa.eps
-    (sttfa.forall sttfa.bool
-       (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
-        sttfa.forall sttfa.bool
-          (B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-           sttfa.forall sttfa.bool
-             (return:(sttfa.etap (sttfa.p sttfa.bool)) =>
-              sttfa.impl (sttfa.impl A (sttfa.impl B return))
-                (sttfa.impl (logic.And A B) return))))).
 
 def proj1 :
   sttfa.eps
@@ -352,12 +303,12 @@ def proj1 :
        (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
         sttfa.forall sttfa.bool
           (B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-           sttfa.impl (logic.And A B) A)))
+           sttfa.impl (connectives.And A B) A)))
   :=
   A:(sttfa.etap (sttfa.p sttfa.bool)) =>
   B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  AB:(sttfa.eps (logic.And A B)) =>
-  logic.match_And_prop A B A
+  AB:(sttfa.eps (connectives.And A B)) =>
+  connectives.match_And_prop A B A
     (_x_120:(sttfa.eps A) => _x_119:(sttfa.eps B) => _x_120) AB.
 
 def proj2 :
@@ -366,75 +317,16 @@ def proj2 :
        (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
         sttfa.forall sttfa.bool
           (B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-           sttfa.impl (logic.And A B) B)))
+           sttfa.impl (connectives.And A B) B)))
   :=
   A:(sttfa.etap (sttfa.p sttfa.bool)) =>
   B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  AB:(sttfa.eps (logic.And A B)) =>
-  logic.match_And_prop A B B
+  AB:(sttfa.eps (connectives.And A B)) =>
+  connectives.match_And_prop A B B
     (_x_120:(sttfa.eps A) => _x_119:(sttfa.eps B) => _x_119) AB.
-
-Or :
-  sttfa.etap
-    (sttfa.p (sttfa.arrow sttfa.bool (sttfa.arrow sttfa.bool sttfa.bool))).
-
-or_introl :
-    sttfa.eps
-    (sttfa.forall sttfa.bool
-       (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
-        sttfa.forall sttfa.bool
-          (B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-           sttfa.impl A (Or A B)))).
-
-or_intror :
-    sttfa.eps
-    (sttfa.forall sttfa.bool
-       (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
-        sttfa.forall sttfa.bool
-          (B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-           sttfa.impl B (Or A B)))).
-
-match_Or_prop :
-  sttfa.eps
-    (sttfa.forall sttfa.bool
-       (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
-        sttfa.forall sttfa.bool
-          (B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-           sttfa.forall sttfa.bool
-             (return:(sttfa.etap (sttfa.p sttfa.bool)) =>
-              sttfa.impl (sttfa.impl A return)
-                (sttfa.impl (sttfa.impl B return)
-                   (sttfa.impl (logic.Or A B) return)))))).
 
 def decidable :
   sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool))
   :=
-  A:(sttfa.etap (sttfa.p sttfa.bool)) => logic.Or A (logic.Not A).
+  A:(sttfa.etap (sttfa.p sttfa.bool)) => connectives.Or A (connectives.Not A).
 
-ex :
-  sttfa.etap
-    (sttfa.forallK
-       (A:sttfa.type =>
-        sttfa.p (sttfa.arrow (sttfa.arrow A sttfa.bool) sttfa.bool))).
-
-ex_intro : sttfa.eps
-    (sttfa.forallP
-    (A:sttfa.type =>
-     sttfa.forall (sttfa.arrow A sttfa.bool)
-    (P:(sttfa.etap (sttfa.p (sttfa.arrow A sttfa.bool))) =>
-     sttfa.forall A
-    (x:(sttfa.etap (sttfa.p A)) =>
-     sttfa.impl (P x) (ex A P))))).
-
-match_ex_prop :
-  sttfa.eps
-    (sttfa.forallP
-       (A:sttfa.type =>
-        sttfa.forall (sttfa.arrow A sttfa.bool)
-          (P:(sttfa.etap (sttfa.p (sttfa.arrow A sttfa.bool))) =>
-           sttfa.forall sttfa.bool
-             (return:(sttfa.etap (sttfa.p sttfa.bool)) =>
-              sttfa.impl
-                (sttfa.forall A
-                   (x:(sttfa.etap (sttfa.p A)) => sttfa.impl (P x) return))
-                (sttfa.impl (logic.ex A P) return))))).

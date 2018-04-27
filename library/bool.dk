@@ -29,7 +29,7 @@ axiom_match_bool_type_true :
           (case_true:(sttfa.etap (sttfa.p return)) =>
            sttfa.forall return
              (case_false:(sttfa.etap (sttfa.p return)) =>
-              leibniz.eq return
+              leibniz.equal return
                 (bool.match_bool_type return case_true case_false bool.true)
                 case_true)))).
 
@@ -47,7 +47,7 @@ def eq_match_bool_type_true :
 return : sttfa.type =>
 case_true:(sttfa.etap (sttfa.p return)) =>
 case_false:(sttfa.etap (sttfa.p return)) =>
-leibniz.eq_leibniz return (bool.match_bool_type return case_true case_false bool.true) case_true (axiom_match_bool_type_true return case_true case_false).
+leibniz.equal_leibniz return (bool.match_bool_type return case_true case_false bool.true) case_true (axiom_match_bool_type_true return case_true case_false).
 
 axiom_match_bool_type_false :
   sttfa.eps
@@ -57,7 +57,7 @@ axiom_match_bool_type_false :
           (case_true:(sttfa.etap (sttfa.p return)) =>
            sttfa.forall return
              (case_false:(sttfa.etap (sttfa.p return)) =>
-              leibniz.eq return
+              leibniz.equal return
                 (bool.match_bool_type return case_true case_false bool.false)
                 case_false)))).
 
@@ -75,7 +75,7 @@ def eq_match_bool_type_false :
 return : sttfa.type =>
 case_true:(sttfa.etap (sttfa.p return)) =>
 case_false:(sttfa.etap (sttfa.p return)) =>
-leibniz.eq_leibniz return (bool.match_bool_type return case_true case_false bool.false) case_false (axiom_match_bool_type_false return case_true case_false).
+leibniz.equal_leibniz return (bool.match_bool_type return case_true case_false bool.false) case_false (axiom_match_bool_type_false return case_true case_false).
 
 def sym_eq_match_bool_type_true :
   sttfa.eps
@@ -204,9 +204,9 @@ def bool_discr :
        x) y Deq.
 
 def not_eq_true_false :
-  sttfa.eps (logic.Not (logic.eq bool.bool bool.true bool.false))
+  sttfa.eps (connectives.Not (logic.eq bool.bool bool.true bool.false))
   :=
-  logic.nmk (logic.eq bool.bool bool.true bool.false) (Heq:(sttfa.eps (logic.eq bool.bool bool.true bool.false)) =>
+  connectives.nmk (logic.eq bool.bool bool.true bool.false) (Heq:(sttfa.eps (logic.eq bool.bool bool.true bool.false)) =>
   bool.eq_match_bool_type_false sttfa.bool
     (sttfa.forall sttfa.bool
        (P:(sttfa.etap (sttfa.p sttfa.bool)) => sttfa.impl P P))
@@ -223,7 +223,7 @@ def not_eq_true_false :
           (sttfa.forall sttfa.bool
              (P:(sttfa.etap (sttfa.p sttfa.bool)) => sttfa.impl P P))
           bool.false) (x:(sttfa.etap (sttfa.p sttfa.bool)) => x)
-       (bool.bool_discr bool.true bool.false Heq)) logic.False).
+       (bool.bool_discr bool.true bool.false Heq)) connectives.False).
 
 def notb :
   sttfa.etap (sttfa.p (sttfa.arrow bool.bool bool.bool))
@@ -321,15 +321,15 @@ def true_or_false :
   sttfa.eps
     (sttfa.forall bool.bool
        (b:(sttfa.etap (sttfa.p bool.bool)) =>
-        logic.Or (logic.eq bool.bool b bool.true)
+        connectives.Or (logic.eq bool.bool b bool.true)
           (logic.eq bool.bool b bool.false)))
   :=
   b:(sttfa.etap (sttfa.p bool.bool)) =>
   bool.match_bool_prop
     (__:(sttfa.etap (sttfa.p bool.bool)) =>
-     logic.Or (logic.eq bool.bool __ bool.true)
+     connectives.Or (logic.eq bool.bool __ bool.true)
        (logic.eq bool.bool __ bool.false))
-    (logic.or_introl (logic.eq bool.bool bool.true bool.true)
+    (connectives.or_introl (logic.eq bool.bool bool.true bool.true)
      (logic.eq bool.bool bool.true bool.false)
      (logic.refl bool.bool bool.true))
     (relations.RC_reflexive bool.bool

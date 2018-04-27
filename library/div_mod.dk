@@ -14,7 +14,7 @@ axiom_mod_aux :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+        leibniz.equal (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (div_mod.mod_aux p)
           (nat.filter_nat_type
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
@@ -30,7 +30,7 @@ def eq_mod_aux :
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
              div_mod.mod_aux_body p))) :=
 p:(sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+leibniz.equal_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (div_mod.mod_aux p)
           (nat.filter_nat_type
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
@@ -53,7 +53,7 @@ def sym_eq_mod_aux :
 
 axiom_mod_aux_body_O :
   sttfa.eps
-    (leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+    (leibniz.equal (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        (div_mod.mod_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         n:(sttfa.etap (sttfa.p nat.nat)) => m)).
@@ -64,7 +64,7 @@ def eq_mod_aux_body_O :
        (div_mod.mod_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         n:(sttfa.etap (sttfa.p nat.nat)) => m)) :=
-leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+leibniz.equal_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        (div_mod.mod_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         n:(sttfa.etap (sttfa.p nat.nat)) => m) axiom_mod_aux_body_O.
@@ -84,7 +84,7 @@ axiom_mod_aux_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+        leibniz.equal (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (div_mod.mod_aux_body (nat.S p))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            n:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -102,7 +102,7 @@ def eq_mod_aux_body_S :
            bool.match_bool_type nat.nat m
              (div_mod.mod_aux p (nat.minus m (nat.S n)) n) (nat.leb m n)))) :=
 p:(sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+leibniz.equal_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (div_mod.mod_aux_body (nat.S p))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            n:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -153,7 +153,7 @@ axiom_div_aux :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+        leibniz.equal (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (div_mod.div_aux p)
           (nat.filter_nat_type
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
@@ -169,7 +169,7 @@ def eq_div_aux :
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
              div_mod.div_aux_body p))) :=
 p:(sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+leibniz.equal_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (div_mod.div_aux p)
           (nat.filter_nat_type
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
@@ -192,7 +192,7 @@ def sym_eq_div_aux :
 
 axiom_div_aux_body_O :
   sttfa.eps
-    (leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+    (leibniz.equal (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        (div_mod.div_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         n:(sttfa.etap (sttfa.p nat.nat)) => nat.O)).
@@ -203,7 +203,7 @@ def eq_div_aux_body_O :
        (div_mod.div_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         n:(sttfa.etap (sttfa.p nat.nat)) => nat.O)) :=
-leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+leibniz.equal_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        (div_mod.div_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         n:(sttfa.etap (sttfa.p nat.nat)) => nat.O) axiom_div_aux_body_O.
@@ -224,7 +224,7 @@ axiom_div_aux_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+        leibniz.equal (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (div_mod.div_aux_body (nat.S p))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            n:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -244,7 +244,7 @@ def eq_div_aux_body_S :
              (nat.S (div_mod.div_aux p (nat.minus m (nat.S n)) n))
              (nat.leb m n)))) :=
 p:(sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+leibniz.equal_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (div_mod.div_aux_body (nat.S p))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            n:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -396,8 +396,8 @@ def le_mod_aux_m_m :
                 (bool.sym_eq_match_bool_type_false nat.nat n
                    (div_mod.mod_aux q (nat.minus n (nat.S m)) m)
                    (y:(sttfa.etap (sttfa.p nat.nat)) =>
-                    sttfa.impl (logic.Not (nat.le n m)) (nat.le y m))
-                   (notlenm:(sttfa.eps (logic.Not (nat.le n m))) =>
+                    sttfa.impl (connectives.Not (nat.le n m)) (nat.le y m))
+                   (notlenm:(sttfa.eps (connectives.Not (nat.le n m))) =>
                     Hind (nat.minus n (nat.S m)) m
                       (nat.le_plus_to_minus n (nat.S m) q
                          (nat.transitive_le n (nat.S q)
@@ -456,7 +456,7 @@ def lt_mod_m_m :
     (__:(sttfa.etap (sttfa.p nat.nat)) =>
      sttfa.impl (nat.lt nat.O __) (nat.lt (div_mod.mod n __) __))
     (abs:(sttfa.eps (nat.lt nat.O nat.O)) =>
-     logic.falsity (nat.lt (div_mod.mod n nat.O) nat.O)
+     connectives.falsity (nat.lt (div_mod.mod n nat.O) nat.O)
        (logic.absurd (nat.le (nat.S nat.O) nat.O) abs (nat.not_le_Sn_O nat.O)))
     (p:(sttfa.etap (sttfa.p nat.nat)) =>
      nat.sym_eq_match_nat_type_S nat.nat n
@@ -907,7 +907,7 @@ def div_aux_mod_aux :
                                   (div_mod.mod_aux q (nat.minus n (nat.S m))
                                      m)
                                   (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                                   sttfa.impl (logic.Not (nat.le n m))
+                                   sttfa.impl (connectives.Not (nat.le n m))
                                      (logic.eq nat.nat n
                                         (nat.plus
                                            (nat.times
@@ -925,7 +925,7 @@ def div_aux_mod_aux :
                                            (nat.minus n (nat.S m)) m))
                                      (y:(sttfa.etap (sttfa.p nat.nat)) =>
                                       sttfa.impl
-                                        (logic.Not (nat.le n m))
+                                        (connectives.Not (nat.le n m))
                                         (logic.eq nat.nat n
                                            (nat.plus (nat.times y (nat.S m))
                                               (div_mod.mod_aux q
@@ -939,7 +939,7 @@ def div_aux_mod_aux :
                                             (sttfa.p
                                                (sttfa.arrow nat.nat nat.nat))) =>
                                          sttfa.impl
-                                           (logic.Not (nat.le n m))
+                                           (connectives.Not (nat.le n m))
                                            (logic.eq nat.nat n
                                               (nat.plus (y (nat.S m))
                                                  (div_mod.mod_aux q
@@ -955,7 +955,7 @@ def div_aux_mod_aux :
                                                   (sttfa.arrow nat.nat
                                                      nat.nat))) =>
                                             sttfa.impl
-                                              (logic.Not (nat.le n m))
+                                              (connectives.Not (nat.le n m))
                                               (logic.eq nat.nat n
                                                  (nat.plus (y (nat.S m))
                                                     (div_mod.mod_aux q
@@ -970,7 +970,7 @@ def div_aux_mod_aux :
                                                      (sttfa.arrow nat.nat
                                                         nat.nat))) =>
                                                sttfa.impl
-                                                 (logic.Not
+                                                 (connectives.Not
                                                     (nat.le n m))
                                                  (logic.eq nat.nat n
                                                     (nat.plus (y (nat.S m))
@@ -984,7 +984,7 @@ def div_aux_mod_aux :
                                                         (sttfa.arrow nat.nat
                                                            nat.nat))) =>
                                                   sttfa.impl
-                                                    (logic.Not
+                                                    (connectives.Not
                                                        (nat.le n m))
                                                     (logic.eq nat.nat n
                                                        (nat.plus
@@ -1010,7 +1010,7 @@ def div_aux_mod_aux :
                                                            (sttfa.arrow
                                                               nat.nat nat.nat))) =>
                                                      sttfa.impl
-                                                       (logic.Not
+                                                       (connectives.Not
                                                           (nat.le n m))
                                                        (logic.eq nat.nat n
                                                           (nat.plus
@@ -1037,7 +1037,7 @@ def div_aux_mod_aux :
                                                                  nat.nat
                                                                  nat.nat))) =>
                                                         sttfa.impl
-                                                          (logic.Not
+                                                          (connectives.Not
                                                              (nat.le n m))
                                                           (logic.eq nat.nat
                                                              n
@@ -1075,7 +1075,7 @@ def div_aux_mod_aux :
                                                                     nat.nat
                                                                     nat.nat))) =>
                                                            sttfa.impl
-                                                             (logic.Not
+                                                             (connectives.Not
                                                                 (nat.le n m))
                                                              (logic.eq
                                                                 nat.nat n
@@ -1108,7 +1108,7 @@ def div_aux_mod_aux :
                                                                     nat.nat
                                                                     nat.nat))) =>
                                                               sttfa.impl
-                                                                (logic.Not
+                                                                (connectives.Not
                                                                    (nat.le n
                                                                     m))
                                                                 (logic.eq
@@ -1138,7 +1138,7 @@ def div_aux_mod_aux :
                                                                     nat.nat
                                                                     nat.nat))) =>
                                                                  sttfa.impl
-                                                                   (logic.Not
+                                                                   (connectives.Not
                                                                     (nat.le
                                                                     n m))
                                                                    (logic.eq
@@ -1154,7 +1154,7 @@ def div_aux_mod_aux :
                                                                 (lenm:
                                                                  (sttfa.eps
                                                                     (
-                                                                    logic.Not
+                                                                    connectives.Not
                                                                     (nat.le
                                                                     n m))) =>
                                                                  logic.eq_ind_r
@@ -1799,7 +1799,7 @@ def let_clause_1062 :
                                         (logic.eq nat.nat a
                                            (nat.plus (nat.times q1 b) r1))
                                         (sttfa.impl
-                                           (logic.Not (nat.le q q1))
+                                           (connectives.Not (nat.le q q1))
                                            (logic.eq nat.nat a
                                               (nat.plus r1 (nat.times b q1))))))))))))))))
   :=
@@ -1815,7 +1815,7 @@ def let_clause_1062 :
   _clearme0:(sttfa.eps (div_mod.div_mod_spec a b q1 r1)) =>
   ltr1b:(sttfa.eps (nat.lt r1 b)) =>
   spec1:(sttfa.eps (logic.eq nat.nat a (nat.plus (nat.times q1 b) r1))) =>
-  leqq1:(sttfa.eps (logic.Not (nat.le q q1))) =>
+  leqq1:(sttfa.eps (connectives.Not (nat.le q q1))) =>
   logic.rewrite_l nat.nat (nat.plus (nat.times b q1) r1)
     (__:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat a __)
     (logic.rewrite_l nat.nat (nat.times q1 b)
@@ -1861,10 +1861,10 @@ def div_mod_spec_to_eq :
         nat.leb_elim q q1
           (__:(sttfa.etap (sttfa.p bool.bool)) => logic.eq nat.nat q q1)
           (leqq1:(sttfa.eps (nat.le q q1)) =>
-           logic.match_Or_prop (nat.lt q q1) (logic.eq nat.nat q q1)
+           connectives.match_Or_prop (nat.lt q q1) (logic.eq nat.nat q q1)
              (logic.eq nat.nat q q1)
              (ltqq1:(sttfa.eps (nat.lt q q1)) =>
-              logic.falsity (logic.eq nat.nat q q1)
+              connectives.falsity (logic.eq nat.nat q q1)
                 (logic.absurd (nat.le (nat.S a) a)
                    (nat.lt_to_le_to_lt a (nat.times (nat.S q) b) a
                       (logic.eq_ind_r nat.nat (nat.plus (nat.times q b) r)
@@ -2066,8 +2066,8 @@ def div_mod_spec_to_eq :
                 (__:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat q __)
                 (logic.refl nat.nat q) q1 _x_172)
              (nat.le_to_or_lt_eq q q1 leqq1))
-          (leqq1:(sttfa.eps (logic.Not (nat.le q q1))) =>
-           logic.falsity (logic.eq nat.nat q q1)
+          (leqq1:(sttfa.eps (connectives.Not (nat.le q q1))) =>
+           connectives.falsity (logic.eq nat.nat q q1)
              (logic.absurd (nat.le (nat.S a) a)
                 (nat.lt_to_le_to_lt a (nat.times (nat.S q1) b) a
                    (logic.eq_ind_r nat.nat (nat.plus (nat.times q1 b) r1)

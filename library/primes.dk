@@ -210,7 +210,7 @@ def eq_mod_to_divides :
                       (nat.plus nat.O n) (nat.plus_O_n n))
                    (nat.minus nat.O (nat.minus m n))
                    (nat.minus_O_n (nat.minus m n)))))))
-    (nm:(sttfa.eps (logic.Not (nat.le n m))) =>
+    (nm:(sttfa.eps (connectives.Not (nat.le n m))) =>
      primes.quotient q (nat.minus n m)
        (nat.minus (div_mod.div n q) (div_mod.div m q))
        (logic.eq_ind_r nat.nat
@@ -358,7 +358,7 @@ def divides_to_le :
        (__:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.impl (logic.eq nat.nat m (nat.times n __)) (nat.le n m))
        (eqm:(sttfa.eps (logic.eq nat.nat m (nat.times n nat.O))) =>
-        logic.falsity (nat.le n m)
+        connectives.falsity (nat.le n m)
           (logic.absurd (nat.le (nat.S m) nat.O)
              (logic.eq_coerc (nat.le (nat.S nat.O) m)
                 (nat.le (nat.S m) nat.O) posm
@@ -417,7 +417,7 @@ def dividesb_true_to_divides :
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
-  logic.match_Or_prop (nat.lt nat.O n) (logic.eq nat.nat nat.O n)
+  connectives.match_Or_prop (nat.lt nat.O n) (logic.eq nat.nat nat.O n)
     (sttfa.impl (logic.eq bool.bool (primes.dividesb n m) bool.true)
        (primes.divides n m))
     (posn:(sttfa.eps (nat.lt nat.O n)) =>
@@ -449,13 +449,13 @@ def dividesb_false_to_not_divides :
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            sttfa.impl (logic.eq bool.bool (primes.dividesb n m) bool.false)
-             (logic.Not (primes.divides n m)))))
+             (connectives.Not (primes.divides n m)))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
-  logic.match_Or_prop (nat.lt nat.O n) (logic.eq nat.nat nat.O n)
+  connectives.match_Or_prop (nat.lt nat.O n) (logic.eq nat.nat nat.O n)
     (sttfa.impl (logic.eq bool.bool (primes.dividesb n m) bool.false)
-       (logic.Not (primes.divides n m)))
+       (connectives.Not (primes.divides n m)))
     (posn:(sttfa.eps (nat.lt nat.O n)) =>
      ndivbnm:
      (sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.false)) =>
@@ -467,41 +467,41 @@ def dividesb_false_to_not_divides :
      logic.eq_ind nat.nat nat.O
        (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.impl (logic.eq bool.bool (primes.dividesb x_1 m) bool.false)
-          (logic.Not (primes.divides x_1 m)))
+          (connectives.Not (primes.divides x_1 m)))
        (nat.sym_eq_match_nat_type_O nat.nat m
           (p:(sttfa.etap (sttfa.p nat.nat)) => div_mod.mod_aux m m p)
           (y:(sttfa.etap (sttfa.p nat.nat)) =>
            sttfa.impl (logic.eq bool.bool (nat.eqb y nat.O) bool.false)
-             (logic.Not (primes.divides nat.O m)))
+             (connectives.Not (primes.divides nat.O m)))
           (nat.nat_case m
              (__:(sttfa.etap (sttfa.p nat.nat)) =>
               sttfa.impl (logic.eq bool.bool (nat.eqb __ nat.O) bool.false)
-                (logic.Not (primes.divides nat.O __)))
+                (connectives.Not (primes.divides nat.O __)))
              (nat.sym_eq_eqb nat.O
                 (y:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
                  sttfa.impl (logic.eq nat.nat m nat.O)
                    (sttfa.impl (logic.eq bool.bool (y nat.O) bool.false)
-                      (logic.Not (primes.divides nat.O nat.O))))
+                      (connectives.Not (primes.divides nat.O nat.O))))
                 (nat.sym_eq_filter_nat_type_O
                    (sttfa.arrow nat.nat bool.bool) nat.eqb_body
                    (y:
                     (sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
                     sttfa.impl (logic.eq nat.nat m nat.O)
                       (sttfa.impl (logic.eq bool.bool (y nat.O) bool.false)
-                         (logic.Not (primes.divides nat.O nat.O))))
+                         (connectives.Not (primes.divides nat.O nat.O))))
                    (nat.sym_eq_eqb_body_O
                       (y:
                        (sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
                        sttfa.impl (logic.eq nat.nat m nat.O)
                          (sttfa.impl
                             (logic.eq bool.bool (y nat.O) bool.false)
-                            (logic.Not (primes.divides nat.O nat.O))))
+                            (connectives.Not (primes.divides nat.O nat.O))))
                       (nat.sym_eq_match_nat_type_O bool.bool bool.true
                          (q:(sttfa.etap (sttfa.p nat.nat)) => bool.false)
                          (y:(sttfa.etap (sttfa.p bool.bool)) =>
                           sttfa.impl (logic.eq nat.nat m nat.O)
                             (sttfa.impl (logic.eq bool.bool y bool.false)
-                               (logic.Not (primes.divides nat.O nat.O))))
+                               (connectives.Not (primes.divides nat.O nat.O))))
                          (auto:(sttfa.eps (logic.eq nat.nat m nat.O)) =>
                           auto':
                           (sttfa.eps
@@ -520,9 +520,9 @@ def dividesb_false_to_not_divides :
               _0:
               (sttfa.eps
                  (logic.eq bool.bool (nat.eqb (nat.S a) nat.O) bool.false)) =>
-                 logic.nmk (divides nat.O (nat.S a)) (
+                 connectives.nmk (divides nat.O (nat.S a)) (
               _clearme:(sttfa.eps (primes.divides nat.O (nat.S a))) =>
-              primes.match_divides_prop nat.O (nat.S a) logic.False
+              primes.match_divides_prop nat.O (nat.S a) connectives.False
                 (q:(sttfa.etap (sttfa.p nat.nat)) =>
                  auto:
                  (sttfa.eps (logic.eq nat.nat (nat.S a) (nat.times nat.O q))) =>
@@ -559,11 +559,11 @@ def decidable_divides :
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
-  logic.match_Or_prop (logic.eq bool.bool (primes.dividesb n m) bool.true)
+  connectives.match_Or_prop (logic.eq bool.bool (primes.dividesb n m) bool.true)
     (logic.eq bool.bool (primes.dividesb n m) bool.false)
     (logic.decidable (primes.divides n m))
     (auto:(sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.true)) =>
-     logic.or_introl (primes.divides n m) (logic.Not (primes.divides n m))
+     connectives.or_introl (primes.divides n m) (connectives.Not (primes.divides n m))
        (primes.dividesb_true_to_divides n m
           (logic.rewrite_r bool.bool bool.true
              (__:(sttfa.etap (sttfa.p bool.bool)) =>
@@ -571,7 +571,7 @@ def decidable_divides :
              (logic.refl bool.bool bool.true) (primes.dividesb n m) auto)))
     (auto:
      (sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.false)) =>
-     logic.or_intror (primes.divides n m) (logic.Not (primes.divides n m))
+     connectives.or_intror (primes.divides n m) (connectives.Not (primes.divides n m))
        (primes.dividesb_false_to_not_divides n m
           (logic.rewrite_r bool.bool bool.false
              (__:(sttfa.etap (sttfa.p bool.bool)) =>
@@ -593,7 +593,7 @@ def divides_to_dividesb_true :
   m:(sttfa.etap (sttfa.p nat.nat)) =>
   posn:(sttfa.eps (nat.lt nat.O n)) =>
   divnm:(sttfa.eps (primes.divides n m)) =>
-  logic.match_Or_prop (logic.eq bool.bool (primes.dividesb n m) bool.true)
+  connectives.match_Or_prop (logic.eq bool.bool (primes.dividesb n m) bool.true)
     (logic.eq bool.bool (primes.dividesb n m) bool.false)
     (logic.eq bool.bool (primes.dividesb n m) bool.true)
     (auto:(sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.true)) =>
@@ -603,7 +603,7 @@ def divides_to_dividesb_true :
        (primes.dividesb n m) auto)
     (ndivbnm:
      (sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.false)) =>
-     logic.falsity (logic.eq bool.bool (primes.dividesb n m) bool.true)
+     connectives.falsity (logic.eq bool.bool (primes.dividesb n m) bool.true)
        (logic.absurd (primes.divides n m) divnm
           (primes.dividesb_false_to_not_divides n m
              (logic.rewrite_r bool.bool bool.false
@@ -619,20 +619,20 @@ def not_divides_to_dividesb_false :
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            sttfa.impl (nat.lt nat.O n)
-             (sttfa.impl (logic.Not (primes.divides n m))
+             (sttfa.impl (connectives.Not (primes.divides n m))
                 (logic.eq bool.bool (primes.dividesb n m) bool.false)))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
   posn:(sttfa.eps (nat.lt nat.O n)) =>
-  logic.match_Or_prop (logic.eq bool.bool (primes.dividesb n m) bool.true)
+  connectives.match_Or_prop (logic.eq bool.bool (primes.dividesb n m) bool.true)
     (logic.eq bool.bool (primes.dividesb n m) bool.false)
-    (sttfa.impl (logic.Not (primes.divides n m))
+    (sttfa.impl (connectives.Not (primes.divides n m))
        (logic.eq bool.bool (primes.dividesb n m) bool.false))
     (divbnm:
      (sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.true)) =>
-     ndivnm:(sttfa.eps (logic.Not (primes.divides n m))) =>
-     logic.falsity (logic.eq bool.bool (primes.dividesb n m) bool.false)
+     ndivnm:(sttfa.eps (connectives.Not (primes.divides n m))) =>
+     connectives.falsity (logic.eq bool.bool (primes.dividesb n m) bool.false)
        (logic.absurd (primes.divides n m)
           (primes.dividesb_true_to_divides n m
              (logic.rewrite_r bool.bool bool.true
@@ -642,7 +642,7 @@ def not_divides_to_dividesb_false :
           ndivnm))
     (auto:
      (sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.false)) =>
-     auto':(sttfa.eps (logic.Not (primes.divides n m))) =>
+     auto':(sttfa.eps (connectives.Not (primes.divides n m))) =>
      logic.rewrite_r bool.bool bool.false
        (__:(sttfa.etap (sttfa.p bool.bool)) =>
         logic.eq bool.bool __ bool.false) (logic.refl bool.bool bool.false)
@@ -652,7 +652,7 @@ def prime :
   sttfa.etap (sttfa.p (sttfa.arrow nat.nat sttfa.bool))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
-  logic.And (nat.lt (nat.S nat.O) n)
+  connectives.And (nat.lt (nat.S nat.O) n)
     (sttfa.forall nat.nat
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.impl (primes.divides m n)
@@ -666,7 +666,7 @@ def prime_to_lt_O :
   :=
   p:(sttfa.etap (sttfa.p nat.nat)) =>
   _clearme:(sttfa.eps (primes.prime p)) =>
-  logic.match_And_prop (nat.lt (nat.S nat.O) p)
+  connectives.match_And_prop (nat.lt (nat.S nat.O) p)
     (sttfa.forall nat.nat
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.impl (primes.divides m p)
@@ -689,7 +689,7 @@ def prime_to_lt_SO :
   :=
   p:(sttfa.etap (sttfa.p nat.nat)) =>
   _clearme:(sttfa.eps (primes.prime p)) =>
-  logic.match_And_prop (nat.lt (nat.S nat.O) p)
+  connectives.match_And_prop (nat.lt (nat.S nat.O) p)
     (sttfa.forall nat.nat
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.impl (primes.divides m p)

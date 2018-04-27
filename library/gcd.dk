@@ -14,7 +14,7 @@ axiom_gcd_aux :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+        leibniz.equal (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (gcd.gcd_aux p)
           (nat.filter_nat_type
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
@@ -30,7 +30,7 @@ def eq_gcd_aux :
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
              gcd.gcd_aux_body p))) :=
 p:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+        leibniz.equal_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (gcd.gcd_aux p)
           (nat.filter_nat_type
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
@@ -53,7 +53,7 @@ def sym_eq_gcd_aux :
 
 axiom_gcd_aux_body_O :
   sttfa.eps
-    (leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+    (leibniz.equal (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        (gcd.gcd_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         n:(sttfa.etap (sttfa.p nat.nat)) => m)).
@@ -64,7 +64,7 @@ def eq_gcd_aux_body_O :
        (gcd.gcd_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         n:(sttfa.etap (sttfa.p nat.nat)) => m)) :=
-leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+leibniz.equal_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        (gcd.gcd_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         n:(sttfa.etap (sttfa.p nat.nat)) => m) axiom_gcd_aux_body_O.
@@ -84,7 +84,7 @@ axiom_gcd_aux_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+        leibniz.equal (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (gcd.gcd_aux_body (nat.S p))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            n:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -102,7 +102,7 @@ def eq_gcd_aux_body_S :
            bool.match_bool_type nat.nat n
              (gcd.gcd_aux p n (div_mod.mod m n)) (primes.dividesb n m)))) :=
 p:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+        leibniz.equal_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
           (gcd.gcd_aux_body (nat.S p))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            n:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -155,7 +155,7 @@ def commutative_gcd :
        (bool.match_bool_type nat.nat (gcd.gcd_aux m n m) (gcd.gcd_aux n m n)
           (nat.leb m n)))
     (lenm:(sttfa.eps (nat.le n m)) =>
-     logic.match_Or_prop (nat.lt n m) (logic.eq nat.nat n m)
+     connectives.match_Or_prop (nat.lt n m) (logic.eq nat.nat n m)
        (logic.eq nat.nat
           (bool.match_bool_type nat.nat (gcd.gcd_aux n m n)
              (gcd.gcd_aux m n m) bool.true)
@@ -219,7 +219,7 @@ def commutative_gcd :
                       (bool.match_bool_type nat.nat (gcd.gcd_aux m m m)
                          (gcd.gcd_aux m m m) bool.true)))) (nat.leb m m)) n
           eqnm) (nat.le_to_or_lt_eq n m lenm))
-    (notlenm:(sttfa.eps (logic.Not (nat.le n m))) =>
+    (notlenm:(sttfa.eps (connectives.Not (nat.le n m))) =>
      logic.eq_ind_r bool.bool bool.true
        (x:(sttfa.etap (sttfa.p bool.bool)) =>
         logic.eq nat.nat
@@ -457,7 +457,7 @@ def not_divides_to_gcd_aux :
            sttfa.forall nat.nat
              (n:(sttfa.etap (sttfa.p nat.nat)) =>
               sttfa.impl (nat.lt nat.O n)
-                (sttfa.impl (logic.Not (primes.divides n m))
+                (sttfa.impl (connectives.Not (primes.divides n m))
                    (logic.eq nat.nat (gcd.gcd_aux (nat.S p) m n)
                       (gcd.gcd_aux p n (div_mod.mod m n))))))))
   :=
@@ -469,7 +469,7 @@ def not_divides_to_gcd_aux :
      (sttfa.etap
         (sttfa.p (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat)))) =>
      sttfa.impl (nat.lt nat.O n)
-       (sttfa.impl (logic.Not (primes.divides n m))
+       (sttfa.impl (connectives.Not (primes.divides n m))
           (logic.eq nat.nat (y m n) (gcd.gcd_aux p n (div_mod.mod m n)))))
     (nat.sym_eq_filter_nat_type_S
        (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat)) gcd.gcd_aux_body
@@ -478,17 +478,17 @@ def not_divides_to_gcd_aux :
         (sttfa.etap
            (sttfa.p (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat)))) =>
         sttfa.impl (nat.lt nat.O n)
-          (sttfa.impl (logic.Not (primes.divides n m))
+          (sttfa.impl (connectives.Not (primes.divides n m))
              (logic.eq nat.nat (y m n) (gcd.gcd_aux p n (div_mod.mod m n)))))
        (gcd.sym_eq_gcd_aux_body_S p
           (y:
            (sttfa.etap
               (sttfa.p (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat)))) =>
            sttfa.impl (nat.lt nat.O n)
-             (sttfa.impl (logic.Not (primes.divides n m))
+             (sttfa.impl (connectives.Not (primes.divides n m))
                 (logic.eq nat.nat (y m n) (gcd.gcd_aux p n (div_mod.mod m n)))))
           (lenm:(sttfa.eps (nat.lt nat.O n)) =>
-           divnm:(sttfa.eps (logic.Not (primes.divides n m))) =>
+           divnm:(sttfa.eps (connectives.Not (primes.divides n m))) =>
            logic.eq_ind_r bool.bool bool.false
              (x:(sttfa.etap (sttfa.p bool.bool)) =>
               logic.eq nat.nat
@@ -525,7 +525,7 @@ def divides_gcd_aux_mn :
               sttfa.impl (nat.lt nat.O n)
                 (sttfa.impl (nat.le n m)
                    (sttfa.impl (nat.le n p)
-                      (logic.And
+                      (connectives.And
                          (primes.divides (gcd.gcd_aux p m n) m)
                          (primes.divides (gcd.gcd_aux p m n) n))))))))
   :=
@@ -539,7 +539,7 @@ def divides_gcd_aux_mn :
            sttfa.impl (nat.lt nat.O n)
              (sttfa.impl (nat.le n m)
                 (sttfa.impl (nat.le n _x_365)
-                   (logic.And
+                   (connectives.And
                       (primes.divides (gcd.gcd_aux _x_365 m n) m)
                       (primes.divides (gcd.gcd_aux _x_365 m n) n)))))))
     (m:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -547,8 +547,8 @@ def divides_gcd_aux_mn :
      posn:(sttfa.eps (nat.lt nat.O n)) =>
      lenm:(sttfa.eps (nat.le n m)) =>
      lenO:(sttfa.eps (nat.le n nat.O)) =>
-     logic.falsity
-       (logic.And (primes.divides (gcd.gcd_aux nat.O m n) m)
+     connectives.falsity
+       (connectives.And (primes.divides (gcd.gcd_aux nat.O m n) m)
           (primes.divides (gcd.gcd_aux nat.O m n) n))
        (logic.absurd (nat.lt nat.O n) posn (nat.le_to_not_lt n nat.O lenO)))
     (q:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -561,7 +561,7 @@ def divides_gcd_aux_mn :
                sttfa.impl (nat.lt nat.O n)
                  (sttfa.impl (nat.le n m)
                     (sttfa.impl (nat.le n q)
-                       (logic.And
+                       (connectives.And
                           (primes.divides (gcd.gcd_aux q m n) m)
                           (primes.divides (gcd.gcd_aux q m n) n)))))))) =>
      m:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -569,26 +569,26 @@ def divides_gcd_aux_mn :
      posn:(sttfa.eps (nat.lt nat.O n)) =>
      lenm:(sttfa.eps (nat.le n m)) =>
      lenS:(sttfa.eps (nat.le n (nat.S q))) =>
-     logic.match_Or_prop (primes.divides n m)
-       (logic.Not (primes.divides n m))
-       (logic.And (primes.divides (gcd.gcd_aux (nat.S q) m n) m)
+     connectives.match_Or_prop (primes.divides n m)
+       (connectives.Not (primes.divides n m))
+       (connectives.And (primes.divides (gcd.gcd_aux (nat.S q) m n) m)
           (primes.divides (gcd.gcd_aux (nat.S q) m n) n))
        (divnm:(sttfa.eps (primes.divides n m)) =>
         logic.eq_ind_r nat.nat n
           (x:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.And (primes.divides x m) (primes.divides x n))
-          (logic.conj (primes.divides n m)(primes.divides n n)
+           connectives.And (primes.divides x m) (primes.divides x n))
+          (connectives.conj (primes.divides n m)(primes.divides n n)
            divnm (primes.divides_n_n n)) (gcd.gcd_aux (nat.S q) m n)
           (gcd.divides_to_gcd_aux (nat.S q) m n (nat.lt_O_S q) posn divnm))
-       (ndivnm:(sttfa.eps (logic.Not (primes.divides n m))) =>
+       (ndivnm:(sttfa.eps (connectives.Not (primes.divides n m))) =>
         logic.eq_ind_r nat.nat (gcd.gcd_aux q n (div_mod.mod m n))
           (x:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.And (primes.divides x m) (primes.divides x n))
-          (logic.match_And_prop
+           connectives.And (primes.divides x m) (primes.divides x n))
+          (connectives.match_And_prop
              (primes.divides (gcd.gcd_aux q n (div_mod.mod m n)) n)
              (primes.divides (gcd.gcd_aux q n (div_mod.mod m n))
                 (div_mod.mod m n))
-             (logic.And
+             (connectives.And
                 (primes.divides (gcd.gcd_aux q n (div_mod.mod m n)) m)
                 (primes.divides (gcd.gcd_aux q n (div_mod.mod m n)) n))
              (H:
@@ -598,19 +598,19 @@ def divides_gcd_aux_mn :
               (sttfa.eps
                  (primes.divides (gcd.gcd_aux q n (div_mod.mod m n))
                     (div_mod.mod m n))) =>
-                    logic.conj
+                    connectives.conj
                     (primes.divides (gcd.gcd_aux q n (div_mod.mod m n)) m)
                        (primes.divides (gcd.gcd_aux q n (div_mod.mod m n)) n)
                 (gcd.divides_mod_to_divides
                    (gcd.gcd_aux q n (div_mod.mod m n)) m n posn H1 H) H)
              (Hind n (div_mod.mod m n)
-                (logic.match_Or_prop (nat.lt nat.O (div_mod.mod m n))
+                (connectives.match_Or_prop (nat.lt nat.O (div_mod.mod m n))
                    (logic.eq nat.nat nat.O (div_mod.mod m n))
                    (nat.lt nat.O (div_mod.mod m n))
                    (auto:(sttfa.eps (nat.lt nat.O (div_mod.mod m n))) => auto)
                    (modO:
                     (sttfa.eps (logic.eq nat.nat nat.O (div_mod.mod m n))) =>
-                    logic.falsity (nat.lt nat.O (div_mod.mod m n))
+                    connectives.falsity (nat.lt nat.O (div_mod.mod m n))
                       (logic.absurd (primes.divides n m)
                          (primes.mod_O_to_divides n m posn
                             (logic.rewrite_l nat.nat nat.O
@@ -635,22 +635,22 @@ def divides_gcd_nm :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.And (primes.divides (gcd.gcd n m) m)
+           connectives.And (primes.divides (gcd.gcd n m) m)
              (primes.divides (gcd.gcd n m) n))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
-  logic.match_Or_prop (nat.lt nat.O n) (logic.eq nat.nat nat.O n)
-    (logic.And (primes.divides (gcd.gcd n m) m)
+  connectives.match_Or_prop (nat.lt nat.O n) (logic.eq nat.nat nat.O n)
+    (connectives.And (primes.divides (gcd.gcd n m) m)
        (primes.divides (gcd.gcd n m) n))
     (posn:(sttfa.eps (nat.lt nat.O n)) =>
-     logic.match_Or_prop (nat.lt nat.O m) (logic.eq nat.nat nat.O m)
-       (logic.And (primes.divides (gcd.gcd n m) m)
+     connectives.match_Or_prop (nat.lt nat.O m) (logic.eq nat.nat nat.O m)
+       (connectives.And (primes.divides (gcd.gcd n m) m)
           (primes.divides (gcd.gcd n m) n))
        (posm:(sttfa.eps (nat.lt nat.O m)) =>
         nat.leb_elim n m
           (__:(sttfa.etap (sttfa.p bool.bool)) =>
-           logic.And
+           connectives.And
              (primes.divides
                 (bool.match_bool_type nat.nat (gcd.gcd_aux n m n)
                    (gcd.gcd_aux m n m) __) m)
@@ -661,7 +661,7 @@ def divides_gcd_nm :
              (gcd.gcd_aux m n m)
              (y:(sttfa.etap (sttfa.p nat.nat)) =>
               sttfa.impl (nat.le n m)
-                (logic.And
+                (connectives.And
                    (primes.divides
                       (bool.match_bool_type nat.nat (gcd.gcd_aux n m n)
                          (gcd.gcd_aux m n m) bool.true) m)
@@ -670,15 +670,15 @@ def divides_gcd_nm :
                 (gcd.gcd_aux m n m)
                 (y:(sttfa.etap (sttfa.p nat.nat)) =>
                  sttfa.impl (nat.le n m)
-                   (logic.And (primes.divides y m)
+                   (connectives.And (primes.divides y m)
                       (primes.divides (gcd.gcd_aux n m n) n)))
                 (lenm:(sttfa.eps (nat.le n m)) =>
                  gcd.divides_gcd_aux_mn n m n posn lenm (nat.le_n n))))
           (bool.sym_eq_match_bool_type_false nat.nat (gcd.gcd_aux n m n)
              (gcd.gcd_aux m n m)
              (y:(sttfa.etap (sttfa.p nat.nat)) =>
-              sttfa.impl (logic.Not (nat.le n m))
-                (logic.And
+              sttfa.impl (connectives.Not (nat.le n m))
+                (connectives.And
                    (primes.divides
                       (bool.match_bool_type nat.nat (gcd.gcd_aux n m n)
                          (gcd.gcd_aux m n m) bool.false) m)
@@ -686,19 +686,19 @@ def divides_gcd_nm :
              (bool.sym_eq_match_bool_type_false nat.nat (gcd.gcd_aux n m n)
                 (gcd.gcd_aux m n m)
                 (y:(sttfa.etap (sttfa.p nat.nat)) =>
-                 sttfa.impl (logic.Not (nat.le n m))
-                   (logic.And (primes.divides y m)
+                 sttfa.impl (connectives.Not (nat.le n m))
+                   (connectives.And (primes.divides y m)
                       (primes.divides (gcd.gcd_aux m n m) n)))
-                (notlt:(sttfa.eps (logic.Not (nat.le n m))) =>
-                 logic.match_And_prop (primes.divides (gcd.gcd_aux m n m) n)
+                (notlt:(sttfa.eps (connectives.Not (nat.le n m))) =>
+                 connectives.match_And_prop (primes.divides (gcd.gcd_aux m n m) n)
                    (primes.divides (gcd.gcd_aux m n m) m)
-                   (logic.And (primes.divides (gcd.gcd_aux m n m) m)
+                   (connectives.And (primes.divides (gcd.gcd_aux m n m) m)
                       (primes.divides (gcd.gcd_aux m n m) n))
                    (auto:
                     (sttfa.eps (primes.divides (gcd.gcd_aux m n m) n)) =>
                     auto':
                     (sttfa.eps (primes.divides (gcd.gcd_aux m n m) m)) =>
-                    logic.conj (primes.divides (gcd.gcd_aux m n m) m)
+                    connectives.conj (primes.divides (gcd.gcd_aux m n m) m)
                           (primes.divides (gcd.gcd_aux m n m) n)
                     auto' auto)
                    (gcd.divides_gcd_aux_mn m n m posm
@@ -707,9 +707,9 @@ def divides_gcd_nm :
        (eqmO:(sttfa.eps (logic.eq nat.nat nat.O m)) =>
         logic.eq_ind nat.nat nat.O
           (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.And (primes.divides (gcd.gcd n x_1) x_1)
+           connectives.And (primes.divides (gcd.gcd n x_1) x_1)
              (primes.divides (gcd.gcd n x_1) n))
-          (logic.conj (primes.divides (gcd.gcd n nat.O) nat.O)
+          (connectives.conj (primes.divides (gcd.gcd n nat.O) nat.O)
                  (primes.divides (gcd.gcd n nat.O) n)
            (primes.divides_n_O (gcd.gcd n nat.O))
              (logic.eq_coerc
@@ -732,9 +732,9 @@ def divides_gcd_nm :
     (eqnO:(sttfa.eps (logic.eq nat.nat nat.O n)) =>
      logic.eq_ind nat.nat nat.O
        (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
-        logic.And (primes.divides (gcd.gcd x_1 m) m)
+        connectives.And (primes.divides (gcd.gcd x_1 m) m)
           (primes.divides (gcd.gcd x_1 m) x_1))
-       (logic.conj (primes.divides (gcd.gcd nat.O m) m)
+       (connectives.conj (primes.divides (gcd.gcd nat.O m) m)
               (primes.divides (gcd.gcd nat.O m) nat.O)
           (bool.eq_match_bool_type_true nat.nat m (gcd.gcd_aux m nat.O m)
              (y:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -840,11 +840,11 @@ def let_clause_1544 :
                     sttfa.impl (nat.lt nat.O n)
                       (sttfa.impl (nat.le n m)
                          (sttfa.impl (nat.le n q)
-                            (logic.ex nat.nat
+                            (connectives.ex nat.nat
                                (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                                logic.ex nat.nat
+                                connectives.ex nat.nat
                                   (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                                   logic.Or
+                                   connectives.Or
                                      (logic.eq nat.nat
                                         (nat.minus (nat.times a n)
                                            (nat.times b m))
@@ -861,13 +861,13 @@ def let_clause_1544 :
                       (sttfa.impl (nat.le n m)
                          (sttfa.impl (nat.le n (nat.S q))
                             (sttfa.impl
-                               (logic.Not (primes.divides n m))
+                               (connectives.Not (primes.divides n m))
                                (sttfa.forall nat.nat
                                   (a:(sttfa.etap (sttfa.p nat.nat)) =>
                                    sttfa.impl
-                                     (logic.ex nat.nat
+                                     (connectives.ex nat.nat
                                         (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                                         logic.Or
+                                         connectives.Or
                                            (logic.eq nat.nat
                                               (nat.minus
                                                  (nat.times a
@@ -884,7 +884,7 @@ def let_clause_1544 :
                                      (sttfa.forall nat.nat
                                         (b:(sttfa.etap (sttfa.p nat.nat)) =>
                                          sttfa.impl
-                                           (logic.Or
+                                           (connectives.Or
                                               (logic.eq nat.nat
                                                  (nat.minus
                                                     (nat.times a
@@ -925,11 +925,11 @@ def let_clause_1544 :
             sttfa.impl (nat.lt nat.O n)
               (sttfa.impl (nat.le n m)
                  (sttfa.impl (nat.le n q)
-                    (logic.ex nat.nat
+                    (connectives.ex nat.nat
                        (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                        logic.ex nat.nat
+                        connectives.ex nat.nat
                           (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                           logic.Or
+                           connectives.Or
                              (logic.eq nat.nat
                                 (nat.minus (nat.times a n) (nat.times b m))
                                 (gcd.gcd_aux q m n))
@@ -941,13 +941,13 @@ def let_clause_1544 :
   posn:(sttfa.eps (nat.lt nat.O n)) =>
   lenm:(sttfa.eps (nat.le n m)) =>
   lenS:(sttfa.eps (nat.le n (nat.S q))) =>
-  ndivnm:(sttfa.eps (logic.Not (primes.divides n m))) =>
+  ndivnm:(sttfa.eps (connectives.Not (primes.divides n m))) =>
   a:(sttfa.etap (sttfa.p nat.nat)) =>
   _clearme:
   (sttfa.eps
-     (logic.ex nat.nat
+     (connectives.ex nat.nat
         (b:(sttfa.etap (sttfa.p nat.nat)) =>
-         logic.Or
+         connectives.Or
            (logic.eq nat.nat
               (nat.minus (nat.times a (div_mod.mod m n)) (nat.times b n))
               (gcd.gcd_aux q n (div_mod.mod m n)))
@@ -957,7 +957,7 @@ def let_clause_1544 :
   b:(sttfa.etap (sttfa.p nat.nat)) =>
   _clearme0:
   (sttfa.eps
-     (logic.Or
+     (connectives.Or
         (logic.eq nat.nat
            (nat.minus (nat.times a (div_mod.mod m n)) (nat.times b n))
            (gcd.gcd_aux q n (div_mod.mod m n)))
@@ -989,11 +989,11 @@ def let_clause_15441 :
                     sttfa.impl (nat.lt nat.O n)
                       (sttfa.impl (nat.le n m)
                          (sttfa.impl (nat.le n q)
-                            (logic.ex nat.nat
+                            (connectives.ex nat.nat
                                (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                                logic.ex nat.nat
+                                connectives.ex nat.nat
                                   (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                                   logic.Or
+                                   connectives.Or
                                      (logic.eq nat.nat
                                         (nat.minus (nat.times a n)
                                            (nat.times b m))
@@ -1010,13 +1010,13 @@ def let_clause_15441 :
                       (sttfa.impl (nat.le n m)
                          (sttfa.impl (nat.le n (nat.S q))
                             (sttfa.impl
-                               (logic.Not (primes.divides n m))
+                               (connectives.Not (primes.divides n m))
                                (sttfa.forall nat.nat
                                   (a:(sttfa.etap (sttfa.p nat.nat)) =>
                                    sttfa.impl
-                                     (logic.ex nat.nat
+                                     (connectives.ex nat.nat
                                         (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                                         logic.Or
+                                         connectives.Or
                                            (logic.eq nat.nat
                                               (nat.minus
                                                  (nat.times a
@@ -1033,7 +1033,7 @@ def let_clause_15441 :
                                      (sttfa.forall nat.nat
                                         (b:(sttfa.etap (sttfa.p nat.nat)) =>
                                          sttfa.impl
-                                           (logic.Or
+                                           (connectives.Or
                                               (logic.eq nat.nat
                                                  (nat.minus
                                                     (nat.times a
@@ -1072,11 +1072,11 @@ def let_clause_15441 :
             sttfa.impl (nat.lt nat.O n)
               (sttfa.impl (nat.le n m)
                  (sttfa.impl (nat.le n q)
-                    (logic.ex nat.nat
+                    (connectives.ex nat.nat
                        (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                        logic.ex nat.nat
+                        connectives.ex nat.nat
                           (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                           logic.Or
+                           connectives.Or
                              (logic.eq nat.nat
                                 (nat.minus (nat.times a n) (nat.times b m))
                                 (gcd.gcd_aux q m n))
@@ -1088,13 +1088,13 @@ def let_clause_15441 :
   posn:(sttfa.eps (nat.lt nat.O n)) =>
   lenm:(sttfa.eps (nat.le n m)) =>
   lenS:(sttfa.eps (nat.le n (nat.S q))) =>
-  ndivnm:(sttfa.eps (logic.Not (primes.divides n m))) =>
+  ndivnm:(sttfa.eps (connectives.Not (primes.divides n m))) =>
   a:(sttfa.etap (sttfa.p nat.nat)) =>
   _clearme:
   (sttfa.eps
-     (logic.ex nat.nat
+     (connectives.ex nat.nat
         (b:(sttfa.etap (sttfa.p nat.nat)) =>
-         logic.Or
+         connectives.Or
            (logic.eq nat.nat
               (nat.minus (nat.times a (div_mod.mod m n)) (nat.times b n))
               (gcd.gcd_aux q n (div_mod.mod m n)))
@@ -1104,7 +1104,7 @@ def let_clause_15441 :
   b:(sttfa.etap (sttfa.p nat.nat)) =>
   _clearme0:
   (sttfa.eps
-     (logic.Or
+     (connectives.Or
         (logic.eq nat.nat
            (nat.minus (nat.times a (div_mod.mod m n)) (nat.times b n))
            (gcd.gcd_aux q n (div_mod.mod m n)))
@@ -1133,11 +1133,11 @@ def eq_minus_gcd_aux :
               sttfa.impl (nat.lt nat.O n)
                 (sttfa.impl (nat.le n m)
                    (sttfa.impl (nat.le n p)
-                      (logic.ex nat.nat
+                      (connectives.ex nat.nat
                          (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                          logic.ex nat.nat
+                          connectives.ex nat.nat
                             (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                             logic.Or
+                             connectives.Or
                                (logic.eq nat.nat
                                   (nat.minus (nat.times a n) (nat.times b m))
                                   (gcd.gcd_aux p m n))
@@ -1155,11 +1155,11 @@ def eq_minus_gcd_aux :
            sttfa.impl (nat.lt nat.O n)
              (sttfa.impl (nat.le n m)
                 (sttfa.impl (nat.le n _x_365)
-                   (logic.ex nat.nat
+                   (connectives.ex nat.nat
                       (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.ex nat.nat
+                       connectives.ex nat.nat
                          (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                          logic.Or
+                          connectives.Or
                             (logic.eq nat.nat
                                (nat.minus (nat.times a n) (nat.times b m))
                                (gcd.gcd_aux _x_365 m n))
@@ -1171,12 +1171,12 @@ def eq_minus_gcd_aux :
      posn:(sttfa.eps (nat.lt nat.O n)) =>
      lenm:(sttfa.eps (nat.le n m)) =>
      lenO:(sttfa.eps (nat.le n nat.O)) =>
-     logic.falsity
-       (logic.ex nat.nat
+     connectives.falsity
+       (connectives.ex nat.nat
           (a:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.ex nat.nat
+           connectives.ex nat.nat
              (b:(sttfa.etap (sttfa.p nat.nat)) =>
-              logic.Or
+              connectives.Or
                 (logic.eq nat.nat
                    (nat.minus (nat.times a n) (nat.times b m))
                    (gcd.gcd_aux nat.O m n))
@@ -1194,11 +1194,11 @@ def eq_minus_gcd_aux :
                sttfa.impl (nat.lt nat.O n)
                  (sttfa.impl (nat.le n m)
                     (sttfa.impl (nat.le n q)
-                       (logic.ex nat.nat
+                       (connectives.ex nat.nat
                           (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                           logic.ex nat.nat
+                           connectives.ex nat.nat
                              (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                              logic.Or
+                              connectives.Or
                                 (logic.eq nat.nat
                                    (nat.minus (nat.times a n) (nat.times b m))
                                    (gcd.gcd_aux q m n))
@@ -1210,13 +1210,13 @@ def eq_minus_gcd_aux :
      posn:(sttfa.eps (nat.lt nat.O n)) =>
      lenm:(sttfa.eps (nat.le n m)) =>
      lenS:(sttfa.eps (nat.le n (nat.S q))) =>
-     logic.match_Or_prop (primes.divides n m)
-       (logic.Not (primes.divides n m))
-       (logic.ex nat.nat
+     connectives.match_Or_prop (primes.divides n m)
+       (connectives.Not (primes.divides n m))
+       (connectives.ex nat.nat
           (a:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.ex nat.nat
+           connectives.ex nat.nat
              (b:(sttfa.etap (sttfa.p nat.nat)) =>
-              logic.Or
+              connectives.Or
                 (logic.eq nat.nat
                    (nat.minus (nat.times a n) (nat.times b m))
                    (gcd.gcd_aux (nat.S q) m n))
@@ -1226,28 +1226,28 @@ def eq_minus_gcd_aux :
        (divnm:(sttfa.eps (primes.divides n m)) =>
         logic.eq_ind_r nat.nat n
           (x:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.ex nat.nat
+           connectives.ex nat.nat
              (a:(sttfa.etap (sttfa.p nat.nat)) =>
-              logic.ex nat.nat
+              connectives.ex nat.nat
                 (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                 logic.Or
+                 connectives.Or
                    (logic.eq nat.nat
                       (nat.minus (nat.times a n) (nat.times b m)) x)
                    (logic.eq nat.nat
                       (nat.minus (nat.times b m) (nat.times a n)) x))))
-          (logic.ex_intro nat.nat
+          (connectives.ex_intro nat.nat
                  (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                    (logic.ex nat.nat
+                    (connectives.ex nat.nat
                        (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                        logic.Or
+                        connectives.Or
                           (logic.eq nat.nat
                              (nat.minus (nat.times x n) (nat.times b m)) n)
                           (logic.eq nat.nat
                              (nat.minus (nat.times b m) (nat.times x n)) n))))
            (nat.S nat.O)
-             (logic.ex_intro nat.nat
+             (connectives.ex_intro nat.nat
                     (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                       (logic.Or
+                       (connectives.Or
                           (logic.eq nat.nat
                              (nat.minus (nat.times (nat.S nat.O) n)
                                 (nat.times x m)) n)
@@ -1255,7 +1255,7 @@ def eq_minus_gcd_aux :
                              (nat.minus (nat.times x m)
                                 (nat.times (nat.S nat.O) n)) n)))
               nat.O
-                (logic.or_introl
+                (connectives.or_introl
                        (logic.eq nat.nat
                           (nat.minus (nat.times (nat.S nat.O) n)
                              (nat.times nat.O m)) n)
@@ -1300,23 +1300,23 @@ def eq_minus_gcd_aux :
                       (nat.commutative_times (nat.S nat.O) n)))))
           (gcd.gcd_aux (nat.S q) m n)
           (gcd.divides_to_gcd_aux (nat.S q) m n (nat.lt_O_S q) posn divnm))
-       (ndivnm:(sttfa.eps (logic.Not (primes.divides n m))) =>
+       (ndivnm:(sttfa.eps (connectives.Not (primes.divides n m))) =>
         logic.eq_ind_r nat.nat (gcd.gcd_aux q n (div_mod.mod m n))
           (x:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.ex nat.nat
+           connectives.ex nat.nat
              (a:(sttfa.etap (sttfa.p nat.nat)) =>
-              logic.ex nat.nat
+              connectives.ex nat.nat
                 (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                 logic.Or
+                 connectives.Or
                    (logic.eq nat.nat
                       (nat.minus (nat.times a n) (nat.times b m)) x)
                    (logic.eq nat.nat
                       (nat.minus (nat.times b m) (nat.times a n)) x))))
-          (logic.match_ex_prop nat.nat
+          (connectives.match_ex_prop nat.nat
              (a:(sttfa.etap (sttfa.p nat.nat)) =>
-              logic.ex nat.nat
+              connectives.ex nat.nat
                 (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                 logic.Or
+                 connectives.Or
                    (logic.eq nat.nat
                       (nat.minus (nat.times a (div_mod.mod m n))
                          (nat.times b n)) (gcd.gcd_aux q n (div_mod.mod m n)))
@@ -1324,11 +1324,11 @@ def eq_minus_gcd_aux :
                       (nat.minus (nat.times b n)
                          (nat.times a (div_mod.mod m n)))
                       (gcd.gcd_aux q n (div_mod.mod m n)))))
-             (logic.ex nat.nat
+             (connectives.ex nat.nat
                 (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                 logic.ex nat.nat
+                 connectives.ex nat.nat
                    (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                    logic.Or
+                    connectives.Or
                       (logic.eq nat.nat
                          (nat.minus (nat.times a n) (nat.times b m))
                          (gcd.gcd_aux q n (div_mod.mod m n)))
@@ -1338,9 +1338,9 @@ def eq_minus_gcd_aux :
              (a:(sttfa.etap (sttfa.p nat.nat)) =>
               _clearme:
               (sttfa.eps
-                 (logic.ex nat.nat
+                 (connectives.ex nat.nat
                     (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                     logic.Or
+                     connectives.Or
                        (logic.eq nat.nat
                           (nat.minus (nat.times a (div_mod.mod m n))
                              (nat.times b n))
@@ -1349,9 +1349,9 @@ def eq_minus_gcd_aux :
                           (nat.minus (nat.times b n)
                              (nat.times a (div_mod.mod m n)))
                           (gcd.gcd_aux q n (div_mod.mod m n)))))) =>
-              logic.match_ex_prop nat.nat
+              connectives.match_ex_prop nat.nat
                 (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                 logic.Or
+                 connectives.Or
                    (logic.eq nat.nat
                       (nat.minus (nat.times a (div_mod.mod m n))
                          (nat.times b n)) (gcd.gcd_aux q n (div_mod.mod m n)))
@@ -1359,11 +1359,11 @@ def eq_minus_gcd_aux :
                       (nat.minus (nat.times b n)
                          (nat.times a (div_mod.mod m n)))
                       (gcd.gcd_aux q n (div_mod.mod m n))))
-                (logic.ex nat.nat
+                (connectives.ex nat.nat
                    (a0:(sttfa.etap (sttfa.p nat.nat)) =>
-                    logic.ex nat.nat
+                    connectives.ex nat.nat
                       (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.Or
+                       connectives.Or
                          (logic.eq nat.nat
                             (nat.minus (nat.times a0 n) (nat.times b m))
                             (gcd.gcd_aux q n (div_mod.mod m n)))
@@ -1373,7 +1373,7 @@ def eq_minus_gcd_aux :
                 (b:(sttfa.etap (sttfa.p nat.nat)) =>
                  _clearme0:
                  (sttfa.eps
-                    (logic.Or
+                    (connectives.Or
                        (logic.eq nat.nat
                           (nat.minus (nat.times a (div_mod.mod m n))
                              (nat.times b n))
@@ -1382,7 +1382,7 @@ def eq_minus_gcd_aux :
                           (nat.minus (nat.times b n)
                              (nat.times a (div_mod.mod m n)))
                           (gcd.gcd_aux q n (div_mod.mod m n))))) =>
-                 logic.match_Or_prop
+                 connectives.match_Or_prop
                    (logic.eq nat.nat
                       (nat.minus (nat.times a (div_mod.mod m n))
                          (nat.times b n)) (gcd.gcd_aux q n (div_mod.mod m n)))
@@ -1390,11 +1390,11 @@ def eq_minus_gcd_aux :
                       (nat.minus (nat.times b n)
                          (nat.times a (div_mod.mod m n)))
                       (gcd.gcd_aux q n (div_mod.mod m n)))
-                   (logic.ex nat.nat
+                   (connectives.ex nat.nat
                       (a0:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.ex nat.nat
+                       connectives.ex nat.nat
                          (b0:(sttfa.etap (sttfa.p nat.nat)) =>
-                          logic.Or
+                          connectives.Or
                             (logic.eq nat.nat
                                (nat.minus (nat.times a0 n) (nat.times b0 m))
                                (gcd.gcd_aux q n (div_mod.mod m n)))
@@ -1411,22 +1411,22 @@ def eq_minus_gcd_aux :
                       (nat.minus (nat.times a (div_mod.mod m n))
                          (nat.times b n))
                       (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.ex nat.nat
+                       connectives.ex nat.nat
                          (a0:(sttfa.etap (sttfa.p nat.nat)) =>
-                          logic.ex nat.nat
+                          connectives.ex nat.nat
                             (b0:(sttfa.etap (sttfa.p nat.nat)) =>
-                             logic.Or
+                             connectives.Or
                                (logic.eq nat.nat
                                   (nat.minus (nat.times a0 n)
                                      (nat.times b0 m)) x_1)
                                (logic.eq nat.nat
                                   (nat.minus (nat.times b0 m)
                                      (nat.times a0 n)) x_1))))
-                      (logic.ex_intro nat.nat
+                      (connectives.ex_intro nat.nat
                              (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                                (logic.ex nat.nat
+                                (connectives.ex nat.nat
                                    (b0:(sttfa.etap (sttfa.p nat.nat)) =>
-                                    logic.Or
+                                    connectives.Or
                                       (logic.eq nat.nat
                                          (nat.minus (nat.times x n)
                                             (nat.times b0 m))
@@ -1440,9 +1440,9 @@ def eq_minus_gcd_aux :
                                             (nat.times a (div_mod.mod m n))
                                             (nat.times b n))))))
                        (nat.plus b (nat.times a (div_mod.div m n)))
-                         (logic.ex_intro nat.nat
+                         (connectives.ex_intro nat.nat
                                 (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                                   (logic.Or
+                                   (connectives.Or
                                       (logic.eq nat.nat
                                          (nat.minus
                                             (nat.times
@@ -1463,7 +1463,7 @@ def eq_minus_gcd_aux :
                                             (nat.times a (div_mod.mod m n))
                                             (nat.times b n)))))
                           a
-                            (logic.or_intror
+                            (connectives.or_intror
                                    (logic.eq nat.nat
                                       (nat.minus
                                          (nat.times
@@ -2143,22 +2143,22 @@ def eq_minus_gcd_aux :
                       (nat.minus (nat.times b n)
                          (nat.times a (div_mod.mod m n)))
                       (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.ex nat.nat
+                       connectives.ex nat.nat
                          (a0:(sttfa.etap (sttfa.p nat.nat)) =>
-                          logic.ex nat.nat
+                          connectives.ex nat.nat
                             (b0:(sttfa.etap (sttfa.p nat.nat)) =>
-                             logic.Or
+                             connectives.Or
                                (logic.eq nat.nat
                                   (nat.minus (nat.times a0 n)
                                      (nat.times b0 m)) x_1)
                                (logic.eq nat.nat
                                   (nat.minus (nat.times b0 m)
                                      (nat.times a0 n)) x_1))))
-                      (logic.ex_intro nat.nat
+                      (connectives.ex_intro nat.nat
                              (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                                (logic.ex nat.nat
+                                (connectives.ex nat.nat
                                    (b0:(sttfa.etap (sttfa.p nat.nat)) =>
-                                    logic.Or
+                                    connectives.Or
                                       (logic.eq nat.nat
                                          (nat.minus (nat.times x n)
                                             (nat.times b0 m))
@@ -2170,9 +2170,9 @@ def eq_minus_gcd_aux :
                                          (nat.minus (nat.times b n)
                                             (nat.times a (div_mod.mod m n)))))))
                        (nat.plus b (nat.times a (div_mod.div m n)))
-                         (logic.ex_intro nat.nat
+                         (connectives.ex_intro nat.nat
                                 (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                                   (logic.Or
+                                   (connectives.Or
                                       (logic.eq nat.nat
                                          (nat.minus
                                             (nat.times
@@ -2191,7 +2191,7 @@ def eq_minus_gcd_aux :
                                          (nat.minus (nat.times b n)
                                             (nat.times a (div_mod.mod m n))))))
                           a
-                            (logic.or_introl
+                            (connectives.or_introl
                                    (logic.eq nat.nat
                                       (nat.minus
                                          (nat.times
@@ -2764,13 +2764,13 @@ def eq_minus_gcd_aux :
                       (gcd.gcd_aux q n (div_mod.mod m n)) H) _clearme0)
                 _clearme)
              (Hind n (div_mod.mod m n)
-                (logic.match_Or_prop (nat.lt nat.O (div_mod.mod m n))
+                (connectives.match_Or_prop (nat.lt nat.O (div_mod.mod m n))
                    (logic.eq nat.nat nat.O (div_mod.mod m n))
                    (nat.lt nat.O (div_mod.mod m n))
                    (auto:(sttfa.eps (nat.lt nat.O (div_mod.mod m n))) => auto)
                    (modO:
                     (sttfa.eps (logic.eq nat.nat nat.O (div_mod.mod m n))) =>
-                    logic.falsity (nat.lt nat.O (div_mod.mod m n))
+                    connectives.falsity (nat.lt nat.O (div_mod.mod m n))
                       (logic.absurd (primes.divides n m)
                          (primes.mod_O_to_divides n m posn
                             (logic.rewrite_l nat.nat nat.O
@@ -2860,11 +2860,11 @@ def eq_minus_gcd :
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (n:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.ex nat.nat
+           connectives.ex nat.nat
              (a:(sttfa.etap (sttfa.p nat.nat)) =>
-              logic.ex nat.nat
+              connectives.ex nat.nat
                 (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                 logic.Or
+                 connectives.Or
                    (logic.eq nat.nat
                       (nat.minus (nat.times a n) (nat.times b m))
                       (gcd.gcd n m))
@@ -2874,23 +2874,23 @@ def eq_minus_gcd :
   :=
   m:(sttfa.etap (sttfa.p nat.nat)) =>
   n:(sttfa.etap (sttfa.p nat.nat)) =>
-  logic.match_Or_prop (nat.lt nat.O n) (logic.eq nat.nat nat.O n)
-    (logic.ex nat.nat
+  connectives.match_Or_prop (nat.lt nat.O n) (logic.eq nat.nat nat.O n)
+    (connectives.ex nat.nat
        (a:(sttfa.etap (sttfa.p nat.nat)) =>
-        logic.ex nat.nat
+        connectives.ex nat.nat
           (b:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.Or
+           connectives.Or
              (logic.eq nat.nat (nat.minus (nat.times a n) (nat.times b m))
                 (gcd.gcd n m))
              (logic.eq nat.nat (nat.minus (nat.times b m) (nat.times a n))
                 (gcd.gcd n m)))))
     (posn:(sttfa.eps (nat.lt nat.O n)) =>
-     logic.match_Or_prop (nat.lt nat.O m) (logic.eq nat.nat nat.O m)
-       (logic.ex nat.nat
+     connectives.match_Or_prop (nat.lt nat.O m) (logic.eq nat.nat nat.O m)
+       (connectives.ex nat.nat
           (a:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.ex nat.nat
+           connectives.ex nat.nat
              (b:(sttfa.etap (sttfa.p nat.nat)) =>
-              logic.Or
+              connectives.Or
                 (logic.eq nat.nat
                    (nat.minus (nat.times a n) (nat.times b m)) (gcd.gcd n m))
                 (logic.eq nat.nat
@@ -2898,11 +2898,11 @@ def eq_minus_gcd :
        (posm:(sttfa.eps (nat.lt nat.O m)) =>
         nat.leb_elim n m
           (__:(sttfa.etap (sttfa.p bool.bool)) =>
-           logic.ex nat.nat
+           connectives.ex nat.nat
              (a:(sttfa.etap (sttfa.p nat.nat)) =>
-              logic.ex nat.nat
+              connectives.ex nat.nat
                 (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                 logic.Or
+                 connectives.Or
                    (logic.eq nat.nat
                       (nat.minus (nat.times a n) (nat.times b m))
                       (bool.match_bool_type nat.nat (gcd.gcd_aux n m n)
@@ -2915,11 +2915,11 @@ def eq_minus_gcd :
              (gcd.gcd_aux m n m)
              (y:(sttfa.etap (sttfa.p nat.nat)) =>
               sttfa.impl (nat.le n m)
-                (logic.ex nat.nat
+                (connectives.ex nat.nat
                    (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                    logic.ex nat.nat
+                    connectives.ex nat.nat
                       (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.Or
+                       connectives.Or
                          (logic.eq nat.nat
                             (nat.minus (nat.times a n) (nat.times b m))
                             (bool.match_bool_type nat.nat
@@ -2931,11 +2931,11 @@ def eq_minus_gcd :
                 (gcd.gcd_aux m n m)
                 (y:(sttfa.etap (sttfa.p nat.nat)) =>
                  sttfa.impl (nat.le n m)
-                   (logic.ex nat.nat
+                   (connectives.ex nat.nat
                       (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.ex nat.nat
+                       connectives.ex nat.nat
                          (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                          logic.Or
+                          connectives.Or
                             (logic.eq nat.nat
                                (nat.minus (nat.times a n) (nat.times b m)) y)
                             (logic.eq nat.nat
@@ -2946,12 +2946,12 @@ def eq_minus_gcd :
           (bool.sym_eq_match_bool_type_false nat.nat (gcd.gcd_aux n m n)
              (gcd.gcd_aux m n m)
              (y:(sttfa.etap (sttfa.p nat.nat)) =>
-              sttfa.impl (logic.Not (nat.le n m))
-                (logic.ex nat.nat
+              sttfa.impl (connectives.Not (nat.le n m))
+                (connectives.ex nat.nat
                    (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                    logic.ex nat.nat
+                    connectives.ex nat.nat
                       (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.Or
+                       connectives.Or
                          (logic.eq nat.nat
                             (nat.minus (nat.times a n) (nat.times b m))
                             (bool.match_bool_type nat.nat
@@ -2962,34 +2962,34 @@ def eq_minus_gcd :
              (bool.sym_eq_match_bool_type_false nat.nat (gcd.gcd_aux n m n)
                 (gcd.gcd_aux m n m)
                 (y:(sttfa.etap (sttfa.p nat.nat)) =>
-                 sttfa.impl (logic.Not (nat.le n m))
-                   (logic.ex nat.nat
+                 sttfa.impl (connectives.Not (nat.le n m))
+                   (connectives.ex nat.nat
                       (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.ex nat.nat
+                       connectives.ex nat.nat
                          (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                          logic.Or
+                          connectives.Or
                             (logic.eq nat.nat
                                (nat.minus (nat.times a n) (nat.times b m)) y)
                             (logic.eq nat.nat
                                (nat.minus (nat.times b m) (nat.times a n))
                                (gcd.gcd_aux m n m))))))
-                (nlenm:(sttfa.eps (logic.Not (nat.le n m))) =>
-                 logic.match_ex_prop nat.nat
+                (nlenm:(sttfa.eps (connectives.Not (nat.le n m))) =>
+                 connectives.match_ex_prop nat.nat
                    (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                    logic.ex nat.nat
+                    connectives.ex nat.nat
                       (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.Or
+                       connectives.Or
                          (logic.eq nat.nat
                             (nat.minus (nat.times a m) (nat.times b n))
                             (gcd.gcd_aux m n m))
                          (logic.eq nat.nat
                             (nat.minus (nat.times b n) (nat.times a m))
                             (gcd.gcd_aux m n m))))
-                   (logic.ex nat.nat
+                   (connectives.ex nat.nat
                       (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.ex nat.nat
+                       connectives.ex nat.nat
                          (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                          logic.Or
+                          connectives.Or
                             (logic.eq nat.nat
                                (nat.minus (nat.times a n) (nat.times b m))
                                (gcd.gcd_aux m n m))
@@ -2999,29 +2999,29 @@ def eq_minus_gcd :
                    (a:(sttfa.etap (sttfa.p nat.nat)) =>
                     _clearme:
                     (sttfa.eps
-                       (logic.ex nat.nat
+                       (connectives.ex nat.nat
                           (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                           logic.Or
+                           connectives.Or
                              (logic.eq nat.nat
                                 (nat.minus (nat.times a m) (nat.times b n))
                                 (gcd.gcd_aux m n m))
                              (logic.eq nat.nat
                                 (nat.minus (nat.times b n) (nat.times a m))
                                 (gcd.gcd_aux m n m))))) =>
-                    logic.match_ex_prop nat.nat
+                    connectives.match_ex_prop nat.nat
                       (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.Or
+                       connectives.Or
                          (logic.eq nat.nat
                             (nat.minus (nat.times a m) (nat.times b n))
                             (gcd.gcd_aux m n m))
                          (logic.eq nat.nat
                             (nat.minus (nat.times b n) (nat.times a m))
                             (gcd.gcd_aux m n m)))
-                      (logic.ex nat.nat
+                      (connectives.ex nat.nat
                          (a0:(sttfa.etap (sttfa.p nat.nat)) =>
-                          logic.ex nat.nat
+                          connectives.ex nat.nat
                             (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                             logic.Or
+                             connectives.Or
                                (logic.eq nat.nat
                                   (nat.minus (nat.times a0 n) (nat.times b m))
                                   (gcd.gcd_aux m n m))
@@ -3031,25 +3031,25 @@ def eq_minus_gcd :
                       (b:(sttfa.etap (sttfa.p nat.nat)) =>
                        _clearme0:
                        (sttfa.eps
-                          (logic.Or
+                          (connectives.Or
                              (logic.eq nat.nat
                                 (nat.minus (nat.times a m) (nat.times b n))
                                 (gcd.gcd_aux m n m))
                              (logic.eq nat.nat
                                 (nat.minus (nat.times b n) (nat.times a m))
                                 (gcd.gcd_aux m n m)))) =>
-                       logic.match_Or_prop
+                       connectives.match_Or_prop
                          (logic.eq nat.nat
                             (nat.minus (nat.times a m) (nat.times b n))
                             (gcd.gcd_aux m n m))
                          (logic.eq nat.nat
                             (nat.minus (nat.times b n) (nat.times a m))
                             (gcd.gcd_aux m n m))
-                         (logic.ex nat.nat
+                         (connectives.ex nat.nat
                             (a0:(sttfa.etap (sttfa.p nat.nat)) =>
-                             logic.ex nat.nat
+                             connectives.ex nat.nat
                                (b0:(sttfa.etap (sttfa.p nat.nat)) =>
-                                logic.Or
+                                connectives.Or
                                   (logic.eq nat.nat
                                      (nat.minus (nat.times a0 n)
                                         (nat.times b0 m)) (gcd.gcd_aux m n m))
@@ -3061,11 +3061,11 @@ def eq_minus_gcd :
                              (logic.eq nat.nat
                                 (nat.minus (nat.times a m) (nat.times b n))
                                 (gcd.gcd_aux m n m))) =>
-                                logic.ex_intro nat.nat
+                                connectives.ex_intro nat.nat
                                 (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                                   (logic.ex nat.nat
+                                   (connectives.ex nat.nat
                                       (b0:(sttfa.etap (sttfa.p nat.nat)) =>
-                                       logic.Or
+                                       connectives.Or
                                          (logic.eq nat.nat
                                             (nat.minus (nat.times x n)
                                                (nat.times b0 m))
@@ -3075,9 +3075,9 @@ def eq_minus_gcd :
                                                (nat.times x n))
                                             (gcd.gcd_aux m n m)))))
                           b
-                            (logic.ex_intro nat.nat
+                            (connectives.ex_intro nat.nat
                                    (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                                      (logic.Or
+                                      (connectives.Or
                                          (logic.eq nat.nat
                                             (nat.minus (nat.times b n)
                                                (nat.times x m))
@@ -3087,7 +3087,7 @@ def eq_minus_gcd :
                                                (nat.times b n))
                                             (gcd.gcd_aux m n m))))
                              a
-                               (logic.or_intror
+                               (connectives.or_intror
                                       (logic.eq nat.nat
                                          (nat.minus (nat.times b n)
                                             (nat.times a m))
@@ -3146,11 +3146,11 @@ def eq_minus_gcd :
                              (logic.eq nat.nat
                                 (nat.minus (nat.times b n) (nat.times a m))
                                 (gcd.gcd_aux m n m))) =>
-                                logic.ex_intro nat.nat
+                                connectives.ex_intro nat.nat
                                 (y:(sttfa.etap (sttfa.p nat.nat)) =>
-                                   (logic.ex nat.nat
+                                   (connectives.ex nat.nat
                                       (b0:(sttfa.etap (sttfa.p nat.nat)) =>
-                                       logic.Or
+                                       connectives.Or
                                          (logic.eq nat.nat
                                             (nat.minus (nat.times y n)
                                                (nat.times b0 m))
@@ -3160,9 +3160,9 @@ def eq_minus_gcd :
                                                (nat.times y n))
                                             (gcd.gcd_aux m n m)))))
                           b
-                            (logic.ex_intro nat.nat
+                            (connectives.ex_intro nat.nat
                                    (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                                      (logic.Or
+                                      (connectives.Or
                                          (logic.eq nat.nat
                                             (nat.minus (nat.times b n)
                                                (nat.times x m))
@@ -3172,7 +3172,7 @@ def eq_minus_gcd :
                                                (nat.times b n))
                                             (gcd.gcd_aux m n m))))
                              a
-                               (logic.or_introl
+                               (connectives.or_introl
                                       (logic.eq nat.nat
                                          (nat.minus (nat.times b n)
                                             (nat.times a m))
@@ -3233,22 +3233,22 @@ def eq_minus_gcd :
        (eqm0:(sttfa.eps (logic.eq nat.nat nat.O m)) =>
         logic.eq_ind_r nat.nat m
           (x:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.ex nat.nat
+           connectives.ex nat.nat
              (a:(sttfa.etap (sttfa.p nat.nat)) =>
-              logic.ex nat.nat
+              connectives.ex nat.nat
                 (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                 logic.Or
+                 connectives.Or
                    (logic.eq nat.nat
                       (nat.minus (nat.times a n) (nat.times b m))
                       (gcd.gcd n m))
                    (logic.eq nat.nat
                       (nat.minus (nat.times b m) (nat.times a n))
                       (gcd.gcd n m)))))
-          (logic.ex_intro nat.nat
+          (connectives.ex_intro nat.nat
                  (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                    (logic.ex nat.nat
+                    (connectives.ex nat.nat
                        (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                        logic.Or
+                        connectives.Or
                           (logic.eq nat.nat
                              (nat.minus (nat.times x n) (nat.times b m))
                              (gcd.gcd n m))
@@ -3256,9 +3256,9 @@ def eq_minus_gcd :
                              (nat.minus (nat.times b m) (nat.times x n))
                              (gcd.gcd n m)))))
            (nat.S nat.O)
-             (logic.ex_intro nat.nat
+             (connectives.ex_intro nat.nat
                     (y:(sttfa.etap (sttfa.p nat.nat)) =>
-                       (logic.Or
+                       (connectives.Or
                           (logic.eq nat.nat
                              (nat.minus (nat.times (nat.S nat.O) n)
                                 (nat.times y m)) (gcd.gcd n m))
@@ -3266,7 +3266,7 @@ def eq_minus_gcd :
                              (nat.minus (nat.times y m)
                                 (nat.times (nat.S nat.O) n)) (gcd.gcd n m))))
               nat.O
-                (logic.or_introl
+                (connectives.or_introl
                        (logic.eq nat.nat
                           (nat.minus (nat.times (nat.S nat.O) n)
                              (nat.times nat.O m)) (gcd.gcd n m))
@@ -3500,20 +3500,20 @@ def eq_minus_gcd :
     (eqn0:(sttfa.eps (logic.eq nat.nat nat.O n)) =>
      logic.eq_ind_r nat.nat n
        (x:(sttfa.etap (sttfa.p nat.nat)) =>
-        logic.ex nat.nat
+        connectives.ex nat.nat
           (a:(sttfa.etap (sttfa.p nat.nat)) =>
-           logic.ex nat.nat
+           connectives.ex nat.nat
              (b:(sttfa.etap (sttfa.p nat.nat)) =>
-              logic.Or
+              connectives.Or
                 (logic.eq nat.nat
                    (nat.minus (nat.times a n) (nat.times b m)) (gcd.gcd n m))
                 (logic.eq nat.nat
                    (nat.minus (nat.times b m) (nat.times a n)) (gcd.gcd n m)))))
-       (logic.ex_intro nat.nat
+       (connectives.ex_intro nat.nat
               (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                 (logic.ex nat.nat
+                 (connectives.ex nat.nat
                     (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                     logic.Or
+                     connectives.Or
                        (logic.eq nat.nat
                           (nat.minus (nat.times x n) (nat.times b m))
                           (gcd.gcd n m))
@@ -3521,9 +3521,9 @@ def eq_minus_gcd :
                           (nat.minus (nat.times b m) (nat.times x n))
                           (gcd.gcd n m)))))
         nat.O
-          (logic.ex_intro nat.nat
+          (connectives.ex_intro nat.nat
                  (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                    (logic.Or
+                    (connectives.Or
                        (logic.eq nat.nat
                           (nat.minus (nat.times nat.O n) (nat.times x m))
                           (gcd.gcd n m))
@@ -3531,7 +3531,7 @@ def eq_minus_gcd :
                           (nat.minus (nat.times x m) (nat.times nat.O n))
                           (gcd.gcd n m))))
            (nat.S nat.O)
-             (logic.or_intror
+             (connectives.or_intror
                     (logic.eq nat.nat
                        (nat.minus (nat.times nat.O n)
                           (nat.times (nat.S nat.O) m)) (gcd.gcd n m))
@@ -3693,28 +3693,28 @@ def gcd_O_to_eq_O :
         sttfa.forall nat.nat
           (n:(sttfa.etap (sttfa.p nat.nat)) =>
            sttfa.impl (logic.eq nat.nat (gcd.gcd m n) nat.O)
-             (logic.And (logic.eq nat.nat m nat.O)
+             (connectives.And (logic.eq nat.nat m nat.O)
                 (logic.eq nat.nat n nat.O)))))
   :=
   m:(sttfa.etap (sttfa.p nat.nat)) =>
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   H:(sttfa.eps (logic.eq nat.nat (gcd.gcd m n) nat.O)) =>
-  logic.match_And_prop (primes.divides nat.O n) (primes.divides nat.O m)
-    (logic.And (logic.eq nat.nat m nat.O) (logic.eq nat.nat n nat.O))
+  connectives.match_And_prop (primes.divides nat.O n) (primes.divides nat.O m)
+    (connectives.And (logic.eq nat.nat m nat.O) (logic.eq nat.nat n nat.O))
     (_clearme:(sttfa.eps (primes.divides nat.O n)) =>
      primes.match_divides_prop nat.O n
        (sttfa.impl (primes.divides nat.O m)
-          (logic.And (logic.eq nat.nat m nat.O)
+          (connectives.And (logic.eq nat.nat m nat.O)
              (logic.eq nat.nat n nat.O)))
        (q1:(sttfa.etap (sttfa.p nat.nat)) =>
         H1:(sttfa.eps (logic.eq nat.nat n (nat.times nat.O q1))) =>
         _clearme0:(sttfa.eps (primes.divides nat.O m)) =>
         primes.match_divides_prop nat.O m
-          (logic.And (logic.eq nat.nat m nat.O)
+          (connectives.And (logic.eq nat.nat m nat.O)
              (logic.eq nat.nat n nat.O))
           (q2:(sttfa.etap (sttfa.p nat.nat)) =>
            H2:(sttfa.eps (logic.eq nat.nat m (nat.times nat.O q2))) =>
-           logic.conj (logic.eq nat.nat m nat.O)
+           connectives.conj (logic.eq nat.nat m nat.O)
                  (logic.eq nat.nat n nat.O)
              (logic.rewrite_l nat.nat m
                 (__:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat m __)
@@ -3756,7 +3756,7 @@ def gcd_O_to_eq_O :
                          H2))))) _clearme0) _clearme)
     (logic.eq_ind nat.nat (gcd.gcd m n)
        (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
-        logic.And (primes.divides x_1 n) (primes.divides x_1 m))
+        connectives.And (primes.divides x_1 n) (primes.divides x_1 m))
        (gcd.divides_gcd_nm m n) nat.O H).
 
 def let_clause_1571 :
@@ -3815,7 +3815,7 @@ def lt_O_gcd :
   posn:(sttfa.eps (nat.lt nat.O n)) =>
   nat.nat_case (gcd.gcd m n) (nat.lt nat.O)
     (H:(sttfa.eps (logic.eq nat.nat (gcd.gcd m n) nat.O)) =>
-     logic.match_And_prop (logic.eq nat.nat m nat.O)
+     connectives.match_And_prop (logic.eq nat.nat m nat.O)
        (logic.eq nat.nat n nat.O) (nat.lt nat.O nat.O)
        (auto:(sttfa.eps (logic.eq nat.nat m nat.O)) =>
         auto':(sttfa.eps (logic.eq nat.nat n nat.O)) =>
@@ -3849,18 +3849,18 @@ def prime_to_gcd_1 :
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            sttfa.impl (primes.prime n)
-             (sttfa.impl (logic.Not (primes.divides n m))
+             (sttfa.impl (connectives.Not (primes.divides n m))
                 (logic.eq nat.nat (gcd.gcd n m) (nat.S nat.O))))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
   _clearme:(sttfa.eps (primes.prime n)) =>
-  logic.match_And_prop (nat.lt (nat.S nat.O) n)
+  connectives.match_And_prop (nat.lt (nat.S nat.O) n)
     (sttfa.forall nat.nat
        (m1:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.impl (primes.divides m1 n)
           (sttfa.impl (nat.lt (nat.S nat.O) m1) (logic.eq nat.nat m1 n))))
-    (sttfa.impl (logic.Not (primes.divides n m))
+    (sttfa.impl (connectives.Not (primes.divides n m))
        (logic.eq nat.nat (gcd.gcd n m) (nat.S nat.O)))
     (lt1n:(sttfa.eps (nat.lt (nat.S nat.O) n)) =>
      primen:
@@ -3869,7 +3869,7 @@ def prime_to_gcd_1 :
            (m0:(sttfa.etap (sttfa.p nat.nat)) =>
             sttfa.impl (primes.divides m0 n)
               (sttfa.impl (nat.lt (nat.S nat.O) m0) (logic.eq nat.nat m0 n))))) =>
-     ndivnm:(sttfa.eps (logic.Not (primes.divides n m))) =>
+     ndivnm:(sttfa.eps (connectives.Not (primes.divides n m))) =>
      nat.le_to_le_to_eq (gcd.gcd n m) (nat.S nat.O)
        (nat.not_lt_to_le (nat.S nat.O) (gcd.gcd n m)
           (logic.not_to_not (nat.lt (nat.S nat.O) (gcd.gcd n m))
@@ -3910,7 +3910,7 @@ def divides_times_to_divides :
              (m:(sttfa.etap (sttfa.p nat.nat)) =>
               sttfa.impl (primes.prime p)
                 (sttfa.impl (primes.divides p (nat.times n m))
-                   (logic.Or (primes.divides p n) (primes.divides p m)))))))
+                   (connectives.Or (primes.divides p n) (primes.divides p m)))))))
   :=
   p:(sttfa.etap (sttfa.p nat.nat)) =>
   n:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -3918,23 +3918,23 @@ def divides_times_to_divides :
   primp:(sttfa.eps (primes.prime p)) =>
   _clearme:(sttfa.eps (primes.divides p (nat.times n m))) =>
   primes.match_divides_prop p (nat.times n m)
-    (logic.Or (primes.divides p n) (primes.divides p m))
+    (connectives.Or (primes.divides p n) (primes.divides p m))
     (c:(sttfa.etap (sttfa.p nat.nat)) =>
      nm:(sttfa.eps (logic.eq nat.nat (nat.times n m) (nat.times p c))) =>
-     logic.match_Or_prop (primes.divides p n)
-       (logic.Not (primes.divides p n))
-       (logic.Or (primes.divides p n) (primes.divides p m))
+     connectives.match_Or_prop (primes.divides p n)
+       (connectives.Not (primes.divides p n))
+       (connectives.Or (primes.divides p n) (primes.divides p m))
        (auto:(sttfa.eps (primes.divides p n)) =>
-        logic.or_introl (primes.divides p n)
+        connectives.or_introl (primes.divides p n)
          (primes.divides p m) auto)
-       (ndivpn:(sttfa.eps (logic.Not (primes.divides p n))) =>
-       logic.or_intror (primes.divides p n)
+       (ndivpn:(sttfa.eps (connectives.Not (primes.divides p n))) =>
+       connectives.or_intror (primes.divides p n)
                         (primes.divides p m)
-          (logic.match_ex_prop nat.nat
+          (connectives.match_ex_prop nat.nat
              (a:(sttfa.etap (sttfa.p nat.nat)) =>
-              logic.ex nat.nat
+              connectives.ex nat.nat
                 (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                 logic.Or
+                 connectives.Or
                    (logic.eq nat.nat
                       (nat.minus (nat.times a n) (nat.times b p))
                       (nat.S nat.O))
@@ -3944,18 +3944,18 @@ def divides_times_to_divides :
              (a:(sttfa.etap (sttfa.p nat.nat)) =>
               _clearme0:
               (sttfa.eps
-                 (logic.ex nat.nat
+                 (connectives.ex nat.nat
                     (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                     logic.Or
+                     connectives.Or
                        (logic.eq nat.nat
                           (nat.minus (nat.times a n) (nat.times b p))
                           (nat.S nat.O))
                        (logic.eq nat.nat
                           (nat.minus (nat.times b p) (nat.times a n))
                           (nat.S nat.O))))) =>
-              logic.match_ex_prop nat.nat
+              connectives.match_ex_prop nat.nat
                 (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                 logic.Or
+                 connectives.Or
                    (logic.eq nat.nat
                       (nat.minus (nat.times a n) (nat.times b p))
                       (nat.S nat.O))
@@ -3965,14 +3965,14 @@ def divides_times_to_divides :
                 (b:(sttfa.etap (sttfa.p nat.nat)) =>
                  _clearme1:
                  (sttfa.eps
-                    (logic.Or
+                    (connectives.Or
                        (logic.eq nat.nat
                           (nat.minus (nat.times a n) (nat.times b p))
                           (nat.S nat.O))
                        (logic.eq nat.nat
                           (nat.minus (nat.times b p) (nat.times a n))
                           (nat.S nat.O)))) =>
-                 logic.match_Or_prop
+                 connectives.match_Or_prop
                    (logic.eq nat.nat
                       (nat.minus (nat.times a n) (nat.times b p))
                       (nat.S nat.O))
@@ -4361,22 +4361,22 @@ def divides_times_to_divides :
                             (nat.times a c)))) _clearme1) _clearme0)
              (logic.eq_ind nat.nat (gcd.gcd p n)
                 (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
-                 logic.ex nat.nat
+                 connectives.ex nat.nat
                    (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                    logic.ex nat.nat
+                    connectives.ex nat.nat
                       (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.Or
+                       connectives.Or
                          (logic.eq nat.nat
                             (nat.minus (nat.times a n) (nat.times b p)) x_1)
                          (logic.eq nat.nat
                             (nat.minus (nat.times b p) (nat.times a n)) x_1))))
                 (logic.eq_ind_r nat.nat (gcd.gcd n p)
                    (x:(sttfa.etap (sttfa.p nat.nat)) =>
-                    logic.ex nat.nat
+                    connectives.ex nat.nat
                       (a:(sttfa.etap (sttfa.p nat.nat)) =>
-                       logic.ex nat.nat
+                       connectives.ex nat.nat
                          (b:(sttfa.etap (sttfa.p nat.nat)) =>
-                          logic.Or
+                          connectives.Or
                             (logic.eq nat.nat
                                (nat.minus (nat.times a n) (nat.times b p)) x)
                             (logic.eq nat.nat
