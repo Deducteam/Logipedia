@@ -289,19 +289,17 @@ def true_or_false :
   sttfa.eps
     (sttfa.forall bool.bool
        (b:(sttfa.etap (sttfa.p bool.bool)) =>
-        connectives.Or (logic.eq bool.bool b bool.true)
+        logic.Or (logic.eq bool.bool b bool.true)
           (logic.eq bool.bool b bool.false)))
   :=
   b:(sttfa.etap (sttfa.p bool.bool)) =>
   bool.match_bool_prop
     (__:(sttfa.etap (sttfa.p bool.bool)) =>
-     connectives.Or (logic.eq bool.bool __ bool.true)
+     logic.Or (logic.eq bool.bool __ bool.true)
        (logic.eq bool.bool __ bool.false))
-    (z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-     l:(sttfa.eps (sttfa.impl (logic.eq bool.bool bool.true bool.true) z)) =>
-     r:
-     (sttfa.eps (sttfa.impl (logic.eq bool.bool bool.true bool.false) z)) =>
-     l (logic.refl bool.bool bool.true))
+    (logic.or_introl (logic.eq bool.bool bool.true bool.true)
+     (logic.eq bool.bool bool.true bool.false)
+     (logic.refl bool.bool bool.true))
     (relations.RC_reflexive bool.bool
        (__:(sttfa.etap (sttfa.p bool.bool)) =>
         _0:(sttfa.etap (sttfa.p bool.bool)) =>

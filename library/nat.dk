@@ -3755,35 +3755,24 @@ def decidable_le :
     (__:(sttfa.etap (sttfa.p nat.nat)) =>
      _0:(sttfa.etap (sttfa.p nat.nat)) => logic.decidable (nat.le __ _0))
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
-     z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-     l:(sttfa.eps (sttfa.impl (nat.le nat.O n) z)) =>
-     r:(sttfa.eps (sttfa.impl (connectives.Not (nat.le nat.O n)) z)) =>
-     l (nat.le_O_n n))
+     logic.or_introl (nat.le nat.O n) (connectives.Not (nat.le nat.O n))
+     (nat.le_O_n n))
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
-     z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-     l:(sttfa.eps (sttfa.impl (nat.le (nat.S n) nat.O) z)) =>
-     r:
-     (sttfa.eps (sttfa.impl (connectives.Not (nat.le (nat.S n) nat.O)) z)) =>
-     r (nat.not_le_Sn_O n))
+     logic.or_intror (nat.le (nat.S n) nat.O) (connectives.Not (nat.le (nat.S n) nat.O))
+     (nat.not_le_Sn_O n))
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
      m:(sttfa.etap (sttfa.p nat.nat)) =>
      _clearme:(sttfa.eps (logic.decidable (nat.le n m))) =>
      logic.match_Or_prop (nat.le n m) (connectives.Not (nat.le n m))
        (logic.decidable (nat.le (nat.S n) (nat.S m)))
        (auto:(sttfa.eps (nat.le n m)) =>
-        z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-        l:(sttfa.eps (sttfa.impl (nat.le (nat.S n) (nat.S m)) z)) =>
-        r:
-        (sttfa.eps
-           (sttfa.impl (connectives.Not (nat.le (nat.S n) (nat.S m))) z)) =>
-        l (nat.le_S_S n m auto))
+        logic.or_introl (nat.le (nat.S n) (nat.S m))
+         (connectives.Not (nat.le (nat.S n) (nat.S m)))
+        (nat.le_S_S n m auto))
        (auto:(sttfa.eps (connectives.Not (nat.le n m))) =>
-        z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-        l:(sttfa.eps (sttfa.impl (nat.le (nat.S n) (nat.S m)) z)) =>
-        r:
-        (sttfa.eps
-           (sttfa.impl (connectives.Not (nat.le (nat.S n) (nat.S m))) z)) =>
-        r (nat.not_le_to_not_le_S_S n m auto)) _clearme).
+       logic.or_intror (nat.le (nat.S n) (nat.S m))
+        (connectives.Not (nat.le (nat.S n) (nat.S m)))
+        (nat.not_le_to_not_le_S_S n m auto)) _clearme).
 
 def decidable_lt :
   sttfa.eps
@@ -3802,23 +3791,20 @@ def le_to_or_lt_eq :
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            sttfa.impl (nat.le n m)
-             (connectives.Or (nat.lt n m) (logic.eq nat.nat n m)))))
+             (logic.Or (nat.lt n m) (logic.eq nat.nat n m)))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
   lenm:(sttfa.eps (nat.le n m)) =>
   nat.le_ind n
     (x_417:(sttfa.etap (sttfa.p nat.nat)) =>
-     connectives.Or (nat.lt n x_417) (logic.eq nat.nat n x_417))
+     logic.Or (nat.lt n x_417) (logic.eq nat.nat n x_417))
     (relations.RC_reflexive nat.nat nat.lt n)
     (m0:(sttfa.etap (sttfa.p nat.nat)) =>
      _x_419:(sttfa.eps (nat.le n m0)) =>
      _x_421:
-     (sttfa.eps (connectives.Or (nat.lt n m0) (logic.eq nat.nat n m0))) =>
-     z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-     l:(sttfa.eps (sttfa.impl (nat.lt n (nat.S m0)) z)) =>
-     r:(sttfa.eps (sttfa.impl (logic.eq nat.nat n (nat.S m0)) z)) =>
-     l
+     (sttfa.eps (logic.Or (nat.lt n m0) (logic.eq nat.nat n m0))) =>
+     logic.or_introl (nat.lt n (nat.S m0)) (logic.eq nat.nat n (nat.S m0))
        (nat.le_to_lt_to_lt n m0 (nat.S m0) _x_419
           (logic.eq_coerc (nat.le (nat.S m0) (nat.plus nat.O (nat.S m0)))
              (nat.le (nat.S m0) (nat.S m0)) (nat.le_plus_n nat.O (nat.S m0))

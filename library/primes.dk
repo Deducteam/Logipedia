@@ -563,10 +563,7 @@ def decidable_divides :
     (logic.eq bool.bool (primes.dividesb n m) bool.false)
     (logic.decidable (primes.divides n m))
     (auto:(sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.true)) =>
-     z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-     l:(sttfa.eps (sttfa.impl (primes.divides n m) z)) =>
-     r:(sttfa.eps (sttfa.impl (connectives.Not (primes.divides n m)) z)) =>
-     l
+     logic.or_introl (primes.divides n m) (connectives.Not (primes.divides n m))
        (primes.dividesb_true_to_divides n m
           (logic.rewrite_r bool.bool bool.true
              (__:(sttfa.etap (sttfa.p bool.bool)) =>
@@ -574,10 +571,7 @@ def decidable_divides :
              (logic.refl bool.bool bool.true) (primes.dividesb n m) auto)))
     (auto:
      (sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.false)) =>
-     z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-     l:(sttfa.eps (sttfa.impl (primes.divides n m) z)) =>
-     r:(sttfa.eps (sttfa.impl (connectives.Not (primes.divides n m)) z)) =>
-     r
+     logic.or_intror (primes.divides n m) (connectives.Not (primes.divides n m))
        (primes.dividesb_false_to_not_divides n m
           (logic.rewrite_r bool.bool bool.false
              (__:(sttfa.etap (sttfa.p bool.bool)) =>

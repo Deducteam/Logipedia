@@ -9,16 +9,6 @@ nmk : sttfa.eps (sttfa.forall sttfa.bool
                 (A : sttfa.etap (sttfa.p sttfa.bool) =>
                  sttfa.impl (sttfa.impl A False) (Not A))).
 
-def Or :
-  sttfa.etap
-    (sttfa.p (sttfa.arrow sttfa.bool (sttfa.arrow sttfa.bool sttfa.bool)))
-  :=
-  x:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  y:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  sttfa.forall sttfa.bool
-    (z:(sttfa.etap (sttfa.p sttfa.bool)) =>
-     sttfa.impl (sttfa.impl x z) (sttfa.impl (sttfa.impl y z) z)).
-
 def Ex :
   sttfa.etap
     (sttfa.forallK

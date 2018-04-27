@@ -322,7 +322,7 @@ conj : sttfa.eps (sttfa.forall sttfa.bool
                  (B : sttfa.etap (sttfa.p sttfa.bool) =>
                   sttfa.impl A (sttfa.impl B (And A B))))).
 
-def match_And_prop :
+match_And_prop :
   sttfa.eps
     (sttfa.forall sttfa.bool
        (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
@@ -361,7 +361,27 @@ def proj2 :
   logic.match_And_prop A B B
     (_x_120:(sttfa.eps A) => _x_119:(sttfa.eps B) => _x_119) AB.
 
-def match_Or_prop :
+Or :
+  sttfa.etap
+    (sttfa.p (sttfa.arrow sttfa.bool (sttfa.arrow sttfa.bool sttfa.bool))).
+
+or_introl :
+    sttfa.eps
+    (sttfa.forall sttfa.bool
+       (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
+        sttfa.forall sttfa.bool
+          (B:(sttfa.etap (sttfa.p sttfa.bool)) =>
+           sttfa.impl A (Or A B)))).
+
+or_intror :
+    sttfa.eps
+    (sttfa.forall sttfa.bool
+       (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
+        sttfa.forall sttfa.bool
+          (B:(sttfa.etap (sttfa.p sttfa.bool)) =>
+           sttfa.impl B (Or A B)))).
+
+match_Or_prop :
   sttfa.eps
     (sttfa.forall sttfa.bool
        (A:(sttfa.etap (sttfa.p sttfa.bool)) =>
@@ -371,19 +391,12 @@ def match_Or_prop :
              (return:(sttfa.etap (sttfa.p sttfa.bool)) =>
               sttfa.impl (sttfa.impl A return)
                 (sttfa.impl (sttfa.impl B return)
-                   (sttfa.impl (connectives.Or A B) return))))))
-  :=
-  A:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  B:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  return:(sttfa.etap (sttfa.p sttfa.bool)) =>
-  case_A:(sttfa.eps (sttfa.impl A return)) =>
-  case_B:(sttfa.eps (sttfa.impl B return)) =>
-  or:(sttfa.eps (connectives.Or A B)) => or return case_A case_B.
+                   (sttfa.impl (logic.Or A B) return)))))).
 
 def decidable :
   sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool))
   :=
-  A:(sttfa.etap (sttfa.p sttfa.bool)) => connectives.Or A (connectives.Not A).
+  A:(sttfa.etap (sttfa.p sttfa.bool)) => logic.Or A (connectives.Not A).
 
 def match_ex_prop :
   sttfa.eps
