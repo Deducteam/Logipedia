@@ -10,7 +10,17 @@ gcd_aux_body :
        (sttfa.arrow nat.nat
           (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat)))).
 
-eq_gcd_aux :
+axiom_gcd_aux :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+          (gcd.gcd_aux p)
+          (nat.filter_nat_type
+             (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+             gcd.gcd_aux_body p))).
+
+def eq_gcd_aux :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -18,7 +28,13 @@ eq_gcd_aux :
           (gcd.gcd_aux p)
           (nat.filter_nat_type
              (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
-             gcd.gcd_aux_body p))).
+             gcd.gcd_aux_body p))) :=
+p:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+          (gcd.gcd_aux p)
+          (nat.filter_nat_type
+             (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+             gcd.gcd_aux_body p) (axiom_gcd_aux p).
 
 def sym_eq_gcd_aux :
   sttfa.eps
@@ -35,12 +51,23 @@ def sym_eq_gcd_aux :
     (nat.filter_nat_type (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        gcd.gcd_aux_body p) (gcd.eq_gcd_aux p).
 
-eq_gcd_aux_body_O :
+axiom_gcd_aux_body_O :
+  sttfa.eps
+    (leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+       (gcd.gcd_aux_body nat.O)
+       (m:(sttfa.etap (sttfa.p nat.nat)) =>
+        n:(sttfa.etap (sttfa.p nat.nat)) => m)).
+
+def eq_gcd_aux_body_O :
   sttfa.eps
     (leibniz.leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
        (gcd.gcd_aux_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
-        n:(sttfa.etap (sttfa.p nat.nat)) => m)).
+        n:(sttfa.etap (sttfa.p nat.nat)) => m)) :=
+leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+       (gcd.gcd_aux_body nat.O)
+       (m:(sttfa.etap (sttfa.p nat.nat)) =>
+        n:(sttfa.etap (sttfa.p nat.nat)) => m) axiom_gcd_aux_body_O.
 
 def sym_eq_gcd_aux_body_O :
   sttfa.eps
@@ -53,7 +80,18 @@ def sym_eq_gcd_aux_body_O :
     (m:(sttfa.etap (sttfa.p nat.nat)) =>
      n:(sttfa.etap (sttfa.p nat.nat)) => m) gcd.eq_gcd_aux_body_O.
 
-eq_gcd_aux_body_S :
+axiom_gcd_aux_body_S :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.eq (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+          (gcd.gcd_aux_body (nat.S p))
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           n:(sttfa.etap (sttfa.p nat.nat)) =>
+           bool.match_bool_type nat.nat n
+             (gcd.gcd_aux p n (div_mod.mod m n)) (primes.dividesb n m)))).
+
+def eq_gcd_aux_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (p:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -62,7 +100,15 @@ eq_gcd_aux_body_S :
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            n:(sttfa.etap (sttfa.p nat.nat)) =>
            bool.match_bool_type nat.nat n
-             (gcd.gcd_aux p n (div_mod.mod m n)) (primes.dividesb n m)))).
+             (gcd.gcd_aux p n (div_mod.mod m n)) (primes.dividesb n m)))) :=
+p:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.eq_leibniz (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))
+          (gcd.gcd_aux_body (nat.S p))
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           n:(sttfa.etap (sttfa.p nat.nat)) =>
+           bool.match_bool_type nat.nat n
+             (gcd.gcd_aux p n (div_mod.mod m n)) (primes.dividesb n m)) (axiom_gcd_aux_body_S p).
+
 
 def sym_eq_gcd_aux_body_S :
   sttfa.eps
