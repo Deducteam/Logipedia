@@ -6,7 +6,7 @@ def prime_to_not_divides_fact :
           (sttfa.forall nat.nat
              (n:(sttfa.etap (sttfa.p nat.nat)) =>
               sttfa.impl (nat.lt n p)
-                (connectives.Not (primes.divides p (fact.fact n)))))))
+                (logic.Not (primes.divides p (fact.fact n)))))))
   :=
   p:(sttfa.etap (sttfa.p nat.nat)) =>
   primep:(sttfa.eps (primes.prime p)) =>
@@ -14,19 +14,19 @@ def prime_to_not_divides_fact :
   nat.nat_ind
     (_x_365:(sttfa.etap (sttfa.p nat.nat)) =>
      sttfa.impl (nat.lt _x_365 p)
-       (connectives.Not (primes.divides p (fact.fact _x_365))))
+       (logic.Not (primes.divides p (fact.fact _x_365))))
     (fact.sym_eq_fact nat.O
        (y:(sttfa.etap (sttfa.p nat.nat)) =>
-        sttfa.impl (nat.lt nat.O p) (connectives.Not (primes.divides p y)))
+        sttfa.impl (nat.lt nat.O p) (logic.Not (primes.divides p y)))
        (nat.sym_eq_filter_nat_type_O nat.nat fact.fact_body
           (y:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (nat.lt nat.O p) (connectives.Not (primes.divides p y)))
+           sttfa.impl (nat.lt nat.O p) (logic.Not (primes.divides p y)))
           (fact.sym_eq_fact_body_O
              (y:(sttfa.etap (sttfa.p nat.nat)) =>
               sttfa.impl (nat.lt nat.O p)
-                (connectives.Not (primes.divides p y)))
+                (logic.Not (primes.divides p y)))
              (__:(sttfa.eps (nat.le (nat.S nat.O) p)) =>
-             connectives.nmk (primes.divides p (nat.S nat.O)) (
+             logic.nmk (primes.divides p (nat.S nat.O)) (
               divp:(sttfa.eps (primes.divides p (nat.S nat.O))) =>
               logic.absurd (nat.le p (nat.S nat.O))
                 (primes.divides_to_le p (nat.S nat.O) (nat.lt_O_S nat.O) divp)
@@ -37,34 +37,34 @@ def prime_to_not_divides_fact :
        (y:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.impl
           (sttfa.impl (nat.lt n1 p)
-             (connectives.Not (primes.divides p (fact.fact n1))))
+             (logic.Not (primes.divides p (fact.fact n1))))
           (sttfa.impl (nat.lt (nat.S n1) p)
-             (connectives.Not (primes.divides p y))))
+             (logic.Not (primes.divides p y))))
        (nat.sym_eq_filter_nat_type_S nat.nat fact.fact_body n1
           (y:(sttfa.etap (sttfa.p nat.nat)) =>
            sttfa.impl
              (sttfa.impl (nat.lt n1 p)
-                (connectives.Not (primes.divides p (fact.fact n1))))
+                (logic.Not (primes.divides p (fact.fact n1))))
              (sttfa.impl (nat.lt (nat.S n1) p)
-                (connectives.Not (primes.divides p y))))
+                (logic.Not (primes.divides p y))))
           (fact.sym_eq_fact_body_S n1
              (y:(sttfa.etap (sttfa.p nat.nat)) =>
               sttfa.impl
                 (sttfa.impl (nat.lt n1 p)
-                   (connectives.Not (primes.divides p (fact.fact n1))))
+                   (logic.Not (primes.divides p (fact.fact n1))))
                 (sttfa.impl (nat.lt (nat.S n1) p)
-                   (connectives.Not (primes.divides p y))))
+                   (logic.Not (primes.divides p y))))
              (Hind:
               (sttfa.eps
                  (sttfa.impl (nat.lt n1 p)
-                    (connectives.Not (primes.divides p (fact.fact n1))))) =>
+                    (logic.Not (primes.divides p (fact.fact n1))))) =>
               ltn1:(sttfa.eps (nat.lt (nat.S n1) p)) =>
-              connectives.nmk (primes.divides p (nat.times (fact.fact n1) (nat.S n1))) (
+              logic.nmk (primes.divides p (nat.times (fact.fact n1) (nat.S n1))) (
               Hdiv:
               (sttfa.eps
                  (primes.divides p (nat.times (fact.fact n1) (nat.S n1)))) =>
               logic.match_Or_prop (primes.divides p (fact.fact n1))
-                (primes.divides p (nat.S n1)) connectives.False
+                (primes.divides p (nat.S n1)) logic.False
                 (Hdiv0:(sttfa.eps (primes.divides p (fact.fact n1))) =>
                  logic.absurd (primes.divides p (fact.fact n1)) Hdiv0
                    (Hind (nat.lt_to_le (nat.S n1) p ltn1)))
@@ -82,7 +82,7 @@ def permut_mod :
         sttfa.forall nat.nat
           (a:(sttfa.etap (sttfa.p nat.nat)) =>
            sttfa.impl (primes.prime p)
-             (sttfa.impl (connectives.Not (primes.divides p a))
+             (sttfa.impl (logic.Not (primes.divides p a))
                 (permutation.permut
                    (n:(sttfa.etap (sttfa.p nat.nat)) =>
                     div_mod.mod (nat.times a n) p) (nat.pred p))))))
@@ -90,7 +90,7 @@ def permut_mod :
   p:(sttfa.etap (sttfa.p nat.nat)) =>
   a:(sttfa.etap (sttfa.p nat.nat)) =>
   primep:(sttfa.eps (primes.prime p)) =>
-  ndiv:(sttfa.eps (connectives.Not (primes.divides p a))) =>
+  ndiv:(sttfa.eps (logic.Not (primes.divides p a))) =>
   logic.conj
         (sttfa.forall nat.nat
            (x:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -118,7 +118,7 @@ def permut_mod :
      (sttfa.eps
         (logic.eq nat.nat (div_mod.mod (nat.times a i) p)
            (div_mod.mod (nat.times a j) p))) =>
-     logic.match_Or_prop (nat.lt i j) (connectives.Not (nat.lt i j))
+     logic.match_Or_prop (nat.lt i j) (logic.Not (nat.lt i j))
        (logic.eq nat.nat i j)
        (ltij:(sttfa.eps (nat.lt i j)) =>
         logic.falsity (logic.eq nat.nat i j)
@@ -177,7 +177,7 @@ def permut_mod :
                                   (div_mod.mod (nat.times a j) p) H))
                             (nat.times a (nat.minus j i))
                             (nat.distributive_times_minus a j i))))))))
-       (Hij:(sttfa.eps (connectives.Not (nat.lt i j))) =>
+       (Hij:(sttfa.eps (logic.Not (nat.lt i j))) =>
         logic.match_Or_prop (nat.lt j i) (logic.eq nat.nat j i)
           (logic.eq nat.nat i j)
           (Hij0:(sttfa.eps (nat.lt j i)) =>
@@ -974,25 +974,25 @@ def congruent_exp_pred_SO :
         sttfa.forall nat.nat
           (a:(sttfa.etap (sttfa.p nat.nat)) =>
            sttfa.impl (primes.prime p)
-             (sttfa.impl (connectives.Not (primes.divides p a))
+             (sttfa.impl (logic.Not (primes.divides p a))
                 (cong.congruent (exp.exp a (nat.pred p)) (nat.S nat.O) p)))))
   :=
   p:(sttfa.etap (sttfa.p nat.nat)) =>
   a:(sttfa.etap (sttfa.p nat.nat)) =>
   primep:(sttfa.eps (primes.prime p)) =>
-  ndiv:(sttfa.eps (connectives.Not (primes.divides p a))) =>
+  ndiv:(sttfa.eps (logic.Not (primes.divides p a))) =>
   cong.divides_to_congruent (exp.exp a (nat.pred p)) (nat.S nat.O) p
     (primes.prime_to_lt_O p primep)
     (exp.lt_O_exp a (nat.pred p)
        (nat.match_nat_prop
           (__:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (connectives.Not (primes.divides p __))
+           sttfa.impl (logic.Not (primes.divides p __))
              (nat.lt nat.O __))
-          (_clearme:(sttfa.eps (connectives.Not (primes.divides p nat.O))) =>
+          (_clearme:(sttfa.eps (logic.Not (primes.divides p nat.O))) =>
            logic.Not_ind (primes.divides p nat.O) (nat.lt nat.O nat.O)
              (div0:
               (sttfa.eps
-                 (sttfa.impl (primes.divides p nat.O) connectives.False)) =>
+                 (sttfa.impl (primes.divides p nat.O) logic.False)) =>
               logic.falsity (nat.lt nat.O nat.O)
                 (div0
                    (primes.quotient p nat.O nat.O
@@ -1003,7 +1003,7 @@ def congruent_exp_pred_SO :
                          (nat.times_n_O p))))) _clearme)
           (auto:(sttfa.etap (sttfa.p nat.nat)) =>
            auto':
-           (sttfa.eps (connectives.Not (primes.divides p (nat.S auto)))) =>
+           (sttfa.eps (logic.Not (primes.divides p (nat.S auto)))) =>
            nat.lt_O_S auto) a ndiv))
     (logic.match_Or_prop
        (primes.divides p (nat.minus (exp.exp a (nat.pred p)) (nat.S nat.O)))
@@ -2677,7 +2677,7 @@ def congruent_exp_pred_SO :
                                                                     (nat.times
                                                                     a i0) p)
                                                                     i)) p))
-                                                                    connectives.False)
+                                                                    logic.False)
                                                                     (logic.eq_ind_r
                                                                     nat.nat
                                                                     i
@@ -2689,7 +2689,7 @@ def congruent_exp_pred_SO :
                                                                     (logic.eq
                                                                     nat.nat
                                                                     nat.O x)
-                                                                    connectives.False)
+                                                                    logic.False)
                                                                     (eq0i:
                                                                     (sttfa.eps
                                                                     (logic.eq
@@ -2712,7 +2712,7 @@ def congruent_exp_pred_SO :
                                                                     x_1)
                                                                     bool.true)
                                                                     bool.true)
-                                                                    connectives.False)
+                                                                    logic.False)
                                                                     (nat.sym_eq_leb
                                                                     (nat.S
                                                                     nat.O)
@@ -2729,7 +2729,7 @@ def congruent_exp_pred_SO :
                                                                     (y nat.O)
                                                                     bool.true)
                                                                     bool.true)
-                                                                    connectives.False)
+                                                                    logic.False)
                                                                     (nat.sym_eq_filter_nat_type_S
                                                                     (sttfa.arrow
                                                                     nat.nat
@@ -2749,7 +2749,7 @@ def congruent_exp_pred_SO :
                                                                     (y nat.O)
                                                                     bool.true)
                                                                     bool.true)
-                                                                    connectives.False)
+                                                                    logic.False)
                                                                     (nat.sym_eq_leb_body_S
                                                                     nat.O
                                                                     (y:
@@ -2765,7 +2765,7 @@ def congruent_exp_pred_SO :
                                                                     (y nat.O)
                                                                     bool.true)
                                                                     bool.true)
-                                                                    connectives.False)
+                                                                    logic.False)
                                                                     (nat.sym_eq_match_nat_type_O
                                                                     bool.bool
                                                                     bool.false
@@ -2786,7 +2786,7 @@ def congruent_exp_pred_SO :
                                                                     y
                                                                     bool.true)
                                                                     bool.true)
-                                                                    connectives.False)
+                                                                    logic.False)
                                                                     (bool.sym_eq_match_bool_type_false
                                                                     bool.bool
                                                                     bool.true
@@ -2800,7 +2800,7 @@ def congruent_exp_pred_SO :
                                                                     bool.bool
                                                                     y
                                                                     bool.true)
-                                                                    connectives.False)
+                                                                    logic.False)
                                                                     (H0:
                                                                     (sttfa.eps
                                                                     (logic.eq
@@ -2876,7 +2876,7 @@ def congruent_exp_pred_SO :
                                                                     bool.false
                                                                     bool.true
                                                                     H0))
-                                                                    connectives.False))))))
+                                                                    logic.False))))))
                                                                     i eq0i
                                                                     posi)
                                                                     (div_mod.mod

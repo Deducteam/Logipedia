@@ -4263,7 +4263,7 @@ def bigop_iso :
                                                                     __)
                                                                     (p20 j))
                                                                     bool.true)
-                                                                   connectives.False)
+                                                                   logic.False)
                                                                 (bool.sym_eq_match_bool_type_true
                                                                    bool.bool
                                                                    bool.false
@@ -4286,7 +4286,7 @@ def bigop_iso :
                                                                     bool.false
                                                                     y)
                                                                     bool.true)
-                                                                    connectives.False))
+                                                                    logic.False))
                                                                    (bool.sym_eq_match_bool_type_false
                                                                     bool.bool
                                                                     (p20 j)
@@ -4304,7 +4304,7 @@ def bigop_iso :
                                                                     bool.bool
                                                                     y
                                                                     bool.true)
-                                                                    connectives.False))
+                                                                    logic.False))
                                                                     (auto:
                                                                     (sttfa.eps
                                                                     (logic.eq
@@ -4349,7 +4349,7 @@ def bigop_iso :
                                                                     (sttfa.p
                                                                     bool.bool)) =>
                                                                     sttfa.impl
-                                                                    (connectives.Not
+                                                                    (logic.Not
                                                                     (logic.eq
                                                                     nat.nat
                                                                     (h n) j))
@@ -4362,7 +4362,7 @@ def bigop_iso :
                                                                     bool.false
                                                                     y)
                                                                     bool.true)
-                                                                    connectives.False))
+                                                                    logic.False))
                                                                    (bool.sym_eq_match_bool_type_true
                                                                     bool.bool
                                                                     (p20 j)
@@ -4372,7 +4372,7 @@ def bigop_iso :
                                                                     (sttfa.p
                                                                     bool.bool)) =>
                                                                     sttfa.impl
-                                                                    (connectives.Not
+                                                                    (logic.Not
                                                                     (logic.eq
                                                                     nat.nat
                                                                     (h n) j))
@@ -4381,10 +4381,10 @@ def bigop_iso :
                                                                     bool.bool
                                                                     y
                                                                     bool.true)
-                                                                    connectives.False))
+                                                                    logic.False))
                                                                     (auto:
                                                                     (sttfa.eps
-                                                                    (connectives.Not
+                                                                    (logic.Not
                                                                     (logic.eq
                                                                     nat.nat
                                                                     (h n) j))) =>

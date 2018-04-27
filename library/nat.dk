@@ -175,8 +175,8 @@ def not_zero :
   sttfa.etap (sttfa.p (sttfa.arrow nat.nat sttfa.bool))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
-  nat.match_nat_type sttfa.bool connectives.False
-    (p:(sttfa.etap (sttfa.p nat.nat)) => connectives.True) n.
+  nat.match_nat_type sttfa.bool logic.False
+    (p:(sttfa.etap (sttfa.p nat.nat)) => logic.True) n.
 
 le :
   sttfa.etap (sttfa.p (sttfa.arrow nat.nat (sttfa.arrow nat.nat sttfa.bool))).
@@ -2382,12 +2382,12 @@ def not_eq_S :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (connectives.Not (logic.eq nat.nat n m))
-             (connectives.Not (logic.eq nat.nat (nat.S n) (nat.S m))))))
+           sttfa.impl (logic.Not (logic.eq nat.nat n m))
+             (logic.Not (logic.eq nat.nat (nat.S n) (nat.S m))))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
-  auto:(sttfa.eps (connectives.Not (logic.eq nat.nat n m))) =>
+  auto:(sttfa.eps (logic.Not (logic.eq nat.nat n m))) =>
   logic.not_to_not (logic.eq nat.nat (nat.S n) (nat.S m))
     (logic.eq nat.nat n m)
     (auto':(sttfa.eps (logic.eq nat.nat (nat.S n) (nat.S m))) =>
@@ -2405,19 +2405,19 @@ def not_eq_O_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        connectives.Not (logic.eq nat.nat nat.O (nat.S n))))
+        logic.Not (logic.eq nat.nat nat.O (nat.S n))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
-  connectives.nmk (logic.eq nat.nat nat.O (nat.S n)) (
+  logic.nmk (logic.eq nat.nat nat.O (nat.S n)) (
   eqOS:(sttfa.eps (logic.eq nat.nat nat.O (nat.S n))) =>
-  nat.eq_match_nat_type_O sttfa.bool connectives.False
-    (p:(sttfa.etap (sttfa.p nat.nat)) => connectives.True)
+  nat.eq_match_nat_type_O sttfa.bool logic.False
+    (p:(sttfa.etap (sttfa.p nat.nat)) => logic.True)
     (y:(sttfa.etap (sttfa.p sttfa.bool)) => y)
     (logic.eq_ind_r nat.nat (nat.S n)
        (x:(sttfa.etap (sttfa.p nat.nat)) => nat.not_zero x)
-       (nat.sym_eq_match_nat_type_S sttfa.bool connectives.False
-          (p:(sttfa.etap (sttfa.p nat.nat)) => connectives.True) n
-          (y:(sttfa.etap (sttfa.p sttfa.bool)) => y) connectives.I) nat.O
+       (nat.sym_eq_match_nat_type_S sttfa.bool logic.False
+          (p:(sttfa.etap (sttfa.p nat.nat)) => logic.True) n
+          (y:(sttfa.etap (sttfa.p sttfa.bool)) => y) logic.I) nat.O
        eqOS)).
 
 def lt_to_not_zero :
@@ -2433,15 +2433,15 @@ def lt_to_not_zero :
   Hlt:(sttfa.eps (nat.lt n m)) =>
   nat.le_ind (nat.S n)
     (x_417:(sttfa.etap (sttfa.p nat.nat)) => nat.not_zero x_417)
-    (nat.sym_eq_match_nat_type_S sttfa.bool connectives.False
-       (p:(sttfa.etap (sttfa.p nat.nat)) => connectives.True) n
-       (y:(sttfa.etap (sttfa.p sttfa.bool)) => y) connectives.I)
+    (nat.sym_eq_match_nat_type_S sttfa.bool logic.False
+       (p:(sttfa.etap (sttfa.p nat.nat)) => logic.True) n
+       (y:(sttfa.etap (sttfa.p sttfa.bool)) => y) logic.I)
     (m0:(sttfa.etap (sttfa.p nat.nat)) =>
      _x_419:(sttfa.eps (nat.le (nat.S n) m0)) =>
      _x_421:(sttfa.eps (nat.not_zero m0)) =>
-     nat.sym_eq_match_nat_type_S sttfa.bool connectives.False
-       (p:(sttfa.etap (sttfa.p nat.nat)) => connectives.True) m0
-       (y:(sttfa.etap (sttfa.p sttfa.bool)) => y) connectives.I) m Hlt.
+     nat.sym_eq_match_nat_type_S sttfa.bool logic.False
+       (p:(sttfa.etap (sttfa.p nat.nat)) => logic.True) m0
+       (y:(sttfa.etap (sttfa.p sttfa.bool)) => y) logic.I) m Hlt.
 
 def le_S_S :
   sttfa.eps
@@ -3588,13 +3588,13 @@ def not_le_Sn_O :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        connectives.Not (nat.le (nat.S n) nat.O)))
+        logic.Not (nat.le (nat.S n) nat.O)))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
-  connectives.nmk (nat.le (nat.S n) nat.O) (
+  logic.nmk (nat.le (nat.S n) nat.O) (
   Hlen0:(sttfa.eps (nat.le (nat.S n) nat.O)) =>
-  nat.eq_match_nat_type_O sttfa.bool connectives.False
-    (p:(sttfa.etap (sttfa.p nat.nat)) => connectives.True)
+  nat.eq_match_nat_type_O sttfa.bool logic.False
+    (p:(sttfa.etap (sttfa.p nat.nat)) => logic.True)
     (y:(sttfa.etap (sttfa.p sttfa.bool)) => y)
     (nat.lt_to_not_zero n nat.O Hlen0)).
 
@@ -3604,12 +3604,12 @@ def not_le_to_not_le_S_S :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (connectives.Not (nat.le n m))
-             (connectives.Not (nat.le (nat.S n) (nat.S m))))))
+           sttfa.impl (logic.Not (nat.le n m))
+             (logic.Not (nat.le (nat.S n) (nat.S m))))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
-  auto:(sttfa.eps (connectives.Not (nat.le n m))) =>
+  auto:(sttfa.eps (logic.Not (nat.le n m))) =>
   logic.not_to_not (nat.le (nat.S n) (nat.S m)) (nat.le n m)
     (auto':(sttfa.eps (nat.le (nat.S n) (nat.S m))) =>
      logic.eq_coerc (nat.le (nat.pred (nat.S n)) (nat.pred (nat.S m)))
@@ -3629,12 +3629,12 @@ def not_le_S_S_to_not_le :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (connectives.Not (nat.le (nat.S n) (nat.S m)))
-             (connectives.Not (nat.le n m)))))
+           sttfa.impl (logic.Not (nat.le (nat.S n) (nat.S m)))
+             (logic.Not (nat.le n m)))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
-  auto:(sttfa.eps (connectives.Not (nat.le (nat.S n) (nat.S m)))) =>
+  auto:(sttfa.eps (logic.Not (nat.le (nat.S n) (nat.S m)))) =>
   logic.not_to_not (nat.le n m) (nat.le (nat.S n) (nat.S m))
     (auto':(sttfa.eps (nat.le n m)) => nat.le_S_S n m auto') auto.
 
@@ -3642,14 +3642,14 @@ def not_le_Sn_n :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        connectives.Not (nat.le (nat.S n) n)))
+        logic.Not (nat.le (nat.S n) n)))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   nat.nat_ind
     (_x_365:(sttfa.etap (sttfa.p nat.nat)) =>
-     connectives.Not (nat.le (nat.S _x_365) _x_365)) (nat.not_le_Sn_O nat.O)
+     logic.Not (nat.le (nat.S _x_365) _x_365)) (nat.not_le_Sn_O nat.O)
     (x_366:(sttfa.etap (sttfa.p nat.nat)) =>
-     _x_368:(sttfa.eps (connectives.Not (nat.le (nat.S x_366) x_366))) =>
+     _x_368:(sttfa.eps (logic.Not (nat.le (nat.S x_366) x_366))) =>
      nat.not_le_to_not_le_S_S (nat.S x_366) x_366 _x_368) n.
 
 def lt_to_not_le :
@@ -3658,17 +3658,17 @@ def lt_to_not_le :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (nat.lt n m) (connectives.Not (nat.le m n)))))
+           sttfa.impl (nat.lt n m) (logic.Not (nat.le m n)))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
   Hltnm:(sttfa.eps (nat.lt n m)) =>
   nat.le_ind (nat.S n)
-    (x_417:(sttfa.etap (sttfa.p nat.nat)) => connectives.Not (nat.le x_417 n))
+    (x_417:(sttfa.etap (sttfa.p nat.nat)) => logic.Not (nat.le x_417 n))
     (nat.not_le_Sn_n n)
     (m0:(sttfa.etap (sttfa.p nat.nat)) =>
      _x_419:(sttfa.eps (nat.le (nat.S n) m0)) =>
-     _x_421:(sttfa.eps (connectives.Not (nat.le m0 n))) =>
+     _x_421:(sttfa.eps (logic.Not (nat.le m0 n))) =>
      logic.not_to_not (nat.le (nat.S m0) n) (nat.le m0 n)
        (auto:(sttfa.eps (nat.le (nat.S m0) n)) => nat.lt_to_le m0 n auto)
        _x_421) m Hltnm.
@@ -3679,14 +3679,14 @@ def not_le_to_lt :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (connectives.Not (nat.le n m)) (nat.lt m n))))
+           sttfa.impl (logic.Not (nat.le n m)) (nat.lt m n))))
   :=
   nat.nat_elim2
     (__:(sttfa.etap (sttfa.p nat.nat)) =>
      _0:(sttfa.etap (sttfa.p nat.nat)) =>
-     sttfa.impl (connectives.Not (nat.le __ _0)) (nat.lt _0 __))
+     sttfa.impl (logic.Not (nat.le __ _0)) (nat.lt _0 __))
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
-     abs:(sttfa.eps (connectives.Not (nat.le nat.O n))) =>
+     abs:(sttfa.eps (logic.Not (nat.le nat.O n))) =>
      logic.falsity (nat.lt n nat.O)
        (logic.absurd (nat.le nat.O n)
           (logic.eq_coerc (nat.le nat.O (nat.plus n nat.O)) (nat.le nat.O n)
@@ -3697,13 +3697,13 @@ def not_le_to_lt :
                 (logic.refl sttfa.bool (nat.le nat.O n)) (nat.plus n nat.O)
                 (nat.plus_n_O n))) abs))
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
-     auto:(sttfa.eps (connectives.Not (nat.le (nat.S n) nat.O))) =>
+     auto:(sttfa.eps (logic.Not (nat.le (nat.S n) nat.O))) =>
      nat.lt_O_S n)
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
      m:(sttfa.etap (sttfa.p nat.nat)) =>
      Hind:
-     (sttfa.eps (sttfa.impl (connectives.Not (nat.le n m)) (nat.lt m n))) =>
-     HnotleSS:(sttfa.eps (connectives.Not (nat.le (nat.S n) (nat.S m)))) =>
+     (sttfa.eps (sttfa.impl (logic.Not (nat.le n m)) (nat.lt m n))) =>
+     HnotleSS:(sttfa.eps (logic.Not (nat.le (nat.S n) (nat.S m)))) =>
      nat.le_S_S (nat.S m) n (Hind (nat.not_le_S_S_to_not_le n m HnotleSS))).
 
 def not_lt_to_le :
@@ -3712,11 +3712,11 @@ def not_lt_to_le :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (connectives.Not (nat.lt n m)) (nat.le m n))))
+           sttfa.impl (logic.Not (nat.lt n m)) (nat.le m n))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
-  H:(sttfa.eps (connectives.Not (nat.lt n m))) =>
+  H:(sttfa.eps (logic.Not (nat.lt n m))) =>
   nat.le_S_S_to_le m n
     (nat.not_le_to_lt (nat.S n) m
        (logic.not_to_not (nat.le (nat.S n) m) (nat.lt n m)
@@ -3728,7 +3728,7 @@ def le_to_not_lt :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (nat.le n m) (connectives.Not (nat.lt m n)))))
+           sttfa.impl (nat.le n m) (logic.Not (nat.lt m n)))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -3755,23 +3755,23 @@ def decidable_le :
     (__:(sttfa.etap (sttfa.p nat.nat)) =>
      _0:(sttfa.etap (sttfa.p nat.nat)) => logic.decidable (nat.le __ _0))
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
-     logic.or_introl (nat.le nat.O n) (connectives.Not (nat.le nat.O n))
+     logic.or_introl (nat.le nat.O n) (logic.Not (nat.le nat.O n))
      (nat.le_O_n n))
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
-     logic.or_intror (nat.le (nat.S n) nat.O) (connectives.Not (nat.le (nat.S n) nat.O))
+     logic.or_intror (nat.le (nat.S n) nat.O) (logic.Not (nat.le (nat.S n) nat.O))
      (nat.not_le_Sn_O n))
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
      m:(sttfa.etap (sttfa.p nat.nat)) =>
      _clearme:(sttfa.eps (logic.decidable (nat.le n m))) =>
-     logic.match_Or_prop (nat.le n m) (connectives.Not (nat.le n m))
+     logic.match_Or_prop (nat.le n m) (logic.Not (nat.le n m))
        (logic.decidable (nat.le (nat.S n) (nat.S m)))
        (auto:(sttfa.eps (nat.le n m)) =>
         logic.or_introl (nat.le (nat.S n) (nat.S m))
-         (connectives.Not (nat.le (nat.S n) (nat.S m)))
+         (logic.Not (nat.le (nat.S n) (nat.S m)))
         (nat.le_S_S n m auto))
-       (auto:(sttfa.eps (connectives.Not (nat.le n m))) =>
+       (auto:(sttfa.eps (logic.Not (nat.le n m))) =>
        logic.or_intror (nat.le (nat.S n) (nat.S m))
-        (connectives.Not (nat.le (nat.S n) (nat.S m)))
+        (logic.Not (nat.le (nat.S n) (nat.S m)))
         (nat.not_le_to_not_le_S_S n m auto)) _clearme).
 
 def decidable_lt :
@@ -3896,12 +3896,12 @@ def lt_to_not_eq :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (nat.lt n m) (connectives.Not (logic.eq nat.nat n m)))))
+           sttfa.impl (nat.lt n m) (logic.Not (logic.eq nat.nat n m)))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
   H:(sttfa.eps (nat.lt n m)) =>
-  logic.not_to_not (logic.eq nat.nat n m) connectives.False
+  logic.not_to_not (logic.eq nat.nat n m) logic.False
     (auto:(sttfa.eps (logic.eq nat.nat n m)) =>
      logic.absurd (nat.le (nat.S n) n)
        (logic.eq_coerc (nat.le (nat.S n) m) (nat.le (nat.S n) n) H
@@ -3909,8 +3909,8 @@ def lt_to_not_eq :
              (__:(sttfa.etap (sttfa.p nat.nat)) =>
               logic.eq sttfa.bool (nat.le (nat.S n) __) (nat.le (nat.S n) n))
              (logic.refl sttfa.bool (nat.le (nat.S n) n)) m auto))
-       (nat.not_le_Sn_n n)) (connectives.nmk connectives.False
-       (auto:(sttfa.eps connectives.False) => auto)).
+       (nat.not_le_Sn_n n)) (logic.nmk logic.False
+       (auto:(sttfa.eps logic.False) => auto)).
 
 def le_n_O_to_eq :
   sttfa.eps
@@ -4804,12 +4804,12 @@ def not_eq_to_le_to_lt :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (connectives.Not (logic.eq nat.nat n m))
+           sttfa.impl (logic.Not (logic.eq nat.nat n m))
              (sttfa.impl (nat.le n m) (nat.lt n m)))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
-  Hneq:(sttfa.eps (connectives.Not (logic.eq nat.nat n m))) =>
+  Hneq:(sttfa.eps (logic.Not (logic.eq nat.nat n m))) =>
   Hle:(sttfa.eps (nat.le n m)) =>
   logic.match_Or_prop (nat.lt n m) (logic.eq nat.nat n m) (nat.lt n m)
     (auto:(sttfa.eps (nat.lt n m)) => auto)
@@ -4851,7 +4851,7 @@ def distributive_times_minus :
   a:(sttfa.etap (sttfa.p nat.nat)) =>
   b:(sttfa.etap (sttfa.p nat.nat)) =>
   c:(sttfa.etap (sttfa.p nat.nat)) =>
-  logic.match_Or_prop (nat.lt b c) (connectives.Not (nat.lt b c))
+  logic.match_Or_prop (nat.lt b c) (logic.Not (nat.lt b c))
     (logic.eq nat.nat (nat.times a (nat.minus b c))
        (nat.minus (nat.times a b) (nat.times a c)))
     (Hbc:(sttfa.eps (nat.lt b c)) =>
@@ -4869,7 +4869,7 @@ def distributive_times_minus :
           (nat.eq_minus_O (nat.times a b) (nat.times a c)
              (nat.monotonic_le_times_r a b c (nat.lt_to_le b c Hbc))))
        (nat.minus b c) (nat.eq_minus_O b c (nat.lt_to_le b c Hbc)))
-    (Hbc:(sttfa.eps (connectives.Not (nat.lt b c))) =>
+    (Hbc:(sttfa.eps (logic.Not (nat.lt b c))) =>
      logic.sym_eq nat.nat (nat.minus (nat.times a b) (nat.times a c))
        (nat.times a (nat.minus b c))
        (logic.eq_coerc
@@ -4918,7 +4918,7 @@ def minus_plus :
   m:(sttfa.etap (sttfa.p nat.nat)) =>
   p:(sttfa.etap (sttfa.p nat.nat)) =>
   logic.match_Or_prop (nat.le (nat.plus m p) n)
-    (connectives.Not (nat.le (nat.plus m p) n))
+    (logic.Not (nat.le (nat.plus m p) n))
     (logic.eq nat.nat (nat.minus (nat.minus n m) p)
        (nat.minus n (nat.plus m p)))
     (Hlt:(sttfa.eps (nat.le (nat.plus m p) n)) =>
@@ -4932,7 +4932,7 @@ def minus_plus :
                 (logic.refl nat.nat (nat.minus n (nat.plus m p))))
              (nat.plus m (nat.plus p (nat.minus n (nat.plus m p))))
              (nat.associative_plus m p (nat.minus n (nat.plus m p))))))
-    (Hlt:(sttfa.eps (connectives.Not (nat.le (nat.plus m p) n))) =>
+    (Hlt:(sttfa.eps (logic.Not (nat.le (nat.plus m p) n))) =>
      logic.eq_ind_r nat.nat nat.O
        (x:(sttfa.etap (sttfa.p nat.nat)) =>
         logic.eq nat.nat x (nat.minus n (nat.plus m p)))
@@ -5309,7 +5309,7 @@ def eqb_elim :
              (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
               sttfa.impl (sttfa.impl (logic.eq nat.nat n m) (P bool.true))
                 (sttfa.impl
-                   (sttfa.impl (connectives.Not (logic.eq nat.nat n m))
+                   (sttfa.impl (logic.Not (logic.eq nat.nat n m))
                       (P bool.false)) (P (nat.eqb n m)))))))
   :=
   nat.nat_elim2
@@ -5319,7 +5319,7 @@ def eqb_elim :
        (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
         sttfa.impl (sttfa.impl (logic.eq nat.nat __ _0) (P bool.true))
           (sttfa.impl
-             (sttfa.impl (connectives.Not (logic.eq nat.nat __ _0))
+             (sttfa.impl (logic.Not (logic.eq nat.nat __ _0))
                 (P bool.false)) (P (nat.eqb __ _0)))))
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
      nat.match_nat_prop
@@ -5328,7 +5328,7 @@ def eqb_elim :
           (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
            sttfa.impl (sttfa.impl (logic.eq nat.nat nat.O __) (P bool.true))
              (sttfa.impl
-                (sttfa.impl (connectives.Not (logic.eq nat.nat nat.O __))
+                (sttfa.impl (logic.Not (logic.eq nat.nat nat.O __))
                    (P bool.false)) (P (nat.eqb nat.O __)))))
        (nat.sym_eq_eqb nat.O
           (y:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
@@ -5338,7 +5338,7 @@ def eqb_elim :
                 (sttfa.impl (logic.eq nat.nat nat.O nat.O) (P bool.true))
                 (sttfa.impl
                    (sttfa.impl
-                      (connectives.Not (logic.eq nat.nat nat.O nat.O))
+                      (logic.Not (logic.eq nat.nat nat.O nat.O))
                       (P bool.false)) (P (y nat.O)))))
           (nat.sym_eq_filter_nat_type_O (sttfa.arrow nat.nat bool.bool)
              nat.eqb_body
@@ -5350,7 +5350,7 @@ def eqb_elim :
                    (sttfa.impl (logic.eq nat.nat nat.O nat.O) (P bool.true))
                    (sttfa.impl
                       (sttfa.impl
-                         (connectives.Not (logic.eq nat.nat nat.O nat.O))
+                         (logic.Not (logic.eq nat.nat nat.O nat.O))
                          (P bool.false)) (P (y nat.O)))))
              (nat.sym_eq_eqb_body_O
                 (y:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
@@ -5362,7 +5362,7 @@ def eqb_elim :
                          (P bool.true))
                       (sttfa.impl
                          (sttfa.impl
-                            (connectives.Not (logic.eq nat.nat nat.O nat.O))
+                            (logic.Not (logic.eq nat.nat nat.O nat.O))
                             (P bool.false)) (P (y nat.O)))))
                 (nat.sym_eq_match_nat_type_O bool.bool bool.true
                    (q:(sttfa.etap (sttfa.p nat.nat)) => bool.false)
@@ -5376,7 +5376,7 @@ def eqb_elim :
                             (P bool.true))
                          (sttfa.impl
                             (sttfa.impl
-                               (connectives.Not
+                               (logic.Not
                                   (logic.eq nat.nat nat.O nat.O))
                                (P bool.false)) (P y))))
                    (P:
@@ -5388,7 +5388,7 @@ def eqb_elim :
                     auto':
                     (sttfa.eps
                        (sttfa.impl
-                          (connectives.Not (logic.eq nat.nat nat.O nat.O))
+                          (logic.Not (logic.eq nat.nat nat.O nat.O))
                           (P bool.false))) =>
                     auto (logic.refl nat.nat nat.O))))))
        (auto:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -5401,7 +5401,7 @@ def eqb_elim :
                    (P bool.true))
                 (sttfa.impl
                    (sttfa.impl
-                      (connectives.Not (logic.eq nat.nat nat.O (nat.S auto)))
+                      (logic.Not (logic.eq nat.nat nat.O (nat.S auto)))
                       (P bool.false)) (P (y (nat.S auto))))))
           (nat.sym_eq_filter_nat_type_O (sttfa.arrow nat.nat bool.bool)
              nat.eqb_body
@@ -5414,7 +5414,7 @@ def eqb_elim :
                       (P bool.true))
                    (sttfa.impl
                       (sttfa.impl
-                         (connectives.Not
+                         (logic.Not
                             (logic.eq nat.nat nat.O (nat.S auto)))
                          (P bool.false)) (P (y (nat.S auto))))))
              (nat.sym_eq_eqb_body_O
@@ -5427,7 +5427,7 @@ def eqb_elim :
                          (P bool.true))
                       (sttfa.impl
                          (sttfa.impl
-                            (connectives.Not
+                            (logic.Not
                                (logic.eq nat.nat nat.O (nat.S auto)))
                             (P bool.false)) (P (y (nat.S auto))))))
                 (nat.sym_eq_match_nat_type_S bool.bool bool.true
@@ -5442,7 +5442,7 @@ def eqb_elim :
                             (P bool.true))
                          (sttfa.impl
                             (sttfa.impl
-                               (connectives.Not
+                               (logic.Not
                                   (logic.eq nat.nat nat.O (nat.S auto)))
                                (P bool.false)) (P y))))
                    (P:
@@ -5454,7 +5454,7 @@ def eqb_elim :
                     auto'':
                     (sttfa.eps
                        (sttfa.impl
-                          (connectives.Not
+                          (logic.Not
                              (logic.eq nat.nat nat.O (nat.S auto)))
                           (P bool.false))) =>
                     auto'' (nat.not_eq_O_S auto)))))) n)
@@ -5467,7 +5467,7 @@ def eqb_elim :
              (sttfa.impl (logic.eq nat.nat (nat.S n) nat.O) (P bool.true))
              (sttfa.impl
                 (sttfa.impl
-                   (connectives.Not (logic.eq nat.nat (nat.S n) nat.O))
+                   (logic.Not (logic.eq nat.nat (nat.S n) nat.O))
                    (P bool.false)) (P (y nat.O)))))
        (nat.sym_eq_filter_nat_type_S (sttfa.arrow nat.nat bool.bool)
           nat.eqb_body n
@@ -5478,7 +5478,7 @@ def eqb_elim :
                 (sttfa.impl (logic.eq nat.nat (nat.S n) nat.O) (P bool.true))
                 (sttfa.impl
                    (sttfa.impl
-                      (connectives.Not (logic.eq nat.nat (nat.S n) nat.O))
+                      (logic.Not (logic.eq nat.nat (nat.S n) nat.O))
                       (P bool.false)) (P (y nat.O)))))
           (nat.sym_eq_eqb_body_S n
              (y:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
@@ -5490,7 +5490,7 @@ def eqb_elim :
                       (P bool.true))
                    (sttfa.impl
                       (sttfa.impl
-                         (connectives.Not (logic.eq nat.nat (nat.S n) nat.O))
+                         (logic.Not (logic.eq nat.nat (nat.S n) nat.O))
                          (P bool.false)) (P (y nat.O)))))
              (nat.sym_eq_match_nat_type_O bool.bool bool.false
                 (q:(sttfa.etap (sttfa.p nat.nat)) => nat.eqb n q)
@@ -5503,7 +5503,7 @@ def eqb_elim :
                          (P bool.true))
                       (sttfa.impl
                          (sttfa.impl
-                            (connectives.Not
+                            (logic.Not
                                (logic.eq nat.nat (nat.S n) nat.O))
                             (P bool.false)) (P y))))
                 (P:
@@ -5515,7 +5515,7 @@ def eqb_elim :
                  auto':
                  (sttfa.eps
                     (sttfa.impl
-                       (connectives.Not (logic.eq nat.nat (nat.S n) nat.O))
+                       (logic.Not (logic.eq nat.nat (nat.S n) nat.O))
                        (P bool.false))) =>
                  auto'
                    (logic.sym_not_eq nat.nat nat.O (nat.S n)
@@ -5529,7 +5529,7 @@ def eqb_elim :
              (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
               sttfa.impl (sttfa.impl (logic.eq nat.nat n m) (P bool.true))
                 (sttfa.impl
-                   (sttfa.impl (connectives.Not (logic.eq nat.nat n m))
+                   (sttfa.impl (logic.Not (logic.eq nat.nat n m))
                       (P bool.false)) (P (nat.eqb n m)))))
           (sttfa.forall (sttfa.arrow bool.bool sttfa.bool)
              (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
@@ -5538,7 +5538,7 @@ def eqb_elim :
                    (P bool.true))
                 (sttfa.impl
                    (sttfa.impl
-                      (connectives.Not (logic.eq nat.nat (nat.S n) (nat.S m)))
+                      (logic.Not (logic.eq nat.nat (nat.S n) (nat.S m)))
                       (P bool.false)) (P (y (nat.S m)))))))
        (nat.sym_eq_filter_nat_type_S (sttfa.arrow nat.nat bool.bool)
           nat.eqb_body n
@@ -5550,7 +5550,7 @@ def eqb_elim :
                  sttfa.impl
                    (sttfa.impl (logic.eq nat.nat n m) (P bool.true))
                    (sttfa.impl
-                      (sttfa.impl (connectives.Not (logic.eq nat.nat n m))
+                      (sttfa.impl (logic.Not (logic.eq nat.nat n m))
                          (P bool.false)) (P (nat.eqb n m)))))
              (sttfa.forall (sttfa.arrow bool.bool sttfa.bool)
                 (P:
@@ -5560,7 +5560,7 @@ def eqb_elim :
                       (P bool.true))
                    (sttfa.impl
                       (sttfa.impl
-                         (connectives.Not
+                         (logic.Not
                             (logic.eq nat.nat (nat.S n) (nat.S m)))
                          (P bool.false)) (P (y (nat.S m)))))))
           (nat.sym_eq_eqb_body_S n
@@ -5573,7 +5573,7 @@ def eqb_elim :
                       (sttfa.impl (logic.eq nat.nat n m) (P bool.true))
                       (sttfa.impl
                          (sttfa.impl
-                            (connectives.Not (logic.eq nat.nat n m))
+                            (logic.Not (logic.eq nat.nat n m))
                             (P bool.false)) (P (nat.eqb n m)))))
                 (sttfa.forall (sttfa.arrow bool.bool sttfa.bool)
                    (P:
@@ -5583,7 +5583,7 @@ def eqb_elim :
                          (P bool.true))
                       (sttfa.impl
                          (sttfa.impl
-                            (connectives.Not
+                            (logic.Not
                                (logic.eq nat.nat (nat.S n) (nat.S m)))
                             (P bool.false)) (P (y (nat.S m)))))))
              (nat.sym_eq_match_nat_type_S bool.bool bool.false
@@ -5598,7 +5598,7 @@ def eqb_elim :
                          (sttfa.impl (logic.eq nat.nat n m) (P bool.true))
                          (sttfa.impl
                             (sttfa.impl
-                               (connectives.Not (logic.eq nat.nat n m))
+                               (logic.Not (logic.eq nat.nat n m))
                                (P bool.false)) (P (nat.eqb n m)))))
                    (sttfa.forall (sttfa.arrow bool.bool sttfa.bool)
                       (P:
@@ -5609,7 +5609,7 @@ def eqb_elim :
                             (P bool.true))
                          (sttfa.impl
                             (sttfa.impl
-                               (connectives.Not
+                               (logic.Not
                                   (logic.eq nat.nat (nat.S n) (nat.S m)))
                                (P bool.false)) (P y)))))
                 (auto:
@@ -5622,7 +5622,7 @@ def eqb_elim :
                           (sttfa.impl (logic.eq nat.nat n m) (P bool.true))
                           (sttfa.impl
                              (sttfa.impl
-                                (connectives.Not (logic.eq nat.nat n m))
+                                (logic.Not (logic.eq nat.nat n m))
                                 (P bool.false)) (P (nat.eqb n m)))))) =>
                  P:
                  (sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
@@ -5633,7 +5633,7 @@ def eqb_elim :
                  auto'':
                  (sttfa.eps
                     (sttfa.impl
-                       (connectives.Not
+                       (logic.Not
                           (logic.eq nat.nat (nat.S n) (nat.S m)))
                        (P bool.false))) =>
                  auto P
@@ -5644,7 +5644,7 @@ def eqb_elim :
                           logic.eq nat.nat (nat.S n) (nat.S __))
                          (logic.refl nat.nat (nat.S n)) m auto'''))
                    (auto''':
-                    (sttfa.eps (connectives.Not (logic.eq nat.nat n m))) =>
+                    (sttfa.eps (logic.Not (logic.eq nat.nat n m))) =>
                     auto'' (nat.not_eq_S n m auto'''))))))).
 
 def eqb_n_n :
@@ -5721,7 +5721,7 @@ def eqb_true_to_eq :
      logic.rewrite_l nat.nat n
        (__:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat n __)
        (logic.refl nat.nat n) m auto)
-    (__:(sttfa.eps (connectives.Not (logic.eq nat.nat n m))) =>
+    (__:(sttfa.eps (logic.Not (logic.eq nat.nat n m))) =>
      abs:(sttfa.eps (logic.eq bool.bool bool.false bool.true)) =>
      logic.falsity (logic.eq nat.nat n m)
        (logic.absurd (logic.eq bool.bool bool.true bool.false)
@@ -5738,14 +5738,14 @@ def eqb_false_to_not_eq :
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            sttfa.impl (logic.eq bool.bool (nat.eqb n m) bool.false)
-             (connectives.Not (logic.eq nat.nat n m)))))
+             (logic.Not (logic.eq nat.nat n m)))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
   nat.eqb_elim n m
     (__:(sttfa.etap (sttfa.p bool.bool)) =>
      sttfa.impl (logic.eq bool.bool __ bool.false)
-       (connectives.Not (logic.eq nat.nat n m)))
+       (logic.Not (logic.eq nat.nat n m)))
     (auto:(sttfa.eps (logic.eq nat.nat n m)) =>
      auto':(sttfa.eps (logic.eq bool.bool bool.true bool.false)) =>
      logic.not_to_not (logic.eq nat.nat n m)
@@ -5755,7 +5755,7 @@ def eqb_false_to_not_eq :
           (__:(sttfa.etap (sttfa.p bool.bool)) =>
            logic.eq bool.bool bool.true __) (logic.refl bool.bool bool.true)
           bool.false auto') bool.not_eq_true_false)
-    (auto:(sttfa.eps (connectives.Not (logic.eq nat.nat n m))) =>
+    (auto:(sttfa.eps (logic.Not (logic.eq nat.nat n m))) =>
      auto':(sttfa.eps (logic.eq bool.bool bool.false bool.false)) => auto).
 
 def eq_to_eqb_true :
@@ -5784,12 +5784,12 @@ def not_eq_to_eqb_false :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (connectives.Not (logic.eq nat.nat n m))
+           sttfa.impl (logic.Not (logic.eq nat.nat n m))
              (logic.eq bool.bool (nat.eqb n m) bool.false))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
-  noteq:(sttfa.eps (connectives.Not (logic.eq nat.nat n m))) =>
+  noteq:(sttfa.eps (logic.Not (logic.eq nat.nat n m))) =>
   nat.eqb_elim n m
     (__:(sttfa.etap (sttfa.p bool.bool)) => logic.eq bool.bool __ bool.false)
     (Heq:(sttfa.eps (logic.eq nat.nat n m)) =>
@@ -5798,7 +5798,7 @@ def not_eq_to_eqb_false :
           (logic.rewrite_l nat.nat n
              (__:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat n __)
              (logic.refl nat.nat n) m Heq) noteq))
-    (auto:(sttfa.eps (connectives.Not (logic.eq nat.nat n m))) =>
+    (auto:(sttfa.eps (logic.Not (logic.eq nat.nat n m))) =>
      logic.refl bool.bool bool.false).
 
 leb :
@@ -5877,7 +5877,7 @@ def leb_elim :
              (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
               sttfa.impl (sttfa.impl (nat.le n m) (P bool.true))
                 (sttfa.impl
-                   (sttfa.impl (connectives.Not (nat.le n m)) (P bool.false))
+                   (sttfa.impl (logic.Not (nat.le n m)) (P bool.false))
                    (P (nat.leb n m)))))))
   :=
   nat.nat_elim2
@@ -5887,7 +5887,7 @@ def leb_elim :
        (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
         sttfa.impl (sttfa.impl (nat.le __ _0) (P bool.true))
           (sttfa.impl
-             (sttfa.impl (connectives.Not (nat.le __ _0)) (P bool.false))
+             (sttfa.impl (logic.Not (nat.le __ _0)) (P bool.false))
              (P (nat.leb __ _0)))))
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
      nat.sym_eq_leb nat.O
@@ -5896,7 +5896,7 @@ def leb_elim :
           (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
            sttfa.impl (sttfa.impl (nat.le nat.O n) (P bool.true))
              (sttfa.impl
-                (sttfa.impl (connectives.Not (nat.le nat.O n)) (P bool.false))
+                (sttfa.impl (logic.Not (nat.le nat.O n)) (P bool.false))
                 (P (y n)))))
        (nat.sym_eq_filter_nat_type_O (sttfa.arrow nat.nat bool.bool)
           nat.leb_body
@@ -5905,7 +5905,7 @@ def leb_elim :
              (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
               sttfa.impl (sttfa.impl (nat.le nat.O n) (P bool.true))
                 (sttfa.impl
-                   (sttfa.impl (connectives.Not (nat.le nat.O n))
+                   (sttfa.impl (logic.Not (nat.le nat.O n))
                       (P bool.false)) (P (y n)))))
           (nat.sym_eq_leb_body_O
              (y:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
@@ -5914,13 +5914,13 @@ def leb_elim :
                  (sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
                  sttfa.impl (sttfa.impl (nat.le nat.O n) (P bool.true))
                    (sttfa.impl
-                      (sttfa.impl (connectives.Not (nat.le nat.O n))
+                      (sttfa.impl (logic.Not (nat.le nat.O n))
                          (P bool.false)) (P (y n)))))
              (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
               auto:(sttfa.eps (sttfa.impl (nat.le nat.O n) (P bool.true))) =>
               auto':
               (sttfa.eps
-                 (sttfa.impl (connectives.Not (nat.le nat.O n))
+                 (sttfa.impl (logic.Not (nat.le nat.O n))
                     (P bool.false))) =>
               auto (nat.le_O_n n)))))
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -5930,7 +5930,7 @@ def leb_elim :
           (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
            sttfa.impl (sttfa.impl (nat.le (nat.S n) nat.O) (P bool.true))
              (sttfa.impl
-                (sttfa.impl (connectives.Not (nat.le (nat.S n) nat.O))
+                (sttfa.impl (logic.Not (nat.le (nat.S n) nat.O))
                    (P bool.false)) (P (y nat.O)))))
        (nat.sym_eq_filter_nat_type_S (sttfa.arrow nat.nat bool.bool)
           nat.leb_body n
@@ -5939,7 +5939,7 @@ def leb_elim :
              (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
               sttfa.impl (sttfa.impl (nat.le (nat.S n) nat.O) (P bool.true))
                 (sttfa.impl
-                   (sttfa.impl (connectives.Not (nat.le (nat.S n) nat.O))
+                   (sttfa.impl (logic.Not (nat.le (nat.S n) nat.O))
                       (P bool.false)) (P (y nat.O)))))
           (nat.sym_eq_leb_body_S n
              (y:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
@@ -5949,7 +5949,7 @@ def leb_elim :
                  sttfa.impl
                    (sttfa.impl (nat.le (nat.S n) nat.O) (P bool.true))
                    (sttfa.impl
-                      (sttfa.impl (connectives.Not (nat.le (nat.S n) nat.O))
+                      (sttfa.impl (logic.Not (nat.le (nat.S n) nat.O))
                          (P bool.false)) (P (y nat.O)))))
              (nat.sym_eq_match_nat_type_O bool.bool bool.false
                 (q:(sttfa.etap (sttfa.p nat.nat)) => nat.leb n q)
@@ -5961,7 +5961,7 @@ def leb_elim :
                       (sttfa.impl (nat.le (nat.S n) nat.O) (P bool.true))
                       (sttfa.impl
                          (sttfa.impl
-                            (connectives.Not (nat.le (nat.S n) nat.O))
+                            (logic.Not (nat.le (nat.S n) nat.O))
                             (P bool.false)) (P y))))
                 (P:
                  (sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
@@ -5970,7 +5970,7 @@ def leb_elim :
                     (sttfa.impl (nat.le (nat.S n) nat.O) (P bool.true))) =>
                  auto':
                  (sttfa.eps
-                    (sttfa.impl (connectives.Not (nat.le (nat.S n) nat.O))
+                    (sttfa.impl (logic.Not (nat.le (nat.S n) nat.O))
                        (P bool.false))) =>
                  auto' (nat.not_le_Sn_O n))))))
     (n:(sttfa.etap (sttfa.p nat.nat)) =>
@@ -5982,7 +5982,7 @@ def leb_elim :
              (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
               sttfa.impl (sttfa.impl (nat.le n m) (P bool.true))
                 (sttfa.impl
-                   (sttfa.impl (connectives.Not (nat.le n m)) (P bool.false))
+                   (sttfa.impl (logic.Not (nat.le n m)) (P bool.false))
                    (P (nat.leb n m)))))
           (sttfa.forall (sttfa.arrow bool.bool sttfa.bool)
              (P:(sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
@@ -5990,7 +5990,7 @@ def leb_elim :
                 (sttfa.impl (nat.le (nat.S n) (nat.S m)) (P bool.true))
                 (sttfa.impl
                    (sttfa.impl
-                      (connectives.Not (nat.le (nat.S n) (nat.S m)))
+                      (logic.Not (nat.le (nat.S n) (nat.S m)))
                       (P bool.false)) (P (y (nat.S m)))))))
        (nat.sym_eq_filter_nat_type_S (sttfa.arrow nat.nat bool.bool)
           nat.leb_body n
@@ -6001,7 +6001,7 @@ def leb_elim :
                  (sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
                  sttfa.impl (sttfa.impl (nat.le n m) (P bool.true))
                    (sttfa.impl
-                      (sttfa.impl (connectives.Not (nat.le n m))
+                      (sttfa.impl (logic.Not (nat.le n m))
                          (P bool.false)) (P (nat.leb n m)))))
              (sttfa.forall (sttfa.arrow bool.bool sttfa.bool)
                 (P:
@@ -6010,7 +6010,7 @@ def leb_elim :
                    (sttfa.impl (nat.le (nat.S n) (nat.S m)) (P bool.true))
                    (sttfa.impl
                       (sttfa.impl
-                         (connectives.Not (nat.le (nat.S n) (nat.S m)))
+                         (logic.Not (nat.le (nat.S n) (nat.S m)))
                          (P bool.false)) (P (y (nat.S m)))))))
           (nat.sym_eq_leb_body_S n
              (y:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
@@ -6020,7 +6020,7 @@ def leb_elim :
                     (sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
                     sttfa.impl (sttfa.impl (nat.le n m) (P bool.true))
                       (sttfa.impl
-                         (sttfa.impl (connectives.Not (nat.le n m))
+                         (sttfa.impl (logic.Not (nat.le n m))
                             (P bool.false)) (P (nat.leb n m)))))
                 (sttfa.forall (sttfa.arrow bool.bool sttfa.bool)
                    (P:
@@ -6029,7 +6029,7 @@ def leb_elim :
                       (sttfa.impl (nat.le (nat.S n) (nat.S m)) (P bool.true))
                       (sttfa.impl
                          (sttfa.impl
-                            (connectives.Not (nat.le (nat.S n) (nat.S m)))
+                            (logic.Not (nat.le (nat.S n) (nat.S m)))
                             (P bool.false)) (P (y (nat.S m)))))))
              (nat.sym_eq_match_nat_type_S bool.bool bool.false
                 (q:(sttfa.etap (sttfa.p nat.nat)) => nat.leb n q) m
@@ -6041,7 +6041,7 @@ def leb_elim :
                           (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
                        sttfa.impl (sttfa.impl (nat.le n m) (P bool.true))
                          (sttfa.impl
-                            (sttfa.impl (connectives.Not (nat.le n m))
+                            (sttfa.impl (logic.Not (nat.le n m))
                                (P bool.false)) (P (nat.leb n m)))))
                    (sttfa.forall (sttfa.arrow bool.bool sttfa.bool)
                       (P:
@@ -6052,7 +6052,7 @@ def leb_elim :
                             (P bool.true))
                          (sttfa.impl
                             (sttfa.impl
-                               (connectives.Not (nat.le (nat.S n) (nat.S m)))
+                               (logic.Not (nat.le (nat.S n) (nat.S m)))
                                (P bool.false)) (P y)))))
                 (Hind:
                  (sttfa.eps
@@ -6062,7 +6062,7 @@ def leb_elim :
                            (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
                         sttfa.impl (sttfa.impl (nat.le n m) (P bool.true))
                           (sttfa.impl
-                             (sttfa.impl (connectives.Not (nat.le n m))
+                             (sttfa.impl (logic.Not (nat.le n m))
                                 (P bool.false)) (P (nat.leb n m)))))) =>
                  P:
                  (sttfa.etap (sttfa.p (sttfa.arrow bool.bool sttfa.bool))) =>
@@ -6072,11 +6072,11 @@ def leb_elim :
                  Pf:
                  (sttfa.eps
                     (sttfa.impl
-                       (connectives.Not (nat.le (nat.S n) (nat.S m)))
+                       (logic.Not (nat.le (nat.S n) (nat.S m)))
                        (P bool.false))) =>
                  Hind P
                    (lenm:(sttfa.eps (nat.le n m)) => Pt (nat.le_S_S n m lenm))
-                   (nlenm:(sttfa.eps (connectives.Not (nat.le n m))) =>
+                   (nlenm:(sttfa.eps (logic.Not (nat.le n m))) =>
                     Pf (nat.not_le_to_not_le_S_S n m nlenm))))))).
 
 def leb_true_to_le :
@@ -6095,7 +6095,7 @@ def leb_true_to_le :
      sttfa.impl (logic.eq bool.bool __ bool.true) (nat.le n m))
     (auto:(sttfa.eps (nat.le n m)) =>
      auto':(sttfa.eps (logic.eq bool.bool bool.true bool.true)) => auto)
-    (__:(sttfa.eps (connectives.Not (nat.le n m))) =>
+    (__:(sttfa.eps (logic.Not (nat.le n m))) =>
      abs:(sttfa.eps (logic.eq bool.bool bool.false bool.true)) =>
      logic.falsity (nat.le n m)
        (logic.absurd (logic.eq bool.bool bool.true bool.false)
@@ -6121,7 +6121,7 @@ def le_to_leb_true :
      sttfa.impl (nat.le n m) (logic.eq bool.bool __ bool.true))
     (auto:(sttfa.eps (nat.le n m)) =>
      auto':(sttfa.eps (nat.le n m)) => logic.refl bool.bool bool.true)
-    (H:(sttfa.eps (connectives.Not (nat.le n m))) =>
+    (H:(sttfa.eps (logic.Not (nat.le n m))) =>
      H1:(sttfa.eps (nat.le n m)) =>
      logic.falsity (logic.eq bool.bool bool.false bool.true)
        (logic.absurd (nat.le n m) H1 H)).
@@ -6132,19 +6132,19 @@ def not_le_to_leb_false :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           sttfa.impl (connectives.Not (nat.le n m))
+           sttfa.impl (logic.Not (nat.le n m))
              (logic.eq bool.bool (nat.leb n m) bool.false))))
   :=
   n:(sttfa.etap (sttfa.p nat.nat)) =>
   m:(sttfa.etap (sttfa.p nat.nat)) =>
   nat.leb_elim n m
     (__:(sttfa.etap (sttfa.p bool.bool)) =>
-     sttfa.impl (connectives.Not (nat.le n m))
+     sttfa.impl (logic.Not (nat.le n m))
        (logic.eq bool.bool __ bool.false))
     (H:(sttfa.eps (nat.le n m)) =>
-     H1:(sttfa.eps (connectives.Not (nat.le n m))) =>
+     H1:(sttfa.eps (logic.Not (nat.le n m))) =>
      logic.falsity (logic.eq bool.bool bool.true bool.false)
        (logic.absurd (nat.le n m) H H1))
-    (auto:(sttfa.eps (connectives.Not (nat.le n m))) =>
-     auto':(sttfa.eps (connectives.Not (nat.le n m))) =>
+    (auto:(sttfa.eps (logic.Not (nat.le n m))) =>
+     auto':(sttfa.eps (logic.Not (nat.le n m))) =>
      logic.refl bool.bool bool.false).
