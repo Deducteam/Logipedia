@@ -9,12 +9,12 @@ main.native: _build/src/main.native
 
 _build/src/main.native: $(wildcard src/*.ml src/*.mli)
 	@echo "[OPT] main.native"
-	@ocamlbuild -quiet -package dedukti.parser src/main.native
+	@ocamlbuild -quiet -package dedukti.kernel -package dedukti.parser src/main.native
 
 #### Producing the theory file #####################################
 
 theories/sttfa.dko: theories/sttfa.dk
-	@echo "[DKC] $^"
+	@echo "[DKC sttforall] $^"
 	@$(DKCHECK) -e $^
 
 #### Running examples ##############################################
@@ -35,7 +35,7 @@ examples/%.pdf: examples/%.tex
 
 LIBDKS = $(wildcard library/*.dk)
 
-library: $(LIBDKS:.dk=.dko) $(LIBDKS:.dk=.summary)
+library: $(LIBDKS:.dk=.dko)
 
 library/%.dko library/%.stt library/%.tex library/%.pvs: library/%.dk .library_depend main.native
 	@echo "[STT,TEX,PVS] $<"
@@ -51,7 +51,7 @@ library/%.summary: library/%.pvs
 	@echo "[SUMMARY]"
 	proveit --importchain -sf $<
 
-.library_depend: $(wildcard library/*.dk theories/*.dk examples/*.dk) 
+.library_depend: $(wildcard library/*.dk theories/*.dk examples/*.dk)
 	@echo "[DEP] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
 
