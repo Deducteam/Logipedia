@@ -81,5 +81,6 @@ distclean: clean
 	@find . -name "*.prf" -exec rm {} \;
 	@find . -name "*.bin" -exec rm {} \;
 	@find . -name "*.dep" -exec rm {} \;
+	@cp -f ../sttfa/*.p?? library/
 
 .PHONY: all clean distclean examples library

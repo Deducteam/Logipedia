@@ -11,9 +11,13 @@ let sanitize_name : string -> string =
 
  let sanitize_name_pvs : string -> string =
   fun n ->
-  if String.equal n "True" || String.equal n "False" || String.equal n "Imp"
-     || String.equal n "Not" || String.equal n "And" || String.equal n "Or"
-     || String.equal n "Ex" || String.equal n "true" || String.equal n "false"
+    if String.equal n "True" then "True_sttfa"
+    else if String.equal n "False" then "False_sttfa"
+    else if String.equal n "And" then "And_sttfa" (* "(LAMBDA(x:bool)(y:bool):(x AND y))" *)
+    else if String.equal n "Or" then "Or_sttfa" (* "(LAMBDA(x:bool)(y:bool):(x OR y))" *)
+    else if
+        String.equal n "Not" 
+     || String.equal n "ex" || String.equal n "true" || String.equal n "false"
      || String.equal n "bool" || String.equal n "nat"
      || String.equal n "fact"
      || String.equal n "O"
@@ -26,6 +30,7 @@ let print_name : out_channel -> name -> unit =
   let name = sanitize_name_pvs n in
   output_string oc name
 
+let print_name' oc n = output_string oc (sanitize_name_pvs n) 
 
 let print__ty_pvs : out_channel -> _ty -> unit =
   let rec print is_atom oc _ty =
@@ -47,11 +52,9 @@ let rec print_ty_pvs : out_channel -> ty -> unit =
   | ForallK (x, ty') -> print_ty_pvs oc ty'
   | Ty _ty -> print__ty_pvs oc _ty
 
-
 let rec prefix_of_ty : ty -> string list =
  fun ty ->
   match ty with ForallK (x, ty') -> x :: prefix_of_ty ty' | Ty _ty -> []
-
 
 let rec print_type_list_pvs : out_channel -> _ty list -> unit =
  fun oc l ->
@@ -90,34 +93,106 @@ let rec print_prenex_ty_pvs : out_channel -> ty -> unit =
       Printf.fprintf oc "]"
 
 
-let print__te_pvs : out_channel -> _te -> unit =
-  let rec print oc _te =
-    match _te with
-    | TeVar x -> output_string oc (sanitize_name_pvs x)
+let rec vars acc t = match t with
+  | TeVar x -> x::acc
+  | Abs (x,_,u) -> x::(vars acc u)
+  | App (u,v) -> (vars (vars acc u) v)
+  | Forall (x,_,u) -> x::(vars acc u)
+  | Impl(u,v) -> (vars (vars acc u) v)
+  | AbsTy (_,u) -> (vars acc u)
+  | Cst ((_,n),_) -> n::acc
+
+let rec gensym k l =
+  let v = "x"^(string_of_int k)
+  in if List.mem v l then gensym (k+1) l else v
+
+let print__te_pvs : out_channel ->_te -> unit =
+  fun oc -> fun t -> 
+  let rec print stack oc t =
+    match t with
+    | TeVar x -> output_string oc (sanitize_name_pvs x);
+                 print_stack oc stack
     | Abs (x, a, t) ->
         Printf.fprintf oc "(LAMBDA(%s:%a):%a)" (sanitize_name_pvs x)
-          print__ty_pvs a print t
-    | App (t, u) -> Printf.fprintf oc "%a(%a)" print t print u
+          print__ty_pvs a (print []) t;
+          print_stack oc stack
+    | App (t, u) -> print (u::stack) oc t 
     | Forall (x, a, t) ->
       Printf.fprintf oc
         "(FORALL(%s:%a):%a)"
         (sanitize_name_pvs x)
-          print__ty_pvs a print t
+        print__ty_pvs a (print []) t;
+        print_stack oc stack
     | Impl (t, u) -> Printf.fprintf oc
                        "(%a => %a)"
-                       (* "id(%a => %a)" *)
-                       print t print u
-    | AbsTy (x, t) -> Printf.fprintf oc "%a" print t
-    | Cst (c, l) ->
-        print_name oc c ;
-        match l with
-        | [] -> ()
-        | _ ->
-            Printf.fprintf oc "[" ;
-            print_type_list_pvs oc l ;
-            Printf.fprintf oc "]"
+                       (print []) t (print []) u;
+                       print_stack oc stack
+    | AbsTy (x, t) -> Printf.fprintf oc "%a" (print []) t;
+                      print_stack oc stack
+    (*    | Cst ((_,"Not"), []) -> print_not oc stack *)
+    | Cst ((_,"And"), []) -> print_and oc stack
+    | Cst ((_,"Or"), []) -> print_or oc stack
+    | Cst ((_,"ex"), [t]) -> print_ex oc t stack
+    | Cst (name,l) ->
+      print_name oc name;
+      print_typeargs oc l;
+      print_stack oc stack
+
+  and print_not oc stack =
+      match stack with
+      | a::s' -> 
+          Printf.fprintf oc "(NOT (%a))" (print []) a;
+          print_stack oc s'
+      | _ ->     output_string oc  "(LAMBDA(x:bool):(NOT x))";
+        print_stack oc stack
+
+  and print_and oc stack =
+      match stack with
+      | a::b::s' -> 
+          Printf.fprintf oc "((%a) AND (%a))" (print []) a (print []) b;
+          print_stack oc s'
+      | _ ->     output_string oc  "(LAMBDA(x:bool)(y:bool):(x AND y))";
+        print_stack oc stack
+
+  and print_or oc stack =
+      match stack with
+      | a::b::s' -> 
+          Printf.fprintf oc "((%a) OR (%a))" (print []) a (print []) b;
+          print_stack oc s'
+      | _ ->     output_string oc  "(LAMBDA(x:bool)(y:bool):(x OR y))";
+        print_stack oc stack
+
+  and print_ex oc t stack =
+      match stack with
+        | (Abs (x, _, a))::s' -> 
+                 Printf.fprintf oc "(EXISTS (%a : %a): %a)"
+                 output_string x
+                 print__ty_pvs t
+                 (print []) a;
+                 print_stack oc s'
+        | a::s' ->
+                 let x = gensym 0 (vars [] a)
+                 in Printf.fprintf oc "(EXISTS (%a : %a): %a(%a))"
+                 output_string x
+                 print__ty_pvs t
+                 (print []) a
+                 output_string x;
+                 print_stack oc s'
+        | _ ->   Printf.fprintf oc 
+                   "LAMBDA (p:%a -> bool):(EXISTS (x : %a): p(x))"
+                    print__ty_pvs t
+                    print__ty_pvs t;
+                    print_stack oc stack
+
+and print_typeargs oc l = 
+  if l <> [] then (Printf.fprintf oc "[" ;print_type_list_pvs oc l;Printf.fprintf oc "]")
+
+  and print_stack oc stack = match stack with
+    | [] -> ()
+    | a::l' -> Printf.fprintf oc "(%a)" (print []) a;
+               print_stack oc l'
   in
-  print
+  print [] oc t
 
 
 let rec prefix_of_te : te -> string list =
