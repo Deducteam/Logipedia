@@ -11,10 +11,10 @@ let sanitize_name : string -> string =
 
  let sanitize_name_pvs : string -> string =
   fun n ->
-    if String.equal n "True" then "True_sttfa"
-    else if String.equal n "False" then "False_sttfa"
-    else if String.equal n "And" then "And_sttfa" (* "(LAMBDA(x:bool)(y:bool):(x AND y))" *)
-    else if String.equal n "Or" then "Or_sttfa" (* "(LAMBDA(x:bool)(y:bool):(x OR y))" *)
+    if String.equal n "True" then "sttfa_True"
+    else if String.equal n "False" then "sttfa_False"
+    else if String.equal n "And" then "sttfa_And" 
+    else if String.equal n "Or" then "sttfa_Or" 
     else if
         String.equal n "Not" 
      || String.equal n "ex" || String.equal n "true" || String.equal n "false"
@@ -44,7 +44,6 @@ let print__ty_pvs : out_channel -> _ty -> unit =
         output_string oc "bool"
   in
   print false
-
 
 let rec print_ty_pvs : out_channel -> ty -> unit =
  fun oc ty ->
@@ -138,32 +137,39 @@ let print__te_pvs : out_channel ->_te -> unit =
       print_typeargs oc l;
       print_stack oc stack
 
-  and print_not oc stack =
+(*  and print_not oc stack =
       match stack with
       | a::s' -> 
           Printf.fprintf oc "(NOT (%a))" (print []) a;
           print_stack oc s'
       | _ ->     output_string oc  "(LAMBDA(x:bool):(NOT x))";
         print_stack oc stack
+*)
 
   and print_and oc stack =
       match stack with
-      | a::b::s' -> 
+        | [] ->  output_string oc  "(LAMBDA(x:bool)(y:bool):(x AND y))"
+        | a::[] -> 
+          Printf.fprintf oc "(LAMBDA(y:bool):(%a AND y))" (print []) a;
+        | a::b::s' -> 
           Printf.fprintf oc "((%a) AND (%a))" (print []) a (print []) b;
           print_stack oc s'
-      | _ ->     output_string oc  "(LAMBDA(x:bool)(y:bool):(x AND y))";
-        print_stack oc stack
 
   and print_or oc stack =
       match stack with
-      | a::b::s' -> 
+        | [] ->  output_string oc  "(LAMBDA(x:bool)(y:bool):(x OR y))"
+        | a::[] -> 
+          Printf.fprintf oc "(LAMBDA(y:bool):(%a OR y))" (print []) a;
+        | a::b::s' -> 
           Printf.fprintf oc "((%a) OR (%a))" (print []) a (print []) b;
           print_stack oc s'
-      | _ ->     output_string oc  "(LAMBDA(x:bool)(y:bool):(x OR y))";
-        print_stack oc stack
 
   and print_ex oc t stack =
       match stack with
+        | [] ->   Printf.fprintf oc 
+                   "LAMBDA (p:%a -> bool):(EXISTS (x : %a): p(x))"
+                    print__ty_pvs t
+                    print__ty_pvs t
         | (Abs (x, _, a))::s' -> 
                  Printf.fprintf oc "(EXISTS (%a : %a): %a)"
                  output_string x
@@ -178,11 +184,6 @@ let print__te_pvs : out_channel ->_te -> unit =
                  (print []) a
                  output_string x;
                  print_stack oc s'
-        | _ ->   Printf.fprintf oc 
-                   "LAMBDA (p:%a -> bool):(EXISTS (x : %a): p(x))"
-                    print__ty_pvs t
-                    print__ty_pvs t;
-                    print_stack oc stack
 
 and print_typeargs oc l = 
   if l <> [] then (Printf.fprintf oc "[" ;print_type_list_pvs oc l;Printf.fprintf oc "]")
@@ -260,19 +261,6 @@ let print_hyp : out_channel -> hyp -> unit =
       List.iter (fun x -> Printf.fprintf oc ", %a" print__te_pvs x) l ;
       Printf.fprintf oc " "
 
-
-(* let print_judgment : out_channel -> judgment -> unit =
- fun oc j ->
-  if !with_types then
-    Printf.fprintf oc "%a; %a; %a ⊢ %a" print__ty_ctx (List.rev j.ty)
-      print_te_ctx (List.rev j.te) print_hyp j.hyp print_te_pvs j.thm
-  else
-    Printf.fprintf oc "%a; %a ⊢ %a" print_te_ctx (List.rev j.te) print_hyp
-      j.hyp print_te_pvs j.thm
-
-*)
-
-
 let conclusion_pvs : proof -> te =
  fun prf ->
   let j =
@@ -315,12 +303,6 @@ let rec print_name_list = fun oc -> fun l -> match l with
           
 let print_proof_pvs : out_channel -> proof -> unit =
   fun oc prf ->
-(*    let rec print_trace_right oc = fun rewrites ->
-      match rewrites with
-      | [] -> Printf.fprintf oc ""
-      | Beta::l -> Printf.fprintf oc "(beta)%a" print_trace_right l
-      | (Delta (md,id))::l -> Printf.fprintf oc "(rewrite \"%s\") %a" (sanitize_name_pvs id) print_trace_right l
-      in *)
     let rec print acc oc prf =
     match prf with
       | Assume(j)         -> Printf.fprintf oc "%%|- (propax)" 
