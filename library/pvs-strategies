@@ -31,7 +31,7 @@
    (comment "ImplE")
    (spread
     (case cut1 cut2)
-    ((grind)
+    ((ground)
      (then@ (hide 2) step1)
      (then@ (hide 2) step2))))
   "[sttfa] ImplE")
@@ -64,7 +64,6 @@
 	    (let ((steps (loop for name in right collect `(expand ,name)))
 		  (steps (cons 'then steps)))
 	      (then steps))
-
 	    (beta))
      (then@ (hide 2) step))))
   "[sttfa] Conv")
@@ -112,10 +111,3 @@
 	  (error "Type is not functional.")))))
   "[sttfa] Strategy to prove nonemptyness of functional types based on nonempty types."
   "")
-
-
-
-
-
-
-

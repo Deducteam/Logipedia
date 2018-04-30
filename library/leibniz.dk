@@ -1,7 +1,7 @@
-eq :  sttfa.etap (sttfa.forallK (A:sttfa.type => sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))).
+equal :  sttfa.etap (sttfa.forallK (A:sttfa.type => sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))).
 
 refl : sttfa.eps (sttfa.forallP (A:sttfa.type => sttfa.forall A
-                                    (x:sttfa.eta A => eq A x x))).
+                                    (x:sttfa.eta A => equal A x x))).
 
 def leibniz : sttfa.etap (sttfa.forallK (A:sttfa.type => sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))) :=
 A : sttfa.type =>
@@ -10,10 +10,10 @@ y : sttfa.eta A => (sttfa.forall (sttfa.arrow A sttfa.bool)
                                   (P : sttfa.eta (sttfa.arrow A sttfa.bool) =>
                                   sttfa.impl (P x) (P y))).
 
-eq_leibniz : sttfa.eps (sttfa.forallP (A:sttfa.type =>
+equal_leibniz : sttfa.eps (sttfa.forallP (A:sttfa.type =>
                     sttfa.forall A (x:sttfa.eta A =>
                     sttfa.forall A (y:sttfa.eta A =>
-                    sttfa.impl (eq A x y) (leibniz A x y))))).
+                    sttfa.impl (equal A x y) (leibniz A x y))))).
 
 def refl_leibniz : sttfa.eps (sttfa.forallP(A:sttfa.type =>
 sttfa.forall A (x:sttfa.eta A => (leibniz A x x)))) :=
@@ -29,7 +29,7 @@ def sym_leibniz : sttfa.eps (sttfa.forallP (A:sttfa.type =>
 A : sttfa.type =>
 x : sttfa.eta A =>
 y : sttfa.eta A =>
-eq : sttfa.eps (leibniz A x y) =>
-eq (z : sttfa.eta A => sttfa.impl (leibniz A z y) (leibniz A z x))
+equal : sttfa.eps (leibniz A x y) =>
+equal (z : sttfa.eta A => sttfa.impl (leibniz A z y) (leibniz A z x))
                 (e : sttfa.eps (leibniz A x y) => refl_leibniz A x)
                 (refl_leibniz A y).

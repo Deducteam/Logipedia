@@ -37,11 +37,9 @@ LIBDKS = $(wildcard library/*.dk)
 
 library: $(LIBDKS:.dk=.dko)
 
-library/%.dko:  library/%.dk .library_depend main.native
+library/%.pvs library/%.dko:  library/%.dk theories/sttfa.dko .library_depend main.native
 	@echo "[PVS] $<"
 	@./main.native -I library -I theories $<
-	@echo "[SUMMARY]"
-	proveit --importchain -sf $@
 
 library/%.summary: library/%.pvs
 	@echo "[SUMMARY]"
@@ -87,5 +85,6 @@ distclean: clean
 	@find . -name "*.prf" -exec rm {} \;
 	@find . -name "*.bin" -exec rm {} \;
 	@find . -name "*.dep" -exec rm {} \;
+	@cp -f ../sttfa/*.p?? library/
 
 .PHONY: all clean distclean examples library pvs

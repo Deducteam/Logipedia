@@ -37,7 +37,7 @@ def RC :
   A:sttfa.type =>
   R:(sttfa.etap (sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))) =>
   x:(sttfa.etap (sttfa.p A)) =>
-  y:(sttfa.etap (sttfa.p A)) => logic.Or (R x y) (logic.eq A x y).
+  y:(sttfa.etap (sttfa.p A)) => connectives.Or (R x y) (logic.eq A x y).
 
 def RC_reflexive :
   sttfa.eps
@@ -51,7 +51,7 @@ def RC_reflexive :
   A:sttfa.type =>
   R:(sttfa.etap (sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))) =>
   x:(sttfa.etap (sttfa.p A)) =>
-  logic.or_intror (R x x) (logic.eq A x x) (logic.refl A x).
+  connectives.or_intror (R x x) (logic.eq A x x) (logic.refl A x).
 
 def injective :
   sttfa.etap

@@ -124,7 +124,7 @@ axiom_bigop_O :
   sttfa.eps
     (sttfa.forallP
        (H:sttfa.type =>
-        leibniz.eq
+        leibniz.equal
           (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
              (sttfa.arrow H
                 (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -142,7 +142,7 @@ def eq_bigop_O :
                    (sttfa.arrow (sttfa.arrow nat.nat H) H))))
           (bigops.bigop H nat.O) (bigops.bigop_body H nat.O))) :=
 H:sttfa.type =>
-        leibniz.eq_leibniz
+        leibniz.equal_leibniz
           (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
              (sttfa.arrow H
                 (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -174,7 +174,7 @@ axiom_bigop_S :
        (H:sttfa.type =>
         sttfa.forall nat.nat
           (n:(sttfa.etap (sttfa.p nat.nat)) =>
-           leibniz.eq
+           leibniz.equal
              (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
                 (sttfa.arrow H
                    (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -195,7 +195,7 @@ def eq_bigop_S :
              (bigops.bigop H (nat.S n)) (bigops.bigop_body H (nat.S n))))) :=
 H:sttfa.type =>
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-           leibniz.eq_leibniz
+           leibniz.equal_leibniz
              (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
                 (sttfa.arrow H
                    (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -229,7 +229,7 @@ axiom_bigop_body_O :
   sttfa.eps
     (sttfa.forallP
        (H:sttfa.type =>
-        leibniz.eq
+        leibniz.equal
           (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
              (sttfa.arrow H
                 (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -255,7 +255,7 @@ def eq_bigop_body_O :
            op:(sttfa.etap (sttfa.p (sttfa.arrow H (sttfa.arrow H H)))) =>
            f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat H))) => nil))) :=
 H:sttfa.type =>
-        leibniz.eq_leibniz
+        leibniz.equal_leibniz
           (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
              (sttfa.arrow H
                 (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -301,7 +301,7 @@ axiom_bigop_body_S :
        (H:sttfa.type =>
         sttfa.forall nat.nat
           (n:(sttfa.etap (sttfa.p nat.nat)) =>
-           leibniz.eq
+           leibniz.equal
              (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
                 (sttfa.arrow H
                    (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -336,7 +336,7 @@ def eq_bigop_body_S :
                 (bigops.bigop H n p nil op f) (p n))))) :=
 H:sttfa.type =>
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-           leibniz.eq_leibniz
+           leibniz.equal_leibniz
              (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
                 (sttfa.arrow H
                    (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -890,7 +890,7 @@ def same_bigop :
                                (i:(sttfa.etap (sttfa.p nat.nat)) => p2 i)
                                nil op
                                (i:(sttfa.etap (sttfa.p nat.nat)) => g i)) x_1))
-                      (logic.match_Or_prop
+                      (connectives.match_Or_prop
                          (logic.eq bool.bool (p1 n) bool.true)
                          (logic.eq bool.bool (p1 n) bool.false)
                          (logic.eq B
@@ -1491,7 +1491,7 @@ def bigop_I_gen :
      p:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
      f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
      lea:(sttfa.eps (nat.le a (nat.S b0))) =>
-     logic.match_Or_prop (nat.lt a (nat.S b0))
+     connectives.match_Or_prop (nat.lt a (nat.S b0))
        (logic.eq nat.nat a (nat.S b0))
        (logic.eq nat.nat
           (bigops.bigop nat.nat (nat.minus (nat.S b0) a)
@@ -1503,7 +1503,7 @@ def bigop_I_gen :
               bool.andb (nat.leb a i) (p i)) (nat.S nat.O) nat.times
              (i:(sttfa.etap (sttfa.p nat.nat)) => f i)))
        (Ha:(sttfa.eps (nat.lt a (nat.S b0))) =>
-        logic.match_Or_prop (logic.eq bool.bool (p b0) bool.true)
+        connectives.match_Or_prop (logic.eq bool.bool (p b0) bool.true)
           (logic.eq bool.bool (p b0) bool.false)
           (logic.eq nat.nat
              (bigops.bigop nat.nat (nat.minus (nat.S b0) a)
@@ -2093,7 +2093,7 @@ def bigop_diff :
                     bool.andb (bool.notb (nat.eqb i x)) (p x)) (nat.S nat.O)
                    nat.times (x:(sttfa.etap (sttfa.p nat.nat)) => f x))))))
     (ltO:(sttfa.eps (nat.lt i nat.O)) =>
-     logic.falsity
+     connectives.falsity
        (sttfa.impl (logic.eq bool.bool (p i) bool.true)
           (logic.eq nat.nat
              (bigops.bigop nat.nat nat.O
@@ -2122,7 +2122,7 @@ def bigop_diff :
                        (x:(sttfa.etap (sttfa.p nat.nat)) => f x))))))) =>
      lein:(sttfa.eps (nat.lt i (nat.S n0))) =>
      pi:(sttfa.eps (logic.eq bool.bool (p i) bool.true)) =>
-     logic.match_Or_prop (nat.lt i n0) (logic.eq nat.nat i n0)
+     connectives.match_Or_prop (nat.lt i n0) (logic.eq nat.nat i n0)
        (logic.eq nat.nat
           (bigops.bigop nat.nat (nat.S n0)
              (x:(sttfa.etap (sttfa.p nat.nat)) => p x) (nat.S nat.O)
@@ -2133,7 +2133,7 @@ def bigop_diff :
                  bool.andb (bool.notb (nat.eqb i x)) (p x)) (nat.S nat.O)
                 nat.times (x:(sttfa.etap (sttfa.p nat.nat)) => f x))))
        (Hi:(sttfa.eps (nat.lt i n0)) =>
-        logic.match_Or_prop (logic.eq bool.bool (p n0) bool.true)
+        connectives.match_Or_prop (logic.eq bool.bool (p n0) bool.true)
           (logic.eq bool.bool (p n0) bool.false)
           (logic.eq nat.nat
              (bigops.bigop nat.nat (nat.S n0)
@@ -2691,8 +2691,8 @@ def sub_hk :
     (i:(sttfa.etap (sttfa.p nat.nat)) =>
      sttfa.impl (nat.lt i n1)
        (sttfa.impl (logic.eq bool.bool (p1 i) bool.true)
-          (logic.And
-             (logic.And (nat.lt (h i) n2)
+          (connectives.And
+             (connectives.And (nat.lt (h i) n2)
                 (logic.eq bool.bool (p2 (h i)) bool.true))
              (logic.eq nat.nat (k (h i)) i)))).
 
@@ -2712,12 +2712,12 @@ def iso :
   p2:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
   f1:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
   f2:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
-  logic.ex (sttfa.arrow nat.nat nat.nat)
+  connectives.ex (sttfa.arrow nat.nat nat.nat)
     (h:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
-     logic.ex (sttfa.arrow nat.nat nat.nat)
+     connectives.ex (sttfa.arrow nat.nat nat.nat)
        (k:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
-        logic.And
-          (logic.And
+        connectives.And
+          (connectives.And
              (sttfa.forall nat.nat
                 (i:(sttfa.etap (sttfa.p nat.nat)) =>
                  sttfa.impl (nat.lt i n1)
@@ -2766,14 +2766,14 @@ def sub_hkO :
   logic.eq_ind_r nat.nat nat.O
     (x:(sttfa.etap (sttfa.p nat.nat)) =>
      sttfa.impl (logic.eq bool.bool (p1 i) bool.true)
-       (logic.And
-          (logic.And (nat.lt (h i) n2)
+       (connectives.And
+          (connectives.And (nat.lt (h i) n2)
              (logic.eq bool.bool (p2 (h i)) bool.true))
           (logic.eq nat.nat (k (h i)) i)))
-    (logic.falsity
+    (connectives.falsity
        (sttfa.impl (logic.eq bool.bool (p1 i) bool.true)
-          (logic.And
-             (logic.And (nat.lt (h i) n2)
+          (connectives.And
+             (connectives.And (nat.lt (h i) n2)
                 (logic.eq bool.bool (p2 (h i)) bool.true))
              (logic.eq nat.nat (k (h i)) i)))
        (logic.absurd (nat.le (nat.S i) nat.O)
@@ -2828,24 +2828,24 @@ def sub0_to_false :
   sub:(sttfa.eps (bigops.sub_hk h k n2 n1 p2 p1 f2 f1)) =>
   i:(sttfa.etap (sttfa.p nat.nat)) =>
   lti:(sttfa.eps (nat.lt i n2)) =>
-  logic.match_Or_prop (logic.eq bool.bool (p2 i) bool.true)
+  connectives.match_Or_prop (logic.eq bool.bool (p2 i) bool.true)
     (logic.eq bool.bool (p2 i) bool.false)
     (logic.eq bool.bool (p2 i) bool.false)
     (ptrue:(sttfa.eps (logic.eq bool.bool (p2 i) bool.true)) =>
-     logic.match_And_prop
-       (logic.And (nat.lt (h i) n1)
+     connectives.match_And_prop
+       (connectives.And (nat.lt (h i) n1)
           (logic.eq bool.bool (p1 (h i)) bool.true))
        (logic.eq nat.nat (k (h i)) i) (logic.eq bool.bool (p2 i) bool.false)
        (_clearme:
         (sttfa.eps
-           (logic.And (nat.lt (h i) n1)
+           (connectives.And (nat.lt (h i) n1)
               (logic.eq bool.bool (p1 (h i)) bool.true))) =>
-        logic.match_And_prop (nat.lt (h i) n1)
+        connectives.match_And_prop (nat.lt (h i) n1)
           (logic.eq bool.bool (p1 (h i)) bool.true)
           (sttfa.impl (logic.eq nat.nat (k (h i)) i)
              (logic.eq bool.bool (p2 i) bool.false))
           (hi:(sttfa.eps (nat.lt (h i) n1)) =>
-           logic.falsity
+           connectives.falsity
              (sttfa.impl (logic.eq bool.bool (p1 (h i)) bool.true)
                 (sttfa.impl (logic.eq nat.nat (k (h i)) i)
                    (logic.eq bool.bool (p2 i) bool.false)))
@@ -2887,10 +2887,10 @@ def sub_lt :
   i:(sttfa.etap (sttfa.p nat.nat)) =>
   lti:(sttfa.eps (nat.lt i n)) =>
   fi:(sttfa.eps (logic.eq bool.bool (f i) bool.true)) =>
-  logic.conj
-        (logic.And (nat.lt i m) (logic.eq bool.bool (f i) bool.true))
+  connectives.conj
+        (connectives.And (nat.lt i m) (logic.eq bool.bool (f i) bool.true))
         (logic.eq nat.nat i i)
-    (logic.conj (nat.lt i m) (logic.eq bool.bool (f i) bool.true)
+    (connectives.conj (nat.lt i m) (logic.eq bool.bool (f i) bool.true)
      (nat.lt_to_le_to_lt i n m lti lenm)
        (logic.rewrite_r bool.bool bool.true
           (__:(sttfa.etap (sttfa.p bool.bool)) =>
@@ -2980,56 +2980,56 @@ def transitive_sub :
   i:(sttfa.etap (sttfa.p nat.nat)) =>
   lti:(sttfa.eps (nat.lt i n1)) =>
   fi:(sttfa.eps (logic.eq bool.bool (p1 i) bool.true)) =>
-  logic.match_And_prop
-    (logic.And (nat.lt (h1 i) n2)
+  connectives.match_And_prop
+    (connectives.And (nat.lt (h1 i) n2)
        (logic.eq bool.bool (p2 (h1 i)) bool.true))
     (logic.eq nat.nat (k1 (h1 i)) i)
-    (logic.And
-       (logic.And (nat.lt (h2 (h1 i)) n3)
+    (connectives.And
+       (connectives.And (nat.lt (h2 (h1 i)) n3)
           (logic.eq bool.bool (p3 (h2 (h1 i))) bool.true))
        (logic.eq nat.nat (k1 (k2 (h2 (h1 i)))) i))
     (_clearme:
      (sttfa.eps
-        (logic.And (nat.lt (h1 i) n2)
+        (connectives.And (nat.lt (h1 i) n2)
            (logic.eq bool.bool (p2 (h1 i)) bool.true))) =>
-     logic.match_And_prop (nat.lt (h1 i) n2)
+     connectives.match_And_prop (nat.lt (h1 i) n2)
        (logic.eq bool.bool (p2 (h1 i)) bool.true)
        (sttfa.impl (logic.eq nat.nat (k1 (h1 i)) i)
-          (logic.And
-             (logic.And (nat.lt (h2 (h1 i)) n3)
+          (connectives.And
+             (connectives.And (nat.lt (h2 (h1 i)) n3)
                 (logic.eq bool.bool (p3 (h2 (h1 i))) bool.true))
              (logic.eq nat.nat (k1 (k2 (h2 (h1 i)))) i)))
        (lth1i:(sttfa.eps (nat.lt (h1 i) n2)) =>
         fh1i:(sttfa.eps (logic.eq bool.bool (p2 (h1 i)) bool.true)) =>
         ei:(sttfa.eps (logic.eq nat.nat (k1 (h1 i)) i)) =>
-        logic.match_And_prop
-          (logic.And (nat.lt (h2 (h1 i)) n3)
+        connectives.match_And_prop
+          (connectives.And (nat.lt (h2 (h1 i)) n3)
              (logic.eq bool.bool (p3 (h2 (h1 i))) bool.true))
           (logic.eq nat.nat (k2 (h2 (h1 i))) (h1 i))
-          (logic.And
-             (logic.And (nat.lt (h2 (h1 i)) n3)
+          (connectives.And
+             (connectives.And (nat.lt (h2 (h1 i)) n3)
                 (logic.eq bool.bool (p3 (h2 (h1 i))) bool.true))
              (logic.eq nat.nat (k1 (k2 (h2 (h1 i)))) i))
           (_clearme0:
            (sttfa.eps
-              (logic.And (nat.lt (h2 (h1 i)) n3)
+              (connectives.And (nat.lt (h2 (h1 i)) n3)
                  (logic.eq bool.bool (p3 (h2 (h1 i))) bool.true))) =>
-           logic.match_And_prop (nat.lt (h2 (h1 i)) n3)
+           connectives.match_And_prop (nat.lt (h2 (h1 i)) n3)
              (logic.eq bool.bool (p3 (h2 (h1 i))) bool.true)
              (sttfa.impl (logic.eq nat.nat (k2 (h2 (h1 i))) (h1 i))
-                (logic.And
-                   (logic.And (nat.lt (h2 (h1 i)) n3)
+                (connectives.And
+                   (connectives.And (nat.lt (h2 (h1 i)) n3)
                       (logic.eq bool.bool (p3 (h2 (h1 i))) bool.true))
                    (logic.eq nat.nat (k1 (k2 (h2 (h1 i)))) i)))
              (H1:(sttfa.eps (nat.lt (h2 (h1 i)) n3)) =>
               H2:
               (sttfa.eps (logic.eq bool.bool (p3 (h2 (h1 i))) bool.true)) =>
               H3:(sttfa.eps (logic.eq nat.nat (k2 (h2 (h1 i))) (h1 i))) =>
-              logic.conj
-                    (logic.And (nat.lt (h2 (h1 i)) n3)
+              connectives.conj
+                    (connectives.And (nat.lt (h2 (h1 i)) n3)
                        (logic.eq bool.bool (p3 (h2 (h1 i))) bool.true))
                     (logic.eq nat.nat (k1 (k2 (h2 (h1 i)))) i)
-                (logic.conj (nat.lt (h2 (h1 i)) n3)
+                (connectives.conj (nat.lt (h2 (h1 i)) n3)
                           (logic.eq bool.bool (p3 (h2 (h1 i))) bool.true)
                  H1
                    (logic.rewrite_r bool.bool bool.true
@@ -3067,12 +3067,12 @@ def let_clause_10471 :
                              (sttfa.etap
                                 (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
                              sttfa.impl
-                               (logic.ex (sttfa.arrow nat.nat nat.nat)
+                               (connectives.ex (sttfa.arrow nat.nat nat.nat)
                                   (k:
                                    (sttfa.etap
                                       (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
-                                   logic.And
-                                     (logic.And
+                                   connectives.And
+                                     (connectives.And
                                         (sttfa.forall nat.nat
                                            (i:
                                             (sttfa.etap (sttfa.p nat.nat)) =>
@@ -3089,8 +3089,8 @@ def let_clause_10471 :
                                    (sttfa.etap
                                       (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
                                    sttfa.impl
-                                     (logic.And
-                                        (logic.And
+                                     (connectives.And
+                                        (connectives.And
                                            (sttfa.forall nat.nat
                                               (i:
                                                (sttfa.etap (sttfa.p nat.nat)) =>
@@ -3104,7 +3104,7 @@ def let_clause_10471 :
                                               f2))
                                         (bigops.sub_hk k h n2 n1 p2 p1 f2 f1))
                                      (sttfa.impl
-                                        (logic.And
+                                        (connectives.And
                                            (sttfa.forall nat.nat
                                               (i:
                                                (sttfa.etap (sttfa.p nat.nat)) =>
@@ -3246,10 +3246,10 @@ def let_clause_10471 :
   h:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
   _clearme0:
   (sttfa.eps
-     (logic.ex (sttfa.arrow nat.nat nat.nat)
+     (connectives.ex (sttfa.arrow nat.nat nat.nat)
         (k:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
-         logic.And
-           (logic.And
+         connectives.And
+           (connectives.And
               (sttfa.forall nat.nat
                  (i:(sttfa.etap (sttfa.p nat.nat)) =>
                   sttfa.impl (nat.lt i n1)
@@ -3260,8 +3260,8 @@ def let_clause_10471 :
   k:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
   _clearme1:
   (sttfa.eps
-     (logic.And
-        (logic.And
+     (connectives.And
+        (connectives.And
            (sttfa.forall nat.nat
               (i:(sttfa.etap (sttfa.p nat.nat)) =>
                sttfa.impl (nat.lt i n1)
@@ -3271,7 +3271,7 @@ def let_clause_10471 :
         (bigops.sub_hk k h n2 n1 p2 p1 f2 f1))) =>
   _clearme2:
   (sttfa.eps
-     (logic.And
+     (connectives.And
         (sttfa.forall nat.nat
            (i:(sttfa.etap (sttfa.p nat.nat)) =>
             sttfa.impl (nat.lt i n1)
@@ -3350,12 +3350,12 @@ def bigop_iso :
   f1:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
   f2:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
   _clearme:(sttfa.eps (bigops.iso n1 n2 p1 p2 f1 f2)) =>
-  logic.match_ex_prop (sttfa.arrow nat.nat nat.nat)
+  connectives.match_ex_prop (sttfa.arrow nat.nat nat.nat)
     (h:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
-     logic.ex (sttfa.arrow nat.nat nat.nat)
+     connectives.ex (sttfa.arrow nat.nat nat.nat)
        (k:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
-        logic.And
-          (logic.And
+        connectives.And
+          (connectives.And
              (sttfa.forall nat.nat
                 (i:(sttfa.etap (sttfa.p nat.nat)) =>
                  sttfa.impl (nat.lt i n1)
@@ -3371,10 +3371,10 @@ def bigop_iso :
     (h:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
      _clearme0:
      (sttfa.eps
-        (logic.ex (sttfa.arrow nat.nat nat.nat)
+        (connectives.ex (sttfa.arrow nat.nat nat.nat)
            (k:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
-            logic.And
-              (logic.And
+            connectives.And
+              (connectives.And
                  (sttfa.forall nat.nat
                     (i:(sttfa.etap (sttfa.p nat.nat)) =>
                      sttfa.impl (nat.lt i n1)
@@ -3382,10 +3382,10 @@ def bigop_iso :
                           (logic.eq nat.nat (f1 i) (f2 (h i))))))
                  (bigops.sub_hk h k n1 n2 p1 p2 f1 f2))
               (bigops.sub_hk k h n2 n1 p2 p1 f2 f1)))) =>
-     logic.match_ex_prop (sttfa.arrow nat.nat nat.nat)
+     connectives.match_ex_prop (sttfa.arrow nat.nat nat.nat)
        (k:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
-        logic.And
-          (logic.And
+        connectives.And
+          (connectives.And
              (sttfa.forall nat.nat
                 (i:(sttfa.etap (sttfa.p nat.nat)) =>
                  sttfa.impl (nat.lt i n1)
@@ -3403,8 +3403,8 @@ def bigop_iso :
        (k:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
         _clearme1:
         (sttfa.eps
-           (logic.And
-              (logic.And
+           (connectives.And
+              (connectives.And
                  (sttfa.forall nat.nat
                     (i:(sttfa.etap (sttfa.p nat.nat)) =>
                      sttfa.impl (nat.lt i n1)
@@ -3412,8 +3412,8 @@ def bigop_iso :
                           (logic.eq nat.nat (f1 i) (f2 (h i))))))
                  (bigops.sub_hk h k n1 n2 p1 p2 f1 f2))
               (bigops.sub_hk k h n2 n1 p2 p1 f2 f1))) =>
-        logic.match_And_prop
-          (logic.And
+        connectives.match_And_prop
+          (connectives.And
              (sttfa.forall nat.nat
                 (i:(sttfa.etap (sttfa.p nat.nat)) =>
                  sttfa.impl (nat.lt i n1)
@@ -3430,14 +3430,14 @@ def bigop_iso :
                 nat.times (i:(sttfa.etap (sttfa.p nat.nat)) => f2 i)))
           (_clearme2:
            (sttfa.eps
-              (logic.And
+              (connectives.And
                  (sttfa.forall nat.nat
                     (i:(sttfa.etap (sttfa.p nat.nat)) =>
                      sttfa.impl (nat.lt i n1)
                        (sttfa.impl (logic.eq bool.bool (p1 i) bool.true)
                           (logic.eq nat.nat (f1 i) (f2 (h i))))))
                  (bigops.sub_hk h k n1 n2 p1 p2 f1 f2))) =>
-           logic.match_And_prop
+           connectives.match_And_prop
              (sttfa.forall nat.nat
                 (i:(sttfa.etap (sttfa.p nat.nat)) =>
                  sttfa.impl (nat.lt i n1)
@@ -3897,7 +3897,7 @@ def bigop_iso :
                     (sttfa.eps (bigops.sub_hk h k (nat.S n) n2 p1 p20 f1 f2)) =>
                     sub2:
                     (sttfa.eps (bigops.sub_hk k h n2 (nat.S n) p20 p1 f2 f1)) =>
-                    logic.match_Or_prop
+                    connectives.match_Or_prop
                       (logic.eq bool.bool (p1 n) bool.true)
                       (logic.eq bool.bool (p1 n) bool.false)
                       (logic.eq nat.nat
@@ -3923,8 +3923,8 @@ def bigop_iso :
                                (i0:(sttfa.etap (sttfa.p nat.nat)) => p20 i0)
                                (nat.S nat.O) nat.times
                                (i0:(sttfa.etap (sttfa.p nat.nat)) => f2 i0)))
-                         (logic.match_And_prop
-                            (logic.And (nat.lt (h n) n2)
+                         (connectives.match_And_prop
+                            (connectives.And (nat.lt (h n) n2)
                                (logic.eq bool.bool (p20 (h n)) bool.true))
                             (logic.eq nat.nat (k (h n)) n)
                             (logic.eq nat.nat
@@ -3940,9 +3940,9 @@ def bigop_iso :
                                   (i0:(sttfa.etap (sttfa.p nat.nat)) => f2 i0)))
                             (_clearme3:
                              (sttfa.eps
-                                (logic.And (nat.lt (h n) n2)
+                                (connectives.And (nat.lt (h n) n2)
                                    (logic.eq bool.bool (p20 (h n)) bool.true))) =>
-                             logic.match_And_prop (nat.lt (h n) n2)
+                             connectives.match_And_prop (nat.lt (h n) n2)
                                (logic.eq bool.bool (p20 (h n)) bool.true)
                                (sttfa.impl (logic.eq nat.nat (k (h n)) n)
                                   (logic.eq nat.nat
@@ -4041,14 +4041,14 @@ def bigop_iso :
                                             (sttfa.eps
                                                (logic.eq bool.bool (p1 i0)
                                                   bool.true)) =>
-                                            logic.match_And_prop
-                                              (logic.And
+                                            connectives.match_And_prop
+                                              (connectives.And
                                                  (nat.lt (h i0) n2)
                                                  (logic.eq bool.bool
                                                     (p20 (h i0)) bool.true))
                                               (logic.eq nat.nat (k (h i0)) i0)
-                                              (logic.And
-                                                 (logic.And
+                                              (connectives.And
+                                                 (connectives.And
                                                     (nat.lt (h i0) n2)
                                                     (logic.eq bool.bool
                                                        (bool.andb
@@ -4062,20 +4062,20 @@ def bigop_iso :
                                                     (k (h i0)) i0))
                                               (_clearme4:
                                                (sttfa.eps
-                                                  (logic.And
+                                                  (connectives.And
                                                      (nat.lt (h i0) n2)
                                                      (logic.eq bool.bool
                                                         (p20 (h i0))
                                                         bool.true))) =>
-                                               logic.match_And_prop
+                                               connectives.match_And_prop
                                                  (nat.lt (h i0) n2)
                                                  (logic.eq bool.bool
                                                     (p20 (h i0)) bool.true)
                                                  (sttfa.impl
                                                     (logic.eq nat.nat
                                                        (k (h i0)) i0)
-                                                    (logic.And
-                                                       (logic.And
+                                                    (connectives.And
+                                                       (connectives.And
                                                           (nat.lt (h i0) n2)
                                                           (logic.eq
                                                              bool.bool
@@ -4100,8 +4100,8 @@ def bigop_iso :
                                                   (sttfa.eps
                                                      (logic.eq nat.nat
                                                         (k (h i0)) i0)) =>
-                                                  logic.conj
-                                                        (logic.And
+                                                  connectives.conj
+                                                        (connectives.And
                                                            (nat.lt (h i0) n2)
                                                            (logic.eq
                                                               bool.bool
@@ -4115,7 +4115,7 @@ def bigop_iso :
                                                               bool.true))
                                                            (logic.eq nat.nat
                                                               (k (h i0)) i0)
-                                                    (logic.conj
+                                                    (connectives.conj
                                                            (nat.lt (h i0) n2)
                                                               (logic.eq
                                                                  bool.bool
@@ -4272,14 +4272,14 @@ def bigop_iso :
                                                      (bool.notb
                                                         (nat.eqb (h n) j))
                                                      (p20 j)) bool.true)) =>
-                                            logic.match_And_prop
-                                              (logic.And
+                                            connectives.match_And_prop
+                                              (connectives.And
                                                  (nat.lt (k j) (nat.S n))
                                                  (logic.eq bool.bool
                                                     (p1 (k j)) bool.true))
                                               (logic.eq nat.nat (h (k j)) j)
-                                              (logic.And
-                                                 (logic.And
+                                              (connectives.And
+                                                 (connectives.And
                                                     (nat.lt (k j) n)
                                                     (logic.eq bool.bool
                                                        (p1 (k j)) bool.true))
@@ -4287,19 +4287,19 @@ def bigop_iso :
                                                     j))
                                               (_clearme4:
                                                (sttfa.eps
-                                                  (logic.And
+                                                  (connectives.And
                                                      (nat.lt (k j) (nat.S n))
                                                      (logic.eq bool.bool
                                                         (p1 (k j)) bool.true))) =>
-                                               logic.match_And_prop
+                                               connectives.match_And_prop
                                                  (nat.lt (k j) (nat.S n))
                                                  (logic.eq bool.bool
                                                     (p1 (k j)) bool.true)
                                                  (sttfa.impl
                                                     (logic.eq nat.nat
                                                        (h (k j)) j)
-                                                    (logic.And
-                                                       (logic.And
+                                                    (connectives.And
+                                                       (connectives.And
                                                           (nat.lt (k j) n)
                                                           (logic.eq
                                                              bool.bool
@@ -4318,8 +4318,8 @@ def bigop_iso :
                                                   (sttfa.eps
                                                      (logic.eq nat.nat
                                                         (h (k j)) j)) =>
-                                                        logic.conj
-                                                        (logic.And
+                                                        connectives.conj
+                                                        (connectives.And
                                                            (nat.lt (k j) n)
                                                            (logic.eq
                                                               bool.bool
@@ -4327,13 +4327,13 @@ def bigop_iso :
                                                               bool.true))
                                                            (logic.eq nat.nat
                                                               (h (k j)) j)
-                                                    (logic.conj
+                                                    (connectives.conj
                                                            (nat.lt (k j) n)
                                                               (logic.eq
                                                                  bool.bool
                                                                  (p1 (k j))
                                                                  bool.true)
-                                                       (logic.match_Or_prop
+                                                       (connectives.match_Or_prop
                                                           (nat.lt (k j) n)
                                                           (logic.eq nat.nat
                                                              (k j) n)
@@ -4347,7 +4347,7 @@ def bigop_iso :
                                                               (logic.eq
                                                                  nat.nat
                                                                  (k j) n)) =>
-                                                           logic.falsity
+                                                           connectives.falsity
                                                              (nat.lt (k j) n)
                                                              (nat.eqb_elim
                                                                 (h n) j
@@ -4364,7 +4364,7 @@ def bigop_iso :
                                                                     __)
                                                                     (p20 j))
                                                                     bool.true)
-                                                                   logic.False)
+                                                                   connectives.False)
                                                                 (bool.sym_eq_match_bool_type_true
                                                                    bool.bool
                                                                    bool.false
@@ -4387,7 +4387,7 @@ def bigop_iso :
                                                                     bool.false
                                                                     y)
                                                                     bool.true)
-                                                                    logic.False))
+                                                                    connectives.False))
                                                                    (bool.sym_eq_match_bool_type_false
                                                                     bool.bool
                                                                     (p20 j)
@@ -4405,7 +4405,7 @@ def bigop_iso :
                                                                     bool.bool
                                                                     y
                                                                     bool.true)
-                                                                    logic.False))
+                                                                    connectives.False))
                                                                     (auto:
                                                                     (sttfa.eps
                                                                     (logic.eq
@@ -4450,7 +4450,7 @@ def bigop_iso :
                                                                     (sttfa.p
                                                                     bool.bool)) =>
                                                                     sttfa.impl
-                                                                    (logic.Not
+                                                                    (connectives.Not
                                                                     (logic.eq
                                                                     nat.nat
                                                                     (h n) j))
@@ -4463,7 +4463,7 @@ def bigop_iso :
                                                                     bool.false
                                                                     y)
                                                                     bool.true)
-                                                                    logic.False))
+                                                                    connectives.False))
                                                                    (bool.sym_eq_match_bool_type_true
                                                                     bool.bool
                                                                     (p20 j)
@@ -4473,7 +4473,7 @@ def bigop_iso :
                                                                     (sttfa.p
                                                                     bool.bool)) =>
                                                                     sttfa.impl
-                                                                    (logic.Not
+                                                                    (connectives.Not
                                                                     (logic.eq
                                                                     nat.nat
                                                                     (h n) j))
@@ -4482,10 +4482,10 @@ def bigop_iso :
                                                                     bool.bool
                                                                     y
                                                                     bool.true)
-                                                                    logic.False))
+                                                                    connectives.False))
                                                                     (auto:
                                                                     (sttfa.eps
-                                                                    (logic.Not
+                                                                    (connectives.Not
                                                                     (logic.eq
                                                                     nat.nat
                                                                     (h n) j))) =>
@@ -4615,28 +4615,28 @@ def bigop_iso :
                              p2i:
                              (sttfa.eps
                                 (logic.eq bool.bool (p20 i0) bool.true)) =>
-                             logic.match_And_prop
-                               (logic.And (nat.lt (k i0) (nat.S n))
+                             connectives.match_And_prop
+                               (connectives.And (nat.lt (k i0) (nat.S n))
                                   (logic.eq bool.bool (p1 (k i0)) bool.true))
                                (logic.eq nat.nat (h (k i0)) i0)
-                               (logic.And
-                                  (logic.And (nat.lt (k i0) n)
+                               (connectives.And
+                                  (connectives.And (nat.lt (k i0) n)
                                      (logic.eq bool.bool (p1 (k i0))
                                         bool.true))
                                   (logic.eq nat.nat (h (k i0)) i0))
                                (_clearme3:
                                 (sttfa.eps
-                                   (logic.And
+                                   (connectives.And
                                       (nat.lt (k i0) (nat.S n))
                                       (logic.eq bool.bool (p1 (k i0))
                                          bool.true))) =>
-                                logic.match_And_prop
+                                connectives.match_And_prop
                                   (nat.lt (k i0) (nat.S n))
                                   (logic.eq bool.bool (p1 (k i0)) bool.true)
                                   (sttfa.impl
                                      (logic.eq nat.nat (h (k i0)) i0)
-                                     (logic.And
-                                        (logic.And (nat.lt (k i0) n)
+                                     (connectives.And
+                                        (connectives.And (nat.lt (k i0) n)
                                            (logic.eq bool.bool (p1 (k i0))
                                               bool.true))
                                         (logic.eq nat.nat (h (k i0)) i0)))
@@ -4649,16 +4649,16 @@ def bigop_iso :
                                    eqi:
                                    (sttfa.eps
                                       (logic.eq nat.nat (h (k i0)) i0)) =>
-                                      logic.conj
-                                         (logic.And (nat.lt (k i0) n)
+                                      connectives.conj
+                                         (connectives.And (nat.lt (k i0) n)
                                             (logic.eq bool.bool (p1 (k i0))
                                                bool.true))
                                             (logic.eq nat.nat (h (k i0)) i0)
-                                     (logic.conj
+                                     (connectives.conj
                                       (nat.lt (k i0) n)
                                                (logic.eq bool.bool
                                                   (p1 (k i0)) bool.true)
-                                        (logic.match_Or_prop
+                                        (connectives.match_Or_prop
                                            (nat.lt (k i0) n)
                                            (logic.eq nat.nat (k i0) n)
                                            (nat.lt (k i0) n)
@@ -4668,7 +4668,7 @@ def bigop_iso :
                                            (eqki:
                                             (sttfa.eps
                                                (logic.eq nat.nat (k i0) n)) =>
-                                            logic.falsity (nat.lt (k i0) n)
+                                            connectives.falsity (nat.lt (k i0) n)
                                               (logic.absurd
                                                  (logic.eq bool.bool
                                                     bool.true bool.false)
