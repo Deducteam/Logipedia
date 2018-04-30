@@ -11,17 +11,14 @@ let sanitize_name : string -> string =
 
  let sanitize_name_pvs : string -> string =
   fun n ->
-    if String.equal n "True" then "sttfa_True"
-    else if String.equal n "False" then "sttfa_False"
-    else if String.equal n "And" then "sttfa_And" 
-    else if String.equal n "Or" then "sttfa_Or" 
-    else if
-        String.equal n "Not" 
-     || String.equal n "ex" || String.equal n "true" || String.equal n "false"
-     || String.equal n "bool" || String.equal n "nat"
-     || String.equal n "fact"
-     || String.equal n "O"
-     || String.equal (String.sub n 0 1) "_" then
+    if String.equal n "True" || String.equal n "False"
+       || String.equal n "And" || String.equal n "Or"
+       || String.equal n "Not" || String.equal n "ex"
+       || String.equal n "true" || String.equal n "false"
+       || String.equal n "bool" || String.equal n "nat"
+       || String.equal n "fact"
+       || String.equal n "O"
+       || String.equal (String.sub n 0 1) "_" then
   "sttfa_" ^ n
  else n
 
@@ -128,7 +125,11 @@ let print__te_pvs : out_channel ->_te -> unit =
                        print_stack oc stack
     | AbsTy (x, t) -> Printf.fprintf oc "%a" (print []) t;
                       print_stack oc stack
-    (*    | Cst ((_,"Not"), []) -> print_not oc stack *)
+    | Cst ((_,"True"), []) -> output_string oc "TRUE";
+                              print_stack oc stack
+    | Cst ((_,"False"), []) -> output_string oc "FALSE";
+                               print_stack oc stack
+    | Cst ((_,"Not"), []) -> print_not oc stack 
     | Cst ((_,"And"), []) -> print_and oc stack
     | Cst ((_,"Or"), []) -> print_or oc stack
     | Cst ((_,"ex"), [t]) -> print_ex oc t stack
@@ -137,16 +138,15 @@ let print__te_pvs : out_channel ->_te -> unit =
       print_typeargs oc l;
       print_stack oc stack
 
-(*  and print_not oc stack =
+and print_not oc stack =
       match stack with
       | a::s' -> 
           Printf.fprintf oc "(NOT (%a))" (print []) a;
           print_stack oc s'
       | _ ->     output_string oc  "(LAMBDA(x:bool):(NOT x))";
         print_stack oc stack
-*)
 
-  and print_and oc stack =
+and print_and oc stack =
       match stack with
         | [] ->  output_string oc  "(LAMBDA(x:bool)(y:bool):(x AND y))"
         | a::[] -> 

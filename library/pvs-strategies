@@ -11,7 +11,7 @@
 
 (defstep sttfa-lemma (name)
   (then@ (lemma name)
-         (hide-all-but (-1 1))
+;;         (hide-all-but (-1 1))
 	 (sttfa-skolem))
   "[sttfa] Lemma"
   "[sttfa] Applying Lemma ~a")
@@ -22,7 +22,9 @@
    (spread
     (case cut1 cut2)
     ((ground)
-     (then@ (hide 2) step)
+     (then@
+;;     (hide 2)
+     step)
      (ground))))
    "[sttfa] ImplI")
 
@@ -32,8 +34,12 @@
    (spread
     (case cut1 cut2)
     ((ground)
-     (then@ (hide 2) step1)
-     (then@ (hide 2) step2))))
+     (then@
+;;     (hide 2)
+     step1)
+     (then@
+     ;;(hide 2)
+     step2))))
   "[sttfa] ImplE")
 
 (defstep sttfa-forall-i (name)
@@ -47,7 +53,9 @@
    (spread
     (case cut)
     ((then@ (inst -1 te) (beta))
-     (then@ (hide 2) step))))
+     (then@
+     ;;(hide 2)
+     step))))
   "[sttfa] ForallE")
 
 (defstrat sttfa-conv (cut left right step)
@@ -55,7 +63,7 @@
    (comment "Conv")
    (spread
     (case cut)
-    ((then@ (hide-all-but (-1 1))
+    ((then@ ll (hide-all-but (-1 1))
 	    ;; (expand* left)
 	    (let ((steps (loop for name in left collect `(expand ,name)))
 		  (steps (cons 'then steps)))
@@ -65,7 +73,9 @@
 		  (steps (cons 'then steps)))
 	      (then steps))
 	    (beta))
-     (then@ (hide 2) step))))
+     (then@
+;;     (hide 2)
+     step))))
   "[sttfa] Conv")
 
 (defun var-for-type (type)
