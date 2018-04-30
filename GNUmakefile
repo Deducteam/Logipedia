@@ -37,9 +37,15 @@ LIBDKS = $(wildcard library/*.dk)
 
 library: $(LIBDKS:.dk=.dko)
 
-library/%.dko library/%.stt library/%.tex library/%.pvs: library/%.dk .library_depend main.native
-	@echo "[STT,TEX,PVS] $<"
+library/%.dko:  library/%.dk .library_depend main.native
+	@echo "[PVS] $<"
 	@./main.native -I library -I theories $<
+	@echo "[SUMMARY]"
+	proveit --importchain -sf $@
+
+library/%.summary: library/%.pvs
+	@echo "[SUMMARY]"
+	proveit --importchain -sf $<
 
 library/%.pdf: library/%.tex
 	@echo "[PDF] $@"
@@ -82,4 +88,4 @@ distclean: clean
 	@find . -name "*.bin" -exec rm {} \;
 	@find . -name "*.dep" -exec rm {} \;
 
-.PHONY: all clean distclean examples library
+.PHONY: all clean distclean examples library pvs

@@ -5,7 +5,7 @@ open Parser
 open Rule
 open Ast
 
-let system : Export.system ref = ref (Export.(`Coq))
+let system : Export.system ref = ref (Export.(`Pvs))
 
 let set_export s =
   if s = "coq" then
@@ -22,6 +22,7 @@ let set_export s =
     system := Export.(`Ascii)
   else
     failwith (Format.sprintf "%s is not among the supported systems@." s)
+
 let handle_entry md e =
   match e with
   | Decl (lc, id, st, ty) -> (
@@ -60,8 +61,7 @@ let run_on_file file =
 let _ =
   let options =
     Arg.align
-      [ ("-I", Arg.String Basic.add_path, " Add folder to Dedukti path")
-      ; ("-to", Arg.String set_export, "Set the exporting system. Currently [ascii|coq|ot|matita|tex|pvs] are supported" ) ]
+      [ ("-I", Arg.String Basic.add_path, " Add folder to Dedukti path") ]
   in
   let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
   let usage = usage ^ "Available options:" in
