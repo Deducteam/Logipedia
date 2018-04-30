@@ -49,3 +49,5 @@ let dep_of_entry e =
   | Print (_, _) -> QSet.empty
   | Name (_, _) -> QSet.empty
   | Require (_, md) -> add_dep md
+
+let dep_of_entry (md:mident) e = QSet.remove (string_of_mident md) (dep_of_entry e)
