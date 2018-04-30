@@ -19,11 +19,11 @@
    (comment "ImplI")
    (spread
     (case cut1 cut2)
-    ((prop)
+    ((ground)
      (then@
 ;;     (hide 2)
      step)
-     (prop))))
+     (ground))))
    "[sttfa] ImplI")
 
 (defstrat sttfa-impl-e (cut1 cut2 step1 step2)
@@ -31,7 +31,7 @@
    (comment "ImplE")
    (spread
     (case cut1 cut2)
-    ((prop)
+    ((ground)
      (then@
 ;;     (hide 2)
      step1)
@@ -50,7 +50,7 @@
    (comment "ForallE")
    (spread
     (case cut)
-    ((then@ (inst -1 te) (beta))
+    ((then@ (inst -1 te) (beta) (grind))
      (then@
      ;;(hide 2)
      step))))
@@ -61,10 +61,11 @@
    (comment "Conv")
    (spread
     (case cut)
-    ((then@ ll (hide-all-but (-1 1))
+    ((then@
+;;            (hide-all-but (-1 1))
 	    (expand* :names left)
 	    (expand* :names right)
-	    (beta))
+	    (beta)(ground))
      (then@
 ;;     (hide 2)
      step))))

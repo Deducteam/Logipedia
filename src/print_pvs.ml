@@ -127,8 +127,8 @@ let print__te_pvs : out_channel ->_te -> unit =
                       print_stack oc stack
     | Cst ((_,"True"), []) -> output_string oc "TRUE";
                               print_stack oc stack
-(*    | Cst ((_,"False"), []) -> output_string oc "FALSE";
-                               print_stack oc stack  *)
+    | Cst ((_,"False"), []) -> output_string oc "FALSE";
+                               print_stack oc stack 
     | Cst ((_,"Not"), []) -> print_not oc stack 
     | Cst ((_,"And"), []) -> print_and oc stack
     | Cst ((_,"Or"), []) -> print_or oc stack
