@@ -215,7 +215,7 @@ let conclusion_pvs : proof -> te =
   j.thm
 
 
-exception Error 
+exception Error
 
 let decompose_implication = fun p -> match p with
   | (Te (Impl(a,b))) -> (a,b)
@@ -235,9 +235,9 @@ let rec print_name_list = fun oc -> fun l -> match l with
   | x::l' -> (Printf.fprintf oc "\"";
               print_name oc x;
               Printf.fprintf oc "\" ";
-              print_name_list oc l')             
-             
-          
+              print_name_list oc l')
+
+
 let print_proof_pvs : out_channel -> proof -> unit =
   fun oc prf ->
 (*    let rec print_trace_right oc = fun rewrites ->
@@ -248,7 +248,7 @@ let print_proof_pvs : out_channel -> proof -> unit =
       in *)
     let rec print acc oc prf =
     match prf with
-      | Assume(j)         -> Printf.fprintf oc "%%|- (propax)" 
+      | Assume(j)         -> Printf.fprintf oc "%%|- (propax)"
     | Lemma((q,s),j)    -> Printf.fprintf oc "%%|- (sttfa-lemma \"%s_sttfa.%s%a\")" q s print_type_list_b_pvs acc
     | Conv(j,p,trace)         ->
       let pc = conclusion_pvs p in
@@ -265,11 +265,11 @@ let print_proof_pvs : out_channel -> proof -> unit =
         print_te_pvs pc
         print_te_pvs qc
         (print acc) q
-        (print acc) p 
+        (print acc) p
     | ImplI(j,p)        ->
       let (a,b) = decompose_implication j.thm
       in Printf.fprintf oc "%%|- (sttfa-impl-i \"%a\" \"%a\"\n%a)"
-        print__te_pvs a print__te_pvs b (print acc) p 
+        print__te_pvs a print__te_pvs b (print acc) p
 
     | ForallE(j,p,_te)  ->
       let pc = conclusion_pvs p
@@ -280,59 +280,60 @@ let print_proof_pvs : out_channel -> proof -> unit =
     | ForallI(j,p,n)      -> Printf.fprintf oc "%%|- (then@ (sttfa-forall-i \"%s\")\n%a)" (sanitize_name_pvs n) (print acc) p
     | ForallPE(j,p,_ty)   -> print (_ty::acc) oc p
     | ForallPI(j,p,n)     -> print acc oc p
-  in 
-  print [] oc prf; 
+  in
+  print [] oc prf;
   Printf.fprintf oc "\n"
 
 
 let print_ast_pvs : out_channel -> string -> ast -> unit =
  fun oc prefix ast ->
-  let prefix = Filename.basename prefix in
-  let line fmt = Printf.fprintf oc (fmt ^^ "\n") in
-  let print_item it =
-    match it with
-    | TyOpDef (op, ar) -> Printf.fprintf oc "%a : TYPE+" print_name op;
-      line "";
-      line ""
-    | Parameter (n, ty) ->
-        line "%a %a: %a" print_name n print_prenex_ty_pvs ty print_ty_pvs ty ;
-        line ""
-    | Definition (n, ty, te) ->
-        line "%a %a : %a = %a" print_name n print_prenex_ty_pvs ty print_ty_pvs
-          ty print_te_pvs te ;
-        line ""
-    | Axiom (n, te) ->
-        line "%a %a : AXIOM %a" print_name n print_prenex_te_pvs te
-          print_te_pvs te ;
-        line ""
-    | Theorem (n, te, prf) ->
-        line "%a %a : LEMMA %a" print_name n print_prenex_te_pvs te
-          print_te_pvs te ;
-        line "" ;
-        line "%%|- %a : PROOF" print_name n ;
-        print_proof_pvs oc prf ;
-        line "%%|- QED" ;
-        line ""
-  in
-  let pf = "_sttfa" in
-  let postfix s = s^pf in
-  line "%s : THEORY" (postfix prefix);
-  line "BEGIN";
-  (*  line "%%|- *TCC* : PROOF (sttfa-nonemptiness)  QED"; *)
-  let deps oc deps =
-    let l = QSet.elements (QSet.remove "sttfa" deps) in
-    let l = List.map postfix l in
-    let rec deps oc l =
-        match l with
-        | [] -> assert false
-        | [x] -> Printf.fprintf oc "%s" x
-        | x::t -> Printf.fprintf oc "%s,%a" x deps t
-    in
-    match l with
-    | [] -> ()
-    | _ -> line "IMPORTING %a" deps l
-  in
-  deps oc ast.dep ;
-  line "";
-  List.iter print_item ast.items;
-  line "END %s_sttfa" prefix
+   let prefix = Filename.basename prefix in
+   current_module := ast.md ;
+   let line fmt = Printf.fprintf oc (fmt ^^ "\n") in
+   let print_item it =
+     match it with
+     | TyOpDef (op, ar) -> Printf.fprintf oc "%a : TYPE+" print_name op;
+       line "";
+       line ""
+     | Parameter (n, ty) ->
+       line "%a %a: %a" print_name n print_prenex_ty_pvs ty print_ty_pvs ty ;
+       line ""
+     | Definition (n, ty, te) ->
+       line "%a %a : %a = %a" print_name n print_prenex_ty_pvs ty print_ty_pvs
+         ty print_te_pvs te ;
+       line ""
+     | Axiom (n, te) ->
+       line "%a %a : AXIOM %a" print_name n print_prenex_te_pvs te
+         print_te_pvs te ;
+       line ""
+     | Theorem (n, te, prf) ->
+       line "%a %a : LEMMA %a" print_name n print_prenex_te_pvs te
+         print_te_pvs te ;
+       line "" ;
+       line "%%|- %a : PROOF" print_name n ;
+       print_proof_pvs oc prf ;
+       line "%%|- QED" ;
+       line ""
+   in
+   let pf = "_sttfa" in
+   let postfix s = s^pf in
+   line "%s : THEORY" (postfix prefix);
+   line "BEGIN";
+   (*  line "%%|- *TCC* : PROOF (sttfa-nonemptiness)  QED"; *)
+   let deps oc deps =
+     let l = QSet.elements (QSet.remove "sttfa" deps) in
+     let l = List.map postfix l in
+     let rec deps oc l =
+       match l with
+       | [] -> assert false
+       | [x] -> Printf.fprintf oc "%s" x
+       | x::t -> Printf.fprintf oc "%s,%a" x deps t
+     in
+     match l with
+     | [] -> ()
+     | _ -> line "IMPORTING %a" deps l
+   in
+   deps oc ast.dep ;
+   line "";
+   List.iter print_item ast.items;
+   line "END %s_sttfa" prefix

@@ -7,9 +7,9 @@ all: main.native
 
 main.native: _build/src/main.native
 
-_build/src/main.native: $(wildcard src/*.ml src/*.mli)
+_build/src/main.native: $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli)
 	@echo "[OPT] main.native"
-	@ocamlbuild -quiet -package dedukti.kernel -package dedukti.parser src/main.native
+	@ocamlbuild -quiet -Is src/,src/export -package dedukti.kernel -package dedukti.parser src/main.native
 
 #### Producing the theory file #####################################
 

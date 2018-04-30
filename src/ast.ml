@@ -73,4 +73,7 @@ module QSet = Set.Make (struct
   let compare = compare
 end)
 
-type ast = {dep: QSet.t; items: item list}
+type ast = {
+  md   : string;
+  dep  : QSet.t;
+  items: item list}

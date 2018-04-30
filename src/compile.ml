@@ -297,9 +297,7 @@ module Tracer = struct
         (* UGLY *) )
     | _, App (_tel, _) -> (`Right, of_name (get_cst _tel))
     | App (_tel, _), _ -> (`Left, of_name (get_cst _tel))
-    | _ ->
-        Printf.printf "l:%a\nr:%a\n" Print_pvs.print__te_pvs left Print_pvs.print__te_pvs right ;
-        failwith "todo2"
+    | _ -> failwith "todo2"
 
 
   let rec compare_term left right =

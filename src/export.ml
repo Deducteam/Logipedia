@@ -1,11 +1,18 @@
-type export = [`Coq | `Matita | `Pvs | `Latex | `Ascii | `OpenTheory ]
+type system = [`Coq | `Matita | `Pvs | `Latex | `Ascii | `OpenTheory ]
 
 module type E =
 sig
-  val export_ast : Format.formatter -> Ast.ast -> unit
+  val extension: string
+  val print_ast : out_channel -> string -> Ast.ast -> unit
 end
 
-type systems_infos =
-  {
-    extension : string
-  }
+module PVS : E =
+struct
+  let extension = "pvs"
+  let print_ast = Pvs.print_ast_pvs
+end
+
+let of_system : system -> (module E) = fun sys ->
+  match sys with
+  | `Pvs -> (module PVS)
+  | _ -> failwith "not implemented yet"
