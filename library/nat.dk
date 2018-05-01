@@ -33,7 +33,7 @@ axiom_match_nat_type_O :
            sttfa.forall (sttfa.arrow nat.nat return_type)
              (case_S:
               (sttfa.etap (sttfa.p (sttfa.arrow nat.nat return_type))) =>
-              leibniz.equal return_type
+              connectives.equal return_type
                 (nat.match_nat_type return_type case_O case_S nat.O) case_O)))).
 
 def eq_match_nat_type_O :
@@ -50,7 +50,7 @@ def eq_match_nat_type_O :
 return_type : sttfa.type =>
 case_O:(sttfa.etap (sttfa.p return_type)) =>
 case_S:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat return_type))) =>
-leibniz.equal_leibniz return_type (nat.match_nat_type return_type case_O case_S nat.O) case_O (axiom_match_nat_type_O return_type case_O case_S).
+connectives.equal_leibniz return_type (nat.match_nat_type return_type case_O case_S nat.O) case_O (axiom_match_nat_type_O return_type case_O case_S).
 
 def sym_eq_match_nat_type_O :
   sttfa.eps
@@ -82,7 +82,7 @@ axiom_match_nat_type_S :
               (sttfa.etap (sttfa.p (sttfa.arrow nat.nat return_type))) =>
               sttfa.forall nat.nat
                 (n:(sttfa.etap (sttfa.p nat.nat)) =>
-                 leibniz.equal return_type
+                 connectives.equal return_type
                    (nat.match_nat_type return_type case_O case_S (nat.S n))
                    (case_S n)))))).
 
@@ -104,7 +104,7 @@ return_type : sttfa.type =>
 case_O:(sttfa.etap (sttfa.p return_type)) =>
 case_S:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat return_type))) =>
 n : sttfa.etap (sttfa.p nat.nat) =>
-leibniz.equal_leibniz return_type (nat.match_nat_type return_type case_O case_S (nat.S n))
+connectives.equal_leibniz return_type (nat.match_nat_type return_type case_O case_S (nat.S n))
                    (case_S n) (axiom_match_nat_type_S return_type case_O case_S n).
 
 def sym_eq_match_nat_type_S :
@@ -143,7 +143,7 @@ axiom_filter_nat_type_O :
        (return_type:sttfa.type =>
         sttfa.forall (sttfa.arrow nat.nat return_type)
           (return:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat return_type))) =>
-          leibniz.equal return_type
+          connectives.equal return_type
              (nat.filter_nat_type return_type return nat.O) (return nat.O)))).
 
 def eq_filter_nat_type_O :
@@ -156,7 +156,7 @@ def eq_filter_nat_type_O :
              (nat.filter_nat_type return_type return nat.O) (return nat.O)))) :=
 return_type : sttfa.type =>
 return : (sttfa.etap (sttfa.p (sttfa.arrow nat.nat return_type))) =>
-leibniz.equal_leibniz return_type (nat.filter_nat_type return_type return nat.O) (return nat.O) (axiom_filter_nat_type_O return_type return).
+connectives.equal_leibniz return_type (nat.filter_nat_type return_type return nat.O) (return nat.O) (axiom_filter_nat_type_O return_type return).
 
 def sym_eq_filter_nat_type_O :
   sttfa.eps
@@ -181,7 +181,7 @@ axiom_filter_nat_type_S :
           (return:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat return_type))) =>
            sttfa.forall nat.nat
              (n:(sttfa.etap (sttfa.p nat.nat)) =>
-              leibniz.equal return_type
+              connectives.equal return_type
                 (nat.filter_nat_type return_type return (nat.S n))
                 (return (nat.S n)))))).
 
@@ -199,7 +199,7 @@ def eq_filter_nat_type_S :
 return_type : sttfa.type =>
 return : (sttfa.etap (sttfa.p (sttfa.arrow nat.nat return_type))) =>
 n : (sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.equal_leibniz return_type (nat.filter_nat_type return_type return (nat.S n)) (return (nat.S n)) (axiom_filter_nat_type_S return_type return n).
+connectives.equal_leibniz return_type (nat.filter_nat_type return_type return (nat.S n)) (return (nat.S n)) (axiom_filter_nat_type_S return_type return n).
 
 def sym_eq_filter_nat_type_S :
   sttfa.eps
@@ -303,7 +303,7 @@ axiom_plus :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal (sttfa.arrow nat.nat nat.nat) (nat.plus n)
+        connectives.equal (sttfa.arrow nat.nat nat.nat) (nat.plus n)
           (nat.filter_nat_type (sttfa.arrow nat.nat nat.nat) nat.plus_body n))).
 
 def eq_plus :
@@ -313,7 +313,7 @@ def eq_plus :
         leibniz.leibniz (sttfa.arrow nat.nat nat.nat) (nat.plus n)
           (nat.filter_nat_type (sttfa.arrow nat.nat nat.nat) nat.plus_body n))) :=
 n : (sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.equal_leibniz (sttfa.arrow nat.nat nat.nat) (nat.plus n)
+connectives.equal_leibniz (sttfa.arrow nat.nat nat.nat) (nat.plus n)
           (nat.filter_nat_type (sttfa.arrow nat.nat nat.nat) nat.plus_body n) (axiom_plus n).
 
 def sym_eq_plus :
@@ -331,14 +331,14 @@ def sym_eq_plus :
 
 axiom_plus_body_O :
   sttfa.eps
-    (leibniz.equal (sttfa.arrow nat.nat nat.nat) (nat.plus_body nat.O)
+    (connectives.equal (sttfa.arrow nat.nat nat.nat) (nat.plus_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) => m)).
 
 def eq_plus_body_O :
   sttfa.eps
     (leibniz.leibniz (sttfa.arrow nat.nat nat.nat) (nat.plus_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) => m)) :=
-leibniz.equal_leibniz (sttfa.arrow nat.nat nat.nat) (nat.plus_body nat.O)
+connectives.equal_leibniz (sttfa.arrow nat.nat nat.nat) (nat.plus_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) => m) (axiom_plus_body_O).
 
 def sym_eq_plus_body_O :
@@ -353,7 +353,7 @@ axiom_plus_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal (sttfa.arrow nat.nat nat.nat)
+        connectives.equal (sttfa.arrow nat.nat nat.nat)
           (nat.plus_body (nat.S n))
           (m:(sttfa.etap (sttfa.p nat.nat)) => nat.S (nat.plus n m)))).
 
@@ -365,7 +365,7 @@ def eq_plus_body_S :
           (nat.plus_body (nat.S n))
           (m:(sttfa.etap (sttfa.p nat.nat)) => nat.S (nat.plus n m)))) :=
 n : (sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.equal_leibniz (sttfa.arrow nat.nat nat.nat)
+connectives.equal_leibniz (sttfa.arrow nat.nat nat.nat)
           (nat.plus_body (nat.S n))
           (m:(sttfa.etap (sttfa.p nat.nat)) => nat.S (nat.plus n m)) (axiom_plus_body_S n).
 
@@ -392,7 +392,7 @@ axiom_times :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal (sttfa.arrow nat.nat nat.nat) (nat.times n)
+        connectives.equal (sttfa.arrow nat.nat nat.nat) (nat.times n)
           (nat.filter_nat_type (sttfa.arrow nat.nat nat.nat) nat.times_body n))).
 
 def eq_times :
@@ -402,7 +402,7 @@ def eq_times :
         leibniz.leibniz (sttfa.arrow nat.nat nat.nat) (nat.times n)
           (nat.filter_nat_type (sttfa.arrow nat.nat nat.nat) nat.times_body n))) :=
 n : (sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.equal_leibniz (sttfa.arrow nat.nat nat.nat) (nat.times n)
+connectives.equal_leibniz (sttfa.arrow nat.nat nat.nat) (nat.times n)
           (nat.filter_nat_type (sttfa.arrow nat.nat nat.nat) nat.times_body n) (axiom_times n).
 
 def sym_eq_times :
@@ -420,14 +420,14 @@ def sym_eq_times :
 
 axiom_times_body_O :
   sttfa.eps
-    (leibniz.equal (sttfa.arrow nat.nat nat.nat) (nat.times_body nat.O)
+    (connectives.equal (sttfa.arrow nat.nat nat.nat) (nat.times_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) => nat.O)).
 
 def eq_times_body_O :
   sttfa.eps
     (leibniz.leibniz (sttfa.arrow nat.nat nat.nat) (nat.times_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) => nat.O)) :=
-leibniz.equal_leibniz (sttfa.arrow nat.nat nat.nat) (nat.times_body nat.O)
+connectives.equal_leibniz (sttfa.arrow nat.nat nat.nat) (nat.times_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) => nat.O) (axiom_times_body_O).
 
 def sym_eq_times_body_O :
@@ -442,7 +442,7 @@ axiom_times_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal (sttfa.arrow nat.nat nat.nat)
+        connectives.equal (sttfa.arrow nat.nat nat.nat)
           (nat.times_body (nat.S n))
           (m:(sttfa.etap (sttfa.p nat.nat)) => nat.plus m (nat.times n m)))).
 
@@ -454,7 +454,7 @@ def eq_times_body_S :
           (nat.times_body (nat.S n))
           (m:(sttfa.etap (sttfa.p nat.nat)) => nat.plus m (nat.times n m)))) :=
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.equal_leibniz (sttfa.arrow nat.nat nat.nat)
+connectives.equal_leibniz (sttfa.arrow nat.nat nat.nat)
           (nat.times_body (nat.S n))
           (m:(sttfa.etap (sttfa.p nat.nat)) => nat.plus m (nat.times n m)) (axiom_times_body_S n).
 
@@ -481,7 +481,7 @@ axiom_minus :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal (sttfa.arrow nat.nat nat.nat) (nat.minus n)
+        connectives.equal (sttfa.arrow nat.nat nat.nat) (nat.minus n)
           (nat.filter_nat_type (sttfa.arrow nat.nat nat.nat) nat.minus_body n))).
 
 def eq_minus :
@@ -491,7 +491,7 @@ def eq_minus :
         leibniz.leibniz (sttfa.arrow nat.nat nat.nat) (nat.minus n)
           (nat.filter_nat_type (sttfa.arrow nat.nat nat.nat) nat.minus_body n))) :=
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.equal_leibniz (sttfa.arrow nat.nat nat.nat) (nat.minus n)
+connectives.equal_leibniz (sttfa.arrow nat.nat nat.nat) (nat.minus n)
           (nat.filter_nat_type (sttfa.arrow nat.nat nat.nat) nat.minus_body n) (axiom_minus n).
 
 def sym_eq_minus :
@@ -509,14 +509,14 @@ def sym_eq_minus :
 
 axiom_minus_body_O :
   sttfa.eps
-    (leibniz.equal (sttfa.arrow nat.nat nat.nat) (nat.minus_body nat.O)
+    (connectives.equal (sttfa.arrow nat.nat nat.nat) (nat.minus_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) => nat.O)).
 
 def eq_minus_body_O :
   sttfa.eps
     (leibniz.leibniz (sttfa.arrow nat.nat nat.nat) (nat.minus_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) => nat.O)) :=
-leibniz.equal_leibniz (sttfa.arrow nat.nat nat.nat) (nat.minus_body nat.O)
+connectives.equal_leibniz (sttfa.arrow nat.nat nat.nat) (nat.minus_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) => nat.O) axiom_minus_body_O.
 
 def sym_eq_minus_body_O :
@@ -531,7 +531,7 @@ axiom_minus_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal (sttfa.arrow nat.nat nat.nat)
+        connectives.equal (sttfa.arrow nat.nat nat.nat)
           (nat.minus_body (nat.S n))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            nat.match_nat_type nat.nat (nat.S n)
@@ -547,7 +547,7 @@ def eq_minus_body_S :
            nat.match_nat_type nat.nat (nat.S n)
              (q:(sttfa.etap (sttfa.p nat.nat)) => nat.minus n q) m))) :=
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.equal_leibniz (sttfa.arrow nat.nat nat.nat)
+connectives.equal_leibniz (sttfa.arrow nat.nat nat.nat)
           (nat.minus_body (nat.S n))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            nat.match_nat_type nat.nat (nat.S n)
@@ -5392,7 +5392,7 @@ axiom_eqb :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal (sttfa.arrow nat.nat bool.bool) (nat.eqb n)
+        connectives.equal (sttfa.arrow nat.nat bool.bool) (nat.eqb n)
           (nat.filter_nat_type (sttfa.arrow nat.nat bool.bool) nat.eqb_body n))).
 
 def eq_eqb :
@@ -5402,7 +5402,7 @@ def eq_eqb :
         leibniz.leibniz (sttfa.arrow nat.nat bool.bool) (nat.eqb n)
           (nat.filter_nat_type (sttfa.arrow nat.nat bool.bool) nat.eqb_body n))) :=
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.equal_leibniz (sttfa.arrow nat.nat bool.bool) (nat.eqb n)
+connectives.equal_leibniz (sttfa.arrow nat.nat bool.bool) (nat.eqb n)
           (nat.filter_nat_type (sttfa.arrow nat.nat bool.bool) nat.eqb_body n) (axiom_eqb n).
 
 def sym_eq_eqb :
@@ -5420,7 +5420,7 @@ def sym_eq_eqb :
 
 axiom_eqb_body_O :
   sttfa.eps
-    (leibniz.equal (sttfa.arrow nat.nat bool.bool) (nat.eqb_body nat.O)
+    (connectives.equal (sttfa.arrow nat.nat bool.bool) (nat.eqb_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         nat.match_nat_type bool.bool bool.true
           (q:(sttfa.etap (sttfa.p nat.nat)) => bool.false) m)).
@@ -5431,7 +5431,7 @@ def eq_eqb_body_O :
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         nat.match_nat_type bool.bool bool.true
           (q:(sttfa.etap (sttfa.p nat.nat)) => bool.false) m)) :=
-leibniz.equal_leibniz (sttfa.arrow nat.nat bool.bool) (nat.eqb_body nat.O)
+connectives.equal_leibniz (sttfa.arrow nat.nat bool.bool) (nat.eqb_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) =>
         nat.match_nat_type bool.bool bool.true
           (q:(sttfa.etap (sttfa.p nat.nat)) => bool.false) m) axiom_eqb_body_O.
@@ -5453,7 +5453,7 @@ axiom_eqb_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal (sttfa.arrow nat.nat bool.bool)
+        connectives.equal (sttfa.arrow nat.nat bool.bool)
           (nat.eqb_body (nat.S n))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            nat.match_nat_type bool.bool bool.false
@@ -5469,7 +5469,7 @@ def eq_eqb_body_S :
            nat.match_nat_type bool.bool bool.false
              (q:(sttfa.etap (sttfa.p nat.nat)) => nat.eqb n q) m))) :=
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.equal_leibniz (sttfa.arrow nat.nat bool.bool)
+connectives.equal_leibniz (sttfa.arrow nat.nat bool.bool)
           (nat.eqb_body (nat.S n))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            nat.match_nat_type bool.bool bool.false
@@ -6004,7 +6004,7 @@ axiom_leb :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal (sttfa.arrow nat.nat bool.bool) (nat.leb n)
+        connectives.equal (sttfa.arrow nat.nat bool.bool) (nat.leb n)
           (nat.filter_nat_type (sttfa.arrow nat.nat bool.bool) nat.leb_body n))).
 
 def eq_leb :
@@ -6014,7 +6014,7 @@ def eq_leb :
         leibniz.leibniz (sttfa.arrow nat.nat bool.bool) (nat.leb n)
           (nat.filter_nat_type (sttfa.arrow nat.nat bool.bool) nat.leb_body n))) :=
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.equal_leibniz (sttfa.arrow nat.nat bool.bool) (nat.leb n)
+connectives.equal_leibniz (sttfa.arrow nat.nat bool.bool) (nat.leb n)
           (nat.filter_nat_type (sttfa.arrow nat.nat bool.bool) nat.leb_body n) (axiom_leb n).
 
 def sym_eq_leb :
@@ -6032,14 +6032,14 @@ def sym_eq_leb :
 
 axiom_leb_body_O :
   sttfa.eps
-    (leibniz.equal (sttfa.arrow nat.nat bool.bool) (nat.leb_body nat.O)
+    (connectives.equal (sttfa.arrow nat.nat bool.bool) (nat.leb_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) => bool.true)).
 
 def eq_leb_body_O :
   sttfa.eps
     (leibniz.leibniz (sttfa.arrow nat.nat bool.bool) (nat.leb_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) => bool.true)) :=
-leibniz.equal_leibniz (sttfa.arrow nat.nat bool.bool) (nat.leb_body nat.O)
+connectives.equal_leibniz (sttfa.arrow nat.nat bool.bool) (nat.leb_body nat.O)
        (m:(sttfa.etap (sttfa.p nat.nat)) => bool.true) axiom_leb_body_O.
 
 def sym_eq_leb_body_O :
@@ -6054,7 +6054,7 @@ axiom_leb_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal (sttfa.arrow nat.nat bool.bool)
+        connectives.equal (sttfa.arrow nat.nat bool.bool)
           (nat.leb_body (nat.S n))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            nat.match_nat_type bool.bool bool.false
@@ -6070,7 +6070,7 @@ def eq_leb_body_S :
            nat.match_nat_type bool.bool bool.false
              (q:(sttfa.etap (sttfa.p nat.nat)) => nat.leb n q) m))) :=
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.equal_leibniz (sttfa.arrow nat.nat bool.bool)
+connectives.equal_leibniz (sttfa.arrow nat.nat bool.bool)
           (nat.leb_body (nat.S n))
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
            nat.match_nat_type bool.bool bool.false

@@ -10,7 +10,7 @@ axiom_exp :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           leibniz.equal nat.nat (exp.exp n m)
+           connectives.equal nat.nat (exp.exp n m)
              (nat.filter_nat_type nat.nat (exp.exp_body n) m)))).
 
 def eq_exp :
@@ -23,7 +23,7 @@ def eq_exp :
              (nat.filter_nat_type nat.nat (exp.exp_body n) m)))) :=
 n:(sttfa.etap (sttfa.p nat.nat)) =>
 m:(sttfa.etap (sttfa.p nat.nat)) =>
-           leibniz.equal_leibniz nat.nat (exp.exp n m)
+           connectives.equal_leibniz nat.nat (exp.exp n m)
              (nat.filter_nat_type nat.nat (exp.exp_body n) m) (axiom_exp n m).
 
 def sym_eq_exp :
@@ -44,7 +44,7 @@ axiom_exp_body_O :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal nat.nat (exp.exp_body n nat.O) (nat.S nat.O))).
+        connectives.equal nat.nat (exp.exp_body n nat.O) (nat.S nat.O))).
 
 def eq_exp_body_O :
   sttfa.eps
@@ -52,7 +52,7 @@ def eq_exp_body_O :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         leibniz.leibniz nat.nat (exp.exp_body n nat.O) (nat.S nat.O))) :=
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal_leibniz nat.nat (exp.exp_body n nat.O) (nat.S nat.O) (axiom_exp_body_O n).
+        connectives.equal_leibniz nat.nat (exp.exp_body n nat.O) (nat.S nat.O) (axiom_exp_body_O n).
 
 def sym_eq_exp_body_O :
   sttfa.eps
@@ -70,7 +70,7 @@ axiom_exp_body_S :
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
         sttfa.forall nat.nat
           (m:(sttfa.etap (sttfa.p nat.nat)) =>
-           leibniz.equal nat.nat (exp.exp_body n (nat.S m))
+           connectives.equal nat.nat (exp.exp_body n (nat.S m))
              (nat.times (exp.exp n m) n)))).
 
 def eq_exp_body_S :
@@ -83,7 +83,7 @@ def eq_exp_body_S :
              (nat.times (exp.exp n m) n)))) :=
 n:(sttfa.etap (sttfa.p nat.nat)) =>
 m:(sttfa.etap (sttfa.p nat.nat)) =>
-           leibniz.equal_leibniz nat.nat (exp.exp_body n (nat.S m))
+           connectives.equal_leibniz nat.nat (exp.exp_body n (nat.S m))
              (nat.times (exp.exp n m) n) (axiom_exp_body_S n m).
 
 def sym_eq_exp_body_S :

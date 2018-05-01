@@ -1251,7 +1251,7 @@ axiom_invert_permut :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal
+        connectives.equal
           (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
              (sttfa.arrow nat.nat nat.nat)) (permutation.invert_permut n)
           (nat.filter_nat_type
@@ -1271,7 +1271,7 @@ def eq_invert_permut :
                 (sttfa.arrow nat.nat nat.nat))
              permutation.invert_permut_body n))) :=
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-leibniz.equal_leibniz           (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
+connectives.equal_leibniz           (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
              (sttfa.arrow nat.nat nat.nat)) (permutation.invert_permut n)
           (nat.filter_nat_type
              (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
@@ -1301,7 +1301,7 @@ def sym_eq_invert_permut :
 
 axiom_invert_permut_body_O :
   sttfa.eps
-    (leibniz.equal
+    (connectives.equal
        (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
           (sttfa.arrow nat.nat nat.nat))
        (permutation.invert_permut_body nat.O)
@@ -1318,7 +1318,7 @@ def eq_invert_permut_body_O :
        (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
         m:(sttfa.etap (sttfa.p nat.nat)) =>
         bool.match_bool_type nat.nat nat.O nat.O (nat.eqb m (f nat.O)))) :=
-leibniz.equal_leibniz        (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
+connectives.equal_leibniz        (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
           (sttfa.arrow nat.nat nat.nat))
        (permutation.invert_permut_body nat.O)
        (f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
@@ -1347,7 +1347,7 @@ axiom_invert_permut_body_S :
   sttfa.eps
     (sttfa.forall nat.nat
        (n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal
+        connectives.equal
           (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
              (sttfa.arrow nat.nat nat.nat))
           (permutation.invert_permut_body (nat.S n))
@@ -1369,7 +1369,7 @@ def eq_invert_permut_body_S :
            bool.match_bool_type nat.nat (nat.S n)
              (permutation.invert_permut n f m) (nat.eqb m (f (nat.S n)))))) :=
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-        leibniz.equal_leibniz
+        connectives.equal_leibniz
           (sttfa.arrow (sttfa.arrow nat.nat nat.nat)
              (sttfa.arrow nat.nat nat.nat))
           (permutation.invert_permut_body (nat.S n))

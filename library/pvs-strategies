@@ -10,6 +10,7 @@
 
 (defstep sttfa-lemma (name)
   (then@ (lemma name)
+	 (hide-all-but (-1 1))
 	 (sttfa-skolem))
   "[sttfa] Lemma"
   "[sttfa] Applying Lemma ~a")
@@ -19,11 +20,11 @@
    (comment "ImplI")
    (spread
     (case cut1 cut2)
-    ((ground)
+    ((prop)
      (then@
-;;     (hide 2)
+     (hide 2)
      step)
-     (ground))))
+     (prop))))
    "[sttfa] ImplI")
 
 (defstrat sttfa-impl-e (cut1 cut2 step1 step2)
@@ -31,12 +32,12 @@
    (comment "ImplE")
    (spread
     (case cut1 cut2)
-    ((ground)
+    ((prop)
      (then@
-;;     (hide 2)
+     (hide 2)
      step1)
      (then@
-     ;;(hide 2)
+     (hide 2)
      step2))))
   "[sttfa] ImplE")
 
@@ -50,9 +51,9 @@
    (comment "ForallE")
    (spread
     (case cut)
-    ((then@ (inst -1 te) (beta) (grind))
+    ((then@ (inst -1 te) (beta) (prop))
      (then@
-     ;;(hide 2)
+     (hide 2)
      step))))
   "[sttfa] ForallE")
 
@@ -62,12 +63,12 @@
    (spread
     (case cut)
     ((then@
-;;            (hide-all-but (-1 1))
+            (hide-all-but (-1 1))
 	    (expand* :names left)
 	    (expand* :names right)
-	    (beta)(ground))
+	    (beta)(prop))
      (then@
-;;     (hide 2)
+     (hide 2)
      step))))
   "[sttfa] Conv")
 
