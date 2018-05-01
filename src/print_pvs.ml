@@ -14,10 +14,11 @@ let sanitize_name : string -> string =
     if String.equal n "True" || String.equal n "False"
        || String.equal n "And" || String.equal n "Or"
        || String.equal n "Not" || String.equal n "ex"
+       || String.equal n "nat"
+       || String.equal n "O"   || String.equal n "S"
+       || String.equal n "bool" 
        || String.equal n "true" || String.equal n "false"
-       || String.equal n "bool" || String.equal n "nat"
-       || String.equal n "fact"
-       || String.equal n "O"
+       || String.equal n "fact" 
        || String.equal (String.sub n 0 1) "_" then
   "sttfa_" ^ n
  else n
