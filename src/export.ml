@@ -18,8 +18,15 @@ struct
   let print_ast = Coq.print_ast_coq
 end
 
+module MATITA : E =
+struct
+  let extension = "ma"
+  let print_ast = Matita.print_ast_coq
+end
+
 let of_system : system -> (module E) = fun sys ->
   match sys with
-  | `Pvs -> (module PVS)
-  | `Coq -> (module COQ)
+  | `Pvs    -> (module PVS)
+  | `Coq    -> (module COQ)
+  | `Matita -> (module MATITA)
   | _ -> failwith "not implemented yet"

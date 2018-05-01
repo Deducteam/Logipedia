@@ -37,7 +37,7 @@ LIBDKS = $(wildcard library/*.dk)
 
 library: $(LIBDKS:.dk=.dko)
 
-library/%.v library/%.pvs library/%.dko:  library/%.dk theories/sttfa.dko .library_depend main.native
+library/%.v library/%.ma library/%.pvs library/%.dko:  library/%.dk theories/sttfa.dko .library_depend main.native
 	@echo "[PVS,COQ] $<"
 	@./main.native -I library -I theories $<
 
@@ -88,6 +88,7 @@ distclean: clean
 	@find . -name "*.prf" -exec rm {} \;
 	@find . -name "*.bin" -exec rm {} \;
 	@find . -name "*.dep" -exec rm {} \;
+	@find . -name "*.ma"  -exec rm {} \;
 	@find . -name "*.v"   -exec rm {} \;
 	@find . -name "*.vo"  -exec rm {} \;
 	@find . -name "*.summary" -exec rm {} \;

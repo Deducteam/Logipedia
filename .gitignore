@@ -30,3 +30,6 @@ pvs-strategies
 *.v
 *.vo
 *.glob
+
+# MATITA files
+*.ma
