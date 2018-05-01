@@ -5,13 +5,11 @@
 	      (nms (append names (list nm))))
 	  (then@ (skolem 1 nm)
 		 (sttfa-skolem nms)))
-      (let ((stp (cons 'inst (cons -1 names))))
-	stp)))
+      (inst -1 :terms names))) 
   "[sttfa] Skolem")
 
 (defstep sttfa-lemma (name)
   (then@ (lemma name)
-;;         (hide-all-but (-1 1))
 	 (sttfa-skolem))
   "[sttfa] Lemma"
   "[sttfa] Applying Lemma ~a")
@@ -52,7 +50,7 @@
    (comment "ForallE")
    (spread
     (case cut)
-    ((then@ (inst -1 te) (beta))
+    ((then@ (inst -1 te) (beta) (grind))
      (then@
      ;;(hide 2)
      step))))
@@ -63,16 +61,11 @@
    (comment "Conv")
    (spread
     (case cut)
-    ((then@ ll (hide-all-but (-1 1))
-	    ;; (expand* left)
-	    (let ((steps (loop for name in left collect `(expand ,name)))
-		  (steps (cons 'then steps)))
-	      (then steps))
-	    ;; (expand* right)
-	    (let ((steps (loop for name in right collect `(expand ,name)))
-		  (steps (cons 'then steps)))
-	      (then steps))
-	    (beta))
+    ((then@
+;;            (hide-all-but (-1 1))
+	    (expand* :names left)
+	    (expand* :names right)
+	    (beta)(ground))
      (then@
 ;;     (hide 2)
      step))))
