@@ -49,7 +49,9 @@ library/%.summary: library/%.pvs
 SORTEDDKS = $(shell dkdep --ignore -I library -s $(LIBDKS))
 SORTEDV = $(SORTEDDKS:.dk=.v)
 coq: $(LIBDKS:.dk=.dko)
-	coqc -R library "" $(SORTEDV)
+	for file in $(SORTEDV) ; do \
+		coqc -R library "" $$file ; \
+	done
 
 matita: $(LIBDKS:.dk=.dko)
 	$(MATITAC) library/fermat.ma
