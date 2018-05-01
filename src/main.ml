@@ -39,6 +39,14 @@ let handle_entry md e =
   | _ -> failwith "Commands are not supported"
 
 
+let export_file file ast system =
+  let basename = try Filename.chop_extension file with _ -> file in
+  let (module M:Export.E) = Export.of_system system in
+  let stt_file = basename ^ "." ^ M.extension in
+  let oc = open_out stt_file in
+  M.print_ast oc basename ast ;
+  close_out oc
+
 let run_on_file file =
   let md = Env.init file in
   Confluence.initialize () ;
@@ -51,12 +59,7 @@ let run_on_file file =
   if not (Env.export ()) then
     Errors.fail dloc "Fail to export module '%a'." pp_mident md ;
   Confluence.finalize () ;
-  let (module M:Export.E) = Export.of_system !system in
-  let basename = try Filename.chop_extension file with _ -> file in
-  let stt_file = basename ^ "." ^ M.extension in
-  let oc = open_out stt_file in
-  M.print_ast oc basename ast ;
-  close_out oc
+  export_file file ast `Coq
 
 let _ =
   let options =

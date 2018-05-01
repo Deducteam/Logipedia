@@ -12,7 +12,14 @@ struct
   let print_ast = Pvs.print_ast_pvs
 end
 
+module COQ : E =
+struct
+  let extension = "v"
+  let print_ast = Coq.print_ast_coq
+end
+
 let of_system : system -> (module E) = fun sys ->
   match sys with
   | `Pvs -> (module PVS)
+  | `Coq -> (module COQ)
   | _ -> failwith "not implemented yet"

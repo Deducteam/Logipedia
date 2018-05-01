@@ -37,13 +37,18 @@ LIBDKS = $(wildcard library/*.dk)
 
 library: $(LIBDKS:.dk=.dko)
 
-library/%.pvs library/%.dko:  library/%.dk theories/sttfa.dko .library_depend main.native
-	@echo "[PVS] $<"
+library/%.v library/%.pvs library/%.dko:  library/%.dk theories/sttfa.dko .library_depend main.native
+	@echo "[PVS,COQ] $<"
 	@./main.native -I library -I theories $<
 
 library/%.summary: library/%.pvs
 	@echo "[SUMMARY]"
 	proveit --importchain -sf $<
+
+SORTEDDKS = $(shell dkdep --ignore -I library -s $(LIBDKS))
+SORTEDV = $(SORTEDDKS:.dk=.v)
+coq: $(LIBDKS:.dk=.dko)
+	coqc -R library "" $(SORTEDV)
 
 library/%.pdf: library/%.tex
 	@echo "[PDF] $@"
@@ -80,11 +85,13 @@ distclean: clean
 	@find . -name "*.pdf" -exec rm {} \;
 	@find . -name "*.tex" -exec rm {} \;
 	@find . -name "*.pvs" -exec rm {} \;
-	@find . -name "*.summary" -exec rm {} \;
-	@find . -name ".pvs_context" -exec rm {} \;
 	@find . -name "*.prf" -exec rm {} \;
 	@find . -name "*.bin" -exec rm {} \;
 	@find . -name "*.dep" -exec rm {} \;
+	@find . -name "*.v"   -exec rm {} \;
+	@find . -name "*.vo"  -exec rm {} \;
+	@find . -name "*.summary" -exec rm {} \;
+	@find . -name ".pvs_context" -exec rm {} \;
 	@cp -f ../sttfa/*.p?? library/
 
-.PHONY: all clean distclean examples library pvs
+.PHONY: all clean distclean examples library coq

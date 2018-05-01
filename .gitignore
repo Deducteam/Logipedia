@@ -17,6 +17,7 @@ _build/
 \#*\#
 .\#*
 
+# PVS files
 *.pvs
 *.prf
 *.summary
@@ -24,3 +25,8 @@ pensebete
 pvsbin/
 .pvscontext
 pvs-strategies
+
+# COQ files
+*.v
+*.vo
+*.glob
