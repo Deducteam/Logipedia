@@ -1,5 +1,6 @@
 DKCHECK = dkcheck
 DKDEP   = dkdep
+MATITAC = matitac
 
 all: main.native
 
@@ -49,6 +50,9 @@ SORTEDDKS = $(shell dkdep --ignore -I library -s $(LIBDKS))
 SORTEDV = $(SORTEDDKS:.dk=.v)
 coq: $(LIBDKS:.dk=.dko)
 	coqc -R library "" $(SORTEDV)
+
+matita: $(LIBDKS:.dk=.dko)
+	$(MATITAC) library/fermat.ma
 
 library/%.pdf: library/%.tex
 	@echo "[PDF] $@"
