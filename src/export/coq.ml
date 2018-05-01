@@ -37,7 +37,7 @@ let rec print__ty oc = function
   | Arrow(_tyl,_tyr) ->
     Printf.fprintf oc "(%a) -> %a" print__ty _tyl print__ty _tyr
   | TyOp(tyOp, _tys) ->
-    Printf.fprintf oc "%a %a" print_name tyOp (print_list " " print__ty) _tys
+    Printf.fprintf oc "(%a) %a" print_name tyOp (print_list " " print__ty) _tys
   | Prop -> Printf.fprintf oc "Prop"
 
 let rec print_ty oc = function
@@ -51,7 +51,7 @@ let rec print__te oc = function
   | Abs(var,_ty,_te) ->
     Printf.fprintf oc "fun (%a:%a) => %a" print_var var print__ty _ty print__te _te
   | App(_tel,_ter) ->
-    Printf.fprintf oc "%a (%a)" print__te _tel print__te _ter
+    Printf.fprintf oc "(%a) (%a)" print__te _tel print__te _ter
   | Forall(var,_ty,_te) ->
     Printf.fprintf oc "forall (%a:%a), %a" print_var var print__ty _ty print__te _te
   | Impl(_tel,_ter) ->
@@ -59,14 +59,41 @@ let rec print__te oc = function
   | AbsTy(var, _te) ->
     Printf.fprintf oc "fun (%a:Type) => %a" print_var var print__te _te
   | Cst(cst, _tys) ->
-    Printf.fprintf oc "%a %a" print_name cst (print_list " " print__ty) _tys
+    Printf.fprintf oc "(%a) %a" print_name cst (print_list " " print__ty) _tys
 
 let rec print_te oc = function
   | ForallP(var,te) ->
     Printf.fprintf oc "forall %a, %a" print_var var print_te te
   | Te(_te) -> print__te oc _te
 
-let print_proof oc prf = failwith "todo"
+let judgment_of = function
+  | Assume(j,_)     -> j
+  | Lemma(_,j)      -> j
+  | Conv(j,_,_)     -> j
+  | ImplE(j,_,_)    -> j
+  | ImplI(j,_,_)    -> j
+  | ForallE(j,_,_)  -> j
+  | ForallI(j,_,_)  -> j
+  | ForallPE(j,_,_) -> j
+  | ForallPI(j,_,_) -> j
+
+let rec print_proof oc = function
+  | Assume(j,var) -> Printf.fprintf oc "%a" print_var var
+  | Lemma(name,j) -> Printf.fprintf oc "%a" print_name name
+  | Conv(_,proof,_) -> Printf.fprintf oc "%a" print_proof proof
+  | ImplE(_,left,right) -> Printf.fprintf oc "(%a) (%a)" print_proof left print_proof right
+  | ImplI(j,proof,var) ->
+    let j' = judgment_of proof in
+    let _,_te = TeSet.choose (TeSet.filter (fun (x,te) -> if x = var then true else false) j'.hyp) in
+    Printf.fprintf oc "fun (%a:%a) => (%a)" print_var var print__te _te print_proof proof
+  | ForallE(_,proof,_te) -> Printf.fprintf oc "(%a) (%a)" print_proof proof print__te _te
+  | ForallI(j,proof,var) ->
+    let j' = judgment_of proof in
+    let _,_ty = List.find (fun (x,_ty) -> if x = var then true else false) j'.te in
+    Printf.fprintf oc "fun (%a:%a) => %a" print_var var print__ty _ty print_proof proof
+  | ForallPE(_,proof,_ty) -> Printf.fprintf oc "(%a) (%a)" print_proof proof print__ty _ty
+  | ForallPI(_,proof,var) ->
+    Printf.fprintf oc "fun (%a:Type) => %a" print_var var print_proof proof
 
 let print_item oc = function
   | Parameter(name,ty) ->
@@ -76,7 +103,8 @@ let print_item oc = function
   | Axiom(name,te) ->
     Printf.fprintf oc "Axiom %a : %a.\n" print_name name print_te te
   | Theorem(name,te,proof) ->
-    Printf.fprintf oc "Axiom %a : %a.\n" print_name name print_te te
+    Printf.eprintf "compilation of %a\n" print_name name;
+    Printf.fprintf oc "Definition %a : %a := %a.\n" print_name name print_te te print_proof proof
   | TyOpDef(tyop,arity) ->
     Printf.fprintf oc "Parameter %a : %a.\n" print_name tyop print_arity arity
 

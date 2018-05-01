@@ -1,6 +1,8 @@
-type ty_var = string
+type ty_var  = string
 
-type te_var = string
+type te_var  = string
+
+type hyp_var = string
 
 type name = string * string
 
@@ -32,7 +34,7 @@ type ty_ctx = ty_var list
 type te_ctx = (te_var * _ty) list
 
 module TeSet = Set.Make (struct
-  type t = _te
+  type t = hyp_var * _te
 
   let compare = compare
 end)
@@ -48,11 +50,11 @@ type rewrite_seq = rewrite list
 type trace = {left: rewrite_seq; right: rewrite_seq}
 
 type proof =
-  | Assume of judgment
+  | Assume of judgment * hyp_var
   | Lemma of name * judgment
   | Conv of judgment * proof * trace
   | ImplE of judgment * proof * proof
-  | ImplI of judgment * proof
+  | ImplI of judgment * proof * hyp_var
   | ForallE of judgment * proof * _te
   | ForallI of judgment * proof * te_var
   | ForallPE of judgment * proof * _ty

@@ -92,6 +92,5 @@ distclean: clean
 	@find . -name "*.vo"  -exec rm {} \;
 	@find . -name "*.summary" -exec rm {} \;
 	@find . -name ".pvs_context" -exec rm {} \;
-	@cp -f ../sttfa/*.p?? library/
 
 .PHONY: all clean distclean examples library coq

@@ -2,7 +2,7 @@ open Basic
 open Ast
 open Sttforall
 
-type proof_ctx = (ident * _te) list
+type proof_ctx = (string * _te) list
 
 type env =
   {k: int; dk: Term.typed_context; ty: ty_ctx; te: te_ctx; prf: proof_ctx}
@@ -345,16 +345,16 @@ let add_prf_ctx env id _te _te' =
   { env with
     k= env.k + 1
   ; prf= (id, _te') :: env.prf
-  ; dk= (Basic.dloc, id, _te) :: env.dk }
+  ; dk= (Basic.dloc, mk_ident id, _te) :: env.dk }
 
 
 let rec compile_proof env proof =
   match proof with
   | Term.DB (_, var, n) ->
       let var = get env n in
-      let te' = List.assoc (mk_ident var) env.prf in
-      let j = make_judgment env (TeSet.singleton te') (Te te') in
-      (j, Assume j)
+      let te' = List.assoc var env.prf in
+      let j = make_judgment env (TeSet.of_list env.prf) (Te te') in
+      (j, Assume(j,var))
   | Term.Lam (_, id, Some cst, _te) when is_sttfa_const sttfa_type cst ->
       let id = gen_fresh env id in
       let jp, proof = compile_proof (add_ty_var env id) _te in
@@ -372,20 +372,22 @@ let rec compile_proof env proof =
       (j, ForallI (j, proof, soi id))
   | Term.Lam (_, id, Some (Term.App (cst, _, _) as _te), prf)
     when is_sttfa_const sttfa_eps cst ->
-      let _te' = compile_wrapped__term env _te in
-      let jp, proof = compile_proof (add_prf_ctx env id _te _te') prf in
-      let j =
-        make_judgment env (TeSet.remove _te' jp.hyp)
-          (Te (Impl (_te', extract_te jp.thm)))
-      in
-      (j, ImplI (j, proof))
+    let remove_hyp te = TeSet.filter (fun (id',_) ->
+        if string_of_ident id=id' then false else true) in
+    let _te' = compile_wrapped__term env _te in
+    let jp, proof = compile_proof (add_prf_ctx env (string_of_ident id) _te _te') prf in
+    let j =
+      make_judgment env (remove_hyp _te' jp.hyp)
+        (Te (Impl (_te', extract_te jp.thm)))
+    in
+    (j, ImplI (j, proof, string_of_ident id))
   | Term.Const (lc, name) ->
       let te' =
         match Env.get_type lc name with
         | OK te -> compile_wrapped_term env te
         | Err err -> assert false
       in
-      let j = make_judgment env TeSet.empty te' in
+      let j = make_judgment env (TeSet.of_list env.prf) te' in
       (j, Lemma (of_name name, j))
   | Term.App (f, a, args) ->
       let f' = compile_proof env f in
@@ -451,7 +453,8 @@ and compile_args_aux env f tyf thmf f' arg =
         in
         Printf.printf "after\n" ;
                                 assert false ) ; *)
-      (fa, (j, ImplE (j, f', arg')))
+      let j'' = {j with hyp = TeSet.union j'.hyp j.hyp} in
+      (fa, (j'', ImplE (j'', f', arg')))
   | Te tyf' ->
       let cst = Tracer.get_cst tyf' in
       let i = get_arity env dloc cst in

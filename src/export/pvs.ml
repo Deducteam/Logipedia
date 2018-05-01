@@ -27,7 +27,7 @@ let print_name : out_channel -> name -> unit =
   let name = sanitize_name_pvs n in
   output_string oc name
 
-let print_name' oc n = output_string oc (sanitize_name_pvs n) 
+let print_name' oc n = output_string oc (sanitize_name_pvs n)
 
 let print__ty_pvs : out_channel -> _ty -> unit =
   let rec print is_atom oc _ty =
@@ -103,7 +103,7 @@ let rec gensym k l =
   in if List.mem v l then gensym (k+1) l else v
 
 let print__te_pvs : out_channel ->_te -> unit =
-  fun oc -> fun t -> 
+  fun oc -> fun t ->
   let rec print stack oc t =
     match t with
     | TeVar x -> output_string oc (sanitize_name_pvs x);
@@ -112,7 +112,7 @@ let print__te_pvs : out_channel ->_te -> unit =
         Printf.fprintf oc "(LAMBDA(%s:%a):%a)" (sanitize_name_pvs x)
           print__ty_pvs a (print []) t;
           print_stack oc stack
-    | App (t, u) -> print (u::stack) oc t 
+    | App (t, u) -> print (u::stack) oc t
     | Forall (x, a, t) ->
       Printf.fprintf oc
         "(FORALL(%s:%a):%a)"
@@ -128,8 +128,8 @@ let print__te_pvs : out_channel ->_te -> unit =
     | Cst ((_,"True"), []) -> output_string oc "TRUE";
                               print_stack oc stack
     | Cst ((_,"False"), []) -> output_string oc "FALSE";
-                               print_stack oc stack 
-    | Cst ((_,"Not"), []) -> print_not oc stack 
+                               print_stack oc stack
+    | Cst ((_,"Not"), []) -> print_not oc stack
     | Cst ((_,"And"), []) -> print_and oc stack
     | Cst ((_,"Or"), []) -> print_or oc stack
     | Cst ((_,"ex"), [t]) -> print_ex oc t stack
@@ -140,7 +140,7 @@ let print__te_pvs : out_channel ->_te -> unit =
 
 and print_not oc stack =
       match stack with
-      | a::s' -> 
+      | a::s' ->
           Printf.fprintf oc "(NOT (%a))" (print []) a;
           print_stack oc s'
       | _ ->     output_string oc  "(LAMBDA(x:bool):(NOT x))";
@@ -149,28 +149,28 @@ and print_not oc stack =
 and print_and oc stack =
       match stack with
         | [] ->  output_string oc  "(LAMBDA(x:bool)(y:bool):(x AND y))"
-        | a::[] -> 
+        | a::[] ->
           Printf.fprintf oc "(LAMBDA(y:bool):(%a AND y))" (print []) a;
-        | a::b::s' -> 
+        | a::b::s' ->
           Printf.fprintf oc "((%a) AND (%a))" (print []) a (print []) b;
           print_stack oc s'
 
   and print_or oc stack =
       match stack with
         | [] ->  output_string oc  "(LAMBDA(x:bool)(y:bool):(x OR y))"
-        | a::[] -> 
+        | a::[] ->
           Printf.fprintf oc "(LAMBDA(y:bool):(%a OR y))" (print []) a;
-        | a::b::s' -> 
+        | a::b::s' ->
           Printf.fprintf oc "((%a) OR (%a))" (print []) a (print []) b;
           print_stack oc s'
 
   and print_ex oc t stack =
       match stack with
-        | [] ->   Printf.fprintf oc 
+        | [] ->   Printf.fprintf oc
                    "LAMBDA (p:%a -> bool):(EXISTS (x : %a): p(x))"
                     print__ty_pvs t
                     print__ty_pvs t
-        | (Abs (x, _, a))::s' -> 
+        | (Abs (x, _, a))::s' ->
                  Printf.fprintf oc "(EXISTS (%a : %a): %a)"
                  output_string x
                  print__ty_pvs t
@@ -185,7 +185,7 @@ and print_and oc stack =
                  output_string x;
                  print_stack oc s'
 
-and print_typeargs oc l = 
+and print_typeargs oc l =
   if l <> [] then (Printf.fprintf oc "[" ;print_type_list_pvs oc l;Printf.fprintf oc "]")
 
   and print_stack oc stack = match stack with
@@ -255,21 +255,21 @@ let print_hyp : out_channel -> hyp -> unit =
   let l = TeSet.elements hyp in
   match l with
   | [] -> Printf.fprintf oc "∅"
-  | [x] -> Printf.fprintf oc "%a" print__te_pvs x
-  | x :: l ->
+  | [_,x] -> Printf.fprintf oc "%a" print__te_pvs x
+  | (_,x) :: l ->
       Printf.fprintf oc "%a" print__te_pvs x ;
-      List.iter (fun x -> Printf.fprintf oc ", %a" print__te_pvs x) l ;
+      List.iter (fun (_,x) -> Printf.fprintf oc ", %a" print__te_pvs x) l ;
       Printf.fprintf oc " "
 
 let conclusion_pvs : proof -> te =
  fun prf ->
   let j =
     match prf with
-    | Assume j -> j
+    | Assume(j,_) -> j
     | Lemma (_, j) -> j
     | Conv (j, p, _) -> j
     | ImplE (j, p, q) -> j
-    | ImplI (j, p) -> j
+    | ImplI (j, p,_) -> j
     | ForallE (j, p, _te) -> j
     | ForallI (j, p, _) -> j
     | ForallPE (j, p, _ty) -> j
@@ -305,7 +305,7 @@ let print_proof_pvs : out_channel -> proof -> unit =
   fun oc prf ->
     let rec print acc oc prf =
     match prf with
-      | Assume(j)         -> Printf.fprintf oc "%%|- (propax)"
+      | Assume(j,_)         -> Printf.fprintf oc "%%|- (propax)"
     | Lemma((q,s),j)    -> Printf.fprintf oc "%%|- (sttfa-lemma \"%s_sttfa.%s%a\")" q s print_type_list_b_pvs acc
     | Conv(j,p,trace)         ->
       let pc = conclusion_pvs p in
@@ -323,7 +323,7 @@ let print_proof_pvs : out_channel -> proof -> unit =
         print_te_pvs qc
         (print acc) q
         (print acc) p
-    | ImplI(j,p)        ->
+    | ImplI(j,p,_)        ->
       let (a,b) = decompose_implication j.thm
       in Printf.fprintf oc "%%|- (sttfa-impl-i \"%a\" \"%a\"\n%a)"
         print__te_pvs a print__te_pvs b (print acc) p
