@@ -34,6 +34,7 @@
     (case cut1 cut2)
     ((prop)
      (then@
+     (hide -1)
      (hide 2)
      step1)
      (then@
