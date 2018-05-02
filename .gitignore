@@ -33,3 +33,6 @@ pvs-strategies
 
 # MATITA files
 *.ma
+
+# OPENTHEORY files
+*.art

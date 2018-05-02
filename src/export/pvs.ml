@@ -342,7 +342,7 @@ let print_proof_pvs : out_channel -> proof -> unit =
   Printf.fprintf oc "\n"
 
 
-let print_ast_pvs : out_channel -> string -> ast -> unit =
+let print_ast : out_channel -> string -> ast -> unit =
  fun oc prefix ast ->
    let prefix = Filename.basename prefix in
    current_module := ast.md ;

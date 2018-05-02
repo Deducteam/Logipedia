@@ -1,7 +1,9 @@
 S src/
 S src/export
+S src/utils
 
 B _build/src
 B _build/src/export
+B _build/src/utils
 
 PKG dedukti

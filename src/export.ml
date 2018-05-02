@@ -9,24 +9,31 @@ end
 module PVS : E =
 struct
   let extension = "pvs"
-  let print_ast = Pvs.print_ast_pvs
+  let print_ast = Pvs.print_ast
 end
 
 module COQ : E =
 struct
   let extension = "v"
-  let print_ast = Coq.print_ast_coq
+  let print_ast = Coq.print_ast
 end
 
 module MATITA : E =
 struct
   let extension = "ma"
-  let print_ast = Matita.print_ast_coq
+  let print_ast = Matita.print_ast
+end
+
+module OPENTHEORY : E =
+struct
+  let extension = "art"
+  let print_ast = Opentheory.print_ast
 end
 
 let of_system : system -> (module E) = fun sys ->
   match sys with
-  | `Pvs    -> (module PVS)
-  | `Coq    -> (module COQ)
-  | `Matita -> (module MATITA)
+  | `Pvs        -> (module PVS)
+  | `Coq        -> (module COQ)
+  | `Matita     -> (module MATITA)
+  | `OpenTheory -> (module OPENTHEORY)
   | _ -> failwith "not implemented yet"

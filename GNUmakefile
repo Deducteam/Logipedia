@@ -38,7 +38,7 @@ LIBDKS = $(wildcard library/*.dk)
 
 library: $(LIBDKS:.dk=.dko)
 
-library/%.v library/%.ma library/%.pvs library/%.dko:  library/%.dk theories/sttfa.dko .library_depend main.native
+library/%.v library/%.ma library/%.pvs library/%.art library/%.dko:  library/%.dk theories/sttfa.dko .library_depend main.native
 	@echo "[PVS,COQ] $<"
 	@./main.native -I library -I theories $<
 
@@ -46,10 +46,14 @@ library/%.summary: library/%.pvs
 	@echo "[SUMMARY]"
 	proveit --importchain -sf $<
 
+pvs: $(LIBDKS:.dk=.dko)
+	proveit --importchain -sf library/fermat.pvs
+
 SORTEDDKS = $(shell dkdep --ignore -I library -s $(LIBDKS))
 SORTEDV = $(SORTEDDKS:.dk=.v)
 coq: $(LIBDKS:.dk=.dko)
 	for file in $(SORTEDV) ; do \
+		coqc -beautify $$file > $$file ; \
 		coqc -R library "" $$file ; \
 	done
 
@@ -83,20 +87,21 @@ clean:
 	@rm -f .library_depend
 
 distclean: clean
-	@find . -name "*~" -exec rm {} \;
-	@find . -name "*.dko" -exec rm {} \;
-	@find . -name "*.stt" -exec rm {} \;
-	@find . -name "*.aux" -exec rm {} \;
-	@find . -name "*.log" -exec rm {} \;
-	@find . -name "*.pdf" -exec rm {} \;
-	@find . -name "*.tex" -exec rm {} \;
-	@find . -name "*.pvs" -exec rm {} \;
-	@find . -name "*.prf" -exec rm {} \;
-	@find . -name "*.bin" -exec rm {} \;
-	@find . -name "*.dep" -exec rm {} \;
-	@find . -name "*.ma"  -exec rm {} \;
-	@find . -name "*.v"   -exec rm {} \;
-	@find . -name "*.vo"  -exec rm {} \;
+	@find . -name "*~"     -exec rm {} \;
+	@find . -name "*.dko"  -exec rm {} \;
+	@find . -name "*.stt"  -exec rm {} \;
+	@find . -name "*.aux"  -exec rm {} \;
+	@find . -name "*.log"  -exec rm {} \;
+	@find . -name "*.pdf"  -exec rm {} \;
+	@find . -name "*.tex"  -exec rm {} \;
+	@find . -name "*.pvs"  -exec rm {} \;
+	@find . -name "*.prf"  -exec rm {} \;
+	@find . -name "*.bin"  -exec rm {} \;
+	@find . -name "*.dep"  -exec rm {} \;
+	@find . -name "*.ma"   -exec rm {} \;
+	@find . -name "*.v"    -exec rm {} \;
+	@find . -name "*.vo"   -exec rm {} \;
+	@find . -name "*.glob" -exec rm {} \;
 	@find . -name "*.summary" -exec rm {} \;
 	@find . -name ".pvs_context" -exec rm {} \;
 
