@@ -10,7 +10,7 @@ main.native: _build/src/main.native
 
 _build/src/main.native: $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli)
 	@echo "[OPT] main.native"
-	@ocamlbuild -quiet -Is src/,src/export -package dedukti.kernel -package dedukti.parser src/main.native
+	@ocamlbuild -quiet -Is src/,src/utils,src/export -package dedukti.kernel -package dedukti.parser src/main.native
 
 #### Producing the theory file #####################################
 
@@ -51,9 +51,11 @@ pvs: $(LIBDKS:.dk=.dko)
 
 SORTEDDKS = $(shell dkdep --ignore -I library -s $(LIBDKS))
 SORTEDV = $(SORTEDDKS:.dk=.v)
-coq: $(LIBDKS:.dk=.dko)
+
+coq: $(LIBDKS:.dk=.dko) $(SORTEDV)
 	for file in $(SORTEDV) ; do \
-		coqc -beautify $$file > $$file ; \
+		coqc -R library "" -beautify $$file ; \
+		mv $$file.beautified $$file ; \
 		coqc -R library "" $$file ; \
 	done
 
@@ -103,6 +105,7 @@ distclean: clean
 	@find . -name "*.vo"   -exec rm {} \;
 	@find . -name "*.glob" -exec rm {} \;
 	@find . -name "*.summary" -exec rm {} \;
+	@find . -name "*.beautified" -exec rm {} \;
 	@find . -name ".pvs_context" -exec rm {} \;
 
 .PHONY: all clean distclean examples library coq

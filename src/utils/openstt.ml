@@ -155,44 +155,44 @@ module Basic = struct
     fun out op ->
       match op with
       | Empty -> Printf.fprintf out ""
-      | Int(i,op) -> print_op out op; Printf.fprintf out "%d@." i
-      | String(s,op) ->  print_op out op; Printf.fprintf out "\"%s\"@." s
-      | Nil(op) ->  print_op out op; Printf.fprintf out "nil@."
-      | Cons(op) ->  print_op out op; Printf.fprintf out "cons@."
-      | Pair(op) -> print_op out op; Printf.fprintf out "nil@.cons@.cons@."
-      | Const(op) ->  print_op out op; Printf.fprintf out "const@."
-      | Def(op) -> print_op out op; Printf.fprintf out "def@."
-      | OpType(op) -> print_op out op; Printf.fprintf out "opType@."
-      | AppTerm(op) -> print_op out op; Printf.fprintf out "appTerm@."
-      | AbsTerm(op) -> print_op out op; Printf.fprintf out "absTerm@."
-      | ConstTerm(op) -> print_op out op; Printf.fprintf out "constTerm@."
-      | DefineConst(op) -> print_op out op; Printf.fprintf out "defineConst@."
-      | Pop(op) -> print_op out op; Printf.fprintf out "pop@."
-      | Remove(op) -> print_op out op; Printf.fprintf out "remove@."
-      | Pragma(op) -> print_op out op; Printf.fprintf out "pragma@."
-      | TypeOp(op) -> print_op out op; Printf.fprintf out "typeOp@."
-      | Var(op) -> print_op out op; Printf.fprintf out "var@."
-      | VarTerm(op) -> print_op out op; Printf.fprintf out "varTerm@."
-      | VarType(op) -> print_op out op; Printf.fprintf out "varType@."
-      | Ref(op) -> print_op out op; Printf.fprintf out "ref@."
-      | Version(op) -> print_op out op; Printf.fprintf out "version@."
-      | Axiom(op) -> print_op out op; Printf.fprintf out "axiom@."
-      | Refl(op) -> print_op out op; Printf.fprintf out "refl@."
-      | AppThm(op) -> print_op out op; Printf.fprintf out "appThm@."
-      | AbsThm(op) -> print_op out op; Printf.fprintf out "absThm@."
-      | Sym(op) -> print_op out op; Printf.fprintf out "sym@."
-      | BetaConv(op) -> print_op out op; Printf.fprintf out "betaConv@."
-      | Trans(op) -> print_op out op; Printf.fprintf out "trans@."
-      | Subst(op) -> print_op out op; Printf.fprintf out "subst@."
-      | EqMp(op) -> print_op out op; Printf.fprintf out "eqMp@."
-      | Assume(op) -> print_op out op; Printf.fprintf out "assume@."
-      | DeductAntiSym(op) -> print_op out op; Printf.fprintf out "deductAntisym@."
-      | ProveHyp(op) -> print_op out op; Printf.fprintf out "proveHyp@."
-      | Thm(op) -> print_op out op; Printf.fprintf out "thm@."
+      | Int(i,op) -> print_op out op; Printf.fprintf out "%d\n" i
+      | String(s,op) ->  print_op out op; Printf.fprintf out "\"%s\"\n" s
+      | Nil(op) ->  print_op out op; Printf.fprintf out "nil\n"
+      | Cons(op) ->  print_op out op; Printf.fprintf out "cons\n"
+      | Pair(op) -> print_op out op; Printf.fprintf out "nil\ncons\ncons\n"
+      | Const(op) ->  print_op out op; Printf.fprintf out "const\n"
+      | Def(op) -> print_op out op; Printf.fprintf out "def\n"
+      | OpType(op) -> print_op out op; Printf.fprintf out "opType\n"
+      | AppTerm(op) -> print_op out op; Printf.fprintf out "appTerm\n"
+      | AbsTerm(op) -> print_op out op; Printf.fprintf out "absTerm\n"
+      | ConstTerm(op) -> print_op out op; Printf.fprintf out "constTerm\n"
+      | DefineConst(op) -> print_op out op; Printf.fprintf out "defineConst\n"
+      | Pop(op) -> print_op out op; Printf.fprintf out "pop\n"
+      | Remove(op) -> print_op out op; Printf.fprintf out "remove\n"
+      | Pragma(op) -> print_op out op; Printf.fprintf out "pragma\n"
+      | TypeOp(op) -> print_op out op; Printf.fprintf out "typeOp\n"
+      | Var(op) -> print_op out op; Printf.fprintf out "var\n"
+      | VarTerm(op) -> print_op out op; Printf.fprintf out "varTerm\n"
+      | VarType(op) -> print_op out op; Printf.fprintf out "varType\n"
+      | Ref(op) -> print_op out op; Printf.fprintf out "ref\n"
+      | Version(op) -> print_op out op; Printf.fprintf out "version\n"
+      | Axiom(op) -> print_op out op; Printf.fprintf out "axiom\n"
+      | Refl(op) -> print_op out op; Printf.fprintf out "refl\n"
+      | AppThm(op) -> print_op out op; Printf.fprintf out "appThm\n"
+      | AbsThm(op) -> print_op out op; Printf.fprintf out "absThm\n"
+      | Sym(op) -> print_op out op; Printf.fprintf out "sym\n"
+      | BetaConv(op) -> print_op out op; Printf.fprintf out "betaConv\n"
+      | Trans(op) -> print_op out op; Printf.fprintf out "trans\n"
+      | Subst(op) -> print_op out op; Printf.fprintf out "subst\n"
+      | EqMp(op) -> print_op out op; Printf.fprintf out "eqMp\n"
+      | Assume(op) -> print_op out op; Printf.fprintf out "assume\n"
+      | DeductAntiSym(op) -> print_op out op; Printf.fprintf out "deductAntisym\n"
+      | ProveHyp(op) -> print_op out op; Printf.fprintf out "proveHyp\n"
+      | Thm(op) -> print_op out op; Printf.fprintf out "thm\n"
 
-  let fmt = ref stdout
+  let oc = ref stdout
 
-  let set_fmt f = fmt := f
+  let set_oc f = oc := f
 
   type 'a push =
     {
@@ -230,7 +230,7 @@ module Basic = struct
     else
       let id = !counter in incr counter;
       let to_def obj = Pop(Def(Int(id,(obj.push Empty)))) in
-      print_op !fmt (to_def t);
+      print_op !oc (to_def t);
       Hashtbl.add memory (Hash(t.push Empty)) id;
       {instr=t;id}
 
@@ -336,7 +336,7 @@ module Basic = struct
     let push (k:'a op) = DefineConst(load term (load name k)) in
     let def_thm k = Pop(Def(Int(thm,k))) in
     let def_cst k = Pop(Def(Int(cst,k))) in
-    print_op !fmt (def_cst @@ def_thm @@ push Empty);
+    print_op !oc (def_cst @@ def_thm @@ push Empty);
     let push_thm = {push=fun k -> Ref(Int(thm,k))} in
     let push_cst = {push=fun k -> Ref(Int(cst,k))} in
     let obj_thm = {instr=push_thm; id = thm} in
@@ -344,7 +344,7 @@ module Basic = struct
     Hashtbl.add const_defined str (obj_thm,obj_cst)
 
   let debug obj =
-    print_op !fmt (Pop(Pragma(String("debug",load obj Empty))))
+    print_op !oc (Pop(Pragma(String("debug",load obj Empty))))
 
   let mk_hyp ts : hyp obj = mk_list ts
 
@@ -398,10 +398,10 @@ module Basic = struct
   let mk_thm name term hyp thm =
     let str = string_of_name name in
     Hashtbl.add lemmas_defined str thm;
-    print_op !fmt (Thm(load term (load hyp (load thm Empty))))
+    print_op !oc (Thm(load term (load hyp (load thm Empty))))
 
   let mk_remove x =
-    print_op !fmt (Pop(Remove(Int(x,Empty))))
+    print_op !oc (Pop(Remove(Int(x,Empty))))
 
   let thm_of_lemma name =
     let str = string_of_name name in
@@ -411,14 +411,14 @@ module Basic = struct
       failwith (Format.sprintf "Lemma %s not found" (string_of_name name))
 end
 
-module OpenTheory = struct
+module OpenSTT = struct
   include Basic
 
   let true_name () = mk_name [] "T"
 
   let and_name () = mk_name [] "/\\\\"
 
-  let version () = print_op !fmt (Version(Int(6,Empty)));
+  let version () = print_op !oc (Version(Int(6,Empty)));
     Hashtbl.add const_defined (string_of_name (equal_name ()))
       (save { push = fun k -> Obj.magic@@ String("Error",k)} , save {push=fun k -> Const(load (equal_name ()) k)});
     Hashtbl.add const_defined (string_of_name (true_name ()))
@@ -697,3 +697,5 @@ module OpenTheory = struct
     mk_deductAntiSym  lr l'r'
 
 end
+
+include OpenSTT

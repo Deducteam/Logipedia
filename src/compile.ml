@@ -434,11 +434,10 @@ and compile_args_aux env f tyf thmf f' arg =
       let a' = match j'.thm with Te a -> a | _ -> assert false in
       let b' = match j.thm with Te a -> a | _ -> assert false in
       let thmf' = {thmf with thm= Te (Impl (a', b'))} in
-      let denv = List.map (fun (_, x, _) -> string_of_ident x) env.dk in
       let trace =
         Tracer.annotate env
-          (Decompile.decompile_term 0 denv tyf')
-          (Decompile.decompile_term 0 denv (Te (Impl (a', b'))))
+          (Decompile.decompile_term env.dk tyf')
+          (Decompile.decompile_term env.dk (Te (Impl (a', b'))))
       in
       let f' = Conv (thmf', f', trace) in
       (*
@@ -502,7 +501,7 @@ let compile_definition name ty term =
           Conv
             ( j
             , proof
-            , Tracer.annotate empty_env (Decompile.decompile_term 0 [] j.thm) a
+            , Tracer.annotate empty_env (Decompile.decompile_term [] j.thm) a
             )
       in
       Theorem (of_name name, compile_term empty_env a, proof')
