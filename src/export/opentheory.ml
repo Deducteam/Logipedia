@@ -117,6 +117,12 @@ let judgment_of = function
   | ForallPE(j,_,_) -> j
   | ForallPI(j,_,_) -> j
 
+let add_prf_ctx env id _te _te' =
+  { env with
+    k= env.k + 1
+  ; prf= (id, _te') :: env.prf
+  ; dk= (Basic.dloc, Basic.mk_ident id, _te) :: env.dk }
+
 let rec mk_proof ctx =
   let open Basic in
   function
@@ -141,7 +147,14 @@ let rec mk_proof ctx =
         mk_rule_elim_forall proof' f' _ty' u'
       | _ -> assert false
     end
-  | ForallI(j,proof,var) -> failwith "todo"
+  | ForallI(j,proof,var) ->
+    let j' = judgment_of proof in
+    let _,_ty = List.find (fun (x,_ty) -> if x = var then true else false) j'.te in
+    let ctx' = add_te_var ctx var _ty in
+    let proof' = mk_proof ctx' proof in
+    let _ty' = mk__ty _ty in
+    let thm' = mk_te ctx' j'.thm in
+    mk_rule_intro_forall (mk_id var) _ty' thm' proof'
   | ImplE(j,prfpq,prfp) ->
     let p = (judgment_of prfp).thm in
     let q = j.thm in
@@ -150,8 +163,16 @@ let rec mk_proof ctx =
     let prfp' = mk_proof ctx prfp in
     let prfpq' = mk_proof ctx prfpq in
     mk_rule_elim_impl prfp' prfpq' p' q'
-  | ImplI(j,proof,var) -> failwith "todo"
-  | ForallPE(_,proof,_ty) ->
+  | ImplI(j,proof,var) ->
+    let j' = judgment_of proof in
+    let _,p = TeSet.choose (TeSet.filter (fun (x,_ty) -> if x = var then true else false) j'.hyp) in
+    let q = j'.thm in
+    let ctx' = add_prf_ctx ctx var (Decompile.decompile__term ctx.dk p) p in
+    let p' = mk__te ctx p in
+    let q' = mk_te ctx q in
+    let proof' = mk_proof ctx' proof in
+    mk_rule_intro_impl proof' p' q'
+  | ForallPE(_,proof,_ty) -> (* WRONG: alpha *)
     begin
       match (judgment_of proof).thm with
       | ForallP(var,_) ->
@@ -160,10 +181,17 @@ let rec mk_proof ctx =
         mk_subst proof' subst []
       | _ -> assert false
     end
-  | ForallPI(_,proof,var) -> failwith "todo"
-  | Conv(_,proof,_) -> failwith "todo"
+  | ForallPI(_,proof,var) ->
+    let ctx' = add_ty_var ctx var in
+    mk_proof ctx' proof
+  | Conv(j,proof,trace) ->
+    Format.eprintf "to prove: %a@." Pp.print_term (Decompile.decompile_term ctx.dk j.thm);
+    Format.eprintf "from: %a@." Pp.print_term
+      (Decompile.decompile_term ctx.dk (judgment_of proof).thm);
+    Format.eprintf "Size of trace: %d,%d@." (List.length trace.left) (List.length trace.right);
+    failwith "todo"
 
-let rec print_item oc = function
+let print_item oc = function
   | Parameter(cst,ty) -> ()
   | Definition(cst,ty,te) ->
     let te' = mk_te empty_env te in
@@ -172,7 +200,12 @@ let rec print_item oc = function
     let te' = mk_te empty_env te in
     let hyp = mk_hyp [] in
     mk_thm (mk_qid cst)  te' hyp (mk_axiom hyp te')
-  | Theorem(name,te,proof) -> print_item oc (Axiom(name,te))
+  | Theorem(cst,te,proof) ->
+    Format.eprintf "Translation of %a@." Basic.pp_name (name_of cst);
+    let te' = mk_te empty_env te in
+    let hyp' = mk_hyp [] in
+    let proof' = mk_proof empty_env proof in
+    mk_thm (mk_qid cst) te' hyp' proof'
   | TyOpDef(tyop,arity) -> ()
 
 let print_ast oc file ast =

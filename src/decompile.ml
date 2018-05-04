@@ -92,3 +92,50 @@ let rec decompile_term ctx te =
         (to_const sttfa_forall_kind_prop)
         (Term.mk_Lam dloc (mk_ident ty_var) (Some (to_const sttfa_type)) te')
         []
+
+let to_eps t = Term.mk_App (to_const sttfa_eps) t []
+
+let add_prf_ctx ctx id _te  = (Basic.dloc, mk_ident id, _te) :: ctx
+
+let judgment_of = function
+  | Assume(j,_)     -> j
+  | Lemma(_,j)      -> j
+  | Conv(j,_,_)     -> j
+  | ImplE(j,_,_)    -> j
+  | ImplI(j,_,_)    -> j
+  | ForallE(j,_,_)  -> j
+  | ForallI(j,_,_)  -> j
+  | ForallPE(j,_,_) -> j
+  | ForallPI(j,_,_) -> j
+
+
+let rec decompile_proof ctx prf =
+  match prf with
+  | Assume(_,var) -> Term.mk_DB dloc (mk_ident var) (find var ctx)
+  | Lemma(cst,_) -> Term.mk_Const dloc (to_name cst)
+  | Conv(_,prf,tr) -> decompile_proof ctx prf
+  | ImplE(j,left,right) -> Term.mk_App (decompile_proof ctx left) (decompile_proof ctx right) []
+  | ImplI(j,proof,var) ->
+    let j' = judgment_of proof in
+    let _,_te = TeSet.choose (TeSet.filter (fun (x,te) -> if x = var then true else false) j'.hyp) in
+    let _te' = decompile__term ctx _te in
+    let ctx' = add_prf_ctx ctx var _te' in
+    let proof' = decompile_proof ctx' proof in
+    Term.mk_Lam dloc (mk_ident var) (Some (to_eps _te')) proof'
+  | ForallE(j,left,_te) ->
+    let _te' = decompile__term ctx _te in
+    Term.mk_App (decompile_proof ctx left) _te' []
+  | ForallI(j,proof,var) ->
+    let j' = judgment_of proof in
+    let _,_ty = List.find (fun (x,_) -> if x = var then true else false) j'.te in
+    let _ty' = decompile__type ctx _ty in
+    let ctx' = add_te_var var _ty' ctx in
+    let proof' = decompile_proof ctx' proof in
+    Term.mk_Lam dloc (mk_ident var) (Some (to__type _ty')) proof'
+  | ForallPE(j,left,_ty) ->
+    let _ty' = decompile__type ctx _ty in
+    Term.mk_App (decompile_proof ctx left) _ty' []
+  | ForallPI(j,proof,var) ->
+    let ctx' = add_ty_var var ctx in
+    let proof' = decompile_proof ctx' proof in
+    Term.mk_Lam dloc (mk_ident var) (Some (to_const sttfa_type)) proof'

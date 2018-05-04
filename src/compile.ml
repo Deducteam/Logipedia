@@ -390,14 +390,64 @@ let rec compile_proof env proof =
       let j = make_judgment env (TeSet.of_list env.prf) te' in
       (j, Lemma (of_name name, j))
   | Term.App (f, a, args) ->
-      let f' = compile_proof env f in
-      snd
-      @@ List.fold_left
-           (fun (f, f') a -> compile_arg env f f' a)
-           (f, f') (a :: args)
+    let j,f' = compile_proof env f in
+    List.fold_left (fun (j,f') a -> compile_arg env j f' a) (j,f') (a::args)
   | _ -> assert false
 
 
+and compile_arg env j f' a =
+  let f = Decompile.decompile_proof env.dk f' in
+  Format.eprintf "debug: %a@." Pp.print_term (Decompile.decompile_term env.dk j.thm);
+  let fa = Term.mk_App f a [] in
+  let te =
+    match Env.infer ~ctx:env.dk fa with
+    | OK te ->
+      Env.unsafe_reduction ~red:(beta_only_n 1) te (* administrative beta *)
+    | Err err -> Errors.fail_env_error err
+  in
+  Format.eprintf "debug: %a@." Pp.print_term te;
+  let te' = compile_wrapped_term env te in
+  let j' = {j with thm = te'} in
+  let j,f' = get_product env j f' in
+  match j.thm with
+  | ForallP _ ->
+    let a' = compile__type env a in
+    (j', ForallPE(j, f',a'))
+  | Te Forall _ ->
+    let a' = compile__term env a in
+    (j', ForallE(j, f', a'))
+  | Te Impl(p',q') ->
+    let ja,a' = compile_proof env a in
+    let _te = match ja.thm with Te _te -> _te | _ -> assert false in
+    let pq = Decompile.decompile__term env.dk (Impl(p',q')) in
+    let _te = Decompile.decompile__term env.dk (Impl(_te,q')) in
+    if Term.term_eq pq _te then
+      (j', ImplE(j', f',a'))
+    else
+      let trace = Tracer.annotate env pq _te in
+      let _te' = compile__term env _te in
+      let f' = Conv({j with thm = Te _te'}, f', trace) in
+      (j', ImplE(j',f',a'))
+  | Te tyfl' -> assert false
+
+and get_product env j f' =
+  match j.thm with
+  | ForallP _ | Te Forall _ | Te Impl _ -> (j,f')
+  | Te tyfl' ->
+    Format.eprintf "%a@." Pp.print_term (Decompile.decompile_term env.dk j.thm);
+    let cst = Tracer.get_cst tyfl' in
+    let i = get_arity env dloc cst in
+    Format.eprintf "%d@." i;
+    let tyfl = Decompile.decompile__term env.dk tyfl' in
+    let tyfr = Env.unsafe_reduction ~red:(delta_only cst) tyfl
+               |> Env.unsafe_reduction ~red:(beta_only_n i) in
+    let trace = Tracer.annotate env tyfl tyfr in
+    Format.eprintf "test:%a@." Pp.print_term tyfr;
+    let tyfr' = compile_wrapped__term env tyfr in
+    let j' = {j with thm = Te tyfr'} in
+    let proof' = Conv(j',f',trace) in
+    get_product env j' proof'
+(*
 and compile_arg env f (j, f') arg =
   let tyf =
     match Env.infer ~ctx:env.dk f with
@@ -440,18 +490,6 @@ and compile_args_aux env f tyf thmf f' arg =
           (Decompile.decompile_term env.dk (Te (Impl (a', b'))))
       in
       let f' = Conv (thmf', f', trace) in
-      (*
-      if j'.thm <> Te l then
-        (
-        Printf.printf "l:%a\nr:%a\n" Print.print_te j'.thm Print.print__te l ;
-        let denv = List.map (fun (_, x, _) -> string_of_ident x) env.dk in
-        let trace =
-          Tracer.annotate
-            (Decompile.decompile_term 0 denv j'.thm)
-            (Decompile.decompile__term 0 denv l)
-        in
-        Printf.printf "after\n" ;
-                                assert false ) ; *)
       let j'' = {j with hyp = TeSet.union j'.hyp j.hyp} in
       (fa, (j'', ImplE (j'', f', arg')))
   | Te tyf' ->
@@ -465,7 +503,7 @@ and compile_args_aux env f tyf thmf f' arg =
           ({thmf with thm= tyf'}, f', {left= [Delta (of_name cst)]; right= []})
       in
       compile_args_aux env f tyf thmf f' arg
-
+      *)
 
 let compile_declaration name ty =
   Format.eprintf "Compile %a@." pp_name name ;
