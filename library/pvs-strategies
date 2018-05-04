@@ -27,6 +27,7 @@
      (prop))))
    "[sttfa] ImplI")
 
+
 (defstrat sttfa-impl-e (cut1 cut2 step1 step2)
   (then
    (comment "ImplE")

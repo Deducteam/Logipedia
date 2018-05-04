@@ -75,12 +75,11 @@ distclean: clean
 	@find . -name "*.log" -exec rm {} \;
 	@find . -name "*.pdf" -exec rm {} \;
 	@find . -name "*.tex" -exec rm {} \;
-	@find . -name "*.pvs" -exec rm {} \;
-	@find . -name "*.summary" -exec rm {} \;
-	@find . -name ".pvs_context" -exec rm {} \;
-	@find . -name "*.prf" -exec rm {} \;
-	@find . -name "*.bin" -exec rm {} \;
-	@find . -name "*.dep" -exec rm {} \;
-	@cp -f ../sttfa/*.p?? library/
+	@find library -name "*.pvs" -exec rm {} \;
+	@find library -name "*.summary" -exec rm {} \;
+	@find library -name ".pvs_context" -exec rm {} \;
+	@find library -name "*.prf" -exec rm {} \;
+	@find library -name "*.bin" -exec rm {} \;
+	@find library -name "*.dep" -exec rm {} \;
 
 .PHONY: all clean distclean examples library

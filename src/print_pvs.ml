@@ -18,7 +18,8 @@ let sanitize_name : string -> string =
        || String.equal n "O"   || String.equal n "S"
        || String.equal n "bool" 
        || String.equal n "true" || String.equal n "false"
-       || String.equal n "fact" 
+       || String.equal n "fact" || String.equal n "exp"
+       || String.equal n "divides" 
        || String.equal (String.sub n 0 1) "_" then
   "sttfa_" ^ n
  else n
@@ -26,9 +27,12 @@ let sanitize_name : string -> string =
 let print_name : out_channel -> name -> unit =
  fun oc (m, n) ->
   let name = sanitize_name_pvs n in
-  output_string oc name
+  Printf.fprintf oc "%s" name
 
-let print_name' oc n = output_string oc (sanitize_name_pvs n) 
+let print_qualified_name : out_channel -> name -> unit =
+ fun oc (m, n) ->
+  let name = sanitize_name_pvs n in
+  Printf.fprintf oc "%s_sttfa.%s" m name
 
 let print__ty_pvs : out_channel -> _ty -> unit =
   let rec print is_atom oc _ty =
@@ -37,7 +41,7 @@ let print__ty_pvs : out_channel -> _ty -> unit =
     | Arrow (_, _) when is_atom -> Printf.fprintf oc "%a" (print false) _ty
     | Arrow (a, b) ->
         Printf.fprintf oc "[%a -> %a]" (print true) a (print false) b
-    | TyOp (op, l) -> print_name oc op
+    | TyOp (op, l) -> print_qualified_name oc op
     | Prop       ->
         output_string oc "bool"
   in
@@ -136,7 +140,7 @@ let print__te_pvs : out_channel ->_te -> unit =
     | Cst ((_,"ex"), [t]) -> print_ex oc t stack
       | Cst ((_,"equal"), [t]) -> print_equal oc t stack *)
     | Cst (name,l) ->
-      print_name oc name;
+      print_qualified_name oc name;
       print_typeargs oc l;
       print_stack oc stack
 
@@ -312,10 +316,10 @@ let rec listof = fun l -> match l with
 let rec print_name_list = fun oc -> fun l -> match l with
   | [] -> ()
   | x::[] -> Printf.fprintf oc "\"";
-             print_name oc x;
+             print_qualified_name oc x;
              Printf.fprintf oc "\""
   | x::l' -> (Printf.fprintf oc "\"";
-              print_name oc x;
+              print_qualified_name oc x;
               Printf.fprintf oc "\" ";
               print_name_list oc l')             
              
