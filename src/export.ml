@@ -1,4 +1,4 @@
-type system = [`Coq | `Matita | `Pvs | `Latex | `Ascii | `OpenTheory ]
+type system = [`Coq | `Matita | `Pvs | `Latex | `Csv | `OpenTheory ]
 
 module type E =
 sig
@@ -30,10 +30,17 @@ struct
   let print_ast = Opentheory.print_ast
 end
 
+module CSV : E =
+struct
+  let extension = "art"
+  let print_ast = Csv.print_ast
+end
+
 let of_system : system -> (module E) = fun sys ->
   match sys with
   | `Pvs        -> (module PVS)
   | `Coq        -> (module COQ)
   | `Matita     -> (module MATITA)
   | `OpenTheory -> (module OPENTHEORY)
+  | `Csv        -> (module CSV)
   | _ -> failwith "not implemented yet"

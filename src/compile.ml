@@ -390,11 +390,17 @@ let rec compile_proof env proof =
       let j = make_judgment env (TeSet.of_list env.prf) te' in
       (j, Lemma (of_name name, j))
   | Term.App (f, a, args) ->
+       let f' = compile_proof env f in
+      snd
+      @@ List.fold_left
+           (fun (f, f') a -> compile_arg env f f' a)
+           (f, f') (a :: args)
+    (*
     let j,f' = compile_proof env f in
-    List.fold_left (fun (j,f') a -> compile_arg env j f' a) (j,f') (a::args)
+    List.fold_left (fun (j,f') a -> compile_arg env j f' a) (j,f') (a::args) *)
   | _ -> assert false
 
-
+(*
 and compile_arg env j f' a =
   let f = Decompile.decompile_proof env.dk f' in
   Format.eprintf "debug: %a@." Pp.print_term (Decompile.decompile_term env.dk j.thm);
@@ -446,8 +452,8 @@ and get_product env j f' =
     let tyfr' = compile_wrapped__term env tyfr in
     let j' = {j with thm = Te tyfr'} in
     let proof' = Conv(j',f',trace) in
-    get_product env j' proof'
-(*
+    get_product env j' proof' *)
+
 and compile_arg env f (j, f') arg =
   let tyf =
     match Env.infer ~ctx:env.dk f with
@@ -503,7 +509,6 @@ and compile_args_aux env f tyf thmf f' arg =
           ({thmf with thm= tyf'}, f', {left= [Delta (of_name cst)]; right= []})
       in
       compile_args_aux env f tyf thmf f' arg
-      *)
 
 let compile_declaration name ty =
   Format.eprintf "Compile %a@." pp_name name ;

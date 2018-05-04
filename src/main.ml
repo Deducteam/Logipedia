@@ -19,7 +19,7 @@ let set_export s =
   else if s = "latex" then
     system := Export.(`Latex)
   else if s = "ascii" then
-    system := Export.(`Ascii)
+    system := Export.(`Csv)
   else
     failwith (Format.sprintf "%s is not among the supported systems@." s)
 
