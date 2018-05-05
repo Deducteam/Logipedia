@@ -18,9 +18,7 @@ ex :
        (A:sttfa.type =>
         sttfa.p (sttfa.arrow (sttfa.arrow A sttfa.bool) sttfa.bool))).
 
-
-
-
+equal :  sttfa.etap (sttfa.forallK (A:sttfa.type => sttfa.p (sttfa.arrow A (sttfa.arrow A sttfa.bool)))).
 
 I : sttfa.eps connectives.True.
 
@@ -110,3 +108,14 @@ match_ex_prop :
                 (sttfa.forall A
                    (x:(sttfa.etap (sttfa.p A)) => sttfa.impl (P x) return))
                 (sttfa.impl (connectives.ex A P) return))))).
+
+refl : sttfa.eps (sttfa.forallP (A:sttfa.type => sttfa.forall A
+                                    (x:sttfa.eta A => equal A x x))).
+
+equal_leibniz : sttfa.eps (sttfa.forallP (A:sttfa.type =>
+                    sttfa.forall A (x:sttfa.eta A =>
+                    sttfa.forall A (y:sttfa.eta A =>
+                    sttfa.impl (connectives.equal A x y)
+                               (sttfa.forall (sttfa.arrow A sttfa.bool)
+                                  (P : sttfa.eta (sttfa.arrow A sttfa.bool) =>
+                                  sttfa.impl (P x) (P y))))))).

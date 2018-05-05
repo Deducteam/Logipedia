@@ -29,7 +29,7 @@ axiom_match_bool_type_true :
           (case_true:(sttfa.etap (sttfa.p return)) =>
            sttfa.forall return
              (case_false:(sttfa.etap (sttfa.p return)) =>
-              leibniz.equal return
+              connectives.equal return
                 (bool.match_bool_type return case_true case_false bool.true)
                 case_true)))).
 
@@ -47,7 +47,7 @@ def eq_match_bool_type_true :
 return : sttfa.type =>
 case_true:(sttfa.etap (sttfa.p return)) =>
 case_false:(sttfa.etap (sttfa.p return)) =>
-leibniz.equal_leibniz return (bool.match_bool_type return case_true case_false bool.true) case_true (axiom_match_bool_type_true return case_true case_false).
+connectives.equal_leibniz return (bool.match_bool_type return case_true case_false bool.true) case_true (axiom_match_bool_type_true return case_true case_false).
 
 axiom_match_bool_type_false :
   sttfa.eps
@@ -57,7 +57,7 @@ axiom_match_bool_type_false :
           (case_true:(sttfa.etap (sttfa.p return)) =>
            sttfa.forall return
              (case_false:(sttfa.etap (sttfa.p return)) =>
-              leibniz.equal return
+              connectives.equal return
                 (bool.match_bool_type return case_true case_false bool.false)
                 case_false)))).
 
@@ -75,7 +75,7 @@ def eq_match_bool_type_false :
 return : sttfa.type =>
 case_true:(sttfa.etap (sttfa.p return)) =>
 case_false:(sttfa.etap (sttfa.p return)) =>
-leibniz.equal_leibniz return (bool.match_bool_type return case_true case_false bool.false) case_false (axiom_match_bool_type_false return case_true case_false).
+connectives.equal_leibniz return (bool.match_bool_type return case_true case_false bool.false) case_false (axiom_match_bool_type_false return case_true case_false).
 
 def sym_eq_match_bool_type_true :
   sttfa.eps

@@ -14,10 +14,11 @@ let sanitize_name : string -> string =
     if String.equal n "True" || String.equal n "False"
        || String.equal n "And" || String.equal n "Or"
        || String.equal n "Not" || String.equal n "ex"
+       || String.equal n "nat"
+       || String.equal n "O"   || String.equal n "S"
+       || String.equal n "bool"
        || String.equal n "true" || String.equal n "false"
-       || String.equal n "bool" || String.equal n "nat"
        || String.equal n "fact"
-       || String.equal n "O"
        || String.equal (String.sub n 0 1) "_" then
   "sttfa_" ^ n
  else n
@@ -124,8 +125,8 @@ let print__te_pvs : out_channel ->_te -> unit =
                        (print []) t (print []) u;
                        print_stack oc stack
     | AbsTy (x, t) -> Printf.fprintf oc "%a" (print []) t;
-                      print_stack oc stack
-    | Cst ((_,"True"), []) -> output_string oc "TRUE";
+      print_stack oc stack
+(*    | Cst ((_,"True"), []) -> output_string oc "TRUE";
                               print_stack oc stack
     | Cst ((_,"False"), []) -> output_string oc "FALSE";
                                print_stack oc stack
@@ -133,12 +134,13 @@ let print__te_pvs : out_channel ->_te -> unit =
     | Cst ((_,"And"), []) -> print_and oc stack
     | Cst ((_,"Or"), []) -> print_or oc stack
     | Cst ((_,"ex"), [t]) -> print_ex oc t stack
+      | Cst ((_,"equal"), [t]) -> print_equal oc t stack *)
     | Cst (name,l) ->
       print_name oc name;
       print_typeargs oc l;
       print_stack oc stack
 
-and print_not oc stack =
+(* and print_not oc stack =
       match stack with
       | a::s' ->
           Printf.fprintf oc "(NOT (%a))" (print []) a;
@@ -150,7 +152,7 @@ and print_and oc stack =
       match stack with
         | [] ->  output_string oc  "(LAMBDA(x:bool)(y:bool):(x AND y))"
         | a::[] ->
-          Printf.fprintf oc "(LAMBDA(y:bool):(%a AND y))" (print []) a;
+          Printf.fprintf oc "(LAMBDA(y:bool):(%a AND y))" (print []) a
         | a::b::s' ->
           Printf.fprintf oc "((%a) AND (%a))" (print []) a (print []) b;
           print_stack oc s'
@@ -159,7 +161,7 @@ and print_and oc stack =
       match stack with
         | [] ->  output_string oc  "(LAMBDA(x:bool)(y:bool):(x OR y))"
         | a::[] ->
-          Printf.fprintf oc "(LAMBDA(y:bool):(%a OR y))" (print []) a;
+          Printf.fprintf oc "(LAMBDA(y:bool):(%a OR y))" (print []) a
         | a::b::s' ->
           Printf.fprintf oc "((%a) OR (%a))" (print []) a (print []) b;
           print_stack oc s'
@@ -185,8 +187,25 @@ and print_and oc stack =
                  output_string x;
                  print_stack oc s'
 
-and print_typeargs oc l =
+and print_equal oc t stack =
+      match stack with
+      | [] ->  Printf.fprintf oc  "(LAMBDA(x:%a)(y:%a):(x = y))"
+                 print__ty_pvs t
+                 print__ty_pvs t
+      (*                 print__ty_pvs t *)
+      | a::[] -> Printf.fprintf oc "(LAMBDA(y:%a):(%a = y))"
+                   print__ty_pvs t
+                   (print []) a
+(*                   print__ty_pvs t *)
+      | a::b::s' -> Printf.fprintf oc "(%a = %a)"
+                      (print []) a
+                      (*                      print__ty_pvs t *)
+                      (print []) b;
+        print_stack oc s'
+*)
+  and print_typeargs oc l =
   if l <> [] then (Printf.fprintf oc "[" ;print_type_list_pvs oc l;Printf.fprintf oc "]")
+
 
   and print_stack oc stack = match stack with
     | [] -> ()

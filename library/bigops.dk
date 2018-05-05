@@ -124,7 +124,7 @@ axiom_bigop_O :
   sttfa.eps
     (sttfa.forallP
        (H:sttfa.type =>
-        leibniz.equal
+        connectives.equal
           (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
              (sttfa.arrow H
                 (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -142,7 +142,7 @@ def eq_bigop_O :
                    (sttfa.arrow (sttfa.arrow nat.nat H) H))))
           (bigops.bigop H nat.O) (bigops.bigop_body H nat.O))) :=
 H:sttfa.type =>
-        leibniz.equal_leibniz
+        connectives.equal_leibniz
           (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
              (sttfa.arrow H
                 (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -174,7 +174,7 @@ axiom_bigop_S :
        (H:sttfa.type =>
         sttfa.forall nat.nat
           (n:(sttfa.etap (sttfa.p nat.nat)) =>
-           leibniz.equal
+           connectives.equal
              (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
                 (sttfa.arrow H
                    (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -195,7 +195,7 @@ def eq_bigop_S :
              (bigops.bigop H (nat.S n)) (bigops.bigop_body H (nat.S n))))) :=
 H:sttfa.type =>
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-           leibniz.equal_leibniz
+           connectives.equal_leibniz
              (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
                 (sttfa.arrow H
                    (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -229,7 +229,7 @@ axiom_bigop_body_O :
   sttfa.eps
     (sttfa.forallP
        (H:sttfa.type =>
-        leibniz.equal
+        connectives.equal
           (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
              (sttfa.arrow H
                 (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -255,7 +255,7 @@ def eq_bigop_body_O :
            op:(sttfa.etap (sttfa.p (sttfa.arrow H (sttfa.arrow H H)))) =>
            f:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat H))) => nil))) :=
 H:sttfa.type =>
-        leibniz.equal_leibniz
+        connectives.equal_leibniz
           (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
              (sttfa.arrow H
                 (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -301,7 +301,7 @@ axiom_bigop_body_S :
        (H:sttfa.type =>
         sttfa.forall nat.nat
           (n:(sttfa.etap (sttfa.p nat.nat)) =>
-           leibniz.equal
+           connectives.equal
              (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
                 (sttfa.arrow H
                    (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
@@ -336,7 +336,7 @@ def eq_bigop_body_S :
                 (bigops.bigop H n p nil op f) (p n))))) :=
 H:sttfa.type =>
 n:(sttfa.etap (sttfa.p nat.nat)) =>
-           leibniz.equal_leibniz
+           connectives.equal_leibniz
              (sttfa.arrow (sttfa.arrow nat.nat bool.bool)
                 (sttfa.arrow H
                    (sttfa.arrow (sttfa.arrow H (sttfa.arrow H H))
