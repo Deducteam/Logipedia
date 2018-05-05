@@ -32,7 +32,7 @@ end
 
 module CSV : E =
 struct
-  let extension = "art"
+  let extension = "csv"
   let print_ast = Csv.print_ast
 end
 

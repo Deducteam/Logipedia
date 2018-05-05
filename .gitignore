@@ -36,3 +36,6 @@ pvs-strategies
 
 # OPENTHEORY files
 *.art
+
+#WEB files
+*.csv

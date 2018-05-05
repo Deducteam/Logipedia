@@ -43,7 +43,7 @@ type hyp = TeSet.t
 
 type judgment = {ty: ty_ctx; te: te_ctx; hyp: hyp; thm: te}
 
-type rewrite = Delta of name | Beta
+type rewrite = Delta of name * _ty list | Beta
 
 type rewrite_seq = rewrite list
 
