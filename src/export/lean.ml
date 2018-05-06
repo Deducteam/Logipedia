@@ -1,7 +1,8 @@
 open Ast
 
-let sanitize id = id
-
+let sanitize id =
+  if id = "refl" || id = "eq" then id^"_"
+  else id
 
 let print_var oc id =
   Printf.fprintf oc "%s" (sanitize id)
@@ -18,7 +19,7 @@ let print_dep oc dep =
 
 let print_name oc (md,id) =
   let id = sanitize id in
-  Printf.fprintf oc "%s" id
+  Printf.fprintf oc "%s.%s" md id
 
 let rec print_arity oc arity =
   if arity = 0 then
@@ -37,28 +38,28 @@ let rec print__ty oc = function
 
 let rec print_ty oc = function
   | ForallK(var, ty) ->
-    Printf.fprintf oc "\\forall %a : Type . %a" print_var var print_ty ty
+    Printf.fprintf oc "forall %a : Type , %a" print_var var print_ty ty
   | Ty(_ty) -> print__ty oc _ty
 
 let rec print__te oc = function
   | TeVar(var) ->
     Printf.fprintf oc "%a" print_var var
   | Abs(var,_ty,_te) ->
-    Printf.fprintf oc "\\lambda %a : %a. %a" print_var var print__ty _ty print__te _te
+    Printf.fprintf oc "fun %a : %a , %a" print_var var print__ty _ty print__te _te
   | App(_tel,_ter) ->
     Printf.fprintf oc "(%a) (%a)" print__te _tel print__te _ter
   | Forall(var,_ty,_te) ->
-    Printf.fprintf oc "\\forall (%a:%a). %a" print_var var print__ty _ty print__te _te
+    Printf.fprintf oc "forall (%a:%a) , %a" print_var var print__ty _ty print__te _te
   | Impl(_tel,_ter) ->
     Printf.fprintf oc "(%a) -> %a" print__te _tel print__te _ter
   | AbsTy(var, _te) ->
-    Printf.fprintf oc "\\lambda %a : Type . %a" print_var var print__te _te
+    Printf.fprintf oc "fun %a : Type , %a" print_var var print__te _te
   | Cst(cst, _tys) ->
     Printf.fprintf oc "(%a) %a" print_name cst (print_list " " print__ty) _tys
 
 let rec print_te oc = function
   | ForallP(var,te) ->
-    Printf.fprintf oc "\\forall %a. %a" print_var var print_te te
+    Printf.fprintf oc "forall %a , %a" print_var var print_te te
   | Te(_te) -> print__te oc _te
 
 let judgment_of = function
@@ -80,15 +81,15 @@ let rec print_proof oc = function
   | ImplI(j,proof,var) ->
     let j' = judgment_of proof in
     let _,_te = TeSet.choose (TeSet.filter (fun (x,te) -> if x = var then true else false) j'.hyp) in
-    Printf.fprintf oc "\\lambda %a : %a. (%a)" print_var var print__te _te print_proof proof
+    Printf.fprintf oc "fun %a : %a , (%a)" print_var var print__te _te print_proof proof
   | ForallE(_,proof,_te) -> Printf.fprintf oc "(%a) (%a)" print_proof proof print__te _te
   | ForallI(j,proof,var) ->
     let j' = judgment_of proof in
     let _,_ty = List.find (fun (x,_ty) -> if x = var then true else false) j'.te in
-    Printf.fprintf oc "\\lambda %a : %a. %a" print_var var print__ty _ty print_proof proof
+    Printf.fprintf oc "fun %a : %a , %a" print_var var print__ty _ty print_proof proof
   | ForallPE(_,proof,_ty) -> Printf.fprintf oc "(%a) (%a)" print_proof proof print__ty _ty
   | ForallPI(_,proof,var) ->
-    Printf.fprintf oc "\\lambda %a : Type. %a" print_var var print_proof proof
+    Printf.fprintf oc "fun %a : Type , %a" print_var var print_proof proof
 
 let print_item oc = function
   | Parameter(name,ty) ->
@@ -104,4 +105,4 @@ let print_item oc = function
 
 let print_ast oc file ast =
   QSet.iter (print_dep oc) ast.dep;
-  List.iter (print_item oc) ast.items
+  List.iter (print_item oc) ast.items;
