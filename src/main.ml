@@ -18,8 +18,10 @@ let set_export s =
     system := Export.(`Pvs)
   else if s = "latex" then
     system := Export.(`Latex)
-  else if s = "ascii" then
+  else if s = "csv" then
     system := Export.(`Csv)
+  else if s = "lean" then
+    system := Export.(`Lean)
   else
     failwith (Format.sprintf "%s is not among the supported systems@." s)
 

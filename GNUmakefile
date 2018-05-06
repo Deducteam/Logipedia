@@ -38,8 +38,8 @@ LIBDKS = $(wildcard library/*.dk)
 
 library: $(LIBDKS:.dk=.dko)
 
-library/%.v library/%.ma library/%.pvs library/%.art library/%.dko:  library/%.dk theories/sttfa.dko .library_depend main.native
-	@echo "[PVS,COQ] $<"
+library/%.csv library/%.lean library/%.v library/%.ma library/%.pvs library/%.art library/%.dko:  library/%.dk theories/sttfa.dko .library_depend main.native
+	@echo "[EXT] $<"
 	@./main.native -I library -I theories $<
 
 library/%.summary: library/%.pvs

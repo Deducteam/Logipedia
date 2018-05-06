@@ -39,3 +39,6 @@ pvs-strategies
 
 #WEB files
 *.csv
+
+#LEAN files
+*.lean

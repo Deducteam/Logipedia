@@ -1,4 +1,4 @@
-type system = [`Coq | `Matita | `Pvs | `Latex | `Csv | `OpenTheory ]
+type system = [`Coq | `Matita | `Pvs | `Latex | `Csv | `OpenTheory | `Lean ]
 
 module type E =
 sig

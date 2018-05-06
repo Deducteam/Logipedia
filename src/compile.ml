@@ -71,7 +71,6 @@ let rec compile_type (env: env) ty =
   match ty with
   | Term.App (c, Term.Lam (_, var, _, ty), [])
     when is_sttfa_const sttfa_forall_kind_type c ->
-    let old = var in
     let var = gen_fresh env var in
     let ty' = compile_type (add_ty_var env var) ty in
     ForallK (soi var, ty')

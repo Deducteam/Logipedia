@@ -1,4 +1,4 @@
-type system = [`Coq | `Matita | `Pvs | `Latex | `Csv | `OpenTheory ]
+type system = [`Coq | `Matita | `Pvs | `Latex | `Csv | `OpenTheory | `Lean ]
 
 module type E =
 sig
@@ -36,6 +36,12 @@ struct
   let print_ast = Csv.print_ast
 end
 
+module LEAN : E =
+struct
+  let extension = "lean"
+  let print_ast = Lean.print_ast
+end
+
 let of_system : system -> (module E) = fun sys ->
   match sys with
   | `Pvs        -> (module PVS)
@@ -43,4 +49,5 @@ let of_system : system -> (module E) = fun sys ->
   | `Matita     -> (module MATITA)
   | `OpenTheory -> (module OPENTHEORY)
   | `Csv        -> (module CSV)
+  | `Lean       -> (module LEAN)
   | _ -> failwith "not implemented yet"
