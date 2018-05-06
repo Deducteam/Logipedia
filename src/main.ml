@@ -59,7 +59,7 @@ let run_on_file file =
   if not (Env.export ()) then
     Errors.fail dloc "Fail to export module '%a'." pp_mident md ;
   Confluence.finalize () ;
-  export_file file ast `Coq
+  export_file file ast `Pvs
 
 let _ =
   let options =
