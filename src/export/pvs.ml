@@ -306,8 +306,8 @@ let decompose_implication = fun p -> match p with
 
 let rec listof = fun l -> match l with
   | [] -> []
-  | Beta::l' -> listof l'
-  | (Delta (x,_))::l' -> x::(listof l')
+  | (Beta _,_)::l' -> listof l'
+  | (Delta (x,_),_)::l' -> x::(listof l')
 
 let rec print_name_list = fun oc -> fun l -> match l with
   | [] -> ()

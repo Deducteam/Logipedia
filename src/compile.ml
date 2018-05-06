@@ -71,9 +71,10 @@ let rec compile_type (env: env) ty =
   match ty with
   | Term.App (c, Term.Lam (_, var, _, ty), [])
     when is_sttfa_const sttfa_forall_kind_type c ->
-      let var = gen_fresh env var in
-      let ty' = compile_type (add_ty_var env var) ty in
-      ForallK (soi var, ty')
+    let old = var in
+    let var = gen_fresh env var in
+    let ty' = compile_type (add_ty_var env var) ty in
+    ForallK (soi var, ty')
   | Term.App (c, a, []) when is_sttfa_const sttfa_p c ->
       Ty (compile__type env a)
   | _ -> assert false
@@ -167,9 +168,9 @@ let rec compile_term env te =
   match te with
   | Term.App (cst, Term.Lam (_, x, Some ty, te), [])
     when is_sttfa_const sttfa_forall_kind_prop cst ->
-      let x = gen_fresh env x in
-      let te' = compile_term (add_ty_var env x) te in
-      ForallP (soi x, te')
+    let x = gen_fresh env x in
+    let te' = compile_term (add_ty_var env x) te in
+    ForallP (soi x, te')
   | _ ->  Te (compile__term env te)
 
 
@@ -241,9 +242,9 @@ let delta_only : Basic.name -> Reduction.red_cfg =
 module Tracer = struct
   let rec get_red tyf' =
     match tyf' with
+    | App(Abs _, _) -> `Beta(tyf')
     | App (f, a) -> get_red f
     | Cst ((md, id), _tys) -> `Cst (of_name (mk_name (mk_mident md) (mk_ident id)), _tys)
-    | Abs _ -> `Beta
     | _ -> assert false
 
 
@@ -282,31 +283,33 @@ module Tracer = struct
       else
         let name = to_name cst in
         if Env.is_static dloc name then
-          (`Right, `Cst(cst', _tys'))
-        else (`Left, `Cst(cst, _tys))
-    | _, Cst (cst, _tys) -> (`Right, `Cst(cst,_tys))
-    | Cst (cst, _tys), _ -> (`Left, `Cst(cst,_tys))
-    | Forall (_, _, _tel), Forall (_, _, _ter) -> compare__term (CForall::ctx) _tel _ter
+          (`Right, ctx, `Cst(cst', _tys'))
+        else (`Left, ctx, `Cst(cst, _tys))
     | Abs (_, _, _tel), Abs (_, _, _ter) -> compare__term (CAbs::ctx) _tel _ter
+    | App(Abs _, _), _ -> (`Left, ctx, `Beta(left))
+    | _, App(Abs _, _) -> (`Right, ctx, `Beta(right))
+    | _, Cst (cst, _tys) -> (`Right, ctx, `Cst(cst,_tys))
+    | Cst (cst, _tys), _ -> (`Left, ctx, `Cst(cst,_tys))
+    | Forall (_, _, _tel), Forall (_, _, _ter) -> compare__term (CForall::ctx) _tel _ter
     | Impl (_tel, _ter), Impl (_tel', _ter') -> (
         try compare__term (CImplL::ctx) _tel _tel'
         with Equal ->  compare__term (CImplR::ctx)_ter _ter')
     | App (_tel, _ter), App (_tel', _ter') -> (
         try
-          let side, cst = compare__term (CAppL::ctx) _tel _tel' in
+          let side, ctx, cst = compare__term (CAppL::ctx) _tel _tel' in
           match cst with
           | `Cst(cst,_tys) ->
             if Env.is_static dloc (to_name cst) then
-              if side = `Right then (`Left, get_red _tel)
-              else (`Right, get_red _tel')
-            else  (side, `Cst (cst, _tys))
-          | _ ->  side, cst
+              if side = `Right then (`Left, ctx, get_red _tel)
+              else (`Right, ctx, get_red _tel')
+            else  (side, ctx, `Cst (cst, _tys))
+          | _ ->  side, ctx, cst
         with Equal ->
         try compare__term (CAppR::ctx) _ter _ter' with Failure _ ->
-          (`Left, get_red _tel)
+          (`Left, ctx, get_red _tel)
           (* UGLY can be fixed by checking first the definability of a constant for the cst case *) )
-    | _, App (_tel, _) -> (`Right, get_red _tel)
-    | App (_tel, _), _ -> (`Left, get_red _tel)
+    | _, App (_tel, _) -> (`Right, ctx, get_red _tel)
+    | App (_tel, _), _ -> (`Left, ctx, get_red _tel)
     | _ -> failwith "todo2"
 
   let rec compare_term ctx left right =
@@ -316,37 +319,31 @@ module Tracer = struct
     | _ -> assert false
 
   let reduce_delta env term cst i =
-    begin
-      match Env.infer ~ctx:env.dk term with
-      | OK _ -> ()
-      | Err err -> Format.eprintf "term@."; Errors.fail_env_error err
-    end;
     let term' = Env.unsafe_reduction ~red:(delta_only cst) term in
-    begin
-      match Env.infer ~ctx:env.dk term' with
-      | OK _ -> ()
-      | Err err -> Format.eprintf "term'@."; Errors.fail_env_error err
-    end;
-    let term'' = Env.unsafe_reduction ~red:(beta_only_n i) term' in
-    begin
-      match Env.infer ~ctx:env.dk term'' with
-      | OK _ -> ()
-      | Err err -> Format.eprintf "term''@."; Errors.fail_env_error err
-    end;
-    term''
+    Env.unsafe_reduction ~red:(beta_only_n i) term'
 
   let rec annotate_beta env left =
     let left' = Env.unsafe_reduction ~red:(beta_only_n 1) left in
     if left = left' then
       left, {left = [] ; right = [] }
     else
-      let left'',trace = annotate_beta env left' in
-      left'', {trace with left= Beta::trace.left}
+      begin
+        let cleft = compile_term env left in
+        let cleft' = compile_term env left' in
+(*        Format.eprintf "before: %a@." Pp.print_term left;
+        Format.eprintf "after: %a@." Pp.print_term left'; *)
+        let _,ctx,red = compare_term [] cleft cleft' in
+        let t = match red with
+          | `Beta t -> t
+          | `Cst((md,id),_) -> Format.eprintf "%s,%s@." md id ; assert false in
+        let left'',trace = annotate_beta env left' in
+        left'', {trace with left= (Beta t, ctx) :: trace.left}
+      end
 
   let rec annotate env left right =
-    let add_delta side (cst,_tys) trace =
-      if side = `Right then {trace with right= Delta(cst,_tys) :: trace.right}
-      else if side = `Left then {trace with left= Delta(cst,_tys) :: trace.left}
+    let add_delta side ctx (cst,_tys) trace =
+      if side = `Right then {trace with right= (Delta(cst,_tys), ctx) :: trace.right}
+      else if side = `Left then {trace with left= (Delta(cst,_tys), ctx) :: trace.left}
       else assert false
     in
     if Term.term_eq left right then { left = [] ; right = [] }
@@ -358,7 +355,7 @@ module Tracer = struct
       else
         let cleft = compile_term env left' in
         let cright = compile_term env right' in
-        let side, red = compare_term [] cleft cright in
+        let side, ctx, red = compare_term [] cleft cright in
         let left'',right'' =
           match red with
           | `Cst((md,id), _tys) ->
@@ -369,13 +366,16 @@ module Tracer = struct
             else if side = `Left then
               (reduce_delta env left' cst i, right')
             else assert false
-          | _ -> assert false
+          | _ -> (
+              Format.eprintf "before: %a@." Pp.print_term left';
+              Format.eprintf "after: %a@." Pp.print_term right';
+              assert false )
         in
         let trace = annotate env left'' right'' in
         let trace =
           match red with
           | `Cst((md,id),_tys) ->
-            add_delta side ((md, id),_tys) trace
+            add_delta side ctx ((md, id),_tys) trace
           | _ -> assert false
         in
         {left=trace_beta.right@trace.left; right = trace_beta.right@trace.right}
@@ -497,7 +497,7 @@ and get_product env j f' =
     let tyfl = Decompile.decompile__term env.dk tyfl' in
     let tyfr =
       match Tracer.get_red tyfl' with
-      | `Beta  -> assert false
+      | `Beta _ -> assert false
       | `Cst ((md,id),_tys) ->
         let cst = mk_name (mk_mident md) (mk_ident id) in
         Env.unsafe_reduction ~red:(delta_only cst) tyfl

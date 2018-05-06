@@ -123,6 +123,59 @@ let add_prf_ctx env id _te _te' =
   ; prf= (id, _te') :: env.prf
   ; dk= (Basic.dloc, Basic.mk_ident id, _te) :: env.dk }
 
+
+let print_rewrite oc r =
+  match r with
+  | Delta((md,id),_tys) -> Format.fprintf oc "%s,%s" md id
+  | Beta _ -> Format.fprintf oc "beta"
+
+let rec get_vars = function
+  | Ty _ -> []
+  | ForallK(var, ty) -> var::(get_vars ty)
+
+let mk_rewrite ctx r =
+  let open Basic in
+  match r with
+  | Beta(t) ->
+    let t' = mk__te ctx t in
+    mk_betaConv t'
+  | Delta((md,id),_tys) ->
+    let cst = mk_name (mk_mident md) (mk_ident id) in
+    let ty =
+      match Env.get_type dloc cst with
+      | OK ty -> ty
+      | Err _ -> assert false
+    in
+    let ty' = Compile.compile_type ctx ty in
+    let vars = get_vars ty' in
+    assert (List.length vars = List.length _tys);
+    let vars' = List.map mk_id vars in
+    let _tys' = List.map mk__ty _tys in
+    let thm = thm_of_const_name (mk_qid (md,id)) in
+    mk_subst thm (List.combine vars' _tys') []
+
+let print_ctx oc = function
+  | CAbs -> Format.fprintf oc "CAbs"
+  | CAppL -> Format.fprintf oc "CAppL"
+  | CAppR -> Format.fprintf oc "CAppR"
+  | CForall -> Format.fprintf oc "CForall"
+  | CImplL -> Format.fprintf oc "CImplL"
+  | CImplR -> Format.fprintf oc "CImplR"
+  | CAbsTy -> Format.fprintf oc "CAbsTy"
+  | CForallP -> Format.fprintf oc "CForallP"
+
+let print_ctxs oc ctxs =
+  Basic.pp_list "," print_ctx oc (List.rev ctxs)
+
+let print_rewrite_ctx oc (rw,ctxs) =
+  Format.fprintf oc "unfold %a at %a;@." print_rewrite rw print_ctxs ctxs
+
+let print_rewrite_seq oc rws = List.iter (print_rewrite_ctx oc) rws
+
+let print_trace oc trace =
+  Format.fprintf oc "left:@.%a@." print_rewrite_seq trace.left;
+  Format.fprintf oc "right:@.%a@." print_rewrite_seq trace.right
+
 let rec mk_proof ctx =
   let open Basic in
   function
@@ -188,7 +241,7 @@ let rec mk_proof ctx =
     Format.eprintf "to prove: %a@." Pp.print_term (Decompile.decompile_term ctx.dk j.thm);
     Format.eprintf "from: %a@." Pp.print_term
       (Decompile.decompile_term ctx.dk (judgment_of proof).thm);
-    Format.eprintf "Size of trace: %d,%d@." (List.length trace.left) (List.length trace.right);
+    Format.eprintf "trace: %ad@." print_trace trace;
     failwith "todo"
 
 let print_item oc = function

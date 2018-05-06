@@ -44,7 +44,6 @@ type hyp = TeSet.t
 type judgment = {ty: ty_ctx; te: te_ctx; hyp: hyp; thm: te}
 
 type ctx =
-  | CNow
   | CAbs
   | CAppL
   | CAppR
@@ -54,9 +53,9 @@ type ctx =
   | CAbsTy
   | CForallP
 
-type rewrite = Delta of name * _ty list | Beta
+type rewrite = Delta of name * _ty list | Beta of _te
 
-type rewrite_seq = rewrite list
+type rewrite_seq = (rewrite * ctx list) list
 
 type trace = {left: rewrite_seq; right: rewrite_seq}
 
