@@ -3,6 +3,8 @@ open Compile
 open Openstt
 open Environ
 
+module ST = Sttfatyping
+
 let cur_md = ref ""
 
 let sanitize id = id
@@ -10,6 +12,7 @@ let sanitize id = id
 let mk_id id = mk_name [] (sanitize id)
 
 let mk_qid (md,id) = mk_name [md] id
+
 
 let rec mk__ty = function
   | TyVar(var) -> mk_varType (mk_id var)
@@ -82,14 +85,31 @@ let rec mk_te ctx = function
     mk_te ctx' te
   | Te(_te) -> mk__te ctx _te
 
+
+
+let thm_of_const cst =
+  try
+    thm_of_const_name (mk_qid cst)
+  with Failure _ ->
+    let name = Environ.name_of cst in
+    let term = Term.mk_Const Basic.dloc name in
+    let te = Env.unsafe_reduction ~red:(ST.Strategy.delta name) (term) in
+    let te' = CTerm.compile_term Environ.empty_env te in
+    let te' = mk_te empty_env te' in
+    let ty = match Env.infer term with | Basic.OK ty -> ty | _ -> assert false in
+    let ty' = CType.compile_wrapped_type Environ.empty_env ty in
+    let ty' = mk_ty ty' in
+    let const = const_of_name (mk_qid cst) in
+    let constterm = term_of_const const ty' in
+    let eq = mk_equal_term constterm te' ty' in
+    mk_axiom (mk_hyp []) eq
+
+
 let add_prf_ctx env id _te _te' =
   { env with
     k= env.k + 1
   ; prf= (id, _te') :: env.prf
   ; dk= (Basic.dloc, Basic.mk_ident id, _te) :: env.dk }
-
-
-
 
 let rec get_vars = function
   | Ty _ -> []
@@ -113,18 +133,18 @@ let mk_rewrite ctx r =
     assert (List.length vars = List.length _tys);
     let vars' = List.map mk_id vars in
     let _tys' = List.map mk__ty _tys in
-    let thm = thm_of_const_name (mk_qid (md,id)) in
+    let thm = thm_of_const (md,id) in
     mk_subst thm (List.combine vars' _tys') []
 
 let mk_beta env _te =
   let _te' = mk__te env _te in
   mk_betaConv _te'
 
-let mk_delta ctx name _tys =
+let mk_delta ctx cst _tys =
   let open Basic in
-  let thm = thm_of_const_name (mk_qid name) in
+  let thm = thm_of_const cst in
   let term =
-    Term.mk_Const dloc (mk_name (mk_mident (fst name)) (mk_ident (snd name)))
+    Term.mk_Const dloc (mk_name (mk_mident (fst cst)) (mk_ident (snd cst)))
   in
   let ty =
     match Env.infer ~ctx:ctx.dk term  with
@@ -172,14 +192,14 @@ let rec mk__ctx env thm ctx left right =
     let _ter1' = mk__te env _ter1 in
     let _tel2' = mk__te env _tel2 in
     let _ter2' = mk__te env _ter2 in
-    let thm = mk__ctx env thm ctx _ter1 _ter2 in
+    let thm = mk__ctx env thm ctx _tel1 _tel2 in
     mk_impl_equal thm (mk_refl _ter1') _tel1' _ter1' _tel2' _ter2'
   | CImplR::ctx, Impl(_tel1, _ter1), Impl(_tel2, _ter2) ->
     let _tel1' = mk__te env _tel1 in
     let _ter1' = mk__te env _ter1 in
     let _tel2' = mk__te env _tel2 in
     let _ter2' = mk__te env _ter2 in
-    let thm = mk__ctx env thm ctx _tel1 _tel2 in
+    let thm = mk__ctx env thm ctx _ter1 _ter2 in
     mk_impl_equal (mk_refl _tel1') thm _tel1' _ter1' _tel2' _ter2'
   | _ -> assert false
 
@@ -233,7 +253,8 @@ let rec mk_proof env =
         thm_of_lemma (mk_qid cst)
       with _ ->
       match Env.get_type dloc (name_of cst) with
-      | OK te -> mk_axiom (mk_hyp []) (mk_te env (CTerm.compile_term env te))
+      | OK te ->
+        mk_axiom (mk_hyp []) (mk_te env (CTerm.compile_wrapped_term env te))
       | Err err -> Errors.fail_signature_error err
     end
   | ForallE(j,proof, u) ->
@@ -285,10 +306,11 @@ let rec mk_proof env =
     let env' = add_ty_var env var in
     mk_proof env' proof
   | Conv(j,proof,trace) ->
+    (*
     Format.eprintf "from: %a@." Pp.print_term
       (Decompile.decompile_term env.dk (judgment_of proof).thm);
     Format.eprintf "to prove: %a@." Pp.print_term (Decompile.decompile_term env.dk j.thm);
-    Format.eprintf "%a@." Ast.print_trace trace;
+    Format.eprintf "%a@." Ast.print_trace trace; *)
     let right = j.thm in
     let left = (judgment_of proof).thm in
     let proof = mk_proof env proof in

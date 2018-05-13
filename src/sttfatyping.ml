@@ -111,6 +111,7 @@ struct
     let name = name_of cst in
     not (Env.is_static dloc name)
 
+
   let rec is_redexable _te =
     match _te with
     | Cst(cst, _) ->is_defined cst
