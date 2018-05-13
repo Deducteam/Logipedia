@@ -5,6 +5,7 @@ open Environ
 
 module CType = Compile_type
 module CTerm = Compile_term
+
 let make_judgment env hyp thm = {ty= env.ty; te= env.te; hyp; thm}
 
 let rec extract_te te = match te with Te _te -> _te | _ -> assert false

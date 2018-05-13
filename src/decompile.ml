@@ -75,11 +75,9 @@ let rec decompile__term ctx _te =
     let ctx' = add_ty_var ty_var ctx in
       Term.mk_Lam dloc (mk_ident ty_var) (Some (to_const sttfa_type))
         (decompile__term ctx' _te)
-  | Cst (cst, []) -> Term.mk_Const dloc (to_name cst)
-  | Cst (cst, x :: args) ->
-      let x' = decompile__type ctx x in
-      let args' = List.map (decompile__type ctx) args in
-      Term.mk_App (Term.mk_Const dloc (to_name cst)) x' args'
+  | Cst (cst, args) ->
+    let args' = List.map (decompile__type ctx) args in
+    Term.mk_App2 (Term.mk_Const dloc (to_name cst)) args'
 
 
 let rec decompile_term ctx te =
@@ -96,18 +94,6 @@ let rec decompile_term ctx te =
 let to_eps t = Term.mk_App (to_const sttfa_eps) t []
 
 let add_prf_ctx ctx id _te  = (Basic.dloc, mk_ident id, _te) :: ctx
-
-let judgment_of = function
-  | Assume(j,_)     -> j
-  | Lemma(_,j)      -> j
-  | Conv(j,_,_)     -> j
-  | ImplE(j,_,_)    -> j
-  | ImplI(j,_,_)    -> j
-  | ForallE(j,_,_)  -> j
-  | ForallI(j,_,_)  -> j
-  | ForallPE(j,_,_) -> j
-  | ForallPI(j,_,_) -> j
-
 
 let rec decompile_proof ctx prf =
   match prf with

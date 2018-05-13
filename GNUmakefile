@@ -9,13 +9,13 @@ all: main.native
 main.native: _build/src/main.native
 
 _build/src/main.native: $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli)
-	@echo "[OPT] main.native"
+	@echo "[BUILD] main.native"
 	@ocamlbuild -quiet -Is src/,src/utils,src/export -package dedukti.kernel -package dedukti.parser src/main.native
 
 #### Producing the theory file #####################################
 
 theories/sttfa.dko: theories/sttfa.dk
-	@echo "[DKC sttforall] $^"
+	@echo "[CHECK] $^"
 	@$(DKCHECK) -e $^
 
 #### Running examples ##############################################
@@ -39,7 +39,7 @@ LIBDKS = $(wildcard library/*.dk)
 library: $(LIBDKS:.dk=.dko)
 
 library/%.csv library/%.lean library/%.v library/%.ma library/%.pvs library/%.art library/%.dko:  library/%.dk theories/sttfa.dko .library_depend main.native
-	@echo "[EXT] $<"
+	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories $<
 
 library/%.summary: library/%.pvs

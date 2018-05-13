@@ -5,6 +5,10 @@ open Parser
 open Rule
 open Ast
 
+let err_msg fmt =
+  Format.eprintf "%s" ("\027[31m" ^ "ERROR" ^ "\027[m");
+  Format.eprintf fmt
+
 let system : Export.system ref = ref (Export.(`Pvs))
 
 let set_export s =
@@ -61,7 +65,7 @@ let run_on_file file =
   if not (Env.export ()) then
     Errors.fail dloc "Fail to export module '%a'." pp_mident md ;
   Confluence.finalize () ;
-  export_file file ast `OpenTheory
+  export_file file ast `Coq
 
 let _ =
   let options =
@@ -77,13 +81,13 @@ let _ =
   in
   try List.iter run_on_file files with
   | Parse_error (loc, msg) ->
-      let l, c = of_loc loc in
-      Printf.eprintf "Parse error at (%i,%i): %s\n" l c msg ;
-      exit 1
+    let l, c = of_loc loc in
+    err_msg "Parse error at (%i,%i): %s\n" l c msg ;
+    exit 1
   | Failure err ->
-      Printf.eprintf "ERROR %s.\n" err ;
-      exit 1
+      err_msg "Failure: %s" err;
+      exit 2
   | Sys_error err ->
-      Printf.eprintf "ERROR %s.\n" err ;
-      exit 1
-  | Exit -> exit 3
+      err_msg "System error: %s" err;
+      exit 3
+  | Exit -> exit 4
