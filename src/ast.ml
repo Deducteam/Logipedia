@@ -44,20 +44,47 @@ type hyp = TeSet.t
 type judgment = {ty: ty_ctx; te: te_ctx; hyp: hyp; thm: te}
 
 type ctx =
-  | CAbs of te_var * _ty
-  | CAppL of _te
-  | CAppR of _te
-  | CForall of te_var * _ty * _te * _te
-  | CImplL of _te * _te * _te
-  | CImplR of _te * _te * _te
-  | CAbsTy of ty_var
-  | CForallP of ty_var
+  | CAbs
+  | CAppL
+  | CAppR
+  | CForall
+  | CImplL
+  | CImplR
+  | CAbsTy
+  | CForallP
 
-type rewrite = Delta of name * _ty list | Beta of _te
+let print_ctx fmt = function
+  | CAbs     -> Format.fprintf fmt "CAbs"
+  | CAppL    -> Format.fprintf fmt "CAppL"
+  | CAppR    -> Format.fprintf fmt "CAppR"
+  | CForall  -> Format.fprintf fmt "CForall"
+  | CImplL   -> Format.fprintf fmt "CImplL"
+  | CImplR   -> Format.fprintf fmt "CImplR"
+  | CAbsTy   -> Format.fprintf fmt "CAbsTy"
+  | CForallP -> Format.fprintf fmt "CForallP"
 
-type rewrite_seq = (rewrite * ctx list) list
+let print_ctxs fmt ctxs =
+  Basic.pp_list "," print_ctx fmt ctxs
+
+type redex = Delta of name * _ty list | Beta of _te
+
+let print_redex oc r =
+  match r with
+  | Delta((md,id),_tys) -> Format.fprintf oc "%s,%s" md id
+  | Beta _ -> Format.fprintf oc "beta"
+
+type rewrite_seq = (redex * ctx list) list
 
 type trace = {left: rewrite_seq; right: rewrite_seq}
+
+let print_rewrite_ctx oc (rw,ctxs) =
+  Format.fprintf oc "unfold %a at %a;@." print_redex rw print_ctxs ctxs
+
+let print_rewrite_seq oc rws = List.iter (print_rewrite_ctx oc) rws
+
+let print_trace oc trace =
+  Format.fprintf oc "left:@.%a@." print_rewrite_seq trace.left;
+  Format.fprintf oc "right:@.%a@." print_rewrite_seq trace.right
 
 type proof =
   | Assume of judgment * hyp_var

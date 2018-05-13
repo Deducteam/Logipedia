@@ -56,14 +56,14 @@ let delta_only : Basic.name -> Reduction.red_cfg =
           | Delta cst' -> if name_eq cst' cst then true else false
           | _ -> false ) }
 
-
+(*
 module Tracer = struct
   let rec get_red tyf' =
     match tyf' with
     | App(Abs _, _te) -> [],`Beta(tyf')
     | App (f, a) ->
       let ctx, red = get_red f in
-      (CAppL a)::ctx, red
+      CAppL::ctx, red
     | Cst ((md, id), _tys) -> [], `Cst (of_name (mk_name (mk_mident md) (mk_ident id)), _tys)
     | _ -> assert false
 
@@ -80,19 +80,19 @@ module Tracer = struct
           (`Right, ctx, `Cst(cst', _tys'))
         else (`Left, ctx, `Cst(cst, _tys))
     | Abs (var, _ty, _tel), Abs (var', _, _ter) ->
-      compare__term (CAbs(var,_ty)::ctx) _tel _ter
+      compare__term (CAbs::ctx) _tel _ter
     | App(Abs _, _), _ -> (`Left, ctx, `Beta(left))
     | _, App(Abs _, _) -> (`Right, ctx, `Beta(right))
     | _, Cst (cst, _tys) -> (`Right, ctx, `Cst(cst,_tys))
     | Cst (cst, _tys), _ -> (`Left, ctx, `Cst(cst,_tys))
     | Forall (var, _ty, _tel), Forall (var', _, _ter) ->
-      compare__term (CForall(var, _ty, _tel,_ter)::ctx) _tel _ter
+      compare__term (CForall::ctx) _tel _ter
     | Impl (_tel, _ter), Impl (_tel', _ter') -> (
-        try compare__term (CImplL(_tel,_tel',_ter)::ctx) _tel _tel'
-        with Equal ->  compare__term (CImplR(_tel,_ter,_ter')::ctx)_ter _ter')
+        try compare__term (CImplL::ctx) _tel _tel'
+        with Equal ->  compare__term (CImplR::ctx) _ter _ter')
     | App (_tel, _ter), App (_tel', _ter') -> (
         try
-          let side, ctx, cst = compare__term (CAppL(_ter)::ctx) _tel _tel' in
+          let side, ctx, cst = compare__term (CAppL::ctx) _tel _tel' in
           match cst with
           | `Cst(cst,_tys) ->
             if Env.is_static dloc (name_of cst) then
@@ -105,7 +105,7 @@ module Tracer = struct
             else  (side, ctx, `Cst (cst, _tys))
           | _ ->  side, ctx, cst
         with Equal ->
-        try compare__term (CAppR(_tel)::ctx) _ter _ter' with Failure _ ->
+        try compare__term (CAppR::ctx) _ter _ter' with Failure _ ->
           let ctxapp, red = get_red _tel in
           (`Left, ctxapp@ctx, red)
           (* UGLY can be fixed by checking first the definability of a constant for the cst case *) )
@@ -121,7 +121,7 @@ module Tracer = struct
     match (left, right) with
     | Te left, Te right -> compare__term ctx left right
     | ForallP (var, left), ForallP (var', right) ->
-      compare_term (CForallP(var)::ctx) left right
+      compare_term (CForallP::ctx) left right
     | _ -> assert false
 
   let reduce_delta env term cst i =
@@ -187,7 +187,7 @@ module Tracer = struct
         {left=trace_beta.right@trace.left; right = trace_beta.right@trace.right}
 
 end
-
+                *)
 let rec compile_proof env proof =
   match proof with
   | Term.DB (_, var, n) ->
@@ -261,26 +261,21 @@ and compile_arg env j f' a =
   | Te Forall _ ->
     let a' = CTerm.compile__term env a in
     let proof = ForallE(j', f',a') in
-    let before = Decompile.decompile_term env.dk j'.thm in
-    let after = Env.unsafe_reduction ~red:(beta_only) before in
-    let trace = Tracer.annotate env before after in
-    let thm' = CTerm.compile_term env after in
-    let j' = {j with thm = thm'} in
+    let rws,after = Sttfatyping.Tracer.annotate_beta env j'.thm in
+    let trace = {left=rws; right = []} in
+    let j' = {j with thm = after} in
     (j', Conv(j', proof, trace))
   | Te Impl(p',q') ->
     let ja,a' = compile_proof env a in
     let _te = match ja.thm with Te _te -> _te | _ -> assert false in
-    let pq = Decompile.decompile__term env.dk (Impl(p',q')) in
-    let _te = Decompile.decompile__term env.dk (Impl(_te,q')) in
-    if Term.term_eq pq _te then
-      (j', ImplE(j', f',a'))
+    let inferred = Impl(p', q') in
+    let expected = Impl(_te,q') in
+    if Sttfatyping._eq env inferred expected then
+        (j', ImplE(j', f',a'))
     else
       begin
-(*        Format.eprintf "left:%a@." Pp.print_term pq;
-          Format.eprintf "right:%a@." Pp.print_term _te; *)
-        let trace = Tracer.annotate env pq _te in
-        let _te' = CTerm.compile__term env _te in
-        let f' = Conv({j with thm = Te _te'}, f', trace) in
+        let trace = Sttfatyping.Tracer._annotate env inferred expected in
+        let f' = Conv({j with thm = Te expected}, f', trace) in
         (j', ImplE(j',f',a'))
       end
   | Te tyfl' -> assert false
@@ -288,22 +283,14 @@ and compile_arg env j f' a =
 and get_product env j f' =
   match j.thm with
   | ForallP _ | Te Forall _ | Te Impl _ -> (j,f')
-  | Te tyfl' ->
-    let tyfl = Decompile.decompile__term env.dk tyfl' in
-    let tyfr =
-      match Tracer.get_red tyfl' with
-      | _,`Beta _ -> assert false
-      | _,`Cst ((md,id),_tys) ->
-        let cst = mk_name (mk_mident md) (mk_ident id) in
-        Env.unsafe_reduction ~red:(delta_only cst) tyfl
-        |> Env.unsafe_reduction ~red:(beta_only)
-    in
+  | Te tyfl ->
+    let _, ctx,redex = Sttfatyping.Tracer.get_app_redex true [] tyfl in
+    let tyfr = Sttfatyping.Tracer._reduce env ctx redex tyfl in
     (*    Format.eprintf "right:%a@." Pp.print_term tyfr; *)
 (*    Format.eprintf "left:%a@." Pp.print_term tyfl;
       Format.eprintf "right:%a@." Pp.print_term tyfr; *)
-    let trace = Tracer.annotate env tyfl tyfr in
-    let tyfr' = CTerm.compile__term env tyfr in
-    let j' = {j with thm = Te tyfr'} in
+    let trace = Sttfatyping.Tracer._annotate env tyfl tyfr in
+    let j' = {j with thm = Te tyfr} in
     let proof' = Conv(j',f',trace) in
     get_product env j' proof'
 (*

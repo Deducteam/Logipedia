@@ -89,10 +89,7 @@ let add_prf_ctx env id _te _te' =
   ; dk= (Basic.dloc, Basic.mk_ident id, _te) :: env.dk }
 
 
-let print_rewrite oc r =
-  match r with
-  | Delta((md,id),_tys) -> Format.fprintf oc "%s,%s" md id
-  | Beta _ -> Format.fprintf oc "beta"
+
 
 let rec get_vars = function
   | Ty _ -> []
@@ -119,28 +116,6 @@ let mk_rewrite ctx r =
     let thm = thm_of_const_name (mk_qid (md,id)) in
     mk_subst thm (List.combine vars' _tys') []
 
-let print_ctx oc = function
-  | CAbs _     -> Format.fprintf oc "CAbs"
-  | CAppL _    -> Format.fprintf oc "CAppL"
-  | CAppR _    -> Format.fprintf oc "CAppR"
-  | CForall _  -> Format.fprintf oc "CForall"
-  | CImplL _   -> Format.fprintf oc "CImplL"
-  | CImplR _   -> Format.fprintf oc "CImplR"
-  | CAbsTy _   -> Format.fprintf oc "CAbsTy"
-  | CForallP _ -> Format.fprintf oc "CForallP"
-
-let print_ctxs oc ctxs =
-  Basic.pp_list "," print_ctx oc (List.rev ctxs)
-
-let print_rewrite_ctx oc (rw,ctxs) =
-  Format.fprintf oc "unfold %a at %a;@." print_rewrite rw print_ctxs ctxs
-
-let print_rewrite_seq oc rws = List.iter (print_rewrite_ctx oc) rws
-
-let print_trace oc trace =
-  Format.fprintf oc "left:@.%a@." print_rewrite_seq trace.left;
-  Format.fprintf oc "right:@.%a@." print_rewrite_seq trace.right
-
 let mk_beta env _te =
   let _te' = mk__te env _te in
   mk_betaConv _te'
@@ -164,162 +139,160 @@ let mk_delta ctx name _tys =
   let subst = List.combine vars' _tys' in
   mk_subst thm subst []
 
-  let env_of_ctx env =
-    function
-    | CAppL _ | CAppR _ | CImplL _ | CImplR _ -> env
-    | CAbs(var,_ty) ->
-      add_te_var env var _ty
-    | CForall(var,_ty,_,_) ->
-      add_te_var env var _ty
-    | CAbsTy(var) ->
-      add_ty_var env var
-    | CForallP(var) ->
-      add_ty_var env var
-
-let mk_ctx env thm ctx =
-  match ctx with
-  | CAbs(var,_ty) ->
-    let id = mk_id var in
-    let _ty' = mk__ty _ty in
-    let var = mk_var id _ty' in
+let rec mk__ctx env thm ctx left right =
+  match ctx,left,right with
+  | [], _ , _-> thm
+  | CAbsTy::ctx, AbsTy(var,_te), AbsTy(var',_te') ->
+    mk__ctx env thm ctx _te _te'
+  | CAbs::ctx, Abs(var,_ty,_te), Abs(var',_ty',_te') ->
+    assert (var = var');
+    assert (_ty = _ty');
+    let env' = add_te_var env var _ty in
+    let var = mk_var (mk_id var) (mk__ty _ty) in
+    let thm = mk__ctx env' thm ctx _te _te' in
     mk_absThm var thm
-  | CAppL(_te) ->
-    let _te' = mk__te env _te in
-    mk_appThm thm (mk_refl _te')
-  | CAppR(_te) ->
-    let _te' = mk__te env _te in
-    mk_appThm (mk_refl _te') thm
-  | CForall(var,_ty, _tel, _ter) ->
-    let id = mk_id var in
-    let _ty' = mk__ty _ty in
-    let _tel' = mk__te env _tel in
-    let _ter' = mk__te env _ter in
+  | CForall::ctx, Forall(var,_ty,_tel), Forall(var',_ty',_ter) ->
+    assert (var = var');
+    assert (_ty = _ty');
+    let env' = add_te_var env var _ty in
+    let _tel' = mk__te env' _tel in
+    let _ter' = mk__te env' _ter in
     debug _tel';
     debug _ter';
-    mk_forall_equal thm id _tel' _ter' _ty'
-  | CImplL(pl,pr,q) ->
-    let pl' = mk__te env pl in
-    let pr' = mk__te env pr in
-    let q' = mk__te env q in
-    mk_impl_equal thm (mk_refl q') pl' pr' q' q'
-  | CImplR(p,ql,qr) ->
-    let p' = mk__te env p in
-    let ql' = mk__te env ql in
-    let qr' = mk__te env qr in
-    mk_impl_equal (mk_refl p') thm p' p' ql' qr'
-  | CAbsTy(var) -> thm
-  | CForallP var -> thm
+    let thm = mk__ctx env' thm ctx _tel _ter in
+    mk_forall_equal thm (mk_id var) _tel' _ter' (mk__ty _ty)
+  | CAppL::ctx, App(_tel,_ter), App(_tel',_ter') ->
+    let thm = mk__ctx env thm ctx _tel _tel' in
+    mk_appThm thm (mk_refl (mk__te env _ter))
+  | CAppR::ctx, App(_tel,_ter), App(_tel',_ter') ->
+    let thm = mk__ctx env thm ctx _ter _ter' in
+     mk_appThm (mk_refl (mk__te env _tel)) thm
+  | CImplL::ctx, Impl(_tel1, _ter1), Impl(_tel2, _ter2) ->
+    let _tel1' = mk__te env _tel1 in
+    let _ter1' = mk__te env _ter1 in
+    let _tel2' = mk__te env _tel2 in
+    let _ter2' = mk__te env _ter2 in
+    let thm = mk__ctx env thm ctx _ter1 _ter2 in
+    mk_impl_equal thm (mk_refl _ter1') _tel1' _ter1' _tel2' _ter2'
+  | CImplR::ctx, Impl(_tel1, _ter1), Impl(_tel2, _ter2) ->
+    let _tel1' = mk__te env _tel1 in
+    let _ter1' = mk__te env _ter1 in
+    let _tel2' = mk__te env _tel2 in
+    let _ter2' = mk__te env _ter2 in
+    let thm = mk__ctx env thm ctx _tel1 _tel2 in
+    mk_impl_equal (mk_refl _tel1') thm _tel1' _ter1' _tel2' _ter2'
+  | _ -> assert false
 
-let mk_rewrite_step env is_left (rw,ctxs) =
-  let env' = List.fold_right (fun x y -> env_of_ctx y x) ctxs env in
-  let thm = match rw with
-    | Delta(name,_tys) ->
-      let thm = mk_delta env' name _tys in
-      (if is_left then thm else mk_sym thm)
-    | Beta(_te) ->
-      let thm = mk_beta env' _te in
-      (if is_left then thm else mk_sym thm)
+let rec mk_ctx env thm ctx left right =
+  match ctx, left,right with
+  | CForallP::ctx, ForallP(var,_te) , ForallP(_,_te') ->
+    let env' = add_ty_var env var in
+    let thm = mk_ctx env' thm ctx _te _te' in
+    thm
+  | _, Te _te, Te _te' -> mk__ctx env thm ctx  _te _te'
+  | _, _,_ -> assert false
+
+let mk_rewrite_step env term (redex,ctx) =
+  let env' = Sttfatyping.Tracer.env_of_redex env ctx term in
+  let term' = Sttfatyping.Tracer.reduce env' ctx redex term in
+  let thm = match redex with
+    | Delta(name,_tys) -> mk_delta env' name _tys
+    | Beta(_te) -> mk_beta env' _te
   in
   debug thm;
-  let rec fold_ctx env thm = function
-    | [] -> thm
-    | ctx::ctxs ->
-      let env' = env_of_ctx env ctx in
-      let thm' = fold_ctx env' thm ctxs in
-      debug thm';
-      mk_ctx env' thm' ctx
-  in
-  let ctxs = List.rev ctxs in
+  let thm =  mk_ctx env thm ctx term term' in
+  term',thm
 
-  fold_ctx env thm ctxs
-
-
-let mk_rewrite_seq env side def rws =
+let mk_rewrite_seq env term rws =
   match rws with
-  | [] -> def
-  | [rw] -> mk_rewrite_step env side rw
+  | [] -> term, mk_refl (mk_te env term)
+  | [rw] ->  mk_rewrite_step env term rw
   | rw::rws ->
-    let rw = mk_rewrite_step env side rw in
-    List.fold_left (fun thm rw ->
-        mk_trans thm (mk_rewrite_step env side rw)) rw rws
+    let term',rw = mk_rewrite_step env term rw in
+    List.fold_left (fun (term,thm) rw ->
+        let term', thm' = (mk_rewrite_step env term rw) in
+        debug thm;
+        debug thm';
+        debug (mk_trans thm thm');
+        debug (mk_te env term');
+        term', mk_trans thm thm') (term',rw) rws
 
 let mk_trace env left right trace =
-  let thml = mk_rewrite_seq env true left trace.left in
-  let thmr = mk_rewrite_seq env false right trace.right in
+  let _,thml = mk_rewrite_seq env left trace.left in
+  let _,thmr = mk_rewrite_seq env right trace.right in
   let thmr' = mk_sym thmr in
   mk_trans thml thmr'
 
-let rec mk_proof ctx =
+let rec mk_proof env =
   let open Basic in
   function
-  | Assume(j,var) -> mk_assume (mk_te ctx j.thm)
+  | Assume(j,var) -> mk_assume (mk_te env j.thm)
   | Lemma(cst,j) ->
     begin
       try
         thm_of_lemma (mk_qid cst)
       with _ ->
       match Env.get_type dloc (name_of cst) with
-      | OK te -> mk_axiom (mk_hyp []) (mk_te ctx (CTerm.compile_term ctx te))
+      | OK te -> mk_axiom (mk_hyp []) (mk_te env (CTerm.compile_term env te))
       | Err err -> Errors.fail_signature_error err
     end
   | ForallE(j,proof, u) ->
     begin
       match (judgment_of proof).thm with
       | Te(Forall(var,_ty,_te)) ->
-        let f' = mk__te ctx (Abs(var,_ty,_te)) in
-        let u' = mk__te ctx u in
+        let f' = mk__te env (Abs(var,_ty,_te)) in
+        let u' = mk__te env u in
         let _ty' = mk__ty _ty in
-        let proof' = mk_proof ctx proof in
+        let proof' = mk_proof env proof in
         mk_rule_elim_forall proof' f' _ty' u'
       | _ -> assert false
     end
   | ForallI(j,proof,var) ->
     let j' = judgment_of proof in
     let _,_ty = List.find (fun (x,_ty) -> if x = var then true else false) j'.te in
-    let ctx' = add_te_var ctx var _ty in
-    let proof' = mk_proof ctx' proof in
+    let env' = add_te_var env var _ty in
+    let proof' = mk_proof env' proof in
     let _ty' = mk__ty _ty in
-    let thm' = mk_te ctx' j'.thm in
+    let thm' = mk_te env' j'.thm in
     mk_rule_intro_forall (mk_id var) _ty' thm' proof'
   | ImplE(j,prfpq,prfp) ->
     let p = (judgment_of prfp).thm in
     let q = j.thm in
-    let p' = mk_te ctx p in
-    let q' = mk_te ctx q in
-    let prfp' = mk_proof ctx prfp in
-    let prfpq' = mk_proof ctx prfpq in
+    let p' = mk_te env p in
+    let q' = mk_te env q in
+    let prfp' = mk_proof env prfp in
+    let prfpq' = mk_proof env prfpq in
     mk_rule_elim_impl prfp' prfpq' p' q'
   | ImplI(j,proof,var) ->
     let j' = judgment_of proof in
     let _,p = TeSet.choose (TeSet.filter (fun (x,_ty) -> if x = var then true else false) j'.hyp) in
     let q = j'.thm in
-    let ctx' = add_prf_ctx ctx var (Decompile.decompile__term ctx.dk p) p in
-    let p' = mk__te ctx p in
-    let q' = mk_te ctx q in
-    let proof' = mk_proof ctx' proof in
+    let env' = add_prf_ctx env var (Decompile.decompile__term env.dk p) p in
+    let p' = mk__te env p in
+    let q' = mk_te env q in
+    let proof' = mk_proof env' proof in
     mk_rule_intro_impl proof' p' q'
   | ForallPE(_,proof,_ty) -> (* WRONG: alpha *)
     begin
       match (judgment_of proof).thm with
       | ForallP(var,_) ->
         let subst = [(mk_id var, mk__ty _ty)] in
-        let proof' = mk_proof ctx proof in
+        let proof' = mk_proof env proof in
         mk_subst proof' subst []
       | _ -> assert false
     end
   | ForallPI(_,proof,var) ->
-    let ctx' = add_ty_var ctx var in
-    mk_proof ctx' proof
+    let env' = add_ty_var env var in
+    mk_proof env' proof
   | Conv(j,proof,trace) ->
-    Format.eprintf "to prove: %a@." Pp.print_term (Decompile.decompile_term ctx.dk j.thm);
     Format.eprintf "from: %a@." Pp.print_term
-      (Decompile.decompile_term ctx.dk (judgment_of proof).thm);
-    Format.eprintf "%a@." print_trace trace;
+      (Decompile.decompile_term env.dk (judgment_of proof).thm);
+    Format.eprintf "to prove: %a@." Pp.print_term (Decompile.decompile_term env.dk j.thm);
+    Format.eprintf "%a@." Ast.print_trace trace;
     let right = j.thm in
     let left = (judgment_of proof).thm in
-    let left' = mk_te ctx left in
-    let right' = mk_te ctx right in
-    mk_trace ctx (mk_refl left') (mk_refl right') trace
+    let proof = mk_proof env proof in
+    mk_eqMp proof (mk_trace env left right trace)
 
 let print_item oc = function
   | Parameter(cst,ty) -> ()

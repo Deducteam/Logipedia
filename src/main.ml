@@ -65,7 +65,7 @@ let run_on_file file =
   if not (Env.export ()) then
     Errors.fail dloc "Fail to export module '%a'." pp_mident md ;
   Confluence.finalize () ;
-  export_file file ast `Coq
+  export_file file ast `OpenTheory
 
 let _ =
   let options =
@@ -82,12 +82,12 @@ let _ =
   try List.iter run_on_file files with
   | Parse_error (loc, msg) ->
     let l, c = of_loc loc in
-    err_msg "Parse error at (%i,%i): %s\n" l c msg ;
+    err_msg "Parse error at (%i,%i): %s@." l c msg ;
     exit 1
   | Failure err ->
-      err_msg "Failure: %s" err;
+      err_msg "Failure: %s@." err;
       exit 2
   | Sys_error err ->
-      err_msg "System error: %s" err;
+      err_msg "System error: %s@." err;
       exit 3
   | Exit -> exit 4

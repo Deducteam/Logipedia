@@ -41,7 +41,7 @@ let compile_definition name ty term =
           Conv
             ( {j with thm=a'}
             , proof
-            , CProof.Tracer.annotate empty_env (Decompile.decompile_term [] j.thm) a
+            , Sttfatyping.Tracer.annotate empty_env j.thm a'
             )
       in
       Theorem (of_name name, CTerm.compile_term empty_env a, proof')
