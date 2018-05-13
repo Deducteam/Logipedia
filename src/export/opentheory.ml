@@ -306,27 +306,33 @@ let rec mk_proof env =
     let env' = add_ty_var env var in
     mk_proof env' proof
   | Conv(j,proof,trace) ->
-    (*
     Format.eprintf "from: %a@." Pp.print_term
       (Decompile.decompile_term env.dk (judgment_of proof).thm);
     Format.eprintf "to prove: %a@." Pp.print_term (Decompile.decompile_term env.dk j.thm);
-    Format.eprintf "%a@." Ast.print_trace trace; *)
+    Format.eprintf "%a@." Ast.print_trace trace;
     let right = j.thm in
     let left = (judgment_of proof).thm in
     let proof = mk_proof env proof in
-    mk_eqMp proof (mk_trace env left right trace)
+    debug (mk_id "before");
+    debug (mk_trace env left right trace);
+    debug (proof);
+    let mp = mk_eqMp proof (mk_trace env left right trace) in
+    mp
 
 let print_item oc = function
   | Parameter(cst,ty) -> ()
   | Definition(cst,ty,te) ->
+    debug (mk_qid cst);
     let te' = mk_te empty_env te in
     mk_const (mk_qid cst) te'
   | Axiom(cst,te) ->
+    debug (mk_qid cst);
     let te' = mk_te empty_env te in
     let hyp = mk_hyp [] in
     mk_thm (mk_qid cst)  te' hyp (mk_axiom hyp te')
   | Theorem(cst,te,proof) ->
     Format.eprintf "Translation of %a@." Basic.pp_name (name_of cst);
+    debug (mk_qid cst);
     let te' = mk_te empty_env te in
     let hyp' = mk_hyp [] in
     let proof' = mk_proof empty_env proof in

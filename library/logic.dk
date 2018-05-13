@@ -46,7 +46,7 @@ def eq_rect_r :
         sttfa.impl (P __) (P x)))
     (P:(sttfa.etap (sttfa.p (sttfa.arrow A sttfa.bool))) =>
      auto:(sttfa.eps (P x)) => auto) a p.
-
+(;
 def eq_ind_r :
   sttfa.eps
     (sttfa.forallP
@@ -329,3 +329,4 @@ def decidable :
   sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool))
   :=
   A:(sttfa.etap (sttfa.p sttfa.bool)) => connectives.Or A (connectives.Not A).
+;)

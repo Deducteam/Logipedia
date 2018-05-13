@@ -49,6 +49,15 @@ let print_te env fmt te =
 
 module Strategy =
 struct
+
+
+  let one_whnf : Reduction.red_cfg =
+    let open Reduction in
+    { nb_steps= Some 1
+    ; beta= true
+    ; strategy= Reduction.Whnf
+    ; select= None }
+
   let beta_snf : Reduction.red_cfg =
     let open Reduction in
     { nb_steps= None
@@ -104,6 +113,20 @@ let beta_reduce env te =
   let tedk = Decompile.decompile_term env.dk te in
   let tedk' = Env.unsafe_reduction ~red:(Strategy.beta_steps 1) tedk in
   CTerm.compile_term env tedk'
+
+let beta_normal env te =
+  let tedk = Decompile.decompile_term env.dk te in
+  let tedk' = Env.unsafe_reduction ~red:(Strategy.beta_snf) tedk in
+  CTerm.compile_term env tedk'
+
+let subst env f a =
+  let thm = (judgment_of f).thm in
+  let te = Decompile.to_eps (Decompile.decompile_term env.dk thm) in
+  let te = Env.unsafe_reduction ~red:(Strategy.one_whnf) te in
+  let _,b = match te with | Term.Pi(_,var,tya,tyb) -> tya,tyb | _ -> assert false in
+  let b' = Subst.subst b a in
+  let b' = Env.unsafe_reduction ~red:(Strategy.beta_steps 1) b' in
+  CTerm.compile_wrapped_term env b'
 
 module Tracer =
 struct
