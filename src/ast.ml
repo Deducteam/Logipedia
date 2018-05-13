@@ -44,14 +44,14 @@ type hyp = TeSet.t
 type judgment = {ty: ty_ctx; te: te_ctx; hyp: hyp; thm: te}
 
 type ctx =
-  | CAbs
-  | CAppL
-  | CAppR
-  | CForall
-  | CImplL
-  | CImplR
-  | CAbsTy
-  | CForallP
+  | CAbs of te_var * _ty
+  | CAppL of _te
+  | CAppR of _te
+  | CForall of te_var * _ty * _te * _te
+  | CImplL of _te * _te * _te
+  | CImplR of _te * _te * _te
+  | CAbsTy of ty_var
+  | CForallP of ty_var
 
 type rewrite = Delta of name * _ty list | Beta of _te
 

@@ -9,7 +9,7 @@ let to_name (md, id) = mk_name (mk_mident md) (mk_ident id)
 
 let rec find name (ctx:typed_context) i =
   match ctx with
-  | [] -> assert false
+  | [] ->   Format.eprintf "debug: %s@." name; assert false
   | (_,x,_) :: t -> if mk_ident name = x then i else find name t (i + 1)
 
 

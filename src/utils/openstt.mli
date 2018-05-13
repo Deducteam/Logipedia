@@ -63,6 +63,8 @@ val mk_appThm : thm obj -> thm obj -> thm obj
 
 val mk_absThm : var obj -> thm obj -> thm obj
 
+val mk_trans : thm obj -> thm obj -> thm obj
+
 val mk_rule_intro_forall : name obj-> ty obj -> term obj -> thm obj -> thm obj
 
 val mk_rule_elim_forall : thm obj -> term obj -> ty obj -> term obj -> thm obj

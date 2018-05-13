@@ -1,5 +1,6 @@
 open Ast
 
+module CType = Compile_type
 let theorems = ["refl"; "eq" ; "pred" ; "le" ; "lt" ;
                "decidable_lt" ; "decidable_le" ]
 
@@ -122,7 +123,7 @@ let rec is__computable (_te:_te) =
        | OK ty -> ty
        | _ -> assert false
      in
-     let ty' = Compile.compile_wrapped_type Compile.empty_env ty in
+     let ty' = CType.compile_wrapped_type Environ.empty_env ty in
      is_prop ty' ||
        not @@ Signature.is_static (Env.get_signature ()) dloc name
 

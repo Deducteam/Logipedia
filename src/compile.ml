@@ -1,192 +1,10 @@
 open Basic
 open Ast
 open Sttforall
+open Environ
 
-type proof_ctx = (string * _te) list
-
-type env =
-  {k: int; dk: Term.typed_context; ty: ty_ctx; te: te_ctx; prf: proof_ctx}
-
-let empty_env = {k= 0; dk= []; ty= []; te= []; prf= []}
-
-let soi = string_of_ident
-
-let rec gen_fresh ctx x c =
-  let x' = if c < 0 then x else x ^ string_of_int c in
-  if List.exists (fun (_, v, _) -> soi v = x') ctx then gen_fresh ctx x (c + 1)
-  else mk_ident x'
-
-
-let gen_fresh env x = gen_fresh env.dk (soi x) (-1)
-
-let of_name name = (string_of_mident (md name), string_of_ident (id name))
-
-let rec take i l =
-  if i = 0 then []
-  else match l with [] -> assert false | x :: l -> x :: take (i - 1) l
-
-
-let rec drop i l =
-  if i = 0 then l
-  else match l with [] -> assert false | _ :: l -> drop (i - 1) l
-
-
-let compile_tyop tyop =
-  match tyop with Term.Const (_, name) -> of_name name | _ -> assert false
-
-
-let get env n =
-  let _, x, _ = List.nth env.dk n in
-  soi x
-
-
-let rec compile__type env _ty =
-  match _ty with
-  | Term.Const (_, cst) when is_sttfa_const sttfa_prop _ty -> Prop
-  | Term.App (c, left, [right]) when is_sttfa_const sttfa_arrow c ->
-      let left' = compile__type env left in
-      let right' = compile__type env right in
-      Arrow (left', right')
-  | Term.DB (_, var, n) ->
-      let var = get env n in
-      TyVar var
-  | Term.App (tyop, a, args) ->
-      let tyop' = compile_tyop tyop in
-      let args' = List.map (fun x -> compile__type env x) (a :: args) in
-      TyOp (tyop', args')
-  | Term.Const _ -> TyOp (compile_tyop _ty, [])
-  | _ -> assert false
-
-
-let add_ty_var env var =
-  { env with
-    k= env.k + 1
-  ; ty= soi var :: env.ty
-  ; dk=
-      (dloc, var, Term.mk_Const dloc (mk_name sttfa_module sttfa_type))
-      :: env.dk }
-
-
-let rec compile_type (env: env) ty =
-  match ty with
-  | Term.App (c, Term.Lam (_, var, _, ty), [])
-    when is_sttfa_const sttfa_forall_kind_type c ->
-    let var = gen_fresh env var in
-    let ty' = compile_type (add_ty_var env var) ty in
-    ForallK (soi var, ty')
-  | Term.App (c, a, []) when is_sttfa_const sttfa_p c ->
-      Ty (compile__type env a)
-  | _ -> assert false
-
-
-let compile_wrapped__type env (ty: Term.term) =
-  match ty with
-  | Term.App (cst, Term.App (c, a, []), [])
-    when is_sttfa_const sttfa_etap cst && is_sttfa_const sttfa_p c ->
-      compile__type env a
-  | Term.App (cst, a, []) when is_sttfa_const sttfa_eta cst ->
-      compile__type env a
-  | _ ->
-      Format.eprintf "%a@." Pp.print_term ty ;
-      assert false
-
-
-let compile_wrapped_type env (ty: Term.term) =
-  match ty with
-  | Term.App (cst, a, []) when is_sttfa_const sttfa_etap cst ->
-      compile_type env a
-  | Term.App (cst, a, []) when is_sttfa_const sttfa_eta cst ->
-      Ty (compile__type env a)
-  | _ ->
-      Format.eprintf "%a@." Pp.print_term ty ;
-      assert false
-
-
-let add_te_var env var ty ty' =
-  { env with
-    k= env.k + 1; te= (soi var, ty') :: env.te; dk= (dloc, var, ty) :: env.dk
-  }
-
-
-let rec type_arity_of te =
-  match te with ForallK (_, te) -> 1 + type_arity_of te | _ -> 0
-
-
-let get_type_arity env lc name =
-  match Env.get_type lc name with
-  | OK ty -> type_arity_of (compile_wrapped_type env ty)
-  | Err err -> Errors.fail_signature_error err
-
-
-let rec compile__term env _te =
-  match _te with
-  | Term.DB (_, var, n) ->
-      let var = get env n in
-      TeVar var
-  | Term.Lam (_, id, Some cst, _te) when is_sttfa_const sttfa_type cst ->
-    let id = gen_fresh env id in
-      let _te' = compile__term (add_ty_var env id) _te in
-      AbsTy (soi id, _te')
-  | Term.Lam (_, id, Some _ty, _te) ->
-      let id = gen_fresh env id in
-      let _ty' = compile_wrapped__type env _ty in
-      let _te' = compile__term (add_te_var env id _ty _ty') _te in
-      Abs (soi id, _ty', _te')
-  | Term.App (cst, _ty, [(Term.Lam (_, id, Some _, _te))])
-    when is_sttfa_const sttfa_forall cst ->
-      let id = gen_fresh env id in
-      let _ty' = compile__type env _ty in
-      let _te' = compile__term (add_te_var env id _ty _ty') _te in
-      Forall (soi id, _ty', _te')
-  | Term.App (cst, tel, [ter]) when is_sttfa_const sttfa_impl cst ->
-    let tel' = compile__term env tel in
-    let ter' = compile__term env ter in
-    Impl (tel', ter')
-  | Term.App (Term.Const (lc, name), a, args) ->
-    let cst' = of_name name in
-    let i = get_type_arity env lc name in
-    let args = a :: args in
-    let ty_args, te_args = (take i args, drop i args) in
-    let ty_args' = List.map (compile__type env) ty_args in
-    let te_args' = List.map (fun x -> compile__term env x) te_args in
-    List.fold_left
-      (fun app arg -> App (app, arg))
-      (Cst (cst', ty_args')) te_args'
-  | Term.App (f, a, args) ->
-    let f' = compile__term env f in
-      let args' = List.map (fun x -> compile__term env x) (a :: args) in
-      List.fold_left (fun app arg -> App (app, arg)) f' args'
-  | Term.Lam (_, _, None, _) -> failwith "lambda untyped are not supported"
-  | Term.Const (lc, cst) -> Cst (of_name cst, [])
-  | _ ->
-      Format.eprintf "%a@." Pp.print_term _te ;
-      assert false
-
-
-let rec compile_term env te =
-  match te with
-  | Term.App (cst, Term.Lam (_, x, Some ty, te), [])
-    when is_sttfa_const sttfa_forall_kind_prop cst ->
-    let x = gen_fresh env x in
-    let te' = compile_term (add_ty_var env x) te in
-    ForallP (soi x, te')
-  | _ ->  Te (compile__term env te)
-
-
-let compile_wrapped_term env _te =
-  match _te with
-  | Term.App (cst, te, []) when is_sttfa_const sttfa_eps cst ->
-      compile_term env te
-  | _ -> assert false
-
-
-let compile_wrapped__term env _te =
-  match _te with
-  | Term.App (cst, te, []) when is_sttfa_const sttfa_eps cst ->
-      compile__term env te
-  | _ -> assert false
-
-
+module CType = Compile_type
+module CTerm = Compile_term
 let make_judgment env hyp thm = {ty= env.ty; te= env.te; hyp; thm}
 
 let rec extract_te te = match te with Te _te -> _te | _ -> assert false
@@ -211,7 +29,7 @@ let beta_one =
   let open Reduction in
   { nb_steps= Some 1
   ; beta= true
-  ; strategy= Reduction.Hnf
+  ; strategy= Reduction.Whnf
   ; select= Some (fun _ -> false) }
 
 let beta_delta_only : Reduction.red_cfg =
@@ -241,38 +59,14 @@ let delta_only : Basic.name -> Reduction.red_cfg =
 module Tracer = struct
   let rec get_red tyf' =
     match tyf' with
-    | App(Abs _, _) -> `Beta(tyf')
-    | App (f, a) -> get_red f
-    | Cst ((md, id), _tys) -> `Cst (of_name (mk_name (mk_mident md) (mk_ident id)), _tys)
+    | App(Abs _, _te) -> [],`Beta(tyf')
+    | App (f, a) ->
+      let ctx, red = get_red f in
+      (CAppL a)::ctx, red
+    | Cst ((md, id), _tys) -> [], `Cst (of_name (mk_name (mk_mident md) (mk_ident id)), _tys)
     | _ -> assert false
 
-
-  let rec equal__term map left right =
-    match (left, right) with
-    | TeVar var, TeVar var' -> List.assoc var map = var'
-    | Abs (tevar, _ty, _tel), Abs (tevar', _ty', _ter) ->
-        equal__term ((tevar, tevar') :: map) _tel _ter
-    | App (f, a), App (f', a') -> equal__term map f f' && equal__term map a a'
-    | Forall (tevar, _ty, _tel), Forall (tevar', _ty', _ter) ->
-        equal__term ((tevar, tevar') :: map) _tel _ter
-    | Impl (f, a), Impl (f', a') ->
-        equal__term map f f' && equal__term map a a'
-    | AbsTy (_, _tel), AbsTy (_, _ter) -> equal__term map _tel _ter
-    | Cst (cst, _), Cst (cst', _) -> cst = cst'
-    | _ -> false
-
-
-  let rec equal_term map left right =
-    match (left, right) with
-    | Te tel, Te ter -> equal__term map tel ter
-    | ForallP (var, tel), ForallP (var', ter) ->
-        equal_term ((var, var') :: map) tel ter
-    | _ -> false
-
-
   exception Equal
-
-  let to_name (md, id) = mk_name (mk_mident md) (mk_ident id)
 
   let rec compare__term ctx left right =
     match (left, right) with
@@ -280,41 +74,53 @@ module Tracer = struct
     | Cst (cst, _tys), Cst (cst', _tys') ->
       if cst = cst' then raise Equal
       else
-        let name = to_name cst in
+        let name = name_of cst in
         if Env.is_static dloc name then
           (`Right, ctx, `Cst(cst', _tys'))
         else (`Left, ctx, `Cst(cst, _tys))
-    | Abs (_, _, _tel), Abs (_, _, _ter) -> compare__term (CAbs::ctx) _tel _ter
+    | Abs (var, _ty, _tel), Abs (var', _, _ter) ->
+      compare__term (CAbs(var,_ty)::ctx) _tel _ter
     | App(Abs _, _), _ -> (`Left, ctx, `Beta(left))
     | _, App(Abs _, _) -> (`Right, ctx, `Beta(right))
     | _, Cst (cst, _tys) -> (`Right, ctx, `Cst(cst,_tys))
     | Cst (cst, _tys), _ -> (`Left, ctx, `Cst(cst,_tys))
-    | Forall (_, _, _tel), Forall (_, _, _ter) -> compare__term (CForall::ctx) _tel _ter
+    | Forall (var, _ty, _tel), Forall (var', _, _ter) ->
+      compare__term (CForall(var, _ty, _tel,_ter)::ctx) _tel _ter
     | Impl (_tel, _ter), Impl (_tel', _ter') -> (
-        try compare__term (CImplL::ctx) _tel _tel'
-        with Equal ->  compare__term (CImplR::ctx)_ter _ter')
+        try compare__term (CImplL(_tel,_tel',_ter)::ctx) _tel _tel'
+        with Equal ->  compare__term (CImplR(_tel,_ter,_ter')::ctx)_ter _ter')
     | App (_tel, _ter), App (_tel', _ter') -> (
         try
-          let side, ctx, cst = compare__term (CAppL::ctx) _tel _tel' in
+          let side, ctx, cst = compare__term (CAppL(_ter)::ctx) _tel _tel' in
           match cst with
           | `Cst(cst,_tys) ->
-            if Env.is_static dloc (to_name cst) then
-              if side = `Right then (`Left, ctx, get_red _tel)
-              else (`Right, ctx, get_red _tel')
+            if Env.is_static dloc (name_of cst) then
+              if side = `Right then
+                let ctxapp,red = get_red left in
+                (`Left, ctxapp@ctx, red)
+              else
+                let ctxapp, red = get_red right in
+                (`Right, ctxapp@ctx, red)
             else  (side, ctx, `Cst (cst, _tys))
           | _ ->  side, ctx, cst
         with Equal ->
-        try compare__term (CAppR::ctx) _ter _ter' with Failure _ ->
-          (`Left, ctx, get_red _tel)
+        try compare__term (CAppR(_tel)::ctx) _ter _ter' with Failure _ ->
+          let ctxapp, red = get_red _tel in
+          (`Left, ctxapp@ctx, red)
           (* UGLY can be fixed by checking first the definability of a constant for the cst case *) )
-    | _, App (_tel, _) -> (`Right, ctx, get_red _tel)
-    | App (_tel, _), _ -> (`Left, ctx, get_red _tel)
+    | _, App (_tel, _) ->
+      let ctxapp,red = get_red right in
+      (`Right, ctxapp@ctx, red)
+    | App (_tel, _), _ ->
+      let ctxapp,red = get_red left in
+      (`Left, ctxapp@ctx, red)
     | _ -> failwith "todo2"
 
   let rec compare_term ctx left right =
     match (left, right) with
     | Te left, Te right -> compare__term ctx left right
-    | ForallP (_, left), ForallP (_, right) -> compare_term (CForallP::ctx) left right
+    | ForallP (var, left), ForallP (var', right) ->
+      compare_term (CForallP(var)::ctx) left right
     | _ -> assert false
 
   let reduce_delta env term cst i =
@@ -327,8 +133,8 @@ module Tracer = struct
       left, {left = [] ; right = [] }
     else
       begin
-        let cleft = compile_term env left in
-        let cleft' = compile_term env left' in
+        let cleft = CTerm.compile_term env left in
+        let cleft' = CTerm.compile_term env left' in
 (*        Format.eprintf "before: %a@." Pp.print_term left;
         Format.eprintf "after: %a@." Pp.print_term left'; *)
         let _,ctx,red = compare_term [] cleft cleft' in
@@ -348,18 +154,18 @@ module Tracer = struct
     if Term.term_eq left right then { left = [] ; right = [] }
     else
       let left',trace = annotate_beta env left in
-      let right', trace = annotate_beta env right in
-      let trace_beta = {left=trace.left;right=trace.left} in
+      let right', trace' = annotate_beta env right in
+      let trace_beta = {left=trace.left;right=trace'.left} in
       if Term.term_eq left' right' then trace_beta
       else
-        let cleft = compile_term env left' in
-        let cright = compile_term env right' in
+        let cleft = CTerm.compile_term env left' in
+        let cright = CTerm.compile_term env right' in
         let side, ctx, red = compare_term [] cleft cright in
         let left'',right'' =
           match red with
           | `Cst((md,id), _tys) ->
             let cst = mk_name (mk_mident md) (mk_ident id) in
-            let i = get_type_arity env dloc cst in
+            let i = CTerm.get_type_arity env dloc cst in
             if side = `Right then
               (left', reduce_delta env right' cst i)
             else if side = `Left then
@@ -381,34 +187,23 @@ module Tracer = struct
 
 end
 
-let debug : Reduction.red_cfg =
-  Reduction.{default_cfg with select= Some (fun _ -> true)}
-
-
-let add_prf_ctx env id _te _te' =
-  { env with
-    k= env.k + 1
-  ; prf= (id, _te') :: env.prf
-  ; dk= (Basic.dloc, mk_ident id, _te) :: env.dk }
-
-
 let rec compile_proof env proof =
   match proof with
   | Term.DB (_, var, n) ->
-      let var = get env n in
+      let var = get_dk_var env n in
       let te' = List.assoc var env.prf in
       let j = make_judgment env (TeSet.of_list env.prf) (Te te') in
       (j, Assume(j,var))
   | Term.Lam (_, id, Some cst, _te) when is_sttfa_const sttfa_type cst ->
       let id = gen_fresh env id in
-      let jp, proof = compile_proof (add_ty_var env id) _te in
+      let jp, proof = compile_proof (CType.add_ty_var_dk env id) _te in
       let j = make_judgment env jp.hyp (ForallP (soi id, jp.thm)) in
       (j, ForallPI (j, proof, soi id))
   | Term.Lam (_, id, Some (Term.App (cst, _, _) as _ty), _te)
     when is_sttfa_const sttfa_etap cst || is_sttfa_const sttfa_eta cst ->
-      let _ty' = compile_wrapped__type env _ty in
+      let _ty' = CType.compile_wrapped__type env _ty in
       let id = gen_fresh env id in
-      let jp, proof = compile_proof (add_te_var env id _ty _ty') _te in
+      let jp, proof = compile_proof (CTerm.add_te_var_dk env id _ty') _te in
       let j =
         make_judgment env jp.hyp
           (Te (Forall (soi id, _ty', extract_te jp.thm)))
@@ -418,7 +213,7 @@ let rec compile_proof env proof =
     when is_sttfa_const sttfa_eps cst ->
     let remove_hyp te = TeSet.filter (fun (id',_) ->
         if string_of_ident id=id' then false else true) in
-    let _te' = compile_wrapped__term env _te in
+    let _te' = CTerm.compile_wrapped__term env _te in
     let jp, proof = compile_proof (add_prf_ctx env (string_of_ident id) _te _te') prf in
     let j =
       make_judgment env (remove_hyp _te' jp.hyp)
@@ -428,7 +223,7 @@ let rec compile_proof env proof =
   | Term.Const (lc, name) ->
       let te' =
         match Env.get_type lc name with
-        | OK te -> compile_wrapped_term env te
+        | OK te -> CTerm.compile_wrapped_term env te
         | Err err -> assert false
       in
       let j = make_judgment env (TeSet.of_list env.prf) te' in
@@ -452,7 +247,7 @@ and compile_arg env j f' a =
   in
 (*  Format.eprintf "tea:%a@." Pp.print_term te; *)
 
-  let te' = compile_wrapped_term env te in
+  let te' = CTerm.compile_wrapped_term env te in
   (*  Format.eprintf "left:%a@." Pp.print_term (Decompile.decompile_term env.dk j.thm); *)
   let j' = {j with thm = te'} in
   let j,f' = get_product env j f' in
@@ -460,15 +255,15 @@ and compile_arg env j f' a =
   Format.eprintf "fa:%a@." Pp.print_term (Decompile.decompile_term env.dk j'.thm); *)
   match j.thm with
   | ForallP _ ->
-    let a' = compile__type env a in
+    let a' = CType.compile__type env a in
     (j', ForallPE(j', f',a'))
   | Te Forall _ ->
-    let a' = compile__term env a in
+    let a' = CTerm.compile__term env a in
     let proof = ForallE(j', f',a') in
     let before = Decompile.decompile_term env.dk j'.thm in
     let after = Env.unsafe_reduction ~red:(beta_only) before in
     let trace = Tracer.annotate env before after in
-    let thm' = compile_term env after in
+    let thm' = CTerm.compile_term env after in
     let j' = {j with thm = thm'} in
     (j', Conv(j', proof, trace))
   | Te Impl(p',q') ->
@@ -483,7 +278,7 @@ and compile_arg env j f' a =
 (*        Format.eprintf "left:%a@." Pp.print_term pq;
           Format.eprintf "right:%a@." Pp.print_term _te; *)
         let trace = Tracer.annotate env pq _te in
-        let _te' = compile__term env _te in
+        let _te' = CTerm.compile__term env _te in
         let f' = Conv({j with thm = Te _te'}, f', trace) in
         (j', ImplE(j',f',a'))
       end
@@ -496,8 +291,8 @@ and get_product env j f' =
     let tyfl = Decompile.decompile__term env.dk tyfl' in
     let tyfr =
       match Tracer.get_red tyfl' with
-      | `Beta _ -> assert false
-      | `Cst ((md,id),_tys) ->
+      | _,`Beta _ -> assert false
+      | _,`Cst ((md,id),_tys) ->
         let cst = mk_name (mk_mident md) (mk_ident id) in
         Env.unsafe_reduction ~red:(delta_only cst) tyfl
         |> Env.unsafe_reduction ~red:(beta_only)
@@ -506,7 +301,7 @@ and get_product env j f' =
 (*    Format.eprintf "left:%a@." Pp.print_term tyfl;
       Format.eprintf "right:%a@." Pp.print_term tyfr; *)
     let trace = Tracer.annotate env tyfl tyfr in
-    let tyfr' = compile__term env tyfr in
+    let tyfr' = CTerm.compile__term env tyfr in
     let j' = {j with thm = Te tyfr'} in
     let proof' = Conv(j',f',trace) in
     get_product env j' proof'
@@ -571,13 +366,13 @@ let compile_declaration name ty =
   Format.eprintf "Compile %a@." pp_name name ;
   match ty with
   | Term.App (cst, a, []) when is_sttfa_const sttfa_etap cst ->
-      let ty' = compile_type empty_env a in
+      let ty' = CType.compile_type empty_env a in
       Parameter (of_name name, ty')
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eta cst ->
-      let ty' = compile__type empty_env a in
+      let ty' = CType.compile__type empty_env a in
       Parameter (of_name name, Ty ty')
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eps cst ->
-      let te' = compile_term empty_env a in
+      let te' = CTerm.compile_term empty_env a in
       Axiom (of_name name, te')
   | Term.Const (_, _) when is_sttfa_const sttfa_type ty ->
       TyOpDef (of_name name, 0)
@@ -591,10 +386,10 @@ let compile_definition name ty term =
   match ty with
   | Term.App (cst, a, []) when is_sttfa_const sttfa_etap cst ->
       Definition
-        (of_name name, compile_type empty_env a, compile_term empty_env term)
+        (of_name name, CType.compile_type empty_env a, CTerm.compile_term empty_env term)
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eps cst ->
       let j, proof = compile_proof empty_env term in
-      let a' = compile_term empty_env a in
+      let a' = CTerm.compile_term empty_env a in
       let proof' =
 (*        Format.eprintf "left: %a@." Pp.print_term (Decompile.decompile_term [] j.thm);
           Format.eprintf "right: %a@." Pp.print_term (Decompile.decompile_term [] a'); *)
@@ -606,5 +401,5 @@ let compile_definition name ty term =
             , Tracer.annotate empty_env (Decompile.decompile_term [] j.thm) a
             )
       in
-      Theorem (of_name name, compile_term empty_env a, proof')
+      Theorem (of_name name, CTerm.compile_term empty_env a, proof')
   | _ -> assert false
