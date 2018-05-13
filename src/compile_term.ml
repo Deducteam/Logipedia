@@ -4,8 +4,6 @@ open Environ
 
 module CType = Compile_type
 
-let add_te_var_dk env var ty' = add_te_var env (soi var) ty'
-
 let rec type_arity_of te =
   match te with ForallK (_, te) -> 1 + type_arity_of te | _ -> 0
 
@@ -22,7 +20,7 @@ let rec compile__term env _te =
       TeVar var
   | Term.Lam (_, id, Some cst, _te) when is_sttfa_const sttfa_type cst ->
     let id = gen_fresh env id in
-      let _te' = compile__term (CType.add_ty_var_dk env id) _te in
+      let _te' = compile__term (add_ty_var_dk env id) _te in
       AbsTy (soi id, _te')
   | Term.Lam (_, id, Some _ty, _te) ->
       let id = gen_fresh env id in
@@ -65,7 +63,7 @@ let rec compile_term env te =
   | Term.App (cst, Term.Lam (_, x, Some ty, te), [])
     when is_sttfa_const sttfa_forall_kind_prop cst ->
     let x = gen_fresh env x in
-    let te' = compile_term (CType.add_ty_var_dk env x) te in
+    let te' = compile_term (add_ty_var_dk env x) te in
     ForallP (soi x, te')
   | _ ->  Te (compile__term env te)
 

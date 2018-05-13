@@ -35,6 +35,9 @@ let add_ty_var env var =
       (dloc, mk_ident var, Term.mk_Const dloc (mk_name sttfa_module sttfa_type))
       :: env.dk }
 
+let add_ty_var_dk env var =
+  add_ty_var env (soi var)
+
 let add_te_var env var ty' =
   let open Basic in
   let ty = Decompile.decompile__type env.dk ty' in
@@ -43,6 +46,8 @@ let add_te_var env var ty' =
     k = env.k + 1;
     te= (var, ty') :: env.te; dk= (dloc, mk_ident var, ty) :: env.dk
   }
+
+let add_te_var_dk env var ty' = add_te_var env (soi var) ty'
 
 let add_prf_ctx env id _te _te' =
   { env with

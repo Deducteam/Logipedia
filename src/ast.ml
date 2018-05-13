@@ -89,3 +89,14 @@ type ast = {
   md   : string;
   dep  : QSet.t;
   items: item list}
+
+let judgment_of = function
+  | Assume(j,_)     -> j
+  | Lemma(_,j)      -> j
+  | Conv(j,_,_)     -> j
+  | ImplE(j,_,_)    -> j
+  | ImplI(j,_,_)    -> j
+  | ForallE(j,_,_)  -> j
+  | ForallI(j,_,_)  -> j
+  | ForallPE(j,_,_) -> j
+  | ForallPI(j,_,_) -> j

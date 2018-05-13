@@ -280,22 +280,7 @@ let print_hyp : out_channel -> hyp -> unit =
       List.iter (fun (_,x) -> Printf.fprintf oc ", %a" print__te_pvs x) l ;
       Printf.fprintf oc " "
 
-let conclusion_pvs : proof -> te =
- fun prf ->
-  let j =
-    match prf with
-    | Assume(j,_) -> j
-    | Lemma (_, j) -> j
-    | Conv (j, p, _) -> j
-    | ImplE (j, p, q) -> j
-    | ImplI (j, p,_) -> j
-    | ForallE (j, p, _te) -> j
-    | ForallI (j, p, _) -> j
-    | ForallPE (j, p, _ty) -> j
-    | ForallPI (j, p, _) -> j
-  in
-  j.thm
-
+let conclusion_pvs : proof -> te = fun prf -> (judgment_of prf).thm
 
 exception Error
 

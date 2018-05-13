@@ -2,9 +2,6 @@ open Sttforall
 open Environ
 open Ast
 
-let add_ty_var_dk env var =
-  add_ty_var env (soi var)
-
 let compile_tyop tyop =
   match tyop with Term.Const (_, name) -> of_name name | _ -> assert false
 

@@ -62,17 +62,6 @@ let rec print_te oc = function
     Printf.fprintf oc "\\forall %a. %a" print_var var print_te te
   | Te(_te) -> print__te oc _te
 
-let judgment_of = function
-  | Assume(j,_)     -> j
-  | Lemma(_,j)      -> j
-  | Conv(j,_,_)     -> j
-  | ImplE(j,_,_)    -> j
-  | ImplI(j,_,_)    -> j
-  | ForallE(j,_,_)  -> j
-  | ForallI(j,_,_)  -> j
-  | ForallPE(j,_,_) -> j
-  | ForallPI(j,_,_) -> j
-
 let rec print_proof oc = function
   | Assume(j,var) -> Printf.fprintf oc "%a" print_var var
   | Lemma(name,j) -> Printf.fprintf oc "%a" print_name name

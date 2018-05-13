@@ -82,17 +82,6 @@ let rec mk_te ctx = function
     mk_te ctx' te
   | Te(_te) -> mk__te ctx _te
 
-let judgment_of = function
-  | Assume(j,_)     -> j
-  | Lemma(_,j)      -> j
-  | Conv(j,_,_)     -> j
-  | ImplE(j,_,_)    -> j
-  | ImplI(j,_,_)    -> j
-  | ForallE(j,_,_)  -> j
-  | ForallI(j,_,_)  -> j
-  | ForallPE(j,_,_) -> j
-  | ForallPI(j,_,_) -> j
-
 let add_prf_ctx env id _te _te' =
   { env with
     k= env.k + 1
