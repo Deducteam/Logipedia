@@ -100,3 +100,23 @@ let print_ast oc file ast =
   cur_md := ast.md;
   QSet.iter (print_dep oc) ast.dep;
   List.iter (print_item oc) ast.items
+
+let insert_parameter name ty = failwith "todo"
+
+let insert_definition name ty te = failwith "todo"
+
+let insert_theorem name ty te = failwith "todo"
+
+let insert_axiom name te = failwith "todo"
+
+let print_bdd ast = function
+  | Parameter(name,ty) ->
+    insert_parameter (print_name name) (print_ty ty)
+  | Definition(name,ty,te) ->
+    insert_definition (print_name name) (print_ty ty) (print_te te)
+  | Axiom(name,te) ->
+    insert_axiom (print_name name) (print_te te)
+  | Theorem(name,te,proof) ->
+    insert_theorem (print_name name) (print_te te) (print_proof proof)
+  | TyOpDef(tyop,arity) ->
+    insert_parameter (print_tyop tyop) (print_arity arity)
