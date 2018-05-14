@@ -125,8 +125,13 @@ let subst env f a =
   let te = Env.unsafe_reduction ~red:(Strategy.one_whnf) te in
   let _,b = match te with | Term.Pi(_,var,tya,tyb) -> tya,tyb | _ -> assert false in
   let b' = Subst.subst b a in
-  let b' = Env.unsafe_reduction ~red:(Strategy.beta_steps 1) b' in
-  CTerm.compile_wrapped_term env b'
+  let b' =
+    match b' with
+    | Term.App(_, a, []) -> a
+    | _ -> assert false
+  in
+  let b' = Env.unsafe_reduction ~red:(Strategy.beta_one) b' in
+  CTerm.compile_term env b'
 
 module Tracer =
 struct

@@ -33,16 +33,16 @@ let compile_definition name ty term =
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eps cst ->
     Format.eprintf "[COMPILE] theorem: %a@." Pp.print_name name ;
     (* The statement written and the one we get from the proof are beta,delta convertible *)
-      let j, proof = CProof.compile_proof empty_env term in
-      let a' = CTerm.compile_term empty_env a in
-      let proof' =
-        if j.thm = a' then proof
-        else
-          Conv
-            ( {j with thm=a'}
-            , proof
-            , Sttfatyping.Tracer.annotate empty_env j.thm a'
-            )
-      in
-      Theorem (of_name name, CTerm.compile_term empty_env a, proof')
+    let j, proof = CProof.compile_proof empty_env term in
+    let a' = CTerm.compile_term empty_env a in
+    let proof' =
+      if j.thm = a' then proof
+      else
+        Conv
+          ( {j with thm=a'}
+          , proof
+          , Sttfatyping.Tracer.annotate empty_env j.thm a'
+          )
+    in
+    Theorem (of_name name, CTerm.compile_term empty_env a, proof')
   | _ -> assert false

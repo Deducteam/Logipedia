@@ -107,8 +107,6 @@ and compile_arg env j f' a =
   assert (Sttfatyping.is_beta_normal env (judgment_of f').thm);
   let j' = {j with thm = te} in
   let j,f' = get_product env j f' in
-(*  Format.eprintf "after:%a@." Pp.print_term (Decompile.decompile_term env.dk j.thm);
-  Format.eprintf "fa:%a@." Pp.print_term (Decompile.decompile_term env.dk j'.thm); *)
   match j.thm with
   | ForallP _ ->
     let a' = CType.compile__type env a in

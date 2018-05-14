@@ -72,7 +72,6 @@ let rec mk__te ctx = function
       | [] -> Term.mk_Const dloc name
       | x::t -> Term.mk_App (Term.mk_Const dloc name) x t
     in
-    Pp.print_db_enabled := true;
     match Env.infer ~ctx:ctx.dk cst' with
     | OK _ty ->
       let _ty' = CType.compile_wrapped__type ctx (Env.unsafe_reduction ~red:beta_only _ty) in
@@ -147,7 +146,7 @@ let mk_delta ctx cst _tys =
     Term.mk_Const dloc (mk_name (mk_mident (fst cst)) (mk_ident (snd cst)))
   in
   let ty =
-    match Env.infer ~ctx:ctx.dk term  with
+    match Env.infer ~ctx:[] term  with
     | OK ty -> ty
     | Err err -> assert false
   in
@@ -247,7 +246,7 @@ let rec mk_proof env =
       with _ ->
       match Env.get_type dloc (name_of cst) with
       | OK te ->
-        mk_axiom (mk_hyp []) (mk_te env (CTerm.compile_wrapped_term env te))
+        mk_axiom (mk_hyp []) (mk_te empty_env (CTerm.compile_wrapped_term empty_env te))
       | Err err -> Errors.fail_signature_error err
     end
   | ForallE(j,proof, u) ->
@@ -286,7 +285,7 @@ let rec mk_proof env =
     let q' = mk_te env q in
     let proof' = mk_proof env' proof in
     mk_rule_intro_impl proof' p' q'
-  | ForallPE(_,proof,_ty) -> (* WRONG: alpha *)
+  | ForallPE(_,proof,_ty) -> (* MIGHT BE WRONG ? *)
     begin
       match (judgment_of proof).thm with
       | ForallP(var,_) ->
@@ -299,16 +298,9 @@ let rec mk_proof env =
     let env' = add_ty_var env var in
     mk_proof env' proof
   | Conv(j,proof,trace) ->
-(*    Format.eprintf "from: %a@." Pp.print_term
-      (Decompile.decompile_term env.dk (judgment_of proof).thm);
-    Format.eprintf "to prove: %a@." Pp.print_term (Decompile.decompile_term env.dk j.thm);
-    Format.eprintf "%a@." Ast.print_trace trace; *)
     let right = j.thm in
     let left = (judgment_of proof).thm in
     let proof = mk_proof env proof in
-(*    debug (mk_id "before");
-    debug (mk_trace env left right trace);
-    debug (proof); *)
     let mp = mk_eqMp proof (mk_trace env left right trace) in
     mp
 
