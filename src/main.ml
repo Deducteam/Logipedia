@@ -12,20 +12,21 @@ let err_msg fmt =
 let system : Export.system ref = ref (Export.(`Pvs))
 
 let set_export s =
+  let open Export in
   if s = "coq" then
-    system := Export.(`Coq)
+    system := `Coq
   else if s = "matita" then
-    system := Export.(`Matita)
+    system := `Matita
   else if s = "ot" then
-    system := Export.(`OpenTheory)
+    system := `OpenTheory
   else if s = "pvs" then
-    system := Export.(`Pvs)
+    system := `Pvs
   else if s = "latex" then
-    system := Export.(`Latex)
+    system := `Latex
   else if s = "csv" then
-    system := Export.(`Csv)
+    system := `Csv
   else if s = "lean" then
-    system := Export.(`Lean)
+    system := `Lean
   else
     failwith (Format.sprintf "%s is not among the supported systems@." s)
 
@@ -65,12 +66,14 @@ let run_on_file file =
   if not (Env.export ()) then
     Errors.fail dloc "Fail to export module '%a'." pp_mident md ;
   Confluence.finalize () ;
-  export_file file ast `OpenTheory
+  export_file file ast !system
 
 let _ =
   let options =
     Arg.align
-      [ ("-I", Arg.String Basic.add_path, " Add folder to Dedukti path") ]
+      [ ("-I", Arg.String Basic.add_path, " Add folder to Dedukti path") ;
+        ("--export", Arg.String set_export, " Set exporting system") ;
+      ]
   in
   let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
   let usage = usage ^ "Available options:" in

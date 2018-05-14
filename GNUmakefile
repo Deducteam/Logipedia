@@ -116,28 +116,30 @@ endif
 clean:
 	@ocamlbuild -clean -quiet
 	@rm -f .library_depend_dko
+	@rm -f .library_depend_v
 	@rm -f .library_depend_vo
+	@rm -f .library_depend_ma
 
 distclean: clean
-	@find . -name "*~"     -exec rm {} \;
-	@find . -name "*.dko"  -exec rm {} \;
-	@find . -name "*.stt"  -exec rm {} \;
-	@find . -name "*.aux"  -exec rm {} \;
-	@find . -name "*.log"  -exec rm {} \;
-	@find . -name "*.pdf"  -exec rm {} \;
-	@find . -name "*.tex"  -exec rm {} \;
-	@find . -name "*.pvs"  -exec rm {} \;
-	@find . -name "*.prf"  -exec rm {} \;
-	@find . -name "*.bin"  -exec rm {} \;
-	@find . -name "*.dep"  -exec rm {} \;
-	@find . -name "*.ma"   -exec rm {} \;
-	@find . -name "*.v"    -exec rm {} \;
-	@find . -name "*.vo"   -exec rm {} \;
-	@find . -name "*.glob" -exec rm {} \;
-	@find . -name "*.lean" -exec rm {} \;
-	@find . -name "*.art"  -exec rm {} \;
-	@find . -name "*.summary" -exec rm {} \;
-	@find . -name "*.beautified" -exec rm {} \;
-	@find . -name ".pvs_context" -exec rm {} \;
+	@find library -name "*~"     -exec rm {} \;
+	@find library -name "*.dko"  -exec rm {} \;
+	@find library -name "*.stt"  -exec rm {} \;
+	@find library -name "*.aux"  -exec rm {} \;
+	@find library -name "*.log"  -exec rm {} \;
+	@find library -name "*.pdf"  -exec rm {} \;
+	@find library -name "*.tex"  -exec rm {} \;
+	@find library -name "*.pvs"  -exec rm {} \;
+	@find library -name "*.prf"  -exec rm {} \;
+	@find library -name "*.bin"  -exec rm {} \;
+	@find library -name "*.dep"  -exec rm {} \;
+	@find library -name "*.ma"   -exec rm {} \;
+	@find library -name "*.v"    -exec rm {} \;
+	@find library -name "*.vo"   -exec rm {} \;
+	@find library -name "*.glob" -exec rm {} \;
+	@find library -name "*.lean" -exec rm {} \;
+	@find library -name "*.art"  -exec rm {} \;
+	@find library -name "*.summary" -exec rm {} \;
+	@find library -name "*.beautified" -exec rm {} \;
+	@find library -name ".pvs_context" -exec rm {} \;
 
 .PHONY: all clean distclean examples library coq
