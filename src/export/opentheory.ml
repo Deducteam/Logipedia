@@ -177,8 +177,6 @@ let rec mk__ctx env thm ctx left right =
     let env' = add_te_var env var _ty in
     let _tel' = mk__te env' _tel in
     let _ter' = mk__te env' _ter in
-    debug _tel';
-    debug _ter';
     let thm = mk__ctx env' thm ctx _tel _ter in
     mk_forall_equal thm (mk_id var) _tel' _ter' (mk__ty _ty)
   | CAppL::ctx, App(_tel,_ter), App(_tel',_ter') ->
@@ -219,7 +217,6 @@ let mk_rewrite_step env term (redex,ctx) =
     | Delta(name,_tys) -> mk_delta env' name _tys
     | Beta(_te) -> mk_beta env' _te
   in
-  debug thm;
   let thm =  mk_ctx env thm ctx term term' in
   term',thm
 
@@ -231,10 +228,6 @@ let mk_rewrite_seq env term rws =
     let term',rw = mk_rewrite_step env term rw in
     List.fold_left (fun (term,thm) rw ->
         let term', thm' = (mk_rewrite_step env term rw) in
-        debug thm;
-        debug thm';
-        debug (mk_trans thm thm');
-        debug (mk_te env term');
         term', mk_trans thm thm') (term',rw) rws
 
 let mk_trace env left right trace =
@@ -306,16 +299,16 @@ let rec mk_proof env =
     let env' = add_ty_var env var in
     mk_proof env' proof
   | Conv(j,proof,trace) ->
-    Format.eprintf "from: %a@." Pp.print_term
+(*    Format.eprintf "from: %a@." Pp.print_term
       (Decompile.decompile_term env.dk (judgment_of proof).thm);
     Format.eprintf "to prove: %a@." Pp.print_term (Decompile.decompile_term env.dk j.thm);
-    Format.eprintf "%a@." Ast.print_trace trace;
+    Format.eprintf "%a@." Ast.print_trace trace; *)
     let right = j.thm in
     let left = (judgment_of proof).thm in
     let proof = mk_proof env proof in
-    debug (mk_id "before");
+(*    debug (mk_id "before");
     debug (mk_trace env left right trace);
-    debug (proof);
+    debug (proof); *)
     let mp = mk_eqMp proof (mk_trace env left right trace) in
     mp
 
