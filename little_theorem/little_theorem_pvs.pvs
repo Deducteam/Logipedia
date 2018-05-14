@@ -1,0 +1,135 @@
+little_theorem_pvs : THEORY
+BEGIN
+
+  factorial(n:nat) : RECURSIVE nat =
+    IF n=0 THEN 1
+    ELSE n*factorial(n-1)
+    ENDIF
+  MEASURE n
+
+  sttfa_exp(n:nat)(m:nat) : RECURSIVE nat =
+    IF m=0 THEN 1
+    ELSE n*sttfa_exp(n)(m-1)
+    ENDIF
+  MEASURE m
+  
+  mod_aux(p:nat)(m:nat)(n:nat) : RECURSIVE nat = 
+   IF p = 0
+   THEN m
+   ELSIF m <= n
+     THEN m
+   ELSE mod_aux(p-1)(m - (n+1))(n)
+   ENDIF
+   MEASURE p
+
+  div_aux(p:nat)(m:nat)(n:nat) : RECURSIVE nat =
+    IF p = 0
+    THEN 0
+    ELSIF m <= n
+    THEN 0
+    ELSE
+      div_aux(p-1)(m -(n+1))(n)+1
+    ENDIF
+  MEASURE p
+
+  div_mod_spec(n:nat)(m:nat)(q:nat)(r:nat) : bool =
+    (n = m * q + r) AND (r < m)
+
+  match_nat_type[return:TYPE+](x:return)(f:[nat->return])(n:nat) : return =
+    IF n=0 THEN x ELSE f(n-1) ENDIF
+
+  sttfa_divides(m:nat)(n:nat) : bool =
+    EXISTS(q:nat) : n=m*q
+
+  mod(n:nat)(m:nat): nat =
+    match_nat_type[nat](n)(LAMBDA(p:nat):mod_aux(n)(n)(p))(m)
+
+  dividesb(n:nat)(m:nat): bool =
+    mod(m)(n) = 0
+
+  gcd_aux(p:nat)(m:nat)(n:nat) : RECURSIVE nat =
+    IF p=0 THEN m
+    ELSIF dividesb(n)(m) THEN n
+    ELSE gcd_aux(p-1)(n)(mod(m)(n))
+    ENDIF
+  MEASURE p
+
+  invert_permut(n:nat)(f:[nat->nat])(m:nat) : RECURSIVE nat =
+    IF n = 0 THEN 0 ELSIF f(n) = m THEN n ELSE invert_permut(n-1)(f)(m) ENDIF
+  MEASURE n
+
+  bigop[H:TYPE+](n:nat)(p:[nat->bool])(e:H)(op:[H -> [H -> H]])(f:[nat -> H]):
+  RECURSIVE H =
+    IF n = 0 THEN e
+    ELSIF p(n-1) THEN op(f(n-1))(bigop(n-1)(p)(e)(op)(f))
+    ELSE bigop(n-1)(p)(e)(op)(f)
+    ENDIF
+  MEASURE n
+
+  Aop[A:TYPE+](nil:A) : bool =
+  EXISTS (op:[A -> [A -> A]]):
+   (FORALL(a:A):op(nil)(a) = a) AND
+   (FORALL(a:A):op(a)(nil) = a) AND
+   (FORALL(a:A)(b:A)(c:A):
+     op(a)(op(b)(c)) = op(op(a)(b))(c))
+
+  ACop[A:TYPE+](nil:A) : bool =
+  EXISTS (op:[A -> [A -> A]]):
+   (FORALL(a:A):op(nil)(a) = a) AND
+   (FORALL(a:A):op(a)(nil) = a) AND
+   (FORALL(a:A)(b:A)(c:A):
+     op(a)(op(b)(c)) = op(op(a)(b))(c)) AND
+   (FORALL(a:A)(b:A):op(a)(b) = op(b)(a))
+
+  IMPORTING little_theorem_sttfa {{
+    sttfa_True := TRUE,
+    sttfa_False := FALSE,
+    sttfa_And(a:bool)(b:bool) := a AND b,
+    sttfa_Or(a:bool)(b:bool) := a OR b,
+    sttfa_Not(a:bool) := NOT a,
+    sttfa_ex[A:TYPE+](f:[A->bool]) := EXISTS (y:A):f(y),
+    equal[A:TYPE+](x:A)(y:A) := x=y,
+    eq[A:TYPE+](x:A)(y:A) := x=y,
+    sttfa_bool := bool,
+    sttfa_true := TRUE,
+    sttfa_false := FALSE,
+    match_bool_type[return:TYPE+](x:return)(y:return)(b:bool):=
+      IF b THEN x ELSE y ENDIF,
+    sttfa_nat := nat,
+    sttfa_O := 0,
+    sttfa_S(n:nat) := n+1,
+    filter_nat_type[return:TYPE+](f:[nat->return])(n:nat) := f(n),
+    plus(n:nat)(m:nat):=n+m,
+    plus_body(n:nat)(m:nat):=n+m,
+    times(n:nat)(m:nat):=n*m,
+    times_body(n:nat)(m:nat):=n*m,
+    minus(n:nat)(m:nat):= IF n < m THEN 0 ELSE n-m ENDIF,
+    minus_body(n:nat)(m:nat):= IF n < m THEN 0 ELSE n-m ENDIF,
+    eqb(n:nat)(m:nat) := n=m,
+    eqb_body(n:nat)(m:nat) := n=m,
+    leb(n:nat)(m:nat) := n<=m,
+    leb_body(n:nat)(m:nat) := n<=m,
+    le(n:nat)(m:nat) := n<=m,
+    match_nat_type[return:TYPE+] := match_nat_type[return],
+    sttfa_fact := factorial,
+    fact_body := factorial,
+    sttfa_exp := sttfa_exp,
+    exp_body := sttfa_exp,
+    mod_aux := mod_aux,
+    mod_aux_body := mod_aux,
+    div_aux := div_aux,
+    div_aux_body := div_aux,
+    div_mod_spec := div_mod_spec,
+    sttfa_divides := sttfa_divides,
+    gcd_aux := gcd_aux,
+    gcd_aux_body := gcd_aux,
+    invert_permut := invert_permut,
+    invert_permut_body := invert_permut,
+    bigop[H:TYPE+] := bigop[H],
+    bigop_body[H:TYPE+] := bigop[H],
+    Aop[A:TYPE+] := Aop[A],
+    ACop[A:TYPE+] := ACop[A]
+  }}
+
+END little_theorem_pvs
+

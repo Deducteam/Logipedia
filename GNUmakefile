@@ -38,9 +38,21 @@ LIBDKS = $(wildcard library/*.dk)
 
 library: $(LIBDKS:.dk=.dko)
 
-library/%.csv library/%.lean library/%.v library/%.ma library/%.pvs library/%.art library/%.dko:  library/%.dk theories/sttfa.dko .library_depend main.native
+library/%.lean library/%.pvs library/%.art library/%.dko:  library/%.dk theories/sttfa.dko .library_depend_dko main.native
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories $<
+
+library/%.v: library/%.dk theories/sttfa.dko .library_depend_v main.native
+	@echo "[EXPOR] $@"
+	@./main.native -I library -I theories --export coq $<
+
+library/%.ma: library/%.dk theories/sttfa.dko .library_depend_ma main.native
+	@echo "[EXPOR] $@"
+	@./main.native -I library -I theories --export matita $<
+
+library/%.vo: library/%.v .library_depend_vo
+	@echo "[CHECK] $@"
+	@coqc -R library "" $<
 
 library/%.summary: library/%.pvs
 	@echo "[SUMMARY]"
@@ -52,15 +64,10 @@ pvs: $(LIBDKS:.dk=.dko)
 SORTEDDKS = $(shell dkdep --ignore -I library -s $(LIBDKS))
 SORTEDV = $(SORTEDDKS:.dk=.v)
 
-coq: $(LIBDKS:.dk=.dko) $(SORTEDV)
-	for file in $(SORTEDV) ; do \
-		coqc -R library "" -beautify $$file ; \
-		mv $$file.beautified $$file ; \
-		coqc -R library "" $$file ; \
-	done
+coq: library/fermat.vo
 
-matita: $(LIBDKS:.dk=.dko)
-	$(MATITAC) library/fermat.ma
+matita: library/fermat.ma
+	$(MATITAC) library/fermat.ma | grep -v 'refinement' | grep -v 'ELPI' | grep -v 'type-checking'
 
 library/%.pdf: library/%.tex
 	@echo "[PDF] $@"
@@ -72,13 +79,35 @@ library/%.summary: library/%.pvs
 	@echo "[SUMMARY]"
 	proveit --importchain -sf $<
 
-.library_depend: $(wildcard library/*.dk theories/*.dk examples/*.dk)
-	@echo "[DEP] $@"
+.library_depend_dko: $(wildcard library/*.dk theories/*.dk examples/*.dk)
+	@echo "[DEP DKO] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
+
+.library_depend_v: $(wildcard library/*.dk theories/*.dk examples/*.dk)
+	@echo "[DEP VO] $@"
+	@$(DKDEP) -o $@ -I library -I theories $^
+	@sed -i s/theories\\/sttfa.dko//g $@
+	@sed -i s/dko/v/g $@
+
+.library_depend_vo: $(wildcard library/*.dk theories/*.dk examples/*.dk)
+	@echo "[DEP VO] $@"
+	@$(DKDEP) -o $@ -I library -I theories $^
+	@sed -i s/theories\\/sttfa.dko//g $@
+	@sed -i s/dko/vo/g $@
+	@sed -i s/dk/v/g $@
+
+.library_depend_ma: $(wildcard library/*.dk theories/*.dk examples/*.dk)
+	@echo "[DEP VO] $@"
+	@$(DKDEP) -o $@ -I library -I theories $^
+	@sed -i s/theories\\/sttfa.dko//g $@
+	@sed -i s/dko/ma/g $@
 
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
--include .library_depend
+-include .library_depend_dko
+-include .library_depend_vo
+-include .library_depend_v
+-include .library_depend_ma
 endif
 endif
 
@@ -86,7 +115,8 @@ endif
 
 clean:
 	@ocamlbuild -clean -quiet
-	@rm -f .library_depend
+	@rm -f .library_depend_dko
+	@rm -f .library_depend_vo
 
 distclean: clean
 	@find . -name "*~"     -exec rm {} \;
@@ -104,6 +134,8 @@ distclean: clean
 	@find . -name "*.v"    -exec rm {} \;
 	@find . -name "*.vo"   -exec rm {} \;
 	@find . -name "*.glob" -exec rm {} \;
+	@find . -name "*.lean" -exec rm {} \;
+	@find . -name "*.art"  -exec rm {} \;
 	@find . -name "*.summary" -exec rm {} \;
 	@find . -name "*.beautified" -exec rm {} \;
 	@find . -name ".pvs_context" -exec rm {} \;

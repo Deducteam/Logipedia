@@ -109,7 +109,7 @@ match_ex_prop :
                    (x:(sttfa.etap (sttfa.p A)) => sttfa.impl (P x) return))
                 (sttfa.impl (connectives.ex A P) return))))).
 
-refl : sttfa.eps (sttfa.forallP (A:sttfa.type => sttfa.forall A
+refl_equal : sttfa.eps (sttfa.forallP (A:sttfa.type => sttfa.forall A
                                     (x:sttfa.eta A => equal A x x))).
 
 equal_leibniz : sttfa.eps (sttfa.forallP (A:sttfa.type =>
