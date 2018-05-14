@@ -36,19 +36,25 @@ examples/%.pdf: examples/%.tex
 
 LIBDKS = $(wildcard library/*.dk)
 
-library: $(LIBDKS:.dk=.dko)
-
-library/%.lean library/%.pvs library/%.art library/%.dko:  library/%.dk theories/sttfa.dko .library_depend_dko main.native
+library/%.lean:  library/%.dk theories/sttfa.dko .library_depend_lean main.native
 	@echo "[EXPORT] $@"
-	@./main.native -I library -I theories $<
+	@./main.native -I library -I theories --export lean $<
+
+library/%.pvs: library/%.dk theories/sttfa.dko .library_depend_pvs main.native
+	@echo "[EXPORT] $@"
+	@./main.native -I library -I theories --export pvs $<
 
 library/%.v: library/%.dk theories/sttfa.dko .library_depend_v main.native
-	@echo "[EXPOR] $@"
+	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export coq $<
 
 library/%.ma: library/%.dk theories/sttfa.dko .library_depend_ma main.native
-	@echo "[EXPOR] $@"
+	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export matita $<
+
+library/%.art: library/%.dk theories/sttfa.dko .library_depend_art main.native
+	@echo "[EXPORT] $@"
+	@./main.native -I library -I theories --export opentheory $<
 
 library/%.vo: library/%.v .library_depend_vo
 	@echo "[CHECK] $@"
@@ -58,56 +64,79 @@ library/%.summary: library/%.pvs
 	@echo "[SUMMARY]"
 	proveit --importchain -sf $<
 
-pvs: $(LIBDKS:.dk=.dko)
-	proveit --importchain -sf library/fermat.pvs
-
-SORTEDDKS = $(shell dkdep --ignore -I library -s $(LIBDKS))
-SORTEDV = $(SORTEDDKS:.dk=.v)
-
-coq: library/fermat.vo
-
-matita: library/fermat.ma
-	$(MATITAC) library/fermat.ma | grep -v 'refinement' | grep -v 'ELPI' | grep -v 'type-checking'
-
-library/%.pdf: library/%.tex
-	@echo "[PDF] $@"
-	@pdflatex -halt-on-error -output-directory=library $< > /dev/null || echo "ERROR on $@"
-
 .PRECIOUS: library/%.pvs
 
 library/%.summary: library/%.pvs
 	@echo "[SUMMARY]"
 	proveit --importchain -sf $<
 
+coq: library/fermat.vo
+
+matita: library/fermat.ma
+	$(MATITAC) library/fermat.ma | grep -v 'refinement' | grep -v 'ELPI' | grep -v 'type-checking'
+
+pvs: library/fermat.pvs
+	proveit --importchain -sf library/fermat.pvs
+
+lean: library/fermat.lean
+	leanpkg new /tmp/fermat
+	cp library/*.lean /tmp/fermat/src/
+	lean /tmp/fermat/src/fermat.lean
+
+#library/%.pdf: library/%.tex
+#	@echo "[PDF] $@"
+#	@pdflatex -halt-on-error -output-directory=library $< > /dev/null || echo "ERROR on $@"
+
 .library_depend_dko: $(wildcard library/*.dk theories/*.dk examples/*.dk)
-	@echo "[DEP DKO] $@"
+	@echo "[DEP] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
 
+.library_depend_pvs: $(wildcard library/*.dk theories/*.dk examples/*.dk)
+	@echo "[DEP] $@"
+	@$(DKDEP) -o $@ -I library -I theories $^
+	@sed -i s/theories\\/sttfa.dko//g $@
+	@sed -i s/dko/pvs/g $@
+
 .library_depend_v: $(wildcard library/*.dk theories/*.dk examples/*.dk)
-	@echo "[DEP VO] $@"
+	@echo "[DEP] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
 	@sed -i s/theories\\/sttfa.dko//g $@
 	@sed -i s/dko/v/g $@
 
 .library_depend_vo: $(wildcard library/*.dk theories/*.dk examples/*.dk)
-	@echo "[DEP VO] $@"
+	@echo "[DEP] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
 	@sed -i s/theories\\/sttfa.dko//g $@
 	@sed -i s/dko/vo/g $@
 	@sed -i s/dk/v/g $@
 
 .library_depend_ma: $(wildcard library/*.dk theories/*.dk examples/*.dk)
-	@echo "[DEP VO] $@"
+	@echo "[DEP] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
 	@sed -i s/theories\\/sttfa.dko//g $@
 	@sed -i s/dko/ma/g $@
 
+.library_depend_art: $(wildcard library/*.dk theories/*.dk examples/*.dk)
+	@echo "[DEP] $@"
+	@$(DKDEP) -o $@ -I library -I theories $^
+	@sed -i s/theories\\/sttfa.dko//g $@
+	@sed -i s/dko/art/g $@
+
+.library_depend_lean: $(wildcard library/*.dk theories/*.dk examples/*.dk)
+	@echo "[DEP] $@"
+	@$(DKDEP) -o $@ -I library -I theories $^
+	@sed -i s/theories\\/sttfa.dko//g $@
+	@sed -i s/dko/lean/g $@
+
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend_dko
+-include .library_depend_pvs
 -include .library_depend_vo
 -include .library_depend_v
 -include .library_depend_ma
+-include .library_depend_art
+-include .library_depend_lean
 endif
 endif
 
@@ -119,6 +148,7 @@ clean:
 	@rm -f .library_depend_v
 	@rm -f .library_depend_vo
 	@rm -f .library_depend_ma
+	@rm -f .library_depend_lean
 
 distclean: clean
 	@find library -name "*~"     -exec rm {} \;
@@ -141,5 +171,6 @@ distclean: clean
 	@find library -name "*.summary" -exec rm {} \;
 	@find library -name "*.beautified" -exec rm {} \;
 	@find library -name ".pvs_context" -exec rm {} \;
+	@rm -rf /tmp/fermat
 
-.PHONY: all clean distclean examples library coq
+.PHONY: all clean distclean examples library coq matita pvs

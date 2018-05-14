@@ -17,7 +17,7 @@ let set_export s =
     system := `Coq
   else if s = "matita" then
     system := `Matita
-  else if s = "ot" then
+  else if s = "ot" || s = "opentheory" then
     system := `OpenTheory
   else if s = "pvs" then
     system := `Pvs
