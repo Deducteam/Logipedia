@@ -2,13 +2,13 @@ DKCHECK = dkcheck
 DKDEP   = dkdep
 MATITAC = matitac
 
-all: main.native
+MAIN = _build/src/main.native
+
+all: $(MAIN)
 
 #### Main program ##################################################
 
-main.native: _build/src/main.native
-
-_build/src/main.native: $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli)
+$(MAIN): $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli)
 	@echo "[BUILD] main.native"
 	@ocamlbuild -quiet -Is src/,src/utils,src/export -package dedukti.kernel -package dedukti.parser src/main.native
 
@@ -24,7 +24,7 @@ EXADKS = $(wildcard examples/*.dk)
 
 examples: $(EXADKS:.dk=.stt) $(EXADKS:.dk=.pdf)
 
-examples/%.dko examples/%.stt examples/%.tex: examples/%.dk theories/sttfa.dko main.native
+examples/%.dko examples/%.stt examples/%.tex: examples/%.dk theories/sttfa.dko $(MAIN)
 	@echo "[STT] $<"
 	@./main.native -I theories $<
 
@@ -36,23 +36,23 @@ examples/%.pdf: examples/%.tex
 
 LIBDKS = $(wildcard library/*.dk)
 
-library/%.lean:  library/%.dk theories/sttfa.dko .library_depend_lean main.native
+library/%.lean:  library/%.dk theories/sttfa.dko .library_depend_lean $(MAIN)
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export lean $<
 
-library/%.pvs: library/%.dk theories/sttfa.dko .library_depend_pvs main.native
+library/%.pvs: library/%.dk theories/sttfa.dko .library_depend_pvs $(MAIN)
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export pvs $<
 
-library/%.v: library/%.dk theories/sttfa.dko .library_depend_v main.native
+library/%.v: library/%.dk theories/sttfa.dko .library_depend_v $(MAIN)
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export coq $<
 
-library/%.ma: library/%.dk theories/sttfa.dko .library_depend_ma main.native
+library/%.ma: library/%.dk theories/sttfa.dko .library_depend_ma $(MAIN)
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export matita $<
 
-library/%.art: library/%.dk theories/sttfa.dko .library_depend_art main.native
+library/%.art: library/%.dk theories/sttfa.dko .library_depend_art $(MAIN)
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export opentheory $<
 
@@ -149,10 +149,12 @@ clean:
 	@rm -f .library_depend_vo
 	@rm -f .library_depend_ma
 	@rm -f .library_depend_lean
+	@rm -f .library_depend_pvs
+	@rm -f .library_depend_art
 
 distclean: clean
-	@find library -name "*~"     -exec rm {} \;
-	@find library -name "*.dko"  -exec rm {} \;
+	@find . -name "*~"           -exec rm {} \;
+	@find . -name "*.dko"        -exec rm {} \;
 	@find library -name "*.stt"  -exec rm {} \;
 	@find library -name "*.aux"  -exec rm {} \;
 	@find library -name "*.log"  -exec rm {} \;
