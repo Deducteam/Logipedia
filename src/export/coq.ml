@@ -109,29 +109,27 @@ let (_:Thread.t) = Thread.create (fun () ->
 
 module P = Mysql.Prepared
 
-let s = String.copy
+let open_bdd () = Mysql.quick_connect ~database:("logipedia") ~user:("walid") ~password:("root") ()
 
-let open_bdd () = Mysql.quick_connect ~database:(s "logipedia") ~user:(s "walid") ~password:(s "root") ()
-
-let insert_parameter db name ty = let insert = P.create db (s "INSERT INTO axiomes VALUES (null,?,?,?)") in
-                                            P.execute insert [|name;ty;"2"|];
+let insert_parameter db name ty = let insert = P.create db ("INSERT INTO axiomes VALUES (null,?,?,?)") in
+                                            ignore(P.execute insert [|name;ty;"2"|]);
                                             P.close insert
 
-let insert_definition db name ty te = let insert = P.create db (s "INSERT INTO definitions VALUES (null,?,?,?,?)") in
-                                                P.execute insert [|name;ty;te;"2"|];
+let insert_definition db name ty te = let insert = P.create db ("INSERT INTO definitions VALUES (null,?,?,?,?)") in
+                                                ignore(P.execute insert [|name;ty;te;"2"|]);
                                                 P.close insert
 
-let insert_theorem db name ty te = let insert = P.create db (s "INSERT INTO theoremes VALUES (null,?,?,?,?)") in
-                                              P.execute insert [|name;ty;te;"2"|];
+let insert_theorem db name ty te = let insert = P.create db ("INSERT INTO theoremes VALUES (null,?,?,?,?)") in
+                                              ignore(P.execute insert [|name;ty;te;"2"|]);
                                               P.close insert
 
-let insert_axiom db name te = let insert = P.create db (s "INSERT INTO axiomes VALUES (null,?,?,?)") in
-                                        P.execute insert [|name;te;"2"|];
+let insert_axiom db name te = let insert = P.create db ("INSERT INTO axiomes VALUES (null,?,?,?)") in
+                                        ignore(P.execute insert [|name;te;"2"|]);
                                         P.close insert
 
 let to_string fmt = Format.asprintf "%a" fmt
 
-let print_bdd_item db ast = function
+let print_bdd_item db = function
   | Parameter(name,ty) ->
     insert_parameter db (to_string print_name name) (to_string print_ty ty)
   | Definition(name,ty,te) ->

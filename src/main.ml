@@ -20,10 +20,6 @@ let set_export s =
     system := Export.(`OpenTheory)
   else if s = "pvs" then
     system := Export.(`Pvs)
-  else if s = "latex" then
-    system := Export.(`Latex)
-  else if s = "csv" then
-    system := Export.(`Csv)
   else if s = "lean" then
     system := Export.(`Lean)
   else

@@ -8,7 +8,8 @@ end
 
 module type BDD =
 sig
-  include E
+  val extension: string
+  val print_ast : Format.formatter -> string -> Ast.ast -> unit
   val print_bdd : Ast.ast -> unit
 end
 
@@ -18,10 +19,11 @@ struct
   let print_ast = Pvs.print_ast
 end
 
-module COQ : E =
+module COQ : BDD =
 struct
   let extension = "v"
   let print_ast = Coq.print_ast
+  let print_bdd = Coq.print_bdd
 end
 
 module MATITA : E =
@@ -45,7 +47,7 @@ end
 let of_system : system -> (module E) = fun sys ->
   match sys with
   | `Pvs        -> (module PVS)
-  | `Coq        -> (module COQ)
+  | `Coq        -> failwith "todo"
   | `Matita     -> (module MATITA)
   | `OpenTheory -> (module OPENTHEORY)
   | `Lean       -> (module LEAN)
