@@ -10,7 +10,7 @@ main.native: _build/src/main.native
 
 _build/src/main.native: $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli)
 	@echo "[BUILD] main.native"
-	@ocamlbuild -quiet -Is src/,src/utils,src/export -package dedukti.kernel -package dedukti.parser src/main.native
+	@ocamlbuild -quiet -Is src/,src/utils,src/export -tag thread -package mysql -package dedukti.kernel -package dedukti.parser src/main.native
 
 #### Producing the theory file #####################################
 
