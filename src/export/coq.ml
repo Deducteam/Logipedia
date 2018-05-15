@@ -1,4 +1,6 @@
 open Ast
+open Printf
+module P = Mysql.Prepared
 
 let cur_md = ref ""
 
@@ -101,13 +103,29 @@ let print_ast oc file ast =
   QSet.iter (print_dep oc) ast.dep;
   List.iter (print_item oc) ast.items
 
-let insert_parameter name ty = failwith "todo"
+let (_:Thread.t) = Thread.create (fun () ->
+  let i = ref 0 in
+  while true do Gc.compact(); incr i; if !i mod 100 = 0 then (print_char '.'; flush stdout) done) ()
 
-let insert_definition name ty te = failwith "todo"
+let s = String.copy
 
-let insert_theorem name ty te = failwith "todo"
+let db = Mysql.quick_connect ~database:(s "logipedia") ~user:(s "walid") ~password:(s "root") ()
 
-let insert_axiom name te = failwith "todo"
+let insert_parameter name ty = let insert = P.create db (s "INSERT INTO axiomes VALUES (null,?,?,?)") in
+                                            P.execute insert [|name;ty;"2"|];
+                                            P.close insert
+
+let insert_definition name ty te = let insert = P.create db (s "INSERT INTO definitions VALUES (null,?,?,?,?)") in
+                                                P.execute insert [|name;ty;te;"2"|];
+                                                P.close insert
+
+let insert_theorem name ty te = let insert = P.create db (s "INSERT INTO theoremes VALUES (null,?,?,?,?)") in
+                                              P.execute insert [|name;ty;te;"2"|];
+                                              P.close insert
+
+let insert_axiom name te = let insert = P.create db (s "INSERT INTO axiomes VALUES (null,?,?,?)") in
+                                        P.execute insert [|name;te;"2"|];
+                                        P.close insert
 
 let print_bdd ast = function
   | Parameter(name,ty) ->
@@ -120,3 +138,6 @@ let print_bdd ast = function
     insert_theorem (print_name name) (print_te te) (print_proof proof)
   | TyOpDef(tyop,arity) ->
     insert_parameter (print_tyop tyop) (print_arity arity)
+
+
+let () = Mysql.disconnect db
