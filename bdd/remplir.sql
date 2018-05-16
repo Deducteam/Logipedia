@@ -57,7 +57,7 @@ CREATE TABLE parameters
 );
 
 
-INSERT INTO language VALUES(null,Dedukti);
-INSERT INTO language VALUES(null,Coq);
-INSERT INTO language VALUES(null,Matita);
-INSERT INTO language VALUES(null,PVS);
+INSERT INTO language VALUES(null,"Dedukti");
+INSERT INTO language VALUES(null,"Coq");
+INSERT INTO language VALUES(null,"Matita");
+INSERT INTO language VALUES(null,"PVS");
