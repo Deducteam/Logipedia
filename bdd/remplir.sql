@@ -8,6 +8,7 @@ CREATE TABLE language
 ( id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255)
 );
+
 CREATE TABLE axiomes
 ( id INT UNSIGNED AUTO_INCREMENT UNIQUE,
   md VARCHAR(255),
@@ -54,3 +55,9 @@ CREATE TABLE parameters
     FOREIGN KEY (langID)
     REFERENCES language(id)
 );
+
+
+INSERT INTO language VALUES(null,Dedukti);
+INSERT INTO language VALUES(null,Coq);
+INSERT INTO language VALUES(null,Matita);
+INSERT INTO language VALUES(null,PVS);
