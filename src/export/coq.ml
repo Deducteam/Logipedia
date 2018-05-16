@@ -111,35 +111,35 @@ module P = Mysql.Prepared
 
 let open_bdd () = Mysql.quick_connect ~database:("logipedia") ~user:("walid") ~password:("root") ()
 
-let insert_parameter db name ty = let insert = P.create db ("INSERT INTO axiomes VALUES (null,?,?,?)") in
-                                            ignore(P.execute insert [|name;ty;"2"|]);
+let insert_parameter db (md,id) ty = let insert = P.create db ("INSERT INTO parameters VALUES (null,?,?,?,?)") in
+                                            ignore(P.execute insert [|md;id;ty;"2"|]);
                                             P.close insert
 
-let insert_definition db name ty te = let insert = P.create db ("INSERT INTO definitions VALUES (null,?,?,?,?)") in
-                                                ignore(P.execute insert [|name;ty;te;"2"|]);
+let insert_definition db (md,id) ty te = let insert = P.create db ("INSERT INTO definitions VALUES (null,?,?,?,?,?)") in
+                                                ignore(P.execute insert [|md;id;ty;te;"2"|]);
                                                 P.close insert
 
-let insert_theorem db name ty te = let insert = P.create db ("INSERT INTO theoremes VALUES (null,?,?,?,?)") in
-                                              ignore(P.execute insert [|name;ty;te;"2"|]);
+let insert_theorem db (md,id) ty te = let insert = P.create db ("INSERT INTO theoremes VALUES (null,?,?,?,?,?)") in
+                                              ignore(P.execute insert [|md;id;ty;te;"2"|]);
                                               P.close insert
 
-let insert_axiom db name te = let insert = P.create db ("INSERT INTO axiomes VALUES (null,?,?,?)") in
-                                        ignore(P.execute insert [|name;te;"2"|]);
+let insert_axiom db (md,id) te = let insert = P.create db ("INSERT INTO axiomes VALUES (null,?,?,?,?)") in
+                                        ignore(P.execute insert [|md;id;te;"2"|]);
                                         P.close insert
 
 let to_string fmt = Format.asprintf "%a" fmt
 
 let print_bdd_item db = function
   | Parameter(name,ty) ->
-    insert_parameter db (to_string print_name name) (to_string print_ty ty)
+    insert_parameter db name (to_string print_ty ty)
   | Definition(name,ty,te) ->
-    insert_definition db (to_string print_name name) (to_string print_ty ty) (to_string print_te te)
+    insert_definition db name (to_string print_ty ty) (to_string print_te te)
   | Axiom(name,te) ->
-    insert_axiom db (to_string print_name name) (to_string print_te te)
+    insert_axiom db name (to_string print_te te)
   | Theorem(name,te,proof) ->
-    insert_theorem db (to_string print_name name) (to_string print_te te) (to_string print_proof proof)
+    insert_theorem db name (to_string print_te te) (to_string print_proof proof)
   | TyOpDef(tyop,arity) ->
-    insert_parameter db (to_string print_name tyop) (to_string print_arity arity)
+    insert_parameter db tyop (to_string print_arity arity)
 
 let close_bdd db = Mysql.disconnect db
 

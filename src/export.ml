@@ -26,10 +26,19 @@ struct
   let print_bdd = Coq.print_bdd
 end
 
+(*
 module MATITA : E =
 struct
   let extension = "ma"
   let print_ast = Matita.print_ast
+end
+*)
+
+module MATITA : BDD =
+struct
+  let extension = "ma"
+  let print_ast = Matita.print_ast
+  let print_bdd = Matita.print_bdd
 end
 
 module OPENTHEORY : E =
@@ -48,6 +57,6 @@ let of_system : system -> (module E) = fun sys ->
   match sys with
   | `Pvs        -> (module PVS)
   | `Coq        -> failwith "todo"
-  | `Matita     -> (module MATITA)
+  | `Matita     -> failwith "todo"
   | `OpenTheory -> (module OPENTHEORY)
   | `Lean       -> (module LEAN)

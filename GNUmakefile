@@ -35,6 +35,7 @@ examples/%.pdf: examples/%.tex
 #### Producing the Dedukti library #################################
 
 LIBDKS = $(wildcard library/*.dk)
+SORTEDDKS = $(shell dkdep -s -I theories/ -I library/ --ignore library/*.dk | cut -d" " -f 2,2-)
 
 library/%.lean:  library/%.dk theories/sttfa.dko .library_depend_lean main.native
 	@echo "[EXPORT] $@"
@@ -83,10 +84,10 @@ lean: library/fermat.lean
 	cp library/*.lean /tmp/fermat/src/
 	lean /tmp/fermat/src/fermat.lean
 
-#library/%.pdf: library/%.tex
-#	@echo "[PDF] $@"
-#	@pdflatex -halt-on-error -output-directory=library $< > /dev/null || echo "ERROR on $@"
-
+bdd: $(LIBDKS) main.native theories/sttfa.dko
+	for i in $(SORTEDDKS) ; do \
+		./main.native  -I library -I theories $$i ; \
+	done
 .library_depend_dko: $(wildcard library/*.dk theories/*.dk examples/*.dk)
 	@echo "[DEP] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
