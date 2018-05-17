@@ -1,14 +1,16 @@
-# SharingAnArithmeticLibrary
-This repository presents an arithmetic library that is shared between several proof systems. For the moment, the proof systems supported are:
+# Logipedia
+This repository presents an arithmetic library that is shared between several proof systems. For the moment, the proofs can be exported to the following systems:
 - Coq
 - Matita
 - OpenTheory
+- Lean
+- PVS
 
 If you want to export this library to your favorite system, please send me a mail to franth2@gmail.com. All contributions are welcome!
 
 # Compiling the project
 
-To compile the project, you need to install Dedukti (version 2.5.1) first that can be found on opam. Then you can compile the project with
+To compile the project, you need to install the last version of Dedukti [https://github.com/Deducteam/Dedukti](https://github.com/Deducteam/Dedukti). Then you can compile the project with
 
 ``` bash
 make main
@@ -20,11 +22,7 @@ To export the library you can use the command
 make <system>
 ```
 
-where `<system>` can be either *coq*, *matita* or *opentheory*. This will create a file *final* in a subdirectory of your system. This file can be checked using the command
-
-``` bash
-make test-<system>
-```
+where `<system>` can be either *coq*, *matita*. *lean* or *pvs*. For *opentheory*, you can compile any file in the */library* directory one by one.
 
 # Known issue
 
