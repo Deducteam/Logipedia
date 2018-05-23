@@ -97,49 +97,53 @@ let print_ast oc file ast =
   QSet.iter (print_dep oc) ast.dep;
   List.iter (print_item oc) ast.items
 
+let parameters = Mongo.create_local_default "logipedia" "parameters"
+let definitions = Mongo.create_local_default "logipedia" "definitions"
+let theoremes = Mongo.create_local_default "logipedia" "theoremes"
+let axiomes = Mongo.create_local_default "logipedia" "axiomes"
 
-let (_:Thread.t) = Thread.create (fun () ->
-  let i = ref 0 in
-  while true do Gc.compact(); incr i; if !i mod 100 = 0 then (print_char '.'; flush stdout) done) ()
+let empty_doc = Bson.empty;;
 
 
-module P = Mysql.Prepared
+let insert_parameter (md,id) ty = let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
+                                        let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
+                                          let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
+						let key_doc_4 = Bson.add_element "langID" (Bson.create_string ("2")) key_doc_3 in
+                                            Mongo.insert parameters [key_doc_4];;
 
-let open_bdd () = Mysql.quick_connect ~database:("logipedia") ~user:("walid") ~password:("root") ()
+let insert_definition (md,id) ty te = let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
+                                          let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
+                                            let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
+                                              let key_doc_4 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_3 in
+						let key_doc_5 = Bson.add_element "langID" (Bson.create_string ("2")) key_doc_4 in
+                                                Mongo.insert definitions [key_doc_5];;
 
-let insert_parameter db (md,id) ty = let insert = P.create db ("INSERT INTO parameters VALUES (null,?,?,?,?)") in
-                                            ignore(P.execute insert [|md;id;ty;"3"|]);
-                                            P.close insert
+let insert_theorem (md,id) ty te = let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
+                                          let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
+                                            let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
+                                              let key_doc_4 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_3 in
+						let key_doc_5 = Bson.add_element "langID" (Bson.create_string ("2")) key_doc_4 in
+                                                Mongo.insert theoremes [key_doc_5];;
 
-let insert_definition db (md,id) ty te = let insert = P.create db ("INSERT INTO definitions VALUES (null,?,?,?,?,?)") in
-                                                ignore(P.execute insert [|md;id;ty;te;"3"|]);
-                                                P.close insert
-
-let insert_theorem db (md,id) ty te = let insert = P.create db ("INSERT INTO theoremes VALUES (null,?,?,?,?,?)") in
-                                              ignore(P.execute insert [|md;id;ty;te;"3"|]);
-                                              P.close insert
-
-let insert_axiom db (md,id) te = let insert = P.create db ("INSERT INTO axiomes VALUES (null,?,?,?,?)") in
-                                        ignore(P.execute insert [|md;id;te;"3"|]);
-                                        P.close insert
+let insert_axiom (md,id) te = let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
+                                        let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
+                                          let key_doc_3 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_2 in
+						let key_doc_4 = Bson.add_element "langID" (Bson.create_string ("2")) key_doc_3 in
+                                            Mongo.insert axiomes [key_doc_4];;
 
 let to_string fmt = Format.asprintf "%a" fmt
 
-let print_bdd_item db = function
+let print_bdd_item = function
   | Parameter(name,ty) ->
-    insert_parameter db name (to_string print_ty ty)
+    insert_parameter name (to_string print_ty ty)
   | Definition(name,ty,te) ->
-    insert_definition db name (to_string print_ty ty) (to_string print_te te)
+    insert_definition name (to_string print_ty ty) (to_string print_te te)
   | Axiom(name,te) ->
-    insert_axiom db name (to_string print_te te)
+    insert_axiom name (to_string print_te te)
   | Theorem(name,te,proof) ->
-    insert_theorem db name (to_string print_te te) (to_string print_proof proof)
+    insert_theorem name (to_string print_te te) (to_string print_proof proof)
   | TyOpDef(tyop,arity) ->
-    insert_parameter db tyop (to_string print_arity arity)
+    insert_parameter tyop (to_string print_arity arity)
 
-let close_bdd db = Mysql.disconnect db
+let print_bdd ast = (List.iter print_bdd_item) ast.items;
 
-let print_bdd ast =
-  let db = open_bdd () in
-  List.iter (print_bdd_item db) ast.items;
-  close_bdd db
