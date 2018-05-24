@@ -10,7 +10,7 @@ all: $(MAIN)
 
 $(MAIN): $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli)
 	@echo "[BUILD] main.native"
-	@ocamlbuild -quiet -Is src/,src/utils,src/export -tag thread -package mysql -package dedukti.kernel -package dedukti.parser src/main.native
+	@ocamlbuild -use-ocamlfind -quiet -Is src/,src/utils,src/export -tag thread -package mongo -package dedukti.kernel -package dedukti.parser src/main.native
 
 #### Producing the theory file #####################################
 

@@ -6,6 +6,8 @@ open Rule
 open Ast
 open Coq
 open Matita
+open Lean
+open Pvs
 
 let err_msg fmt =
   Format.eprintf "%s" ("\027[31m" ^ "ERROR" ^ "\027[m");
@@ -65,8 +67,10 @@ let run_on_file file =
     Errors.fail dloc "Fail to export module '%a'." pp_mident md ;
   Confluence.finalize () ;
   Coq.print_bdd ast;
-  Matita.print_bdd ast
-
+  Matita.print_bdd ast;
+  Lean.print_bdd ast;
+  Pvs.print_bdd ast
+  
 let _ =
   let options =
     Arg.align
