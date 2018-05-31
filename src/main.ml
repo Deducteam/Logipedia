@@ -27,6 +27,8 @@ let set_export s =
     system := `Pvs
   else if s = "lean" then
     system := `Lean
+  else if s = "sttfa" then 
+    system := `Dksttfa
   else
     failwith (Format.sprintf "%s is not among the supported systems@." s)
 
@@ -45,6 +47,20 @@ let handle_entry md e =
   | Rules _ -> failwith "Rules are not part of the sttforall logic"
   | _ -> failwith "Commands are not supported"
 
+let handle_entry_dep md e =
+  match e with
+  | Decl (lc, id, st, ty) -> (
+    match Env.declare lc id st ty with
+    | OK () -> Dksttfa.compile_declaration (mk_name md id) ty
+    | Err e -> Errors.fail_env_error e )
+  | Def (lc, id, opaque, Some ty, te) -> (
+      let define = if opaque then Env.define_op else Env.define in
+      match define lc id te (Some ty) with
+      | OK () -> Dksttfa.compile_definition (mk_name md id) ty te
+      | Err e -> Errors.fail_env_error e )
+  | Def _ -> failwith "Definition without types are not supported"
+  | Rules _ -> failwith "Rules are not part of the sttforall logic"
+  | _ -> failwith "Commands are not supported"
 
 let export_file file ast system =
   let basename = try Filename.chop_extension file with _ -> file in
@@ -58,18 +74,23 @@ let run_on_file file =
   let md = Env.init file in
   Confluence.initialize () ;
   let input = open_in file in
-  let entries = Parser.parse_channel md input in
-  close_in input ;
-  let items = List.map (handle_entry md) entries in
-  let dep = List.fold_left (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
-  let ast = {md = string_of_mident md; dep; items} in
-  if not (Env.export ()) then
-    Errors.fail dloc "Fail to export module '%a'." pp_mident md ;
-  Confluence.finalize () ;
-  Coq.print_bdd ast;
-  Matita.print_bdd ast;
-  Lean.print_bdd ast;
-  Pvs.print_bdd ast
+    let entries = Parser.parse_channel md input in
+    close_in input ;
+  if !system = `Dksttfa then
+    List.iter (handle_entry_dep md) entries
+  else
+  begin
+    let items = List.map (handle_entry md) entries in
+    let dep = List.fold_left (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
+    let ast = {md = string_of_mident md; dep; items} in
+    Confluence.finalize () ;
+    Coq.print_bdd ast;
+    Matita.print_bdd ast;
+    Lean.print_bdd ast;
+    Pvs.print_bdd ast
+    end;
+    if not (Env.export ()) then
+      Errors.fail dloc "Fail to export module '%a'." pp_mident md 
   
 let _ =
   let options =

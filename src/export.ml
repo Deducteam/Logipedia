@@ -1,4 +1,4 @@
-type system = [`Coq | `Matita | `Pvs | `OpenTheory | `Lean ]
+type system = [`Coq | `Matita | `Pvs | `OpenTheory | `Lean | `Dksttfa]
 
 module type E =
 sig
@@ -68,6 +68,7 @@ struct
   let print_ast = Lean.print_ast
   let print_bdd = Lean.print_bdd
 end
+
 
 let of_system : system -> (module E) = fun sys ->
   match sys with

@@ -87,3 +87,25 @@ db.theoremes.aggregate([
        _id: {$in: doc.dups}
    });
 })
+
+db.dependances.aggregate([
+ {
+   $group:
+    {
+      _id: { md: "$md", nameID: "$nameID", mdDep: "$mdDep", idDep: "$idDep" },
+      dups: { $addToSet: "$_id" },
+      count: { $sum:1 }
+   }
+ },
+ {
+   $match:
+     {
+       count: {"$gt": 1}
+     }
+ }
+]).forEach(function(doc) {
+   doc.dups.shift();
+   db.dependances.remove({
+       _id: {$in: doc.dups}
+   });
+})
