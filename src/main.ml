@@ -71,7 +71,7 @@ let export_file file ast system =
   M.print_ast fmt basename ast ;
   close_out oc
 
-let run_on_file file =
+let run_on_file to_bdd file =
   let md = Env.init file in
   Confluence.initialize () ;
   let input = open_in file in
@@ -85,10 +85,10 @@ let run_on_file file =
     let dep = List.fold_left (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
     let ast = {md = string_of_mident md; dep; items} in
     Confluence.finalize () ;
-    Coq.print_bdd ast;
-    Matita.print_bdd ast;
-    Lean.print_bdd ast;
-    Pvs.print_bdd ast
+    let (module M:Export.E) = Export.of_system !system in
+    export_file file ast !system;
+    if to_bdd then
+      M.print_bdd ast;
     end;
     if not (Env.export ()) then
       Errors.fail dloc "Fail to export module '%a'." pp_mident md
@@ -109,7 +109,7 @@ let _ =
     Arg.parse options (fun f -> files := f :: !files) usage ;
     List.rev !files
   in
-  try List.iter run_on_file files with
+  try List.iter (run_on_file !to_bdd) files with
   | Parse_error (loc, msg) ->
     let l, c = of_loc loc in
     err_msg "Parse error at (%i,%i): %s@." l c msg ;
