@@ -149,5 +149,7 @@ let print_bdd_item = function
   | TyOpDef(tyop,arity) ->
     insert_parameter tyop (to_string print_arity arity)
 
-let print_bdd ast = List.iter print_bdd_item ast.items;
+let print_bdd ast = 
+  cur_md := ast.md;
+  List.iter print_bdd_item ast.items;
 

@@ -109,3 +109,28 @@ db.dependances.aggregate([
        _id: {$in: doc.dups}
    });
 })
+
+db.dependancesMod.aggregate([
+ {
+   $group:
+    {
+      _id: { md: "$md", mdDep: "$mdDep"},
+      dups: { $addToSet: "$_id" },
+      count: { $sum:1 }
+   }
+ },
+ {
+   $match:
+     {
+       count: {"$gt": 1}
+     }
+ }
+]).forEach(function(doc) {
+   doc.dups.shift();
+   db.dependancesMod.remove({
+       _id: {$in: doc.dups}
+   });
+})
+
+db.dependancesMod.remove( { $where: "this.mdDep == this.md" } )
+
