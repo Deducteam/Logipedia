@@ -7,4 +7,4 @@ B _build/src/export
 B _build/src/utils
 B +threads
 
-PKG dedukti mysql
+PKG dedukti bson mongo

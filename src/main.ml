@@ -27,7 +27,7 @@ let set_export s =
     system := `Pvs
   else if s = "lean" then
     system := `Lean
-  else if s = "sttfa" then 
+  else if s = "sttfa" then
     system := `Dksttfa
   else
     failwith (Format.sprintf "%s is not among the supported systems@." s)
@@ -67,7 +67,8 @@ let export_file file ast system =
   let (module M:Export.E) = Export.of_system system in
   let stt_file = basename ^ "." ^ M.extension in
   let oc = open_out stt_file in
-  M.print_ast oc basename ast ;
+  let fmt = Format.formatter_of_out_channel oc in
+  M.print_ast fmt basename ast ;
   close_out oc
 
 let run_on_file file =
@@ -90,13 +91,15 @@ let run_on_file file =
     Pvs.print_bdd ast
     end;
     if not (Env.export ()) then
-      Errors.fail dloc "Fail to export module '%a'." pp_mident md 
-  
+      Errors.fail dloc "Fail to export module '%a'." pp_mident md
+
 let _ =
+  let to_bdd = ref false in
   let options =
     Arg.align
       [ ("-I", Arg.String Basic.add_path, " Add folder to Dedukti path") ;
         ("--export", Arg.String set_export, " Set exporting system") ;
+        ("--export-bdd", Arg.Set to_bdd, " Set bdd") ;
       ]
   in
   let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
