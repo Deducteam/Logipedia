@@ -18,74 +18,70 @@ let dependancesMod = Mongo.create_local_default "logipedia" "dependancesMod"
 
 let empty_doc = Bson.empty;;
 
-let insert_parameter (md,id) ty = 
+let insert_parameter (md,id) ty =
   let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
   let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
   let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
   let key_doc_4 = Bson.add_element "langID" (Bson.create_string ("1")) key_doc_3 in
-  Mongo.insert parameters [key_doc_4];;
+  Mongo.insert parameters [key_doc_4]
 
-let insert_definition (md,id) ty te = 
+let insert_definition (md,id) ty te =
   let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
   let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
   let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
   let key_doc_4 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_3 in
   let key_doc_5 = Bson.add_element "langID" (Bson.create_string ("1")) key_doc_4 in
-  Mongo.insert definitions [key_doc_5];;
+  Mongo.insert definitions [key_doc_5]
 
-let insert_theorem (md,id) te proof = 
+let insert_theorem (md,id) te proof =
   let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
   let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
   let key_doc_3 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_2 in
   let key_doc_4 = Bson.add_element "proof" (Bson.create_string (proof)) key_doc_3 in
   let key_doc_5 = Bson.add_element "langID" (Bson.create_string ("1")) key_doc_4 in
-  Mongo.insert theoremes [key_doc_5];;
+  Mongo.insert theoremes [key_doc_5]
 
-let insert_axiom (md,id) te = 
+let insert_axiom (md,id) te =
   let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
   let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
   let key_doc_3 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_2 in
   let key_doc_4 = Bson.add_element "langID" (Bson.create_string ("1")) key_doc_3 in
-  Mongo.insert axiomes [key_doc_4];;
+  Mongo.insert axiomes [key_doc_4]
 
-let insert_dependances (md,id) (md',id') = 
+let insert_dependances (md,id) (md',id') =
   let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
   let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
   let key_doc_3 = Bson.add_element "mdDep" (Bson.create_string (md')) key_doc_2 in
   let key_doc_4 = Bson.add_element "idDep" (Bson.create_string (id')) key_doc_3 in
-  Mongo.insert dependances [key_doc_4];;
-  
-let insert_dependances_module md md' = 
+  Mongo.insert dependances [key_doc_4]
+
+let insert_dependances_module md md' =
   let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
   let key_doc_2 = Bson.add_element "mdDep" (Bson.create_string (md')) key_doc_1 in
-  Mongo.insert dependancesMod [key_doc_2];;
+  Mongo.insert dependancesMod [key_doc_2]
 
 let to_string fmt = Format.asprintf "%a" fmt
 
-let fct_insert_dependances (md,id) (md',id') = insert_dependances (md,id) (md',id');
-                                               if md<>md' then
-                                                insert_dependances_module md md'
+let fct_insert_dependances (md,id) (md',id') =
+  insert_dependances (md,id) (md',id');
+  if md<>md' then insert_dependances_module md md'
 
-let rec matcher_dep_list (md,id) term_lst = match term_lst with
-                                |[] -> ()
-                                |term::lst -> matcher_dep (md,id) term; matcher_dep_list (md,id) lst
-                                
-and matcher_dep (md,id) a = match a with
-                                |Kind -> ()
-                                |Type(_) -> ()
-                                |DB(_, _, _) -> ()
-                                |Const(_, name') -> fct_insert_dependances (md,id) (of_name name')
-                                |App(ter, term, term_lst) -> matcher_dep (md,id) ter; matcher_dep (md,id) term; matcher_dep_list (md,id) term_lst
-                                |Lam(_, _, _, term) -> matcher_dep (md,id) term
-                                |Pi(_, _, ter, term) -> matcher_dep (md,id) ter; matcher_dep (md,id) term
-                                
+let rec matcher_dep (md,id) a =
+  match a with
+  |Kind -> ()
+  |Type(_) -> ()
+  |DB(_, _, _) -> ()
+  |Const(_, name') -> fct_insert_dependances (md,id) (of_name name')
+  |App(ter, term, term_lst) -> matcher_dep (md,id) ter; matcher_dep (md,id) term; List.iter (matcher_dep (md,id)) term_lst
+  |Lam(_, _, _, term) -> matcher_dep (md,id) term
+  |Pi(_, _, ter, term) -> matcher_dep (md,id) ter; matcher_dep (md,id) term
+
 let compile_declaration name ty =
   match ty with
   | Term.App (cst, a, []) when is_sttfa_const sttfa_etap cst ->
     Format.eprintf "[COMPILE] parameter: %a@." Pp.print_name name ;
       insert_parameter (of_name name) (to_string Pp.print_term a);
       matcher_dep (of_name name) a
-      
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eta cst ->
     Format.eprintf "[COMPILE] parameter: %a@." Pp.print_name name ;
       insert_parameter (of_name name) (to_string Pp.print_term a);

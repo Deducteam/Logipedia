@@ -423,31 +423,35 @@ let axiomes = Mongo.create_local_default "logipedia" "axiomes"
 
 let empty_doc = Bson.empty;;
 
-let insert_parameter (md,id) ty = let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-                                        let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
-                                          let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
-						let key_doc_4 = Bson.add_element "langID" (Bson.create_string ("5")) key_doc_3 in
-                                            Mongo.insert parameters [key_doc_4];;
+let insert_parameter (md,id) ty = 
+  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
+  let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
+  let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
+  let key_doc_4 = Bson.add_element "langID" (Bson.create_string ("5")) key_doc_3 in
+  Mongo.insert parameters [key_doc_4];;
 
-let insert_definition (md,id) ty te = let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-                                          let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
-                                            let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
-                                              let key_doc_4 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_3 in
-						let key_doc_5 = Bson.add_element "langID" (Bson.create_string ("5")) key_doc_4 in
-                                                Mongo.insert definitions [key_doc_5];;
+let insert_definition (md,id) ty te = 
+  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
+  let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
+  let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
+  let key_doc_4 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_3 in
+  let key_doc_5 = Bson.add_element "langID" (Bson.create_string ("5")) key_doc_4 in
+  Mongo.insert definitions [key_doc_5];;
 
-let insert_theorem (md,id) te proof = let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-                                          let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
-                                            let key_doc_3 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_2 in
-                                              let key_doc_4 = Bson.add_element "proof" (Bson.create_string (proof)) key_doc_3 in
-						let key_doc_5 = Bson.add_element "langID" (Bson.create_string ("5")) key_doc_4 in
-                                                Mongo.insert theoremes [key_doc_5];;
+let insert_theorem (md,id) te proof = 
+  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
+  let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
+  let key_doc_3 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_2 in
+  let key_doc_4 = Bson.add_element "proof" (Bson.create_string (proof)) key_doc_3 in
+  let key_doc_5 = Bson.add_element "langID" (Bson.create_string ("5")) key_doc_4 in
+  Mongo.insert theoremes [key_doc_5];;
 
-let insert_axiom (md,id) te = let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-                                        let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
-                                          let key_doc_3 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_2 in
-						let key_doc_4 = Bson.add_element "langID" (Bson.create_string ("5")) key_doc_3 in
-                                            Mongo.insert axiomes [key_doc_4];;
+let insert_axiom (md,id) te = 
+  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
+  let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
+  let key_doc_3 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_2 in
+  let key_doc_4 = Bson.add_element "langID" (Bson.create_string ("5")) key_doc_3 in
+  Mongo.insert axiomes [key_doc_4];;
 
 let to_string fmt = Format.asprintf "%a" fmt
 

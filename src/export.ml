@@ -77,3 +77,4 @@ let of_system : system -> (module E) = fun sys ->
   | `Matita     -> failwith "todo"
   | `OpenTheory -> (module OPENTHEORY)
   | `Lean       -> failwith "todo"
+  | `Dksttfa    -> failwith "todo"
