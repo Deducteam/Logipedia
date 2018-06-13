@@ -16,12 +16,4 @@ H : sttfa.eps (P x) => H.
 def sym_leibniz : sttfa.eps (sttfa.forallP (A:sttfa.type =>
                  sttfa.forall A (x:sttfa.eta A =>
                  sttfa.forall A (y:sttfa.eta A =>
-                 sttfa.impl (leibniz A x y) (leibniz A y x))))) :=
-A : sttfa.type =>
-x : sttfa.eta A =>
-y : sttfa.eta A =>
-equal : sttfa.eps (leibniz A x y) =>
-equal (z : sttfa.eta A => sttfa.impl (leibniz A z y) (leibniz A z x))
-                (e : sttfa.eps (leibniz A x y) => refl_leibniz A x)
-                (refl_leibniz A y).
-
+                 sttfa.impl (leibniz A x y) (leibniz A y x))))).
