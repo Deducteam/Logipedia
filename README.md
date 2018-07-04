@@ -1,4 +1,4 @@
-# SharingAnArithmeticLibrary
+# Sharing An Arithmetic Library
 This repository presents an arithmetic library that is shared between several proof systems. For the moment, the proof systems supported are:
 - Coq
 - Matita
