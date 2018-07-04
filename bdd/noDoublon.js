@@ -39,7 +39,7 @@ db.definitions.aggregate([
  }
 ]).forEach(function(doc) {
    doc.dups.shift();
-   db.parameters.remove({
+   db.definitions.remove({
        _id: {$in: doc.dups}
    });
 })
@@ -61,7 +61,7 @@ db.axiomes.aggregate([
  }
 ]).forEach(function(doc) {
    doc.dups.shift();
-   db.parameters.remove({
+   db.axiomes.remove({
        _id: {$in: doc.dups}
    });
 })
@@ -83,7 +83,7 @@ db.theoremes.aggregate([
  }
 ]).forEach(function(doc) {
    doc.dups.shift();
-   db.parameters.remove({
+   db.theoremes.remove({
        _id: {$in: doc.dups}
    });
 })
