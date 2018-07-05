@@ -43,3 +43,4 @@ pvs-strategies
 *.lean
 
 .library_depend*
+.DS_Store

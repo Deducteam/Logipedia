@@ -1,10 +1,10 @@
 #!/bin/sh
 cd ..
 make
-    for fichier in library/*.dk
-    do
-      ./main.native -I theories/ -I library/ --export sttfa $fichier
-    done
+for fichier in library/*.dk
+do
+  ./main.native -I theories/ -I library/ --export sttfa $fichier
+done
 
 if [ $# -eq 0 ]
   then

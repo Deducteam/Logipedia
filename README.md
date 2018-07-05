@@ -1,5 +1,6 @@
 # Logipedia
 This repository presents an arithmetic library that is shared between several proof systems. For the moment, the proofs can be exported to the following systems:
+
 - Coq
 - Matita
 - OpenTheory
