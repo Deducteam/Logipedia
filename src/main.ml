@@ -28,7 +28,7 @@ let set_export s =
   else if s = "lean" then
     system := `Lean
   else if s = "sttfa" then
-    system := `Dksttfa
+    system := `Sttfa
   else
     failwith (Format.sprintf "%s is not among the supported systems@." s)
 
@@ -51,12 +51,12 @@ let handle_entry_dep md e =
   match e with
   | Decl (lc, id, st, ty) -> (
     match Env.declare lc id st ty with
-    | OK () -> Dksttfa.compile_declaration (mk_name md id) ty
+    | OK () -> Sttfa.compile_declaration (mk_name md id) ty
     | Err e -> Errors.fail_env_error e )
   | Def (lc, id, opaque, Some ty, te) -> (
       let define = if opaque then Env.define_op else Env.define in
       match define lc id te (Some ty) with
-      | OK () -> Dksttfa.compile_definition (mk_name md id) ty te
+      | OK () -> Sttfa.compile_definition (mk_name md id) ty te
       | Err e -> Errors.fail_env_error e )
   | Def _ -> failwith "Definition without types are not supported"
   | Rules _ -> failwith "Rules are not part of the sttforall logic"
@@ -77,7 +77,7 @@ let run_on_file to_bdd file =
   let input = open_in file in
     let entries = Parser.parse_channel md input in
     close_in input ;
-  if !system = `Dksttfa then
+  if !system = `Sttfa then
     List.iter (handle_entry_dep md) entries
   else
   begin

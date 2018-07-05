@@ -1,4 +1,4 @@
-type system = [`Coq | `Matita | `Pvs | `OpenTheory | `Lean | `Dksttfa]
+type system = [`Coq | `Matita | `Pvs | `OpenTheory | `Lean | `Sttfa]
 
 module type E =
 sig
@@ -65,4 +65,4 @@ let of_system : system -> (module E) = fun sys ->
   | `Matita     -> failwith "todo"
   | `OpenTheory -> (module OPENTHEORY)
   | `Lean       -> failwith "todo"
-  | `Dksttfa    -> failwith "todo"
+  | `Sttfa    -> failwith "todo"
