@@ -47,7 +47,7 @@ module OPENTHEORY : E =
 struct
   let extension = "art"
   let print_ast = Opentheory.print_ast
-  let print_bdd = failwith "todo"
+  let print_bdd = Opentheory.print_bdd
 end
 
 module LEAN : E =
@@ -57,12 +57,19 @@ struct
   let print_bdd = Lean.print_bdd
 end
 
+module STTFA : E =
+struct
+  let extension = "lean"
+  let print_ast = Sttfa.print_ast
+  let print_bdd = Sttfa.print_bdd
+end
+
 
 let of_system : system -> (module E) = fun sys ->
   match sys with
-  | `Pvs        -> failwith "todo"
-  | `Coq        -> failwith "todo"
-  | `Matita     -> failwith "todo"
+  | `Pvs        -> (module PVS)
+  | `Coq        -> (module COQ)
+  | `Matita     -> (module MATITA)
   | `OpenTheory -> (module OPENTHEORY)
-  | `Lean       -> failwith "todo"
-  | `Sttfa    -> failwith "todo"
+  | `Lean       -> (module LEAN)
+  | `Sttfa    -> (module STTFA)
