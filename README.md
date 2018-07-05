@@ -7,7 +7,7 @@ This repository presents an arithmetic library that is shared between several pr
 - Lean
 - PVS
 
-If you want to export this library to your favorite system, please send me a mail to franth2@gmail.com. All contributions are welcome!
+If you want to export this library to your favorite system, please send me a mail to francois.thire@inria.fr. All contributions are welcome!
 
 # Compiling the project
 
