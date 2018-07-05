@@ -323,13 +323,8 @@ let print_item oc = function
 let print_ast oc file ast =
   set_oc oc;
   version ();
-<<<<<<< HEAD
-  List.iter (print_item oc) ast.items;
-=======
   List.iter (print_item oc) ast.items
->>>>>>> a2557bb23ac55f06237311525227fa241fef5b9c
-  
-  
+
 let parameters = Mongo.create_local_default "logipedia" "parameters"
 let definitions = Mongo.create_local_default "logipedia" "definitions"
 let theoremes = Mongo.create_local_default "logipedia" "theoremes"
@@ -368,4 +363,3 @@ let insert_axiom (md,id) te =
   Mongo.insert axiomes [key_doc_4]
 
 let to_string fmt = Format.asprintf "%a" fmt
-
