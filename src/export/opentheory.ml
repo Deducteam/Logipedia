@@ -308,7 +308,13 @@ let print_item oc = function
   | Parameter(cst,ty) -> ()
   | Definition(cst,ty,te) ->
     let te' = mk_te empty_env te in
-    mk_const (mk_qid cst) te'
+    mk_const (mk_qid cst) te';
+    let cst' = mk_qid cst in
+    let te' = mk_te Environ.empty_env te in
+    let ty' = mk_ty ty in
+    let eq = mk_equal_term (term_of_const (const_of_name cst') ty') te' ty' in
+    let thm = thm_of_const cst in
+    mk_thm cst' eq (mk_hyp []) thm
   | Axiom(cst,te) ->
     let te' = mk_te empty_env te in
     let hyp = mk_hyp [] in

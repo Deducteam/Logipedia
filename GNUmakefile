@@ -156,6 +156,7 @@ clean:
 	@rm -f .library_depend_art
 
 distclean: clean
+	@find library -name "\#*"    -exec rm {} \;
 	@find . -name "*~"           -exec rm {} \;
 	@find . -name "*.dko"        -exec rm {} \;
 	@find library -name "*.stt"  -exec rm {} \;
