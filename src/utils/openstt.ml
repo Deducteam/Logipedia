@@ -155,40 +155,40 @@ module Basic = struct
     fun out op ->
       match op with
       | Empty -> Format.fprintf out ""
-      | Int(i,op) -> print_op out op; Format.fprintf out "%d\n" i
-      | String(s,op) ->  print_op out op; Format.fprintf out "\"%s\"\n" s
-      | Nil(op) ->  print_op out op; Format.fprintf out "nil\n"
-      | Cons(op) ->  print_op out op; Format.fprintf out "cons\n"
-      | Pair(op) -> print_op out op; Format.fprintf out "nil\ncons\ncons\n"
-      | Const(op) ->  print_op out op; Format.fprintf out "const\n"
-      | Def(op) -> print_op out op; Format.fprintf out "def\n"
-      | OpType(op) -> print_op out op; Format.fprintf out "opType\n"
-      | AppTerm(op) -> print_op out op; Format.fprintf out "appTerm\n"
-      | AbsTerm(op) -> print_op out op; Format.fprintf out "absTerm\n"
-      | ConstTerm(op) -> print_op out op; Format.fprintf out "constTerm\n"
-      | DefineConst(op) -> print_op out op; Format.fprintf out "defineConst\n"
-      | Pop(op) -> print_op out op; Format.fprintf out "pop\n"
-      | Remove(op) -> print_op out op; Format.fprintf out "remove\n"
-      | Pragma(op) -> print_op out op; Format.fprintf out "pragma\n"
-      | TypeOp(op) -> print_op out op; Format.fprintf out "typeOp\n"
-      | Var(op) -> print_op out op; Format.fprintf out "var\n"
-      | VarTerm(op) -> print_op out op; Format.fprintf out "varTerm\n"
-      | VarType(op) -> print_op out op; Format.fprintf out "varType\n"
-      | Ref(op) -> print_op out op; Format.fprintf out "ref\n"
-      | Version(op) -> print_op out op; Format.fprintf out "version\n"
-      | Axiom(op) -> print_op out op; Format.fprintf out "axiom\n"
-      | Refl(op) -> print_op out op; Format.fprintf out "refl\n"
-      | AppThm(op) -> print_op out op; Format.fprintf out "appThm\n"
-      | AbsThm(op) -> print_op out op; Format.fprintf out "absThm\n"
-      | Sym(op) -> print_op out op; Format.fprintf out "sym\n"
-      | BetaConv(op) -> print_op out op; Format.fprintf out "betaConv\n"
-      | Trans(op) -> print_op out op; Format.fprintf out "trans\n"
-      | Subst(op) -> print_op out op; Format.fprintf out "subst\n"
-      | EqMp(op) -> print_op out op; Format.fprintf out "eqMp\n"
-      | Assume(op) -> print_op out op; Format.fprintf out "assume\n"
-      | DeductAntiSym(op) -> print_op out op; Format.fprintf out "deductAntisym\n"
-      | ProveHyp(op) -> print_op out op; Format.fprintf out "proveHyp\n"
-      | Thm(op) -> print_op out op; Format.fprintf out "thm\n"
+      | Int(i,op) -> Format.fprintf out "%a%d\n" print_op op i
+      | String(s,op) -> Format.fprintf out "%a\"%s\"\n" print_op op s
+      | Nil(op) -> Format.fprintf out "%anil\n" print_op op
+      | Cons(op) -> Format.fprintf out "%acons\n" print_op op
+      | Pair(op) -> Format.fprintf out "%anil\ncons\ncons\n" print_op op
+      | Const(op) -> Format.fprintf out "%aconst\n" print_op op
+      | Def(op) -> Format.fprintf out "%adef\n" print_op op
+      | OpType(op) -> Format.fprintf out "%aopType\n" print_op op
+      | AppTerm(op) -> Format.fprintf out "%aappTerm\n" print_op op
+      | AbsTerm(op) -> Format.fprintf out "%aabsTerm\n" print_op op
+      | ConstTerm(op) -> Format.fprintf out "%aconstTerm\n" print_op op
+      | DefineConst(op) -> Format.fprintf out "%adefineConst\n" print_op op
+      | Pop(op) -> Format.fprintf out "%apop\n" print_op op
+      | Remove(op) -> Format.fprintf out "%aremove\n" print_op op
+      | Pragma(op) -> Format.fprintf out "%apragma\n" print_op op
+      | TypeOp(op) -> Format.fprintf out "%atypeOp\n" print_op op
+      | Var(op) -> Format.fprintf out "%avar\n" print_op op
+      | VarTerm(op) -> Format.fprintf out "%avarTerm\n" print_op op
+      | VarType(op) -> Format.fprintf out "%avarType\n" print_op op
+      | Ref(op) -> Format.fprintf out "%aref\n" print_op op
+      | Version(op) -> Format.fprintf out "%aversion\n" print_op op
+      | Axiom(op) -> Format.fprintf out "%aaxiom\n" print_op op
+      | Refl(op) -> Format.fprintf out "%arefl\n" print_op op
+      | AppThm(op) -> Format.fprintf out "%aappThm\n" print_op op
+      | AbsThm(op) -> Format.fprintf out "%aabsThm\n" print_op op
+      | Sym(op) -> Format.fprintf out "%asym\n" print_op op
+      | BetaConv(op) -> Format.fprintf out "%abetaConv\n" print_op op
+      | Trans(op) -> Format.fprintf out "%atrans\n" print_op op
+      | Subst(op) -> Format.fprintf out "%asubst\n" print_op op
+      | EqMp(op) -> Format.fprintf out "%aeqMp\n" print_op op
+      | Assume(op) -> Format.fprintf out "%aassume\n" print_op op
+      | DeductAntiSym(op) -> Format.fprintf out "%adeductAntisym\n" print_op op
+      | ProveHyp(op) -> Format.fprintf out "%aproveHyp\n" print_op op
+      | Thm(op) -> Format.fprintf out "%athm\n" print_op op
 
   let oc = ref Format.std_formatter
 
