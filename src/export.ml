@@ -62,7 +62,7 @@ struct
   let print_ast = Sttfa.print_ast
   let print_bdd = Sttfa.print_bdd
 end
-
+(*
 module type JSON =
 sig
   val print_json : Ast.ast -> unit
@@ -104,7 +104,7 @@ struct
   let print_json ast =
     Bson.to_simple_json
 end
-
+*)
 let of_system : system -> (module E) = fun sys ->
   match sys with
   | `Pvs        -> (module PVS)
