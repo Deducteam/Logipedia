@@ -49,10 +49,11 @@ struct
   let print_bdd = Matita.print_bdd
 end
 
-module OPENTHEORY : E =
+module OPENTHEORY : BDD =
 struct
   let extension = "art"
-  let print_ast = Opentheory.print_ast
+  let print_ast = OpenTheory.print_ast
+  let print_bdd = OpenTheory.print_bdd
 end
 
 (*
@@ -75,6 +76,6 @@ let of_system : system -> (module E) = fun sys ->
   | `Pvs        -> failwith "todo"
   | `Coq        -> failwith "todo"
   | `Matita     -> failwith "todo"
-  | `OpenTheory -> (module OPENTHEORY)
+  | `OpenTheory -> failwith "todo"
   | `Lean       -> failwith "todo"
   | `Dksttfa    -> failwith "todo"

@@ -8,6 +8,7 @@ open Coq
 open Matita
 open Lean
 open Pvs
+open OpenTheory
 
 let err_msg fmt =
   Format.eprintf "%s" ("\027[31m" ^ "ERROR" ^ "\027[m");
@@ -87,7 +88,8 @@ let run_on_file file =
     Coq.print_bdd ast;
     Matita.print_bdd ast;
     Lean.print_bdd ast;
-    Pvs.print_bdd ast
+    Pvs.print_bdd ast;
+    OpenTheory.print_bdd ast
     end;
     if not (Env.export ()) then
       Errors.fail dloc "Fail to export module '%a'." pp_mident md 
