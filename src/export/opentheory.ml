@@ -307,17 +307,13 @@ let rec mk_proof env =
 let print_item oc = function
   | Parameter(cst,ty) -> ()
   | Definition(cst,ty,te) ->
-    debug (mk_qid cst);
     let te' = mk_te empty_env te in
     mk_const (mk_qid cst) te'
   | Axiom(cst,te) ->
-    debug (mk_qid cst);
     let te' = mk_te empty_env te in
     let hyp = mk_hyp [] in
     mk_thm (mk_qid cst)  te' hyp (mk_axiom hyp te')
   | Theorem(cst,te,proof) ->
-    Format.eprintf "Translation of %a@." Basic.pp_name (name_of cst);
-    debug (mk_qid cst);
     let te' = mk_te empty_env te in
     let hyp' = mk_hyp [] in
     let proof' = mk_proof empty_env proof in
@@ -329,7 +325,6 @@ let print_ast oc file ast =
   version ();
   List.iter (print_item oc) ast.items
   
-  
 let openTheory = Mongo.create_local_default "logipedia" "openTheory"
 
 let empty_doc = Bson.empty
@@ -340,15 +335,12 @@ let insert_openTheory md cts =
   Mongo.insert openTheory [key_doc_2]
 
 let print_bdd ast =
-  let tmp = "foo" in
-  let oc = open_out tmp in
-  print_ast oc tmp ast;
-  let ic = open_in tmp in
-  let n = in_channel_length ic in
-  let b = Bytes.create n in
-  really_input ic b 0 n;
-  close_in ic;
-  let s = Bytes.to_string b in
+  Printf.eprintf "in bdd\n%!";
+  set_oc Format.str_formatter;
+  version ();
+  Printf.eprintf "avant test\n%!";
+  List.iter (print_item Format.str_formatter) ast.items;
+  Printf.eprintf "test\n%!";
+  let s = Buffer.contents Format.stdbuf in
+  Printf.eprintf "apres tes\n%!";
   insert_openTheory ast.md s
-
-

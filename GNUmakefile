@@ -39,23 +39,25 @@ SORTEDDKS = $(shell dkdep -s -I theories/ -I library/ --ignore library/*.dk | cu
 
 library/%.lean:  library/%.dk theories/sttfa.dko .library_depend_lean $(MAIN)
 	@echo "[EXPORT] $@"
-	@./main.native -I library -I theories --export lean $<
+	@./main.native -I library -I theories --export lean $(BDD) $<
 
 library/%.pvs: library/%.dk theories/sttfa.dko .library_depend_pvs $(MAIN)
 	@echo "[EXPORT] $@"
-	@./main.native -I library -I theories --export pvs $<
+	@./main.native -I library -I theories --export pvs $(BDD) $<
 
 library/%.v: library/%.dk theories/sttfa.dko .library_depend_v $(MAIN)
 	@echo "[EXPORT] $@"
-	@./main.native -I library -I theories --export coq $<
+	@./main.native -I library -I theories --export coq $(BDD) $<
+	@coqc -R library "" -beautify $@
+	@mv $@.beautified $@
 
 library/%.ma: library/%.dk theories/sttfa.dko .library_depend_ma $(MAIN)
 	@echo "[EXPORT] $@"
-	@./main.native -I library -I theories --export matita $<
+	@./main.native -I library -I theories --export matita $(BDD) $<
 
 library/%.art: library/%.dk theories/sttfa.dko .library_depend_art $(MAIN)
 	@echo "[EXPORT] $@"
-	@./main.native -I library -I theories --export opentheory $<
+	@./main.native -I library -I theories --export opentheory $(BDD) $<
 
 library/%.vo: library/%.v .library_depend_vo
 	@echo "[CHECK] $@"

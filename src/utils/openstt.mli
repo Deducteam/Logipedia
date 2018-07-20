@@ -99,4 +99,4 @@ val debug : 'a obj -> unit
 
 val version : unit -> unit
 
-val set_oc : out_channel -> unit
+val set_oc : Format.formatter -> unit
