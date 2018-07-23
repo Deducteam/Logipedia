@@ -354,7 +354,7 @@ let print_proof_pvs : Format.formatter -> proof -> unit =
         print_te_pvs pc
         print__te_pvs _te
         (print acc) p
-    | ForallI(j,p,n)      -> Format.fprintf oc "%%|- (then@ (sttfa-forall-i \"%s\")\n%a)" (sanitize_name_pvs n) (print acc) p
+    | ForallI(j,p,n)      -> Format.fprintf oc "%%|- (then%@ (sttfa-forall-i \"%s\")\n%a)" (sanitize_name_pvs n) (print acc) p
     | ForallPE(j,p,_ty)   -> print (_ty::acc) oc p
     | ForallPI(j,p,n)     -> print acc oc p
   in

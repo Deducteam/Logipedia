@@ -8,7 +8,7 @@ all: $(MAIN)
 
 #### Main program ##################################################
 
-$(MAIN): $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli)
+$(MAIN): $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli src/utils/*.ml src/utils/*.mli)
 	@echo "[BUILD] main.native"
 	@ocamlbuild -use-ocamlfind -quiet -Is src/,src/utils,src/export -tag thread -package mongo -package dedukti.kernel -package dedukti.parser src/main.native
 
@@ -156,6 +156,7 @@ clean:
 	@rm -f .library_depend_art
 
 distclean: clean
+	@find library -name "\#*"    -exec rm {} \;
 	@find . -name "*~"           -exec rm {} \;
 	@find . -name "*.dko"        -exec rm {} \;
 	@find library -name "*.stt"  -exec rm {} \;
