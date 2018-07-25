@@ -86,6 +86,9 @@ lean: library/fermat.lean
 	cp library/*.lean /tmp/fermat/src/
 	lean /tmp/fermat/src/fermat.lean
 
+opentheory: library/fermat.art library/fermat.thy
+	opentheory info library/fermat.thy
+
 bdd: $(LIBDKS) main.native theories/sttfa.dko
 	for i in $(SORTEDDKS) ; do \
 		./main.native  -I library -I theories $$i ; \
@@ -173,6 +176,7 @@ distclean: clean
 	@find library -name "*.vo"   -exec rm {} \;
 	@find library -name "*.glob" -exec rm {} \;
 	@find library -name "*.lean" -exec rm {} \;
+	@find library -name "*.json" -exec rm {} \;
 	@find library -name "*.art"  -exec rm {} \;
 	@find library -name "*.summary" -exec rm {} \;
 	@find library -name "*.beautified" -exec rm {} \;

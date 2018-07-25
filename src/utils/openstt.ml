@@ -100,6 +100,8 @@ module type OpenSTT = sig
   val version : unit -> unit
 
   val set_fmt : out_channel -> unit
+
+  val clean : unit -> unit
 end
 
 module Basic = struct
@@ -402,6 +404,12 @@ module Basic = struct
 
   let mk_remove x =
     print_op !oc (Pop(Remove(Int(x,Empty))))
+
+  let clean () =
+    for i = 0 to !counter - 1
+    do
+      mk_remove i
+    done
 
   let thm_of_lemma name =
     let str = string_of_name name in

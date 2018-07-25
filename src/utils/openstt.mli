@@ -100,3 +100,5 @@ val debug : 'a obj -> unit
 val version : unit -> unit
 
 val set_oc : Format.formatter -> unit
+
+val clean : unit -> unit

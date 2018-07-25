@@ -336,6 +336,7 @@ let print_ast oc file ast =
   set_oc oc_tmp;
   version ();
   List.iter (print_item oc_tmp) ast.items;
+  clean ();
   content := Buffer.contents Format.stdbuf;
   Format.fprintf oc "%s" !content
 
