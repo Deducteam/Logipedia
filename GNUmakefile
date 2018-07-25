@@ -59,6 +59,10 @@ library/%.art: library/%.dk theories/sttfa.dko .library_depend_art $(MAIN)
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export opentheory $(BDD) $<
 
+library/%.thy: library/%.art
+	@echo "[GENERATE] $@"
+	@python3 bin/gen-thy-file.py $(notdir $(basename $@)) > $@
+
 library/%.vo: library/%.v .library_depend_vo
 	@echo "[CHECK] $@"
 	@coqc -R library "" $<
@@ -86,7 +90,7 @@ lean: library/fermat.lean
 	cp library/*.lean /tmp/fermat/src/
 	lean /tmp/fermat/src/fermat.lean
 
-opentheory: library/fermat.art library/fermat.thy
+opentheory: library/fermat.thy
 	opentheory info library/fermat.thy
 
 bdd: $(LIBDKS) main.native theories/sttfa.dko

@@ -34,6 +34,7 @@ pvs-strategies
 *.ma
 
 # OPENTHEORY files
+*.thy
 *.art
 
 #LEAN files

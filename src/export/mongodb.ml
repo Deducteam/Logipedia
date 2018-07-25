@@ -18,6 +18,7 @@ let c_axioms      () = Mongo.create_local_default db_name "axioms"
 let c_idDep       () = Mongo.create_local_default db_name "idDep"
 let c_mdDep       () = Mongo.create_local_default db_name "mdDep"
 
+let c_openTheory  () = Mongo.create_local_default db_name "openTheory"
 let of_string = Bson.create_string
 
 let insert collection keyval =
@@ -59,3 +60,9 @@ let insert_mdDep md mdDep =
   let keys = ["md"; "mdDep"] in
   let keyval = List.combine keys values in
   insert c_mdDep keyval
+
+let insert_openTheory md content =
+  let values = List.map of_string [md;content] in
+  let keys = ["md";"content"] in
+  let keyval =  List.combine keys values in
+  insert c_openTheory keyval

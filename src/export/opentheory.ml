@@ -340,14 +340,5 @@ let print_ast oc file ast =
   content := Buffer.contents Format.stdbuf;
   Format.fprintf oc "%s" !content
 
-let openTheory = Mongo.create_local_default "logipedia" "openTheory"
-
-let empty_doc = Bson.empty
-
-let insert_openTheory md cts =
-  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-  let key_doc_2 = Bson.add_element "contents" (Bson.create_string (cts)) key_doc_1 in
-  Mongo.insert openTheory [key_doc_2]
-
 let print_bdd ast =
-  insert_openTheory ast.md !content
+  Mongodb.insert_openTheory ast.md !content
