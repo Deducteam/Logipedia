@@ -285,7 +285,7 @@ let rec mk_proof env =
     let q' = mk_te env q in
     let proof' = mk_proof env' proof in
     mk_rule_intro_impl proof' p' q'
-  | ForallPE(_,proof,_ty) -> (* MIGHT BE WRONG ? *)
+  | ForallPE(_,proof,_ty) ->
     begin
       match (judgment_of proof).thm with
       | ForallP(var,_) ->
@@ -304,7 +304,8 @@ let rec mk_proof env =
     let mp = mk_eqMp proof (mk_trace env left right trace) in
     mp
 
-let print_item oc = function
+let print_item oc =
+  function
   | Parameter(cst,ty) -> ()
   | Definition(cst,ty,te) ->
     let te' = mk_te empty_env te in
@@ -326,11 +327,16 @@ let print_item oc = function
     mk_thm (mk_qid cst) te' hyp' proof'
   | TyOpDef(tyop,arity) -> ()
 
+let content = ref ""
+
 let print_ast oc file ast =
-  set_oc oc;
+  let oc_tmp = Format.str_formatter in
+  set_oc oc_tmp;
   version ();
-  List.iter (print_item oc) ast.items
-  
+  List.iter (print_item oc_tmp) ast.items;
+  content := Buffer.contents Format.stdbuf;
+  Format.fprintf oc "%s" !content
+
 let openTheory = Mongo.create_local_default "logipedia" "openTheory"
 
 let empty_doc = Bson.empty
@@ -341,12 +347,4 @@ let insert_openTheory md cts =
   Mongo.insert openTheory [key_doc_2]
 
 let print_bdd ast =
-  Printf.eprintf "in bdd\n%!";
-  set_oc Format.str_formatter;
-  version ();
-  Printf.eprintf "avant test\n%!";
-  List.iter (print_item Format.str_formatter) ast.items;
-  Printf.eprintf "test\n%!";
-  let s = Buffer.contents Format.stdbuf in
-  Printf.eprintf "apres tes\n%!";
-  insert_openTheory ast.md s
+  insert_openTheory ast.md !content
