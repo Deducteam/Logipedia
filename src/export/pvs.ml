@@ -1,10 +1,8 @@
 open Ast
 
+let sys = "pvs"
+
 let current_module : string ref = ref ""
-
-let with_types = ref false
-
-let forallp = "\\rotatebox[origin=c]{180}{\\ensuremath{\\mathcal{A}}}"
 
 let sanitize_name : string -> string =
  fun n -> String.concat "\\_" (String.split_on_char '_' n)
@@ -253,38 +251,6 @@ let rec print_te_pvs : Format.formatter -> te -> unit =
   | ForallP (x, te') -> print_te_pvs oc te'
   | Te te' -> print__te_pvs oc te'
 
-
-let print__ty_ctx : Format.formatter -> ty_ctx -> unit =
- fun oc ctx ->
-  match ctx with
-  | [] -> Format.fprintf oc "∅"
-  | [_ty] -> Format.fprintf oc "%s" _ty
-  | _ty :: l ->
-      Format.fprintf oc "%s" _ty ;
-      List.iter (fun _ty -> Format.fprintf oc ", %s" _ty) l ;
-      Format.fprintf oc " "
-
-
-let print_te_ctx : Format.formatter -> te_ctx -> unit =
- fun oc ctx ->
-  match ctx with
-  | [] -> Format.fprintf oc "∅"
-  | [(x, _ty)] ->
-      if !with_types then Format.fprintf oc "%s:%a" x print__ty_pvs _ty
-      else Format.fprintf oc "%s" x
-  | (x, _ty) :: l ->
-      if !with_types then (
-        Format.fprintf oc "%s:%a" x print__ty_pvs _ty ;
-        List.iter
-          (fun (x, _) -> Format.fprintf oc ", %s:%a" x print__ty_pvs _ty)
-          l ;
-        Format.fprintf oc " " )
-      else (
-        Format.fprintf oc "%s" x ;
-        List.iter (fun (x, _) -> Format.fprintf oc ", %s" x) l ;
-        Format.fprintf oc " " )
-
-
 let print_hyp : Format.formatter -> hyp -> unit =
  fun oc hyp ->
   let l = TeSet.elements hyp in
@@ -415,56 +381,18 @@ let print_ast : Format.formatter -> string -> ast -> unit =
    List.iter print_item ast.items;
    line "END %s_sttfa" prefix
 
-
-let parameters () = Mongo.create_local_default "logipedia" "parameters"
-let definitions () = Mongo.create_local_default "logipedia" "definitions"
-let theoremes () = Mongo.create_local_default "logipedia" "theoremes"
-let axiomes () = Mongo.create_local_default "logipedia" "axiomes"
-
-let empty_doc = Bson.empty
-
-let insert_parameter (md,id) ty =
-  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-  let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
-  let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
-  let key_doc_4 = Bson.add_element "langID" (Bson.create_string ("5")) key_doc_3 in
-  Mongo.insert (parameters ()) [key_doc_4]
-
-let insert_definition (md,id) ty te =
-  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-  let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
-  let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
-  let key_doc_4 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_3 in
-  let key_doc_5 = Bson.add_element "langID" (Bson.create_string ("5")) key_doc_4 in
-  Mongo.insert (definitions ()) [key_doc_5]
-
-let insert_theorem (md,id) te proof =
-  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-  let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
-  let key_doc_3 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_2 in
-  let key_doc_4 = Bson.add_element "proof" (Bson.create_string (proof)) key_doc_3 in
-  let key_doc_5 = Bson.add_element "langID" (Bson.create_string ("5")) key_doc_4 in
-  Mongo.insert (theoremes ()) [key_doc_5]
-
-let insert_axiom (md,id) te =
-  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-  let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
-  let key_doc_3 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_2 in
-  let key_doc_4 = Bson.add_element "langID" (Bson.create_string ("5")) key_doc_3 in
-  Mongo.insert (axiomes ()) [key_doc_4]
-
 let to_string fmt = Format.asprintf "%a" fmt
 
 let print_bdd_item = function
-  | Parameter(name,ty) ->
-    insert_parameter name (to_string print_ty_pvs ty)
-  | Definition(name,ty,te) ->
-    insert_definition name (to_string print_ty_pvs ty) (to_string print_te_pvs te)
-  | Axiom(name,te) ->
-    insert_axiom name (to_string print_te_pvs te)
-  | Theorem(name,te,proof) ->
-    insert_theorem name (to_string print_te_pvs te) (to_string print_proof_pvs proof)
-  | TyOpDef(tyop,arity) ->
-    insert_parameter tyop (to_string print_arity arity)
+  | Parameter((md,id),ty) ->
+    Mongodb.insert_constant sys "" md id (to_string print_ty_pvs ty)
+  | Definition((md,id),ty,te) ->
+    Mongodb.insert_definition sys "" md id (to_string print_ty_pvs ty) (to_string print_te_pvs te)
+  | Axiom((md,id),te) ->
+    Mongodb.insert_axiom sys "AXIOM" md id (to_string print_te_pvs te)
+  | Theorem((md,id),te,proof) ->
+    Mongodb.insert_theorem sys "LEMMA" md id (to_string print_te_pvs te) (to_string print_proof_pvs proof)
+  | TyOpDef((md,id),arity) ->
+    Mongodb.insert_constant sys "TYPE+" md id (to_string print_arity arity)
 
 let print_bdd ast = List.iter print_bdd_item ast.items;

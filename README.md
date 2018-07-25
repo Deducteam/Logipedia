@@ -33,8 +33,14 @@ This process requires first to have a MongoDB server. You can install one with t
 Then you need to run a server with the following command:
 `mongo`
 
-To export your theorems on the database, you just need to use the option `--export-bdd`. Using the command `make`, you can do it by setting the environment variable `BDD`. For example:
+To export your theorems, you just need to use the option `--export-bdd`. Using the command `make`, you can do it by setting the environment variable `BDD`. For example:
 `make BDD=--export-bdd library/fermat.art`
+
+# Maintainers
+
+- Lean/Coq/Matita/OpenTheory : François Thiré
+- PVS : Gilles Dowek
+
 # Known issue
 
 - We don't use the functor mechanism of Coq for the moment because it is heavy to instantiate and hard to use.
