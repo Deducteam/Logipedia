@@ -44,7 +44,7 @@ let insert_theorem s kw md id te proof =
 
 let insert_axiom s kw md id te =
   let values = List.map of_string [kw; md; id; te; sys_id s] in
-  let keys = ["md"; "id"; "statement"; "sys"] in
+  let keys = ["kw"; "md"; "id"; "statement"; "sys"] in
   let keyval = List.combine keys values in
   insert c_axioms keyval
 
