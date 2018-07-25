@@ -108,7 +108,7 @@ let to_string fmt = Format.asprintf "%a" fmt
 
 let print_bdd_item = function
   | Parameter((md,id),ty) ->
-    Mongodb.insert_constant sys "Parameter "md id (to_string print_ty ty)
+    Mongodb.insert_constant sys "Parameter" md id (to_string print_ty ty)
   | Definition((md,id),ty,te) ->
     Mongodb.insert_definition sys "Definition" md id (to_string print_ty ty) (to_string print_te te)
   | Axiom((md,id),te) ->
