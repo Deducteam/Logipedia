@@ -36,11 +36,14 @@ pvs-strategies
 # OPENTHEORY files
 *.art
 
-#WEB files
-*.csv
-
 #LEAN files
 *.lean
 
+# BDD files
+*.json
+
+# MAKEFILE temporary files
 .library_depend*
+
+# MAC/OSX files
 .DS_Store

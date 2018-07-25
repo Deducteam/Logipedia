@@ -13,24 +13,11 @@ let err_msg fmt =
   Format.eprintf "%s" ("\027[31m" ^ "ERROR" ^ "\027[m");
   Format.eprintf fmt
 
-let system : Export.system ref = ref (Export.(`Pvs))
+let system : Systems.system ref = ref (Export.(`Pvs))
 
 let set_export s =
   let open Export in
-  if s = "coq" then
-    system := `Coq
-  else if s = "matita" then
-    system := `Matita
-  else if s = "ot" || s = "opentheory" then
-    system := `OpenTheory
-  else if s = "pvs" then
-    system := `Pvs
-  else if s = "lean" then
-    system := `Lean
-  else if s = "sttfa" then
-    system := `Sttfa
-  else
-    failwith (Format.sprintf "%s is not among the supported systems@." s)
+  system := Systems.system_of_string s
 
 let handle_entry md e =
   match e with

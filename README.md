@@ -38,4 +38,4 @@ To export your theorems on the database, you just need to use the option `--expo
 # Known issue
 
 - We don't use the functor mechanism of Coq for the moment because it is heavy to instantiate and hard to use.
-- OpenTheory output comsumes a lot of memory (about 3Go). This is due to a memoization problem on our side. This should be fixed in a future version.
+- OpenTheory output comsumes a lot of memory (about 4Go). This is due to a memoization problem on our side. This should be fixed in a future version.

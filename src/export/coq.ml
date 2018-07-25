@@ -1,6 +1,8 @@
 open Ast
 open Printf
 
+let sys = "coq"
+
 let cur_md = ref ""
 
 let sanitize id =
@@ -102,56 +104,20 @@ let print_ast oc file ast =
   QSet.iter (print_dep oc) ast.dep;
   List.iter (print_item oc) ast.items
 
-let parameters () = Mongo.create_local_default "logipedia" "parameters"
-let definitions () = Mongo.create_local_default "logipedia" "definitions"
-let theoremes () = Mongo.create_local_default "logipedia" "theoremes"
-let axiomes () = Mongo.create_local_default "logipedia" "axiomes"
-
-let empty_doc = Bson.empty
-
-let insert_parameter (md,id) ty =
-  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-  let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
-  let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
-  let key_doc_4 = Bson.add_element "langID" (Bson.create_string ("3")) key_doc_3 in
-  Mongo.insert (parameters ()) [key_doc_4]
-
-let insert_definition (md,id) ty te =
-  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-  let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
-  let key_doc_3 = Bson.add_element "type" (Bson.create_string (ty)) key_doc_2 in
-  let key_doc_4 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_3 in
-  let key_doc_5 = Bson.add_element "langID" (Bson.create_string ("3")) key_doc_4 in
-  Mongo.insert (definitions ()) [key_doc_5]
-
-let insert_theorem (md,id) te proof =
-  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-  let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
-  let key_doc_3 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_2 in
-  let key_doc_4 = Bson.add_element "proof" (Bson.create_string (proof)) key_doc_3 in
-  let key_doc_5 = Bson.add_element "langID" (Bson.create_string ("3")) key_doc_4 in
-  Mongo.insert (theoremes ()) [key_doc_5]
-
-let insert_axiom (md,id) te =
-  let key_doc_1 = Bson.add_element "md" (Bson.create_string (md)) empty_doc in
-  let key_doc_2 = Bson.add_element "nameID" (Bson.create_string (id)) key_doc_1 in
-  let key_doc_3 = Bson.add_element "statement" (Bson.create_string (te)) key_doc_2 in
-  let key_doc_4 = Bson.add_element "langID" (Bson.create_string ("3")) key_doc_3 in
-  Mongo.insert (axiomes ()) [key_doc_4]
-
 let to_string fmt = Format.asprintf "%a" fmt
 
 let print_bdd_item = function
-  | Parameter(name,ty) ->
-    insert_parameter name (to_string print_ty ty)
-  | Definition(name,ty,te) ->
-    insert_definition name (to_string print_ty ty) (to_string print_te te)
-  | Axiom(name,te) ->
-    insert_axiom name (to_string print_te te)
-  | Theorem(name,te,proof) ->
-    insert_theorem name (to_string print_te te) (to_string print_proof proof)
-  | TyOpDef(tyop,arity) ->
-    insert_parameter tyop (to_string print_arity arity)
+  | Parameter((md,id),ty) ->
+    Mongodb.insert_constant sys "Parameter "md id (to_string print_ty ty)
+  | Definition((md,id),ty,te) ->
+    Mongodb.insert_definition sys "Definition" md id (to_string print_ty ty) (to_string print_te te)
+  | Axiom((md,id),te) ->
+    Mongodb.insert_axiom sys "Axiom" md id (to_string print_te te)
+  | Theorem((md,id),te,proof) ->
+    Mongodb.insert_theorem sys "Definition" md id
+      (to_string print_te te) (to_string print_proof proof)
+  | TyOpDef((md,id),arity) ->
+    Mongodb.insert_constant sys "Parameter" md id (to_string print_arity arity)
 
 let print_bdd ast =
   cur_md := ast.md;
