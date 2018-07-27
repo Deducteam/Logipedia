@@ -1,18 +1,20 @@
 #!/bin/sh
 cd ..
+make distclean
 make
-for fichier in library/*.dk
-do
-  ./main.native -I theories/ -I library/ --export sttfa $fichier
-done
+make theories/sttfa.dko
+make bdd-dep
 
 if [ $# -eq 0 ]
   then
-    make library/fermat.ma
+    make BDD=--export-bdd library/fermat.ma
+    make BDD=--export-bdd library/fermat.v
+    make BDD=--export-bdd library/fermat.lean
+    make BDD=--export-bdd library/fermat.pvs
     cd bdd
     mongo < noDoublon.js
   else
-    make library/$1
+    make BDD=--export-bdd library/$1
     cd bdd
     mongo < noDoublon.js
 fi

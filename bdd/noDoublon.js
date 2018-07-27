@@ -1,10 +1,10 @@
 use logipedia
 
-db.parameters.aggregate([
+db.constants.aggregate([
  {
    $group:
     {
-      _id: { md: "$md", nameID: "$nameID", langID: "$langID" },
+      _id: { md: "$md", id: "$id", sys: "$sys" },
       dups: { $addToSet: "$_id" },
       count: { $sum:1 }
    }
@@ -17,7 +17,7 @@ db.parameters.aggregate([
  }
 ]).forEach(function(doc) {
    doc.dups.shift();
-   db.parameters.remove({
+   db.constants.remove({
        _id: {$in: doc.dups}
    });
 })
@@ -26,7 +26,7 @@ db.definitions.aggregate([
  {
    $group:
     {
-      _id: { md: "$md", nameID: "$nameID", langID: "$langID" },
+      _id: { md: "$md", id: "$id", sys: "$sys" },
       dups: { $addToSet: "$_id" },
       count: { $sum:1 }
    }
@@ -44,11 +44,11 @@ db.definitions.aggregate([
    });
 })
 
-db.axiomes.aggregate([
+db.axioms.aggregate([
  {
    $group:
     {
-      _id: { md: "$md", nameID: "$nameID", langID: "$langID" },
+      _id: { md: "$md", id: "$id", sys: "$sys" },
       dups: { $addToSet: "$_id" },
       count: { $sum:1 }
    }
@@ -61,16 +61,16 @@ db.axiomes.aggregate([
  }
 ]).forEach(function(doc) {
    doc.dups.shift();
-   db.axiomes.remove({
+   db.axioms.remove({
        _id: {$in: doc.dups}
    });
 })
 
-db.theoremes.aggregate([
+db.theorems.aggregate([
  {
    $group:
     {
-      _id: { md: "$md", nameID: "$nameID", langID: "$langID" },
+      _id: { md: "$md", id: "$id", sys: "$sys" },
       dups: { $addToSet: "$_id" },
       count: { $sum:1 }
    }
@@ -83,16 +83,16 @@ db.theoremes.aggregate([
  }
 ]).forEach(function(doc) {
    doc.dups.shift();
-   db.theoremes.remove({
+   db.theorems.remove({
        _id: {$in: doc.dups}
    });
 })
 
-db.dependances.aggregate([
+db.idDep.aggregate([
  {
    $group:
     {
-      _id: { md: "$md", nameID: "$nameID", mdDep: "$mdDep", idDep: "$idDep" },
+      _id: { md: "$md", id: "$id", mdDep: "$mdDep", idDep: "$idDep" },
       dups: { $addToSet: "$_id" },
       count: { $sum:1 }
    }
@@ -105,12 +105,12 @@ db.dependances.aggregate([
  }
 ]).forEach(function(doc) {
    doc.dups.shift();
-   db.dependances.remove({
+   db.idDep.remove({
        _id: {$in: doc.dups}
    });
 })
 
-db.dependancesMod.aggregate([
+db.mdDep.aggregate([
  {
    $group:
     {
@@ -127,10 +127,10 @@ db.dependancesMod.aggregate([
  }
 ]).forEach(function(doc) {
    doc.dups.shift();
-   db.dependancesMod.remove({
+   db.mdDep.remove({
        _id: {$in: doc.dups}
    });
 })
 
-db.dependancesMod.remove( { $where: "this.mdDep == this.md" } )
+db.mdDep.remove( { $where: "this.mdDep == this.md" } )
 
