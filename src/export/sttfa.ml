@@ -13,9 +13,41 @@ let sys = "sttfa"
 
 let to_string fmt = Format.asprintf "%a" fmt
 
+let mddep = Hashtbl.create 11
+
+let iddep = Hashtbl.create 101
+
+let update_id md id md' id' =
+  let l = try Hashtbl.find iddep (md,id) with _ -> [] in
+  let l' = (md',id')::l in
+  Hashtbl.replace iddep (md,id) l'
+
+let update_md md md' =
+  let l = try Hashtbl.find mddep md with _ -> [] in
+  let l' = md'::l in
+  Hashtbl.replace mddep md l'
+
+
+let new_iddep md id md' id' =
+  not (Hashtbl.mem iddep (md,id)) ||
+  not (List.mem (md',id') (Hashtbl.find iddep (md,id)))
+
+let new_mddep md md' =
+  md <> md' && (not (Hashtbl.mem mddep md) || not (List.mem md' (Hashtbl.find mddep md)))
+
 let fct_insert_dependances (md,id) (md',id') =
-  Mongodb.insert_idDep md id md' id';
-  if md<>md' then Mongodb.insert_mdDep md md'
+  if new_iddep md id md' id' then
+    begin
+      if new_mddep md md' then
+        begin
+          Mongodb.insert_mdDep md md';
+          update_md md md'
+        end;
+      Mongodb.insert_idDep md id md' id';
+      update_id md id md' id'
+    end
+
+
 
 let rec matcher_dep (md,id) a =
   match a with
