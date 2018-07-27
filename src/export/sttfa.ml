@@ -62,5 +62,5 @@ let compile_definition name ty term =
     matcher_dep (of_name name) term
   | _ -> assert false
 
-let print_ast _ _ _ = failwith "test"
-let print_bdd _ = failwith "test"
+let print_ast _ _ _ = ()
+let print_bdd _ = ()

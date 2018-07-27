@@ -96,10 +96,11 @@ lean: library/fermat.lean
 opentheory: library/fermat.thy
 	opentheory info library/fermat.thy
 
-bdd: $(LIBDKS) main.native theories/sttfa.dko
+bdd-dep: $(LIBDKS) _build/src/main.native theories/sttfa.dko
 	for i in $(SORTEDDKS) ; do \
-		./main.native  -I library -I theories $$i ; \
+		./main.native  -I library -I theories --export sttfa --export-bdd $$i ; \
 	done
+
 .library_depend_dko: $(wildcard library/*.dk theories/*.dk examples/*.dk)
 	@echo "[DEP] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
@@ -190,4 +191,4 @@ distclean: clean
 	@find library -name ".pvs_context" -exec rm {} \;
 	@rm -rf /tmp/fermat
 
-.PHONY: all clean distclean examples library coq matita pvs
+.PHONY: all clean distclean examples library coq matita pvs bdd-dep opentheory

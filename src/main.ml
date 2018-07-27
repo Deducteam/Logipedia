@@ -64,21 +64,28 @@ let run_on_file to_bdd file =
   let input = open_in file in
     let entries = Parser.parse_channel md input in
     close_in input ;
-  if !system = `Sttfa then
-    List.iter (handle_entry_dep md) entries
-  else
-  begin
-    let items = List.map (handle_entry md) entries in
-    let dep = List.fold_left (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
-    let ast = {md = string_of_mident md; dep; items} in
-    Confluence.finalize () ;
-    let (module M:Export.E) = Export.of_system !system in
-    export_file file ast !system;
-    if to_bdd then
-      M.print_bdd ast;
-    end;
-    if not (Env.export ()) then
-      Errors.fail dloc "Fail to export module '%a'." pp_mident md
+    begin
+      let items = List.map (handle_entry md) entries in
+      let dep = List.fold_left
+          (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
+      let ast = {md = string_of_mident md; dep; items} in
+      Confluence.finalize () ;
+      if not (Env.export ()) then
+        Errors.fail dloc "Fail to export module '%a'." pp_mident md;
+      let (module M:Export.E) = Export.of_system !system in
+      if !system <> `Sttfa then
+        export_file file ast !system;
+      begin
+        if to_bdd then
+          if !system = `Sttfa then
+            begin
+              let md = Env.init file in
+              List.iter (handle_entry_dep md) entries
+            end
+          else
+            M.print_bdd ast
+      end;
+    end
 
 let _ =
   let to_bdd = ref false in
