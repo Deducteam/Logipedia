@@ -36,6 +36,7 @@ examples/%.pdf: examples/%.tex
 
 LIBDKS = $(wildcard library/*.dk)
 SORTEDDKS = $(shell dkdep -s -I theories/ -I library/ --ignore library/*.dk | cut -d" " -f 2,2-)
+COQC := $(shell command -v coqc 2> /dev/null)
 
 library/%.lean:  library/%.dk theories/sttfa.dko .library_depend_lean $(MAIN)
 	@echo "[EXPORT] $@"
@@ -48,8 +49,10 @@ library/%.pvs: library/%.dk theories/sttfa.dko .library_depend_pvs $(MAIN)
 library/%.v: library/%.dk theories/sttfa.dko .library_depend_v $(MAIN)
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export coq $(BDD) $<
+ifdef COQC
 	@coqc -R library "" -beautify $@
 	@mv $@.beautified $@
+endif
 
 library/%.ma: library/%.dk theories/sttfa.dko .library_depend_ma $(MAIN)
 	@echo "[EXPORT] $@"
