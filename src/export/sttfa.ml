@@ -27,7 +27,6 @@ let update_md md md' =
   let l' = md'::l in
   Hashtbl.replace mddep md l'
 
-
 let new_iddep md id md' id' =
   not (Hashtbl.mem iddep (md,id)) ||
   not (List.mem (md',id') (Hashtbl.find iddep (md,id)))
@@ -46,8 +45,6 @@ let fct_insert_dependances (md,id) (md',id') =
       Mongodb.insert_idDep md id md' id';
       update_id md id md' id'
     end
-
-
 
 let rec matcher_dep (md,id) a =
   match a with

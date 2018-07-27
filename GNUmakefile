@@ -62,7 +62,7 @@ library/%.art: library/%.dk theories/sttfa.dko .library_depend_art $(MAIN)
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export opentheory $(BDD) $<
 
-library/%.thy: library/%.art
+library/%.thy: .library_depend_dko
 	@echo "[GENERATE] $@"
 	@python3 bin/gen-thy-file.py $(notdir $(basename $@)) > $@
 
