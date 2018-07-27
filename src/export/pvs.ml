@@ -327,42 +327,41 @@ let print_proof_pvs : Format.formatter -> proof -> unit =
   print [] oc prf;
   Format.fprintf oc "\n"
 
+let line oc fmt = Format.fprintf oc (fmt ^^ "\n")
+
+let print_item oc it =
+  match it with
+  | TyOpDef (op, ar) -> Format.fprintf oc "%a : TYPE+" print_name op;
+    line oc "";
+    line oc ""
+  | Parameter (n, ty) ->
+    line oc "%a %a: %a" print_name n print_prenex_ty_pvs ty print_ty_pvs ty ;
+    line oc ""
+  | Definition (n, ty, te) ->
+    line oc "%a %a : %a = %a" print_name n print_prenex_ty_pvs ty print_ty_pvs
+      ty print_te_pvs te ;
+    line oc ""
+  | Axiom (n, te) ->
+    line oc "%a %a : AXIOM %a" print_name n print_prenex_te_pvs te
+      print_te_pvs te ;
+    line oc ""
+  | Theorem (n, te, prf) ->
+    line oc "%a %a : LEMMA %a" print_name n print_prenex_te_pvs te
+      print_te_pvs te ;
+    line oc "" ;
+    line oc "%%|- %a : PROOF" print_name n ;
+    print_proof_pvs oc prf ;
+    line oc "%%|- QED" ;
+    line oc ""
 
 let print_ast : Format.formatter -> string -> ast -> unit =
  fun oc prefix ast ->
    let prefix = Filename.basename prefix in
    current_module := ast.md ;
-   let line fmt = Format.fprintf oc (fmt ^^ "\n") in
-   let print_item it =
-     match it with
-     | TyOpDef (op, ar) -> Format.fprintf oc "%a : TYPE+" print_name op;
-       line "";
-       line ""
-     | Parameter (n, ty) ->
-       line "%a %a: %a" print_name n print_prenex_ty_pvs ty print_ty_pvs ty ;
-       line ""
-     | Definition (n, ty, te) ->
-       line "%a %a : %a = %a" print_name n print_prenex_ty_pvs ty print_ty_pvs
-         ty print_te_pvs te ;
-       line ""
-     | Axiom (n, te) ->
-       line "%a %a : AXIOM %a" print_name n print_prenex_te_pvs te
-         print_te_pvs te ;
-       line ""
-     | Theorem (n, te, prf) ->
-       line "%a %a : LEMMA %a" print_name n print_prenex_te_pvs te
-         print_te_pvs te ;
-       line "" ;
-       line "%%|- %a : PROOF" print_name n ;
-       print_proof_pvs oc prf ;
-       line "%%|- QED" ;
-       line ""
-   in
    let pf = "_sttfa" in
    let postfix s = s^pf in
-   line "%s : THEORY" (postfix prefix);
-   line "BEGIN";
-   (*  line "%%|- *TCC* : PROOF (sttfa-nonemptiness)  QED"; *)
+   line oc "%s : THEORY" (postfix prefix);
+   line oc "BEGIN";
    let deps oc deps =
      let l = QSet.elements (QSet.remove "sttfa" deps) in
      let l = List.map postfix l in
@@ -374,12 +373,12 @@ let print_ast : Format.formatter -> string -> ast -> unit =
      in
      match l with
      | [] -> ()
-     | _ -> line "IMPORTING %a" deps l
+     | _ -> line oc "IMPORTING %a" deps l
    in
    deps oc ast.dep ;
-   line "";
-   List.iter print_item ast.items;
-   line "END %s_sttfa" prefix
+   line oc "";
+   List.iter (print_item oc) ast.items;
+   line oc "END %s_sttfa" prefix
 
 let to_string fmt = Format.asprintf "%a" fmt
 
