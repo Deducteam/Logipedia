@@ -1,0 +1,38 @@
+relations_sttfa : THEORY
+BEGIN
+IMPORTING connectives_sttfa,logic_sttfa
+
+reflexive [A:TYPE+] : [[A -> [A -> bool]] -> bool] = (LAMBDA(R:[A -> [A -> bool]]):(FORALL(x:A):R(x)(x)))
+
+transitive [A:TYPE+] : [[A -> [A -> bool]] -> bool] = (LAMBDA(R:[A -> [A -> bool]]):(FORALL(x:A):(FORALL(y:A):(FORALL(z:A):(R(x)(y) => (R(y)(z) => R(x)(z)))))))
+
+RC [A:TYPE+] : [[A -> [A -> bool]] -> [A -> [A -> bool]]] = (LAMBDA(R:[A -> [A -> bool]]):(LAMBDA(x:A):(LAMBDA(y:A):connectives_sttfa.sttfa_Or(R(x)(y))(logic_sttfa.eq[A](x)(y)))))
+
+RC_reflexive [A:TYPE+] : LEMMA (FORALL(R:[A -> [A -> bool]]):relations_sttfa.reflexive[A](relations_sttfa.RC[A](R)))
+
+%|- RC_reflexive : PROOF
+%|- (sttfa-conv "(FORALL(R:[A -> [A -> bool]]):(FORALL(x:A):connectives_sttfa.sttfa_Or(R(x)(x))(logic_sttfa.eq[A](x)(x))))" () ("relations_sttfa.reflexive" "relations_sttfa.RC")
+%|- (then@ (sttfa-forall-i "R")
+%|- (then@ (sttfa-forall-i "x")
+%|- (sttfa-impl-e "(logic_sttfa.eq[A](x)(x) => connectives_sttfa.sttfa_Or(R(x)(x))(logic_sttfa.eq[A](x)(x)))" "logic_sttfa.eq[A](x)(x)"
+%|- (sttfa-conv "logic_sttfa.eq[A](x)(x)" () ()
+%|- (sttfa-forall-e "(FORALL(x0:A):logic_sttfa.eq[A](x0)(x0))" "x"
+%|- (sttfa-lemma "logic_sttfa.refl[A]")))
+%|- (sttfa-conv "(logic_sttfa.eq[A](x)(x) => connectives_sttfa.sttfa_Or(R(x)(x))(logic_sttfa.eq[A](x)(x)))" () ()
+%|- (sttfa-forall-e "(FORALL(B:bool):(B => connectives_sttfa.sttfa_Or(R(x)(x))(B)))" "logic_sttfa.eq[A](x)(x)"
+%|- (sttfa-conv "(FORALL(B:bool):(B => connectives_sttfa.sttfa_Or(R(x)(x))(B)))" () ()
+%|- (sttfa-forall-e "(FORALL(A:bool):(FORALL(B:bool):(B => connectives_sttfa.sttfa_Or(A)(B))))" "R(x)(x)"
+%|- (sttfa-lemma "connectives_sttfa.or_intror")))))))))
+%|- QED
+
+injective [A:TYPE+,B:TYPE+] : [[A -> B] -> bool] = (LAMBDA(f:[A -> B]):(FORALL(x:A):(FORALL(y:A):(logic_sttfa.eq[B](f(x))(f(y)) => logic_sttfa.eq[A](x)(y)))))
+
+commutative [A:TYPE+] : [[A -> [A -> A]] -> bool] = (LAMBDA(f:[A -> [A -> A]]):(FORALL(x:A):(FORALL(y:A):logic_sttfa.eq[A](f(x)(y))(f(y)(x)))))
+
+associative [A:TYPE+] : [[A -> [A -> A]] -> bool] = (LAMBDA(f:[A -> [A -> A]]):(FORALL(x:A):(FORALL(y:A):(FORALL(z:A):logic_sttfa.eq[A](f(f(x)(y))(z))(f(x)(f(y)(z)))))))
+
+monotonic [A:TYPE+] : [[A -> [A -> bool]] -> [[A -> A] -> bool]] = (LAMBDA(R:[A -> [A -> bool]]):(LAMBDA(f:[A -> A]):(FORALL(x:A):(FORALL(y:A):(R(x)(y) => R(f(x))(f(y)))))))
+
+distributive [A:TYPE+] : [[A -> [A -> A]] -> [[A -> [A -> A]] -> bool]] = (LAMBDA(f:[A -> [A -> A]]):(LAMBDA(g:[A -> [A -> A]]):(FORALL(x:A):(FORALL(y:A):(FORALL(z:A):logic_sttfa.eq[A](f(x)(g(y)(z)))(g(f(x)(y))(f(x)(z))))))))
+
+END relations_sttfa

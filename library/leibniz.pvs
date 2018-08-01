@@ -1,0 +1,18 @@
+leibniz_sttfa : THEORY
+BEGIN
+
+leibniz [A:TYPE+] : [A -> [A -> bool]] = (LAMBDA(x:A):(LAMBDA(y:A):(FORALL(P:[A -> bool]):(P(x) => P(y)))))
+
+refl_leibniz [A:TYPE+] : LEMMA (FORALL(x:A):leibniz_sttfa.leibniz[A](x)(x))
+
+%|- refl_leibniz : PROOF
+%|- (sttfa-conv "(FORALL(x:A):(FORALL(P:[A -> bool]):(P(x) => P(x))))" () ("leibniz_sttfa.leibniz")
+%|- (then@ (sttfa-forall-i "x")
+%|- (then@ (sttfa-forall-i "P")
+%|- (sttfa-impl-i "P(x)" "P(x)"
+%|- (propax)))))
+%|- QED
+
+sym_leibniz [A:TYPE+] : AXIOM (FORALL(x:A):(FORALL(y:A):(leibniz_sttfa.leibniz[A](x)(y) => leibniz_sttfa.leibniz[A](y)(x))))
+
+END leibniz_sttfa

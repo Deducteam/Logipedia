@@ -1,0 +1,17 @@
+type system = [`Coq | `Matita | `Pvs | `OpenTheory | `Lean | `Sttfa]
+
+let system_of_string : string -> system = fun s ->
+  if s = "coq" then
+    `Coq
+  else if s = "matita" then
+     `Matita
+  else if s = "ot" || s = "opentheory" then
+    `OpenTheory
+  else if s = "pvs" then
+    `Pvs
+  else if s = "lean" then
+    `Lean
+  else if s = "sttfa" then
+    `Sttfa
+  else
+    failwith (Format.sprintf "%s is not among the supported systems@." s)
