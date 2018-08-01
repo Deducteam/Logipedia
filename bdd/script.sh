@@ -11,6 +11,7 @@ if [ $# -eq 0 ]
     make BDD=--export-bdd library/fermat.v
     make BDD=--export-bdd library/fermat.lean
     make BDD=--export-bdd library/fermat.pvs
+    make BDD=--export-bdd library/fermat.art
     cd bdd
     mongo < noDoublon.js
   else

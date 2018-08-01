@@ -30,7 +30,7 @@
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                   <a class="dropdown-item" href="#">Axiom</a>
-                  <a class="dropdown-item" href="#">Parameter</a>
+                  <a class="dropdown-item" href="#">Constant</a>
                   <a class="dropdown-item" href="#">Definition</a>
                   <a class="dropdown-item" href="#">Theorem</a>
                 </div>
@@ -40,7 +40,7 @@
       </div>
     </nav>
 
-    <img src="picture/logipedia-jumb.jpg" class="img-fluid image" alt="Responsive image">
+    <img src="picture/logipedia-jumb.jpg" class="img-fluid image" alt="Logipedia-Jumb">
 
     <hr class="my-4">
     <div class="form-group">
@@ -78,11 +78,11 @@
           array(
             '$match' => array(
               '$or' => array(
-                array("nameID" => $tabInp[0]),
+                array("id" => $tabInp[0]),
                 array("md" => $tabInp[0])
               )
             )
-          ),array('$group' => array('_id' => array('md' => '$md', 'nameID' => '$nameID'))), array('$sort' =>array('_id'=>1))]);
+          ),array('$group' => array('_id' => array('md' => '$md', 'id' => '$id'))), array('$sort' =>array('_id'=>1))]);
         $compt=0;
         $boolea=0;
         $tab=[];
@@ -92,80 +92,80 @@
 ?>
         <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=definitions" class="list-group-item list-group-item-action text-center list-group-bg-mar">
 <?php
-            echo '<h4 class="h4-color"><b>'.$entry['_id']['md'].'.'.$entry['_id']['nameID'].'</b></h4>';
+            echo '<h4 class="h4-color"><b>'.$entry['_id']['md'].'.'.$entry['_id']['id'].'</b></h4>';
 ?>
         </a>
 <?php
-            $tab[$compt]=array('md'=>$entry['_id']['md'], 'nameID' => $entry['_id']['nameID']);
+            $tab[$compt]=array('md'=>$entry['_id']['md'], 'id' => $entry['_id']['id']);
             $compt++;
           }
         }
-        $result2 = $mongo->logipedia->axiomes->aggregate([ // De meme pour la collection axiomes
+        $result2 = $mongo->logipedia->axioms->aggregate([ // De meme pour la collection axiomes
           array(
             '$match' => array(
               '$or' => array(
-                array("nameID" => $tabInp[0]),
+                array("id" => $tabInp[0]),
                 array("md" => $tabInp[0])
               )
             )
-          ),array('$group' => array('_id' => array('md' => '$md', 'nameID' => '$nameID'))), array('$sort' =>array('_id'=>1))]);
+          ),array('$group' => array('_id' => array('md' => '$md', 'id' => '$id'))), array('$sort' =>array('_id'=>1))]);
         foreach ($result2 as $entry2) {
           if(isset($entry2['_id'])){
             $boolea++;
 ?>
-        <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=axiomes" class="list-group-item list-group-item-action text-center list-group-bg-mar">
+        <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=axioms" class="list-group-item list-group-item-action text-center list-group-bg-mar">
 <?php
-            echo '<h4 class="h4-color"><b>'.$entry2['_id']['md'].'.'.$entry2['_id']['nameID'].'</b></h4>';
+            echo '<h4 class="h4-color"><b>'.$entry2['_id']['md'].'.'.$entry2['_id']['id'].'</b></h4>';
 ?>
         </a>
 <?php
-            $tab[$compt]=array('md'=>$entry2['_id']['md'], 'nameID' => $entry2['_id']['nameID']);
+            $tab[$compt]=array('md'=>$entry2['_id']['md'], 'id' => $entry2['_id']['id']);
             $compt++;
           }
         }
-        $result3 = $mongo->logipedia->theoremes->aggregate([ // De meme pour la collection theoremes
+        $result3 = $mongo->logipedia->theorems->aggregate([ // De meme pour la collection theoremes
           array(
             '$match' => array(
               '$or' => array(
-                array("nameID" => $tabInp[0]),
+                array("id" => $tabInp[0]),
                 array("md" => $tabInp[0])
               )
             )
-          ),array('$group' => array('_id' => array('md' => '$md', 'nameID' => '$nameID'))), array('$sort' =>array('_id'=>1))]);
+          ),array('$group' => array('_id' => array('md' => '$md', 'id' => '$id'))), array('$sort' =>array('_id'=>1))]);
         foreach ($result3 as $entry3) {
           if(isset($entry3['_id'])){
             $boolea++;
 ?>
-        <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=theoremes" class="list-group-item list-group-item-action text-center list-group-bg-mar">
+        <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=theorems" class="list-group-item list-group-item-action text-center list-group-bg-mar">
 <?php
-            echo '<h4 class="h4-color"><b>'.$entry3['_id']['md'].'.'.$entry3['_id']['nameID'].'</b></h4>';
+            echo '<h4 class="h4-color"><b>'.$entry3['_id']['md'].'.'.$entry3['_id']['id'].'</b></h4>';
 ?>
         </a>
           <?php
-            $tab[$compt]=array('md'=>$entry3['_id']['md'], 'nameID' => $entry3['_id']['nameID']);
+            $tab[$compt]=array('md'=>$entry3['_id']['md'], 'id' => $entry3['_id']['id']);
             $compt++;
           }
         }
-        $result4 = $mongo->logipedia->parameters->aggregate([ // De meme pour la collection parameters
+        $result4 = $mongo->logipedia->constants->aggregate([ // De meme pour la collection parameters
           array(
             '$match' => array(
               '$or' => array(
-                array("nameID" => $tabInp[0]),
+                array("id" => $tabInp[0]),
                 array("md" => $tabInp[0])
               )
             )
-          ),array('$group' => array('_id' => array('md' => '$md', 'nameID' => '$nameID'))), array('$sort' =>array('_id'=>1))]);
+          ),array('$group' => array('_id' => array('md' => '$md', 'id' => '$id'))), array('$sort' =>array('_id'=>1))]);
         foreach ($result4 as $entry4) {
           if(isset($entry4['_id'])){
             $boolea++;
 ?>
-        <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=parameters" class="list-group-item list-group-item-action text-center list-group-bg-mar">
+        <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=constants" class="list-group-item list-group-item-action text-center list-group-bg-mar">
 <?php
-            echo '<h4 class="h4-color"><b>'.$entry4['_id']['md'].'.'.$entry4['_id']['nameID'].'</b></h4>';
+            echo '<h4 class="h4-color"><b>'.$entry4['_id']['md'].'.'.$entry4['_id']['id'].'</b></h4>';
 ?>
         </a>
 <?php
-            $tab[$compt]=array('md'=>$entry4['_id']['md'], 'nameID' => $entry4['_id']['nameID']);
+            $tab[$compt]=array('md'=>$entry4['_id']['md'], 'id' => $entry4['_id']['id']);
             $compt++;
           }
         }
@@ -183,19 +183,19 @@
               '$or' => array(
                 array(
                   '$and' => array(
-                    array("nameID" => $inpOne),
+                    array("id" => $inpOne),
                     array("md" => $inpTwo)
                   )
                 ),
                 array(
                   '$and' => array(
-                    array("nameID" => $inpTwo),
+                    array("id" => $inpTwo),
                     array("md" => $inpOne)
                   )
                 ),
               )
             )
-          ),array('$group' => array('_id' => array('md' => '$md', 'nameID' => '$nameID'))), array('$sort' =>array('_id'=>1))]);
+          ),array('$group' => array('_id' => array('md' => '$md', 'id' => '$id'))), array('$sort' =>array('_id'=>1))]);
         $tab=[];
         $compt=0;
         $boolea=0;
@@ -205,113 +205,113 @@
 ?>
         <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=definitions" class="list-group-item list-group-item-action text-center list-group-bg-mar">
 <?php
-            echo '<h4 class="h4-color"><b>'.$entry['_id']['md'].'.'.$entry['_id']['nameID'].'</b></h4>';
+            echo '<h4 class="h4-color"><b>'.$entry['_id']['md'].'.'.$entry['_id']['id'].'</b></h4>';
 ?>
         </a>
 <?php
-            $tab[$compt]=array('md'=>$entry['_id']['md'], 'nameID' => $entry['_id']['nameID']);
+            $tab[$compt]=array('md'=>$entry['_id']['md'], 'id' => $entry['_id']['id']);
             $compt++;
           }
         }
-        $result2 = $mongo->logipedia->axiomes->aggregate([ // On envoie la requete dans la collection axiomes
+        $result2 = $mongo->logipedia->axioms->aggregate([ // On envoie la requete dans la collection axiomes
           array(
             '$match' => array(
               '$or' => array(
                 array(
                   '$and' => array(
-                    array("nameID" => $inpOne),
+                    array("id" => $inpOne),
                     array("md" => $inpTwo)
                   )
                 ),
                 array(
                   '$and' => array(
-                    array("nameID" => $inpTwo),
+                    array("id" => $inpTwo),
                     array("md" => $inpOne)
                   )
                 ),
               )
             )
-          ),array('$group' => array('_id' => array('md' => '$md', 'nameID' => '$nameID'))), array('$sort' =>array('_id'=>1))]);
+          ),array('$group' => array('_id' => array('md' => '$md', 'id' => '$id'))), array('$sort' =>array('_id'=>1))]);
 
           foreach ($result2 as $entry2) { // On affiche les resultats
             if(isset($entry2['_id'])){
               $boolea++;
 ?>
-        <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=axiomes" class="list-group-item list-group-item-action text-center list-group-bg-mar">
+        <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=axioms" class="list-group-item list-group-item-action text-center list-group-bg-mar">
 <?php
-              echo '<h4 class="h4-color"><b>'.$entry2['_id']['md'].'.'.$entry2['_id']['nameID'].'</b></h4>';
+              echo '<h4 class="h4-color"><b>'.$entry2['_id']['md'].'.'.$entry2['_id']['id'].'</b></h4>';
 ?>
         </a>
 <?php
-              $tab[$compt]=array('md'=>$entry2['_id']['md'], 'nameID' => $entry2['_id']['nameID']);
+              $tab[$compt]=array('md'=>$entry2['_id']['md'], 'id' => $entry2['_id']['id']);
               $compt++;
             }
           }
-          $result3 = $mongo->logipedia->theoremes->aggregate([ // De meme pour theoremes
+          $result3 = $mongo->logipedia->theorems->aggregate([ // De meme pour theoremes
             array(
               '$match' => array(
                 '$or' => array(
                   array(
                     '$and' => array(
-                      array("nameID" => $inpOne),
+                      array("id" => $inpOne),
                       array("md" => $inpTwo)
                     )
                   ),
                   array(
                     '$and' => array(
-                      array("nameID" => $inpTwo),
+                      array("id" => $inpTwo),
                       array("md" => $inpOne)
                     )
                   ),
                 )
               )
-            ),array('$group' => array('_id' => array('md' => '$md', 'nameID' => '$nameID'))), array('$sort' =>array('_id'=>1))]);
+            ),array('$group' => array('_id' => array('md' => '$md', 'id' => '$id'))), array('$sort' =>array('_id'=>1))]);
 
             foreach ($result3 as $entry3) {
               if(isset($entry3['_id'])){
                 $boolea++;
 ?>
-        <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=theoremes" class="list-group-item list-group-item-action text-center list-group-bg-mar">
+        <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=theorems" class="list-group-item list-group-item-action text-center list-group-bg-mar">
 <?php
-                echo '<h4 class="h4-color"><b>'.$entry3['_id']['md'].'.'.$entry3['_id']['nameID'].'</b></h4>';
+                echo '<h4 class="h4-color"><b>'.$entry3['_id']['md'].'.'.$entry3['_id']['id'].'</b></h4>';
 ?>
         </a>
 <?php
-                $tab[$compt]=array('md'=>$entry3['_id']['md'], 'nameID' => $entry3['_id']['nameID']);
+                $tab[$compt]=array('md'=>$entry3['_id']['md'], 'id' => $entry3['_id']['id']);
                 $compt++;
               }
             }
-            $result4 = $mongo->logipedia->parameters->aggregate([ // De meme pour parameters
+            $result4 = $mongo->logipedia->constants->aggregate([ // De meme pour parameters
               array(
                 '$match' => array(
                   '$or' => array(
                     array(
                       '$and' => array(
-                        array("nameID" => $inpOne),
+                        array("id" => $inpOne),
                         array("md" => $inpTwo)
                       )
                     ),
                     array(
                       '$and' => array(
-                        array("nameID" => $inpTwo),
+                        array("id" => $inpTwo),
                         array("md" => $inpOne)
                       )
                     ),
                   )
                 )
-              ),array('$group' => array('_id' => array('md' => '$md', 'nameID' => '$nameID'))), array('$sort' =>array('_id'=>1))]);
+              ),array('$group' => array('_id' => array('md' => '$md', 'id' => '$id'))), array('$sort' =>array('_id'=>1))]);
 
               foreach ($result4 as $entry4) {
                 if(isset($entry4['_id'])){
                   $boolea++;
 ?>
-        <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=parameters" class="list-group-item list-group-item-action text-center list-group-bg-mar">
+        <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=constants" class="list-group-item list-group-item-action text-center list-group-bg-mar">
 <?php
-                  echo '<h4 class="h4-color"><b>'.$entry4['_id']['md'].'.'.$entry4['_id']['nameID'].'</b></h4>';
+                  echo '<h4 class="h4-color"><b>'.$entry4['_id']['md'].'.'.$entry4['_id']['id'].'</b></h4>';
 ?>
         </a>
 <?php
-                  $tab[$compt]=array('md'=>$entry4['_id']['md'], 'nameID' => $entry4['_id']['nameID']);
+                  $tab[$compt]=array('md'=>$entry4['_id']['md'], 'id' => $entry4['_id']['id']);
                   $compt++;
                 }
               }
@@ -327,38 +327,42 @@
             unset($tab);
             unset($result);
             unset($entry);
-            $tabCollection=array("definitions","theoremes","parameters","axiomes");
+            $tabCollection=array("definitions","theorems","constants","axioms");
             $collect=$tabCollection[rand(0,3)];
             $collection = $mongo->logipedia->$collect;
             $result = $collection->aggregate([
             [
-                     "\$sample" => ["size"=>10]
+              "\$sample" => ["size"=>20]
+            ],
+            [
+              "\$group" =>  ["_id" => ["md" => "\$md", "id" => "\$id"], "unique" => ["\$addToSet"=> "\$should_be_unique"]]
             ]
             ]);
             foreach ($result as $entry) {
-            if(isset($entry['_id'])){
+              if(isset($entry['_id']) && $compt<10){
 ?>
         <a href="theorems/theorems.php?id=<?php echo $compt;?>&collection=<?php echo $collect;?>" class="list-group-item list-group-item-action text-center list-group-item-light">
 <?php
-                echo '<h4 class="h4-color"><b>'.$entry['md'].'.'.$entry['nameID'].'</b></h4>';
+                echo '<h4 class="h4-color"><b>'.$entry['_id']['md'].'.'.$entry['_id']['id'].'</b></h4>';
 ?>
         </a>
-                <?php
-                      $tab[$compt]=array('md'=>$entry['md'], 'nameID' => $entry['nameID']);
-                      $compt++;
-                    }
-                  }
-                  $_SESSION['tuple']=$tab;
+<?php
+                $tab[$compt]=array('md'=>$entry['_id']['md'], 'id' => $entry['_id']['id']);
+                $compt++;
+              }
             }
+            $_SESSION['tuple']=$tab;
+          }
 ?>
       </div>
     </div>
+    </br>
 <?php
             }catch (MongoDB\Driver\Exception\ConnectionTimeoutException $e)
             {
               echo "Erreur";
             }
 ?>
-
+    <script src="index.js"></script>
   </body>
 </html>

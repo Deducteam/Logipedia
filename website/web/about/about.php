@@ -1,3 +1,6 @@
+<?php
+  session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -26,7 +29,7 @@
                 </a>
                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                   <a class="dropdown-item" href="#">Axiom</a>
-                  <a class="dropdown-item" href="#">Parameter</a>
+                  <a class="dropdown-item" href="#">Constant</a>
                   <a class="dropdown-item" href="#">Definition</a>
                   <a class="dropdown-item" href="#">Theorem</a>
                 </div>
@@ -36,7 +39,7 @@
       </div>
     </nav>
 
-    <div class="container">
+    <div class="container"> 
       <hr class="my-4">
       <div class="page-header">
         <h1 id="timeline" class="text-center">Five things you need to know about <a href="../index.php" style="color:grey;"> Logipedia </a></h1>
@@ -103,82 +106,135 @@
 
     <hr class="my-4">
     <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-12 col-xs-12 col-sm-12">
-          <div class="well">
-            <img src="http://www.cabkc.in/resource/Image/img-mail-contact.jpg" height="100px;" width="100px;" class="rounded-circle mx-auto d-block">
-            <div class="well-header">
-              <hr />
-              <h1 class="text-center"> <strong> Contact Form </strong></h1>
-              <hr />
-            </div>
+      <form method="post">
+        <div class="row">
+          <div class="col-md-12 col-xs-12 col-sm-12">
+            <div class="well">
+              <img src="http://www.cabkc.in/resource/Image/img-mail-contact.jpg" height="100px;" width="100px;" class="rounded-circle mx-auto d-block">
+              <div class="well-header">
+                <hr />
+                <h1 class="text-center"> <strong> Contact Form </strong></h1>
+                <hr />
+              </div>
 
-            <div class="row">
-              <div class="col-md-12 col-xs-12 col-sm-12">
-                <div class="form-group">
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <div class="input-group-text"><i class="fas fa-user"></i></div>
+              <div class="row">
+                <div class="col-md-12 col-xs-12 col-sm-12">
+                  <div class="form-group">
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <div class="input-group-text"><i class="fas fa-user"></i></div>
+                      </div>
+                      <input type="text" name="formName" placeholder="Enter Your Name" required="" class="form-control">
                     </div>
-                    <input type="text" name="cname" placeholder="Enter Your Name" required="" class="form-control">
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="row">
-              <div class="col-md-12 col-xs-12 col-sm-12">
-                <div class="form-group">
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <div class="input-group-text"><i class="fas fa-envelope"></i></div>
+              <div class="row">
+                <div class="col-md-12 col-xs-12 col-sm-12">
+                  <div class="form-group">
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <div class="input-group-text"><i class="fas fa-envelope"></i></div>
+                      </div>
+                      <input type="email" required="" class="form-control" name="FormMail" placeholder="Enter Email">
                     </div>
-                    <input type="email" required="" class="form-control" name="cemail" placeholder="Enter Email">
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div class="row">
-              <div class="col-md-12 col-xs-12 col-sm-12">
-                <div class="form-group">
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <div class="input-group-text"><i class="fas fa-users"></i></div>
+              
+              <div class="row">
+                <div class="col-md-12 col-xs-12 col-sm-12">
+                  <div class="form-group">
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <div class="input-group-text"><i class="fas fa-question"></i></div>
+                      </div>
+                      <input type="text" name="FormSubj" placeholder="Subject" required="" class="form-control">
                     </div>
-                    <select class="custom-select" id="inlineFormCustomSelect">
-                      <option selected>Choose...</option>
-                      <option value="gilles">Gilles Dowek</option>
-                      <option value="francois">François Thiré</option>
-                    </select>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="row">
-              <div class="col-md-12 col-xs-12 col-sm-12">
-                <div class="form-group">
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <div class="input-group-text"><i class="fas fa-comment"></i></div>
+              <div class="row">
+                <div class="col-md-12 col-xs-12 col-sm-12">
+                  <div class="form-group">
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <div class="input-group-text"><i class="fas fa-comment"></i></div>
+                      </div>
+                      <textarea class="form-control" required="" name="FormMessage" placeholder="Enter Message Here..."></textarea>
                     </div>
-                    <textarea class="form-control" placeholder="Enter Message Here..."></textarea>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div class="row">
-              <div class="col-md-12 col-xs-12 col-sm-12">
-                <button class="btn btn-block btn-lg btn-secondary"> Submit </button>
+              <div class="row">
+                <div class="col-md-12 col-xs-12 col-sm-12">
+                  <button class="btn btn-block btn-lg btn-secondary" name="FormSubmit"> Submit </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </form>
+    </div>
+<?php
+  if(isset($_POST["formName"]) && isset($_POST["FormMail"]) && isset($_POST["FormMessage"]) && isset($_POST["FormSubj"]) && isset($_POST["FormSubmit"]))
+  {
+    $to = "";
+    $headers = "From:".$_POST["FormMail"]. "\r\n";
+    if(mail($to,$_POST["FormSubj"],$_POST["FormMessage"],$headers)){
+?>
+    <div class="modal" tabindex="-1" role="dialog" id="modal">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2><i class="fas fa-thumbs-up"></i></h2> 
+            <h2 style="margin: 0 auto;"><strong> Thank you !</strong></h2>
+            <h2><i class="fas fa-thumbs-up"></i></h2> 
+          </div>
+          <div class="modal-body text-center bg-success">
+            <h5><strong>Your email has been sent.</strong></h5>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
+    <script>
+      $('#modal').modal('show')
+    </script>
+<?php
+    }
+    else{
+?>
+    <div class="modal" tabindex="-1" role="dialog" id="modal2">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2><i class="fas fa-thumbs-down"></i></h2> 
+            <h2 style="margin: 0 auto;"><strong> Try again !</strong></h2>
+            <h2><i class="fas fa-thumbs-down"></i></h2> 
+          </div>
+          <div class="modal-body text-center bg-danger">
+            <h5><strong>I am sorry but your email was not sent.</strong></h5>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      $('#modal2').modal('show')
+    </script>
+<?php
+    }
+  }
 
+?>
     <nav class="navbar navbar-dark bg-dark">
       <h5 class="navbar-text" style="color:white;">
         <div class="text-center">
@@ -187,9 +243,11 @@
         <small>
           <hr class="my-4" style="background-color:white;">
           <a href="../index.php"><I> <U>Logipedia</U> </I></a> has been developed by <strong>Walid Moustaoui</strong>, <strong>François Thiré</strong>, and <strong>Gilles Dowek</strong>.</br>
-          It builds on the work of <strong>Ali Assaf</strong>, <strong>Bruno Barras</strong>, <strong>Frédéric Blanqui</strong>, <strong>Mathieu Boespflug</strong>, <strong>Guillaume Burel</strong>, <strong>Quentin Carbonneaux</strong>, <strong>Raphaël Cauderlier</strong>, <strong>Denis Cousineau</strong>, <strong>David Delahaye</strong>, <strong>Catherine Dubois</strong>, <strong>Yacine El Haddad</strong>, <strong>Gaspard Férey</strong>, <strong>Guillaume Genestier</strong>, <strong>Frédéric Gilbert</strong>, <strong>Thérèse Hardin</strong>, <strong>Jean-Pierre Jouannaud</strong>, <strong>Rodolphe Lepigre</strong>, <strong>Pierre Halmagrand</strong>, <strong>Olivier Hermant</strong>, <strong>Claude Kirchner</strong>, <strong>Ronan Saillard</strong>, <strong>Benjamin Werner</strong>, <strong>Robert White</strong>, <strong>César Mûnoz</strong>, <strong>Stephane Graham-Lengrand</strong> and many others.
+          It builds on the work of <strong>Ali Assaf</strong>, <strong>Bruno Barras</strong>, <strong>Frédéric Blanqui</strong>, <strong>Mathieu Boespflug</strong>, <strong>Guillaume Burel</strong>, <strong>Quentin Carbonneaux</strong>, <strong>Raphaël Cauderlier</strong>, <strong>Denis Cousineau</strong>, <strong>David Delahaye</strong>, <strong>Catherine Dubois</strong>, <strong>Yacine El Haddad</strong>, <strong>Gaspard Férey</strong>, <strong>Guillaume Genestier</strong>, <strong>Frédéric Gilbert</strong>, <strong>Stéphane Graham-Lengrand</strong>, <strong>Pierre Halmagrand</strong>, <strong>Thérèse Hardin</strong>, <strong>Olivier Hermant</strong> , <strong>Jean-Pierre Jouannaud</strong>, <strong>Claude Kirchner</strong>, <strong>Rodolphe Lepigre</strong>, <strong>César Mũnoz</strong>, <strong>Ronan Saillard</strong>, <strong>Benjamin Werner</strong>, <strong>Robert White</strong> and many others.
         </small>
       </h5>
     </nav>
+    <script src="about.js"></script>
   </body>
 </html>
+

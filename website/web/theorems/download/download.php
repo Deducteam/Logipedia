@@ -14,6 +14,9 @@
     case 'pvs':
         $file=$file.'.pvs';
         break;
+    case 'openTheory':
+        $file=$file.'.art';
+        break;
     }
   $path = $_SESSION[$_GET['lang']];
   if(!file_exists($path)) die("I'm sorry, the file doesn't seem to exist.");

@@ -67,6 +67,10 @@ legend.scheduler-border {
   background-color: #555;
 }
 
+#a-openTheory {
+  top: 90%;
+  background-color: #8A2BE2;
+}
 #toTop{
   position: fixed;
   bottom: 10px;

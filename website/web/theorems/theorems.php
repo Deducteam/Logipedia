@@ -20,12 +20,12 @@
   {
     ob_start();
     $mongo = new MongoDB\Client('mongodb://localhost:27017');
-    $collection = $mongo->logipedia->dependances;
-    $result = $collection->find(['md' => $md, 'nameID' => $id], ['projection' => ['_id' => false, 'md' => false, 'nameID' => false]]);
+    $collection = $mongo->logipedia->idDep;
+    $result = $collection->find(['md' => $md, 'id' => $id], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
     foreach ($result as $entry) {
       if(!is_null($entry['mdDep']) && !in_array(array($entry['mdDep'],$entry['idDep']), $tabRetour)){
-        array_push($tabRetour, array($entry['mdDep'],$entry['idDep']));
         Recursive($entry['mdDep'],$entry['idDep'], $tabRetour);
+        array_push($tabRetour, array($entry['mdDep'],$entry['idDep']));
       }
     }
     ob_end_clean();
@@ -34,7 +34,7 @@
   function RecursiveMod($md,&$tabRetour,$tab2)
   {
     $mongo = new MongoDB\Client('mongodb://localhost:27017');
-    $collection = $mongo->logipedia->dependancesMod;
+    $collection = $mongo->logipedia->mdDep;
 
     $result = $collection->find(['md' => $md], ['projection' => ['_id' => false]]);
     foreach ($result as $entry) {
@@ -75,7 +75,7 @@
         <div class="collapse navbar-collapse" id="collapsibleNavbar">
           <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
             <li class="nav-item">
-              <a class="nav-link" href="../about.php">About</a>
+              <a class="nav-link" href="../about/about.php">About</a>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -83,7 +83,7 @@
               </a>
               <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                 <a class="dropdown-item" href="#">Axiom</a>
-                <a class="dropdown-item" href="#">Parameter</a>
+                <a class="dropdown-item" href="#">Constant</a>
                 <a class="dropdown-item" href="#">Definition</a>
                 <a class="dropdown-item" href="#">Theorem</a>
               </div>
@@ -105,32 +105,32 @@
     $collect=(string)$_GET['collection'];
     $id=(int)$_GET['id'];
     $collection = $mongo->logipedia->$collect;
-    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'nameID' => $_SESSION['tuple'][$id]['nameID']]);
+    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id']]);
   }
   else{
     $collection = $mongo->logipedia->definitions;
-    $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId']], ['projection' => ['_id' => false]]);
+    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false]]);
     foreach ($result as $entry) {
       break;
     }
     if(empty($entry['md']))
     {
-      $collection = $mongo->logipedia->parameters;
-      $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId']], ['projection' => ['_id' => false]]);
+      $collection = $mongo->logipedia->constants;
+      $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false]]);
       foreach ($result as $entry) {
         break;
       }
       if(empty($entry['md']))
       {
-        $collection = $mongo->logipedia->axiomes;
-        $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId']], ['projection' => ['_id' => false]]);
+        $collection = $mongo->logipedia->axioms;
+        $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false]]);
         foreach ($result as $entry) {
           break;
         }
         if(empty($entry['md']))
         {
-          $collection = $mongo->logipedia->theoremes;
-          $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId']], ['projection' => ['_id' => false]]);
+          $collection = $mongo->logipedia->theorems;
+          $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false]]);
           foreach ($result as $entry) {
             break;
           }
@@ -140,27 +140,27 @@
           }
           else
           {
-            $collect='theoremes';
+            $collect='theorems';
           }
         }
         else
         {
-          $collect='axiomes';
+          $collect='axioms';
         }
       }
       else
       {
-        $collect='parameters';
+        $collect='constants';
       }
     }
     else{
       $collect='definitions';
     }
     $collection = $mongo->logipedia->$collect;
-    $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId']]);
+    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']]);
   }
   foreach ($result as $entry) {
-    $type = $entry['langID'];
+    $type = $entry['sys'];
     if($type == '2')
     {
       echo '<a href="#matita" id="a-matita">Matita &nbsp; &nbsp; &nbsp;<img src="../picture/matita.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
@@ -177,51 +177,71 @@
     {
       echo '<a href="#pvs" id="a-pvs">PVS &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/pvs.jpg" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
     }
+    if($type == '6')
+    {
+      echo '<a href="#openTheory" id="a-openTheory"><small>openTheory</small> <img src="../picture/openTheory.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
+    }
   }
 ?>
       </div>
     </div>
     <div id="dedukti">
-      <img src="../picture/dedukti-jumb.jpg" class="img-fluid image" alt="Responsive image">
+      <img src="../picture/dedukti-jumb.jpg" class="img-fluid image" alt="Dedukti-jumb">
       <div id='attente' class="text-center">
         <h1>Please wait...</h1>
       </div>
       <hr class="my-4">
-      <h1 class="display-5 text-center"><b>
+      <h3 class="text-center"><b>
 <?php
   switch ($collect) {
     case "definitions":
       $collect2="Definition";
       break;
-    case "theoremes":
+    case "theorems":
       $collect2="Theorem";
       break;
-    case "parameters":
-      $collect2="Parameter";
+    case "constants":
+      $collect2="Constant";
       break;
-    case "axiomes":
+    case "axioms":
       $collect2="Axiom";
       break;
   }
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    echo $collect2." of ".$_SESSION['tuple'][$id]['md'].".".$_SESSION['tuple'][$id]['nameID'];
+?>
+      <div class="container">
+        <fieldset class="scheduler-border">
+          <legend class="scheduler-border">
+<?php
+                echo $collect2;
+          echo '</legend><p class="text-center">';
+                echo $_SESSION['tuple'][$id]['md'].".".$_SESSION['tuple'][$id]['id'];
+        echo "</p></fieldset></div>";
   }
   else
   {
-    echo $collect2." of ".$_GET['rechMd'].".".$_GET['rechId'];
+?>
+      <div class="container">
+        <fieldset class="scheduler-border">
+          <legend class="scheduler-border">
+<?php
+                echo $collect2;
+          echo "</legend>";
+          echo '</legend><p class="text-center">';
+                echo $_GET['rechMd'].".".$_GET['rechId'];
+        echo "</p></fieldset></div>";
   }
 ?>
       </b></h1>
-      <hr class="my-4">
       <div class="container">
 <?php
   $collection = $mongo->logipedia->$collect;
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'nameID' => $_SESSION['tuple'][$id]['nameID'], 'langID' => "1"], ['projection' => ['_id' => false, 'langID' => false, 'md' => false, 'nameID' => false]]);
+    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id'], 'sys' => "1"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
   }
   else
   {
-    $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId'], 'langID' => "1"], ['projection' => ['_id' => false, 'langID' => false, 'md' => false, 'nameID' => false]]);
+    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId'], 'sys' => "1"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
   }
   foreach ($result as $entry) {
     $array =  (array) $entry;
@@ -229,15 +249,11 @@
   }
   $keyP=array_keys($array);
   foreach ($keyP as $res) {
-    if($res!='proof'){
+    if($res!='proof' && $res!="kw"){
 ?>
         <fieldset class="scheduler-border">
           <legend class="scheduler-border">
 <?php
-      if($res=="statement" && $collect=="definitions"){
-        echo "Body";
-      }
-      else{
         switch ($res) {
           case "statement":
                   echo "Statement";
@@ -245,8 +261,10 @@
           case "type":
                   echo "Type";
           break;
+          case "body":
+                  echo "Body";
+          break;
         }
-      }
 ?>
           </legend>
           <p class="text-center">
@@ -261,21 +279,21 @@
 ?>
       </div>
 <?php
-  $collection = $mongo->logipedia->dependances;
+  $collection = $mongo->logipedia->idDep;
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'nameID' => $_SESSION['tuple'][$id]['nameID']], ['projection' => ['_id' => false, 'md' => false, 'nameID' => false]]);
-    $resultTmp = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'nameID' => $_SESSION['tuple'][$id]['nameID']], ['projection' => ['_id' => false, 'md' => false, 'nameID' => false]]);
+    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id']], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
+    $resultTmp = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id']], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
   }
   else{
-    $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId']], ['projection' => ['_id' => false, 'md' => false, 'nameID' => false]]);
-    $resultTmp = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId']], ['projection' => ['_id' => false, 'md' => false, 'nameID' => false]]);
+    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
+    $resultTmp = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
   }
   if(count($result->toArray())>0){
     if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-      $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'nameID' => $_SESSION['tuple'][$id]['nameID']], ['projection' => ['_id' => false, 'md' => false, 'nameID' => false]]);
+      $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id']], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
     }
     else{
-      $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId']], ['projection' => ['_id' => false, 'md' => false, 'nameID' => false]]);
+      $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
     }
     $tabDefinitions=[];
     $tabTheorems=[];
@@ -288,8 +306,8 @@
       Recursive($entry['mdDep'],$entry['idDep'], $tabRetour);
       unset($result2);
       unset($entry2);
-      $collection = $mongo->logipedia->axiomes;
-      $result2 = $collection->find(['md' => $entry['mdDep'], 'nameID' => $entry['idDep']], ['projection' => ['_id' => false]]);
+      $collection = $mongo->logipedia->axioms;
+      $result2 = $collection->find(['md' => $entry['mdDep'], 'id' => $entry['idDep']], ['projection' => ['_id' => false]]);
       foreach ($result2 as $entry2) {
         break;
       }
@@ -300,8 +318,8 @@
       }
       unset($result2);
       unset($entry2);
-      $collection = $mongo->logipedia->parameters;
-      $result2 = $collection->find(['md' => $entry['mdDep'], 'nameID' => $entry['idDep']], ['projection' => ['_id' => false]]);
+      $collection = $mongo->logipedia->constants;
+      $result2 = $collection->find(['md' => $entry['mdDep'], 'id' => $entry['idDep']], ['projection' => ['_id' => false]]);
       foreach ($result2 as $entry2) {
         break;
       }
@@ -313,7 +331,7 @@
       unset($result2);
       unset($entry2);
       $collection = $mongo->logipedia->definitions;
-      $result2 = $collection->find(['md' => $entry['mdDep'], 'nameID' => $entry['idDep']], ['projection' => ['_id' => false]]);
+      $result2 = $collection->find(['md' => $entry['mdDep'], 'id' => $entry['idDep']], ['projection' => ['_id' => false]]);
       foreach ($result2 as $entry2) {
         break;
       }
@@ -324,8 +342,8 @@
       }
       unset($result2);
       unset($entry2);
-      $collection = $mongo->logipedia->theoremes;
-      $result2 = $collection->find(['md' => $entry['mdDep'], 'nameID' => $entry['idDep']], ['projection' => ['_id' => false]]);
+      $collection = $mongo->logipedia->theorems;
+      $result2 = $collection->find(['md' => $entry['mdDep'], 'id' => $entry['idDep']], ['projection' => ['_id' => false]]);
       foreach ($result2 as $entry2) {
         break;
       }
@@ -335,12 +353,12 @@
         array_push($tabTheorems,array($entry['mdDep'],$entry['idDep']));
       }
     }
-    $collection = $mongo->logipedia->dependances;
+    $collection = $mongo->logipedia->idDep;
     if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-      $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'nameID' => $_SESSION['tuple'][$id]['nameID']], ['projection' => ['_id' => false, 'md' => false, 'nameID' => false]]);
+      $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id']], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
     }
     else{
-      $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId']], ['projection' => ['_id' => false, 'md' => false, 'nameID' => false]]);
+      $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
     }
    $comptSupp=0;
    $tabRetour2 = $tabRetour;
@@ -359,7 +377,7 @@
 ?>
       <div class="container">
         <fieldset class="scheduler-border">
-          <legend class="scheduler-border"> Dependence </legend>
+          <legend class="scheduler-border"> Dependences </legend>
           <div class="card">
             <div class="card-header" id="headingOne">
                 <a class="list-group-item list-group-item-action text-center" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" id="btHide">
@@ -375,20 +393,20 @@
       if(isset ($tabAxioms)){
         foreach ($tabAxioms as $ax)
         {
-           echo '<a href="theorems.php?rechMd='.$ax[0].'&rechId='.$ax[1].'" class="list-group-item list-group-item-action text-center">'.$ax[0].".".$ax[1].'</a> </br>';
+           echo '<a href="theorems.php?rechMd='.$ax[0].'&rechId='.$ax[1].'" class="list-group-item list-group-item-action text-center">'.$ax[0].".".$ax[1].'</a>';
         }
       }
 ?>
                   </div>
                 </div>
                 <div class="card col-md-3">
-                  <div class="card-header text-center">Parameters</div>
+                  <div class="card-header text-center">Constants</div>
                   <div class="list-group">
 <?php
       if(isset ($tabParameters)){
         foreach ($tabParameters as $para)
         {
-           echo '<a href="theorems.php?rechMd='.$para[0].'&rechId='.$para[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center">'.$para[0].".".$para[1].'</a> </br>';
+           echo '<a href="theorems.php?rechMd='.$para[0].'&rechId='.$para[1].'" class="list-group-item list-group-item-action text-center">'.$para[0].".".$para[1].'</a>';
         }
       }
 ?>
@@ -401,7 +419,7 @@
       if(isset ($tabDefinitions)){
         foreach ($tabDefinitions as $def)
         {
-           echo '<a href="theorems.php?rechMd='.$def[0].'&rechId='.$def[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center">'.$def[0].".".$def[1].'</a> </br>';
+           echo '<a href="theorems.php?rechMd='.$def[0].'&rechId='.$def[1].'" class="list-group-item list-group-item-action text-center">'.$def[0].".".$def[1].'</a>';
         }
       }
 ?>
@@ -414,7 +432,7 @@
       if(isset ($tabTheorems)){
         foreach ($tabTheorems as $theo)
         {
-           echo '<a href="theorems.php?rechMd='.$theo[0].'&rechId='.$theo[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center">'.$theo[0].".".$theo[1].'</a> </br>';
+           echo '<a href="theorems.php?rechMd='.$theo[0].'&rechId='.$theo[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center">'.$theo[0].".".$theo[1].'</a>';
         }
       }
 ?>
@@ -431,57 +449,79 @@
           <div class="card">
             <div class="card-header" id="headingTwo">
               <a class="list-group-item list-group-item-action text-center" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo" id="btHide2">
-                <i class="fas fa-chevron-down"></i>
+                <i class="fas fa-chevron-down" id="iconDep2"></i>
               </a>
             </div>
             <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-              <div class="card-body">
-                <ul class="list-group">
+              <div class="row">
+                <div class="card col-md-6">
+                  <div class="card-header text-center">Axioms</div>
+                  <div class="list-group">
 <?php
       $compteur2=0;
+      $tabAxioms2=[];
+      $tabParameters2=[];
       foreach ($tabRetour as $dep)
       {
         unset($result2);
         unset($entry2);
-        $collection = $mongo->logipedia->axiomes;
-        $result2 = $collection->find(['md' => $dep[0], 'nameID' => $dep[1]], ['projection' => ['_id' => false]]);
+        $collection = $mongo->logipedia->axioms;
+        $result2 = $collection->find(['md' => $dep[0], 'id' => $dep[1]], ['projection' => ['_id' => false]]);
         foreach ($result2 as $entry2) {
           break;
         }
         if(!empty($entry2['md']))
         {
-          echo '<a href="theorems.php?rechMd='.$dep[0].'&rechId='.$dep[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" >'.$dep[0].".".$dep[1].'</a> </br>';
+          //echo '<a href="theorems.php?rechMd='.$dep[0].'&rechId='.$dep[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" >'.$dep[0].".".$dep[1].'</a> </br>';
+          array_push($tabAxioms2,array($dep[0],$dep[1]));
           $compteur2++;
         }
         unset($result2);
         unset($entry2);
-        $collection = $mongo->logipedia->parameters;
-        $result2 = $collection->find(['md' => $dep[0], 'nameID' => $dep[1]], ['projection' => ['_id' => false]]);
+        $collection = $mongo->logipedia->constants;
+        $result2 = $collection->find(['md' => $dep[0], 'id' => $dep[1]], ['projection' => ['_id' => false]]);
         foreach ($result2 as $entry2) {
           break;
         }
         if(!empty($entry2['md']))
         {
-          echo '<a href="theorems.php?rechMd='.$dep[0].'&rechId='.$dep[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" >'.$dep[0].".".$dep[1].'</a> </br>';
+          //echo '<a href="theorems.php?rechMd='.$dep[0].'&rechId='.$dep[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" >'.$dep[0].".".$dep[1].'</a> </br>';
+          array_push($tabParameters2,array($dep[0],$dep[1]));
           $compteur2++;
+        }
+      }
+      if(isset ($tabAxioms2)){
+        foreach ($tabAxioms2 as $ax2)
+        {
+           echo '<a href="theorems.php?rechMd='.$ax2[0].'&rechId='.$ax2[1].'" class="list-group-item list-group-item-action text-center">'.$ax2[0].".".$ax2[1].'</a>';
+        }
+      }
+      foreach($tabAxioms as $tAx)
+      {
+        echo '<a href="theorems.php?rechMd='.$tAx[0].'&rechId='.$tAx[1].'" class="list-group-item list-group-item-action text-center" >'.$tAx[0].".".$tAx[1].'</a>';
+        $compteur2++;
+      }
+?>
+                  </div>
+                </div>
+                <div class="card col-md-6">
+                  <div class="card-header text-center">Constants</div>
+                  <div class="list-group">
+<?php
+      if(isset ($tabParameters2)){
+        foreach ($tabParameters2 as $para2)
+        {
+           echo '<a href="theorems.php?rechMd='.$para2[0].'&rechId='.$para2[1].'" class="list-group-item list-group-item-action text-center">'.$para2[0].".".$para2[1].'</a>';
         }
       }
       foreach($tabParameters as $parAx)
       {
-        echo '<a href="theorems.php?rechMd='.$parAx[0].'&rechId='.$parAx[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" >'.$parAx[0].".".$parAx[1].'</a> </br>';
+        echo '<a href="theorems.php?rechMd='.$parAx[0].'&rechId='.$parAx[1].'" class="list-group-item list-group-item-action text-center" >'.$parAx[0].".".$parAx[1].'</a>';
         $compteur2++;
-      }
-      foreach($tabAxioms as $tAx)
-      {
-        echo '<a href="theorems.php?rechMd='.$tAx[0].'&rechId='.$tAx[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" >'.$tAx[0].".".$tAx[1].'</a> </br>';
-        $compteur2++;
-      }
-      if($compteur2==0)
-      {
-        echo '<a href="#" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" > Aucune dependances indirecte ! </a> </br>';
       }
 ?>
-                </ul>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -493,7 +533,7 @@
 ?>
       <div class="container">
         <fieldset class="scheduler-border">
-          <legend class="scheduler-border"> Dependence </legend>
+          <legend class="scheduler-border"> Dependences </legend>
           <div class="row">
             <div class="card col-md-3">
               <div class="card-header text-center">Axioms</div>
@@ -502,20 +542,20 @@
       if(isset ($tabAxioms)){
         foreach ($tabAxioms as $ax)
         {
-           echo '<a href="theorems.php?rechMd='.$ax[0].'&rechId='.$ax[1].'" class="list-group-item list-group-item-action text-center">'.$ax[0].".".$ax[1].'</a> </br>';
+           echo '<a href="theorems.php?rechMd='.$ax[0].'&rechId='.$ax[1].'" class="list-group-item list-group-item-action text-center">'.$ax[0].".".$ax[1].'</a>';
         }
       }
 ?>
               </div>
             </div>
             <div class="card col-md-3">
-              <div class="card-header text-center">Parameters</div>
+              <div class="card-header text-center">Constants</div>
               <div class="list-group">
 <?php
       if(isset ($tabParameters)){
         foreach ($tabParameters as $para)
         {
-           echo '<a href="theorems.php?rechMd='.$para[0].'&rechId='.$para[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center">'.$para[0].".".$para[1].'</a> </br>';
+           echo '<a href="theorems.php?rechMd='.$para[0].'&rechId='.$para[1].'" class="list-group-item list-group-item-action text-center">'.$para[0].".".$para[1].'</a>';
         }
       }
 ?>
@@ -528,7 +568,7 @@
       if(isset ($tabDefinitions)){
         foreach ($tabDefinitions as $def)
         {
-           echo '<a href="theorems.php?rechMd='.$def[0].'&rechId='.$def[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center">'.$def[0].".".$def[1].'</a> </br>';
+           echo '<a href="theorems.php?rechMd='.$def[0].'&rechId='.$def[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center">'.$def[0].".".$def[1].'</a>';
         }
       }
 ?>
@@ -541,7 +581,7 @@
       if(isset ($tabTheorems)){
         foreach ($tabTheorems as $theo)
         {
-           echo '<a href="theorems.php?rechMd='.$theo[0].'&rechId='.$theo[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center">'.$theo[0].".".$theo[1].'</a> </br>';
+           echo '<a href="theorems.php?rechMd='.$theo[0].'&rechId='.$theo[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center">'.$theo[0].".".$theo[1].'</a>';
         }
       }
 ?>
@@ -553,52 +593,76 @@
       <div class="container">
         <fieldset class="scheduler-border">
           <legend class="scheduler-border"> Theory </legend>
-          <ul class="list-group">
+          <div class="row">
+            <div class="card col-md-6">
+              <div class="card-header text-center">Axioms</div>
+              <div class="list-group">
 <?php
-      $compteur2=0;
-      foreach ($tabRetour as $dep)
-      {
-        unset($result2);
-        unset($entry2);
-        $collection = $mongo->logipedia->axiomes;
-        $result2 = $collection->find(['md' => $dep[0], 'nameID' => $dep[1]], ['projection' => ['_id' => false]]);
-        foreach ($result2 as $entry2) {
-          break;
-        }
-        if(!empty($entry2['md']))
-        {
-          echo '<a href="theorems.php?rechMd='.$dep[0].'&rechId='.$dep[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" >'.$dep[0].".".$dep[1].'</a> </br>';
-          $compteur2++;
-        }
-        unset($result2);
-        unset($entry2);
-        $collection = $mongo->logipedia->parameters;
-        $result2 = $collection->find(['md' => $dep[0], 'nameID' => $dep[1]], ['projection' => ['_id' => false]]);
-        foreach ($result2 as $entry2) {
-          break;
-        }
-        if(!empty($entry2['md']))
-        {
-          echo '<a href="theorems.php?rechMd='.$dep[0].'&rechId='.$dep[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" >'.$dep[0].".".$dep[1].'</a> </br>';
-          $compteur2++;
-        }
-      }
-      foreach($tabParameters as $parAx)
-      {
-        echo '<a href="theorems.php?rechMd='.$parAx[0].'&rechId='.$parAx[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" >'.$parAx[0].".".$parAx[1].'</a> </br>';
-        $compteur2++;
-      }
-      foreach($tabAxioms as $tAx)
-      {
-        echo '<a href="theorems.php?rechMd='.$tAx[0].'&rechId='.$tAx[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" >'.$tAx[0].".".$tAx[1].'</a> </br>';
-        $compteur2++;
-      }
-      if($compteur2==0)
-      {
-        echo '<a href="#" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" > Aucune dependances indirecte ! </a> </br>';
-      }
+  $compteur2=0;
+  $tabAxioms2=[];
+  $tabParameters2=[];
+  foreach ($tabRetour as $dep)
+  {
+    unset($result2);
+    unset($entry2);
+    $collection = $mongo->logipedia->axioms;
+    $result2 = $collection->find(['md' => $dep[0], 'id' => $dep[1]], ['projection' => ['_id' => false]]);
+    foreach ($result2 as $entry2) {
+      break;
+    }
+    if(!empty($entry2['md']))
+    {
+      //echo '<a href="theorems.php?rechMd='.$dep[0].'&rechId='.$dep[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" >'.$dep[0].".".$dep[1].'</a> </br>';
+      array_push($tabAxioms2,array($dep[0],$dep[1]));
+      $compteur2++;
+    }
+    unset($result2);
+    unset($entry2);
+    $collection = $mongo->logipedia->constants;
+    $result2 = $collection->find(['md' => $dep[0], 'id' => $dep[1]], ['projection' => ['_id' => false]]);
+    foreach ($result2 as $entry2) {
+      break;
+    }
+    if(!empty($entry2['md']))
+    {
+      //echo '<a href="theorems.php?rechMd='.$dep[0].'&rechId='.$dep[1].'" class="list-group-item list-group-item-action list-group-bg-mar2 text-center" >'.$dep[0].".".$dep[1].'</a> </br>';
+      array_push($tabParameters2,array($dep[0],$dep[1]));
+      $compteur2++;
+    }
+  }
+  if(isset ($tabAxioms2)){
+    foreach ($tabAxioms2 as $ax2)
+    {
+       echo '<a href="theorems.php?rechMd='.$ax2[0].'&rechId='.$ax2[1].'" class="list-group-item list-group-item-action text-center">'.$ax2[0].".".$ax2[1].'</a>';
+    }
+  }
+  foreach($tabAxioms as $tAx)
+  {
+    echo '<a href="theorems.php?rechMd='.$tAx[0].'&rechId='.$tAx[1].'" class="list-group-item list-group-item-action text-center" >'.$tAx[0].".".$tAx[1].'</a>';
+    $compteur2++;
+  }
 ?>
-          </ul>
+              </div>
+            </div>
+            <div class="card col-md-6">
+              <div class="card-header text-center">Constants</div>
+              <div class="list-group">
+<?php
+  if(isset ($tabParameters2)){
+    foreach ($tabParameters2 as $para2)
+    {
+       echo '<a href="theorems.php?rechMd='.$para2[0].'&rechId='.$para2[1].'" class="list-group-item list-group-item-action text-center">'.$para2[0].".".$para2[1].'</a>';
+    }
+  }
+  foreach($tabParameters as $parAx)
+  {
+    echo '<a href="theorems.php?rechMd='.$parAx[0].'&rechId='.$parAx[1].'" class="list-group-item list-group-item-action text-center" >'.$parAx[0].".".$parAx[1].'</a>';
+    $compteur2++;
+  }
+?>
+              </div>
+            </div>
+          </div>
         </fieldset>
       </div>
 <?php
@@ -614,12 +678,12 @@
       array_push($tabFinal,array($dep[0],$dep[1])); // Nous ajoutons les dependances indirecte au tableau final
     }
   }
-  $collection = $mongo->logipedia->dependances;
+  $collection = $mongo->logipedia->idDep;
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'nameID' => $_SESSION['tuple'][$id]['nameID']], ['projection' => ['_id' => false]]);
+    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id']], ['projection' => ['_id' => false]]);
   }
   else{
-    $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId']], ['projection' => ['_id' => false]]);
+    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false]]);
   }
   foreach ($result as $entry) {
     if($entry['mdDep']!="sttfa" && !in_array(array($entry['mdDep'],$entry['idDep']),$depSupp)){
@@ -628,13 +692,13 @@
   }
   $collection = $mongo->logipedia->$collect;
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-	  $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'nameID' => $_SESSION['tuple'][$id]['nameID'], 'langID' => "3"], ['projection' => ['_id' => false, 'langID' => false]]);
-    $nameID = $_SESSION['tuple'][$id]['nameID'];
+	  $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id'], 'sys' => "3"], ['projection' => ['_id' => false, 'sys' => false]]);
+    $nameID = $_SESSION['tuple'][$id]['id'];
     $mdID=$_SESSION['tuple'][$id]['md'];
   }
   else
   {
-    $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId'], 'langID' => "3"], ['projection' => ['_id' => false, 'langID' => false]]);
+    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId'], 'sys' => "3"], ['projection' => ['_id' => false, 'sys' => false]]);
     $nameID = $_GET['rechId'];
     $mdID = $_GET['rechMd'];
   }
@@ -642,7 +706,7 @@
     $array =  (array) $entry;
     break;
   }
-  array_push($tabFinal,array($entry['md'],$entry['nameID'])); // Nous ajoutons la declaration ou definition courante
+  array_push($tabFinal,array($entry['md'],$entry['id'])); // Nous ajoutons la declaration ou definition courante
   $tabModule=[];
   for($i=0;$i<sizeof($tabFinal);$i++){
     $tabModule[$i]=$tabFinal[$i][0]; // Nous recuperons tout les modules
@@ -661,16 +725,16 @@
 ?>
     <div id="coq">
       <hr class="my-4">
-      <img src="../picture/coq-jumb.jpg" class="img-fluid image" alt="Responsive image">
+      <img src="../picture/coq-jumb.jpg" class="img-fluid image" alt="Coq-Jumb">
       <hr class="my-4">
 <?php
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $nameOfFile = $_SESSION['tuple'][$id]['md']."-".$_SESSION['tuple'][$id]['nameID'].".v";
-    $_SESSION['file'] = $_SESSION['tuple'][$id]['md']."-".$_SESSION['tuple'][$id]['nameID'];
+    $nameOfFile = $_SESSION['tuple'][$id]['md']."_".$_SESSION['tuple'][$id]['id'].".v";
+    $_SESSION['file'] = $_SESSION['tuple'][$id]['md']."_".$_SESSION['tuple'][$id]['id'];
   }
   else{
-    $nameOfFile = $_GET['rechMd']."-".$_GET['rechId'].".v";
-    $_SESSION['file'] = $_GET['rechMd']."-".$_GET['rechId'];
+    $nameOfFile = $_GET['rechMd']."_".$_GET['rechId'].".v";
+    $_SESSION['file'] = $_GET['rechMd']."_".$_GET['rechId'];
   }
   if(file_exists('download/coq/'.$nameOfFile)){
     unlink('download/coq/'.$nameOfFile);
@@ -681,11 +745,11 @@
 <?php
   $collection = $mongo->logipedia->$collect;
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'nameID' => $_SESSION['tuple'][$id]['nameID'], 'langID' => "3"], ['projection' => ['_id' => false, 'langID' => false, 'md' => false, 'nameID' => false]]);
+    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id'], 'sys' => "3"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
   }
   else
   {
-    $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId'], 'langID' => "3"], ['projection' => ['_id' => false, 'langID' => false, 'md' => false, 'nameID' => false]]);
+    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId'], 'sys' => "3"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
   }
   foreach ($result as $entry) {
     $array =  (array) $entry;
@@ -693,15 +757,11 @@
   }
   $keyP=array_keys($array);
   foreach ($keyP as $res) {
-    if($res!='proof'){
+    if($res!='proof' && $res!="kw"){
 ?>
       <fieldset class="scheduler-border">
         <legend class="scheduler-border">
 <?php
-      if($res=="statement" && $collect=="definitions"){
-        echo "Body";
-      }
-      else{
         switch ($res) {
           case "statement":
                   echo "Statement";
@@ -709,8 +769,10 @@
           case "type":
                   echo "Type";
           break;
+          case "body":
+                  echo "Body";
+          break;
         }
-      }
 ?>
         </legend>
         <p class="text-center">
@@ -733,29 +795,29 @@
       unset($entry2);
       if($tabFinal[$cpt][0]==$val){
         $collection = $mongo->logipedia->definitions;
-        $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "3"], ['projection' => ['_id' => false]]);
+        $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "3"], ['projection' => ['_id' => false]]);
         $entry2=[];
         foreach ($result2 as $entry2) {
           break;
         }
         if(empty($entry2['md']))
         {
-          $collection = $mongo->logipedia->parameters;
-          $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "3"], ['projection' => ['_id' => false]]);
+          $collection = $mongo->logipedia->constants;
+          $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "3"], ['projection' => ['_id' => false]]);
           foreach ($result2 as $entry2) {
             break;
           }
           if(empty($entry2['md']))
           {
-            $collection = $mongo->logipedia->axiomes;
-            $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "3"], ['projection' => ['_id' => false]]);
+            $collection = $mongo->logipedia->axioms;
+            $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "3"], ['projection' => ['_id' => false]]);
             foreach ($result2 as $entry2) {
               break;
             }
             if(empty($entry2['md']))
             {
-              $collection = $mongo->logipedia->theoremes;
-              $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "3"], ['projection' => ['_id' => false]]);
+              $collection = $mongo->logipedia->theorems;
+              $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "3"], ['projection' => ['_id' => false]]);
               foreach ($result2 as $entry2) {
                 break;
               }
@@ -779,7 +841,7 @@
             }
         }
         else{
-          writeFile2("\n\tDefinition ".$tabFinal[$cpt][1]. " : ".$entry2['type']." := ".$entry2['statement'].".\n", $nameOfFile,'coq');
+          writeFile2("\n\tDefinition ".$tabFinal[$cpt][1]. " : ".$entry2['type']." := ".$entry2['body'].".\n", $nameOfFile,'coq');
         }
       }
     }
@@ -797,17 +859,17 @@
     </div>
     <div id="matita">
       <hr class="my-4">
-      <img src="../picture/matita-jumb.jpg" class="img-fluid image" alt="Responsive image">
+      <img src="../picture/matita-jumb.jpg" class="img-fluid image" alt="Matita-Jumb">
       <hr class="my-4">
 <?php
   unset($result);
   unset($entry);
   unset($nameOfFile);
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $nameOfFile = $_SESSION['tuple'][$id]['md']."-".$_SESSION['tuple'][$id]['nameID'].".ma";
+    $nameOfFile = $_SESSION['tuple'][$id]['md']."_".$_SESSION['tuple'][$id]['id'].".ma";
   }
   else{
-    $nameOfFile = $_GET['rechMd']."-".$_GET['rechId'].".ma";
+    $nameOfFile = $_GET['rechMd']."_".$_GET['rechId'].".ma";
   }
   if(file_exists('download/matita/'.$nameOfFile)){
     unlink('download/matita/'.$nameOfFile);
@@ -818,11 +880,11 @@
 <?php
   $collection = $mongo->logipedia->$collect;
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'nameID' => $_SESSION['tuple'][$id]['nameID'], 'langID' => "2"], ['projection' => ['_id' => false, 'langID' => false, 'md' => false, 'nameID' => false]]);
+    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id'], 'sys' => "2"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
   }
   else
   {
-    $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId'], 'langID' => "2"], ['projection' => ['_id' => false, 'langID' => false, 'md' => false, 'nameID' => false]]);
+    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId'], 'sys' => "2"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
   }
   foreach ($result as $entry) {
     $array =  (array) $entry;
@@ -830,15 +892,12 @@
   }
   $keyP=array_keys($array);
   foreach ($keyP as $res) {
-    if($res!='proof'){
+    if($res!='proof' && $res!="kw"){
 ?>
         <fieldset class="scheduler-border">
           <legend class="scheduler-border">
 <?php
-      if($res=="statement" && $collect=="definitions"){
-        echo "Body";
-      }
-      else{
+
         switch ($res) {
           case "statement":
                   echo "Statement";
@@ -846,8 +905,11 @@
           case "type":
                   echo "Type";
           break;
+          case "body":
+                  echo "Body";
+          break;
         }
-      }
+
 ?>
           </legend>
           <p class="text-center">
@@ -864,35 +926,35 @@
 <?php
   //Nous bouclons pour chaque module et nous ecrivons selon si l'element courant est un parametre/definitions/etc
   foreach($tabModuleR as $val){
-    writeFile2("\nModule ".$val.".\n", $nameOfFile,'matita');
+    writeFile2("\ninclude basics/pts.\n", $nameOfFile,'matita');
     for($cpt=0;$cpt<sizeof($tabFinal);$cpt++){
       unset($result2);
       unset($entry2);
       if($tabFinal[$cpt][0]==$val){
         $collection = $mongo->logipedia->definitions;
-        $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "2"], ['projection' => ['_id' => false]]);
+        $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "2"], ['projection' => ['_id' => false]]);
         $entry2=[];
         foreach ($result2 as $entry2) {
           break;
         }
         if(empty($entry2['md']))
         {
-          $collection = $mongo->logipedia->parameters;
-          $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "2"], ['projection' => ['_id' => false]]);
+          $collection = $mongo->logipedia->constants;
+          $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "2"], ['projection' => ['_id' => false]]);
           foreach ($result2 as $entry2) {
             break;
           }
           if(empty($entry2['md']))
           {
-            $collection = $mongo->logipedia->axiomes;
-            $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "2"], ['projection' => ['_id' => false]]);
+            $collection = $mongo->logipedia->axioms;
+            $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "2"], ['projection' => ['_id' => false]]);
             foreach ($result2 as $entry2) {
               break;
             }
             if(empty($entry2['md']))
             {
-              $collection = $mongo->logipedia->theoremes;
-              $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "2"], ['projection' => ['_id' => false]]);
+              $collection = $mongo->logipedia->theorems;
+              $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "2"], ['projection' => ['_id' => false]]);
               foreach ($result2 as $entry2) {
                 break;
               }
@@ -902,25 +964,24 @@
               }
               else
               {
-                writeFile2("\n\tdefinition ".$tabFinal[$cpt][1]. " : ".$entry2['statement']." := ".$entry2['proof'].".\n", $nameOfFile,'matita');
+                writeFile2("\ndefinition ".$tabFinal[$cpt][1]. " : ".$entry2['statement']." := ".$entry2['proof'].".\n", $nameOfFile,'matita');
               }
             }
             else
             {
-              writeFile2("\n\taxiom ".$tabFinal[$cpt][1]. " : ".$entry2['statement'].".\n", $nameOfFile,'matita');
+              writeFile2("\naxiom ".$tabFinal[$cpt][1]. " : ".$entry2['statement'].".\n", $nameOfFile,'matita');
             }
             }
             else
             {
-              writeFile2("\n\taxiom ".$tabFinal[$cpt][1]. " : ".$entry2['type'].".\n", $nameOfFile,'matita');
+              writeFile2("\naxiom ".$tabFinal[$cpt][1]. " : ".$entry2['type'].".\n", $nameOfFile,'matita');
             }
         }
         else{
-          writeFile2("\n\tdefinition ".$tabFinal[$cpt][1]. " : ".$entry2['type']." := ".$entry2['statement'].".\n", $nameOfFile,'matita');
+          writeFile2("\ndefinition ".$tabFinal[$cpt][1]. " : ".$entry2['type']." := ".$entry2['body'].".\n", $nameOfFile,'matita');
         }
       }
     }
-    writeFile2("\nEnd ".$val.".\n", $nameOfFile,'matita');
   }
 ?>
       </br>
@@ -934,17 +995,17 @@
     </div>
     <div id="lean">
       <hr class="my-4">
-      <img src="../picture/lean-jumb.jpg" class="img-fluid image" alt="Responsive image">
+      <img src="../picture/lean-jumb.jpg" class="img-fluid image" alt="Lean-jumb">
       <hr class="my-4">
 <?php
   unset($result);
   unset($entry);
   unset($nameOfFile);
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $nameOfFile = $_SESSION['tuple'][$id]['md']."-".$_SESSION['tuple'][$id]['nameID'].".lean";
+    $nameOfFile = $_SESSION['tuple'][$id]['md']."_".$_SESSION['tuple'][$id]['id'].".lean";
   }
   else{
-    $nameOfFile = $_GET['rechMd']."-".$_GET['rechId'].".lean";
+    $nameOfFile = $_GET['rechMd']."_".$_GET['rechId'].".lean";
   }
   if(file_exists('download/lean/'.$nameOfFile)){
     unlink('download/lean/'.$nameOfFile);
@@ -956,11 +1017,11 @@
 <?php
   $collection = $mongo->logipedia->$collect;
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'nameID' => $_SESSION['tuple'][$id]['nameID'], 'langID' => "4"], ['projection' => ['_id' => false, 'langID' => false, 'md' => false, 'nameID' => false]]);
+    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id'], 'sys' => "4"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
   }
   else
   {
-    $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId'], 'langID' => "4"], ['projection' => ['_id' => false, 'langID' => false, 'md' => false, 'nameID' => false]]);
+    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId'], 'sys' => "4"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
   }
   foreach ($result as $entry) {
     $array =  (array) $entry;
@@ -968,15 +1029,11 @@
   }
   $keyP=array_keys($array);
   foreach ($keyP as $res) {
-    if($res!='proof' && $res!='computable'){
+    if($res!='proof' && $res!='computable' && $res!="kw"){
 ?>
         <fieldset class="scheduler-border">
           <legend class="scheduler-border">
 <?php
-      if($res=="statement" && $collect=="definitions"){
-        echo "Body";
-      }
-      else{
       switch ($res) {
                 case "statement":
                         echo "Statement";
@@ -984,8 +1041,10 @@
                 case "type":
                         echo "Type";
                 break;
+                case "body":
+                        echo "Body";
+                break;
          }
-      }
 ?>
           </legend>
           <p class="text-center">
@@ -1002,35 +1061,35 @@
 <?php
   //Nous bouclons pour chaque module et nous ecrivons selon si l'element courant est un parametre/definitions/etc
   foreach($tabModuleR as $val){
-    writeFile2("\nModule ".$val.".\n", $nameOfFile,'lean');
+    writeFile2("\nnamespace ".$val."\n", $nameOfFile,'lean');
     for($cpt=0;$cpt<sizeof($tabFinal);$cpt++){
       unset($result2);
       unset($entry2);
       if($tabFinal[$cpt][0]==$val){
         $collection = $mongo->logipedia->definitions;
-        $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "4"], ['projection' => ['_id' => false]]);
+        $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "4"], ['projection' => ['_id' => false]]);
         $entry2=[];
         foreach ($result2 as $entry2) {
           break;
         }
         if(empty($entry2['md']))
         {
-          $collection = $mongo->logipedia->parameters;
-          $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "4"], ['projection' => ['_id' => false]]);
+          $collection = $mongo->logipedia->constants;
+          $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "4"], ['projection' => ['_id' => false]]);
           foreach ($result2 as $entry2) {
             break;
           }
           if(empty($entry2['md']))
           {
-            $collection = $mongo->logipedia->axiomes;
-            $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "4"], ['projection' => ['_id' => false]]);
+            $collection = $mongo->logipedia->axioms;
+            $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "4"], ['projection' => ['_id' => false]]);
             foreach ($result2 as $entry2) {
               break;
             }
             if(empty($entry2['md']))
             {
-              $collection = $mongo->logipedia->theoremes;
-              $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "4"], ['projection' => ['_id' => false]]);
+              $collection = $mongo->logipedia->theorems;
+              $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "4"], ['projection' => ['_id' => false]]);
               foreach ($result2 as $entry2) {
                 break;
               }
@@ -1040,25 +1099,45 @@
               }
               else
               {
-                writeFile2("\n\ttheorem ".$tabFinal[$cpt][1]. " : ".$entry2['statement']." := ".$entry2['proof'].".\n", $nameOfFile,'lean');
+                if($tabFinal[$cpt][1]=="refl" || $tabFinal[$cpt][1]=="eq" || $tabFinal[$cpt][1]=="pred" || $tabFinal[$cpt][1]=="le" || $tabFinal[$cpt][1]=="lt" || $tabFinal[$cpt][1]=="decidable_lt" || $tabFinal[$cpt][1]=="decidable_le"){
+                  writeFile2("\n\ttheorem ".$tabFinal[$cpt][1]. "_ : ".$entry2['statement']." := ".$entry2['proof']."\n", $nameOfFile,'lean');
+                }
+                else{
+                  writeFile2("\n\ttheorem ".$tabFinal[$cpt][1]. " : ".$entry2['statement']." := ".$entry2['proof']."\n", $nameOfFile,'lean');
+                }
               }
             }
             else
             {
-              writeFile2("\n\taxiom ".$tabFinal[$cpt][1]. " : ".$entry2['statement'].".\n", $nameOfFile,'lean');
+              if($tabFinal[$cpt][1]=="refl" || $tabFinal[$cpt][1]=="eq" || $tabFinal[$cpt][1]=="pred" || $tabFinal[$cpt][1]=="le" || $tabFinal[$cpt][1]=="lt" || $tabFinal[$cpt][1]=="decidable_lt" || $tabFinal[$cpt][1]=="decidable_le"){
+                writeFile2("\n\taxiom ".$tabFinal[$cpt][1]. "_ : ".$entry2['statement']."\n", $nameOfFile,'lean');
+              }
+              else{
+                writeFile2("\n\taxiom ".$tabFinal[$cpt][1]. " : ".$entry2['statement']."\n", $nameOfFile,'lean');
+              }
             }
             }
             else
             {
-              writeFile2("\n\tconstant ".$tabFinal[$cpt][1]. " : ".$entry2['type'].".\n", $nameOfFile,'lean');
+              if($tabFinal[$cpt][1]=="refl" || $tabFinal[$cpt][1]=="eq" || $tabFinal[$cpt][1]=="pred" || $tabFinal[$cpt][1]=="le" || $tabFinal[$cpt][1]=="lt" || $tabFinal[$cpt][1]=="decidable_lt" || $tabFinal[$cpt][1]=="decidable_le"){
+                writeFile2("\n\tconstant ".$tabFinal[$cpt][1]. "_ : ".$entry2['type']."\n", $nameOfFile,'lean');
+              }
+              else{
+                writeFile2("\n\tconstant ".$tabFinal[$cpt][1]. " : ".$entry2['type']."\n", $nameOfFile,'lean');
+              }
             }
         }
         else{
-          writeFile2("\n\t".$entry2['computable']." ".$tabFinal[$cpt][1]. " : ".$entry2['type']." := ".$entry2['statement'].".\n", $nameOfFile,'lean');
+          if($tabFinal[$cpt][1]=="refl" || $tabFinal[$cpt][1]=="eq" || $tabFinal[$cpt][1]=="pred" || $tabFinal[$cpt][1]=="le" || $tabFinal[$cpt][1]=="lt" || $tabFinal[$cpt][1]=="decidable_lt" || $tabFinal[$cpt][1]=="decidable_le"){
+            writeFile2("\n\t".$entry2['computable']." ".$tabFinal[$cpt][1]. "_ : ".$entry2['type']." := ".$entry2['body']."\n", $nameOfFile,'lean');
+          }
+          else{
+            writeFile2("\n\t".$entry2['computable']." ".$tabFinal[$cpt][1]. " : ".$entry2['type']." := ".$entry2['body']."\n", $nameOfFile,'lean');
+          }
         }
       }
     }
-    writeFile2("\nEnd ".$val.".\n", $nameOfFile,'lean');
+    writeFile2("\nend ".$val."\n", $nameOfFile,'lean');
   }
 ?>
       </br>
@@ -1072,17 +1151,17 @@
     </div>
     <div id="pvs">
       <hr class="my-4">
-      <img src="../picture/pvs-jumb.jpg" class="img-fluid image" alt="Responsive image">
+      <img src="../picture/pvs-jumb.jpg" class="img-fluid image" alt="PVS-jumb">
       <hr class="my-4">
 <?php
   unset($result);
   unset($entry);
   unset($nameOfFile);
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $nameOfFile = $_SESSION['tuple'][$id]['md']."-".$_SESSION['tuple'][$id]['nameID'].".pvs";
+    $nameOfFile = $_SESSION['tuple'][$id]['md']."_".$_SESSION['tuple'][$id]['id'].".pvs";
   }
   else{
-    $nameOfFile = $_GET['rechMd']."-".$_GET['rechId'].".pvs";
+    $nameOfFile = $_GET['rechMd']."_".$_GET['rechId'].".pvs";
   }
   if(file_exists('download/pvs/'.$nameOfFile)){
     unlink('download/pvs/'.$nameOfFile);
@@ -1093,11 +1172,11 @@
 <?php
   $collection = $mongo->logipedia->$collect;
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'nameID' => $_SESSION['tuple'][$id]['nameID'], 'langID' => "5"], ['projection' => ['_id' => false, 'langID' => false, 'md' => false, 'nameID' => false]]);
+    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id'], 'sys' => "5"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
   }
   else
   {
-    $result = $collection->find(['md' => $_GET['rechMd'], 'nameID' => $_GET['rechId'], 'langID' => "5"], ['projection' => ['_id' => false, 'langID' => false, 'md' => false, 'nameID' => false]]);
+    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId'], 'sys' => "5"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
   }
   foreach ($result as $entry) {
     $array =  (array) $entry;
@@ -1105,15 +1184,11 @@
   }
   $keyP=array_keys($array);
   foreach ($keyP as $res) {
-    if($res!='proof'){
+    if($res!='proof' && $res!="kw"){
 ?>
       <fieldset class="scheduler-border">
         <legend class="scheduler-border">
 <?php
-      if($res=="statement" && $collect=="definitions"){
-        echo "Body";
-      }
-      else{
         switch ($res) {
           case "statement":
                   echo "Statement";
@@ -1121,8 +1196,10 @@
           case "type":
                   echo "Type";
           break;
+          case "body":
+                  echo "body";
+          break;
         }
-      }
 ?>
         </legend>
         <p class="text-center">
@@ -1139,35 +1216,35 @@
 <?php
   //Nous bouclons pour chaque module et nous ecrivons selon si l'element courant est un parametre/definitions/etc
   foreach($tabModuleR as $val){
-    writeFile2("\nModule ".$val.".\n", $nameOfFile,'pvs');
+    writeFile2("\nModule ".$val."\n", $nameOfFile,'pvs');
     for($cpt=0;$cpt<sizeof($tabFinal);$cpt++){
       unset($result2);
       unset($entry2);
       if($tabFinal[$cpt][0]==$val){
         $collection = $mongo->logipedia->definitions;
-        $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "5"], ['projection' => ['_id' => false]]);
+        $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "5"], ['projection' => ['_id' => false]]);
         $entry2=[];
         foreach ($result2 as $entry2) {
           break;
         }
         if(empty($entry2['md']))
         {
-          $collection = $mongo->logipedia->parameters;
-          $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "5"], ['projection' => ['_id' => false]]);
+          $collection = $mongo->logipedia->constants;
+          $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "5"], ['projection' => ['_id' => false]]);
           foreach ($result2 as $entry2) {
             break;
           }
           if(empty($entry2['md']))
           {
-            $collection = $mongo->logipedia->axiomes;
-            $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "5"], ['projection' => ['_id' => false]]);
+            $collection = $mongo->logipedia->axioms;
+            $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "5"], ['projection' => ['_id' => false]]);
             foreach ($result2 as $entry2) {
               break;
             }
             if(empty($entry2['md']))
             {
-              $collection = $mongo->logipedia->theoremes;
-              $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'nameID' => $tabFinal[$cpt][1], 'langID' => "5"], ['projection' => ['_id' => false]]);
+              $collection = $mongo->logipedia->theorems;
+              $result2 = $collection->find(['md' => $tabFinal[$cpt][0], 'id' => $tabFinal[$cpt][1], 'sys' => "5"], ['projection' => ['_id' => false]]);
               foreach ($result2 as $entry2) {
                 break;
               }
@@ -1177,25 +1254,25 @@
               }
               else
               {
-                writeFile2("\n\tdefinition ".$tabFinal[$cpt][1]. " : ".$entry2['statement']." := ".$entry2['proof'].".\n", $nameOfFile,'pvs');
+                writeFile2("\n\t".$tabFinal[$cpt][1]." ".$entry2['statement']." : LEMMA ".$entry2['statement']."\n\t %|- ".$tabFinal[$cpt][1]." : PROOF ".$entry2['proof']."\n\t %|- QED \n", $nameOfFile,'pvs');
               }
             }
             else
             {
-              writeFile2("\n\taxiom ".$tabFinal[$cpt][1]. " : ".$entry2['statement'].".\n", $nameOfFile,'pvs');
+              writeFile2("\n\t".$tabFinal[$cpt][1]." ".$entry2['statement']." : AXIOM ".$entry2['statement']."\n", $nameOfFile,'pvs');
             }
             }
             else
             {
-              writeFile2("\n\taxiom ".$tabFinal[$cpt][1]. " : ".$entry2['type'].".\n", $nameOfFile,'pvs');
+              writeFile2("\n\t".$tabFinal[$cpt][1]." ".$entry2['type'].": ".$entry2['type']."\n", $nameOfFile,'pvs');
             }
         }
         else{
-          writeFile2("\n\tdefinition ".$tabFinal[$cpt][1]. " : ".$entry2['type']." := ".$entry2['statement'].".\n", $nameOfFile,'pvs');
+          writeFile2("\n\t".$tabFinal[$cpt][1]." ".$entry2['type']." : ".$entry2['type']." = ".$entry2['body']."\n", $nameOfFile,'pvs');
         }
       }
     }
-    writeFile2("\nEnd ".$val.".\n", $nameOfFile,'pvs');
+    writeFile2("\nEnd ".$val."\n", $nameOfFile,'pvs');
   }
 ?>
       </br>
@@ -1208,6 +1285,79 @@
       </div>
     </div>
 
+    <div id="openTheory">
+      <hr class="my-4">
+      <img src="../picture/openTheory-jumb.jpg" class="img-fluid image" alt="OpenTheory-jumb">
+      <hr class="my-4">
+<?php
+  unset($result);
+  unset($entry);
+  unset($nameOfFile);
+  if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
+    $nameOfFile = $_SESSION['tuple'][$id]['md']."_".$_SESSION['tuple'][$id]['id'].".zip";
+    $nameOfFile2 = $_SESSION['tuple'][$id]['md']."_".$_SESSION['tuple'][$id]['id'];
+    $mod = $_SESSION['tuple'][$id]['md'];
+  }
+  else{
+    $nameOfFile = $_GET['rechMd']."_".$_GET['rechId'].".zip";
+    $nameOfFile2=$_GET['rechMd']."_".$_GET['rechId'];
+    $mod = $_GET['rechMd'];
+  }
+  if(file_exists('download/openTheory/'.$nameOfFile)){
+    unlink('download/openTheory/'.$nameOfFile);
+  }
+  $_SESSION['openTheory'] = 'openTheory/'.$nameOfFile;
+  
+  /*
+        ARCHIVE
+  */
+  $zip = new ZipArchive();
+$filename = "download/openTheory/".$nameOfFile;
+
+if ($zip->open($filename, ZipArchive::CREATE)!==TRUE) {
+    exit("Impossible d'ouvrir le fichier <$filename>\n");
+}
+/*
+$zip->addFromString("testfilephp.txt" . time(), "#1 Ceci est une chaîne texte, ajoutée comme testfilephp.txt.\n");
+$zip->addFromString("testfilephp2.txt" . time(), "#2 Ceci est une chaîne texte, ajoutée comme testfilephp2.txt.\n");
+*/
+exec("python3 ./gen-thy-file.py ".$mod." > download/openTheory/".$mod.".thy");
+$zip->addFile("download/openTheory/".$mod.".thy", $mod.".thy");
+foreach($tabModuleR as $val){
+unset($result2);
+  unset($entry2);
+              $collection = $mongo->logipedia->openTheory;
+              $result2 = $collection->find(['md' => $val], ['projection' => ['_id' => false]]);
+              foreach ($result2 as $entry2) {
+                break;
+              }
+              if(empty($entry2['content']))
+              {
+                echo $val." oui";
+              }
+              else
+              {
+                writeFile2($entry2['content'], $nameOfFile2.".art",'openTheory');
+                $zip->addFile("download/openTheory/".$nameOfFile2.".art", $nameOfFile2.".art");
+              }
+}
+$zip->close();
+exec("rm download/openTheory/".$mod.".thy");
+exec("rm download/openTheory/*.art");
+?>
+
+      <h1 class="text-center"> Coming soon <i class="fas fa-exclamation-triangle"></i> </h1>
+      </br>
+      <div class="container">
+        <div class="col-md-12 text-center">
+          <a class="btn btn-secondary btn-lg down-col" href="download/download.php?lang=openTheory">
+            <i class="fas fa-file-download"></i>
+          </a>
+        </div>
+      </div>
+      </br>
+    </div>
+    
     <script src="theorems.js"></script>
   </body>
 </html>
