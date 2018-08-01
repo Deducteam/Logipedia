@@ -61,8 +61,20 @@ let insert_mdDep md mdDep =
   let keyval = List.combine keys values in
   insert c_mdDep keyval
 
-let insert_openTheory md content =
-  let values = List.map of_string [md;content] in
-  let keys = ["md";"content"] in
-  let keyval =  List.combine keys values in
-  insert c_openTheory keyval
+let rec insert_openTheory ?(chunk=0) md content =
+  let size = String.length content in
+  let max = 16000000 in
+  if size > max then
+    let md' = md^(string_of_int chunk) in
+    let content' = String.sub content 0 max in
+    let values = List.map of_string [md';content'] in
+    let keys = ["md";"content"] in
+    let keyval =  List.combine keys values in
+    insert c_openTheory keyval;
+    insert_openTheory ~chunk:(chunk+1) md (String.sub content max (size-max))
+  else
+    let md = if chunk <> 0 then md^(string_of_int chunk) else md in
+    let values = List.map of_string [md;content] in
+    let keys = ["md";"content"] in
+    let keyval =  List.combine keys values in
+    insert c_openTheory keyval
