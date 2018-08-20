@@ -1,1 +1,0 @@
-src/sttfatyping.ml: Ast Basic Compile_term Compile_type Decompile Env Environ Errors Format List Pp Reduction Rule Subst Term
