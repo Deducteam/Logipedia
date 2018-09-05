@@ -110,11 +110,7 @@ let rec is__computable (_te:_te) =
    | Ast.Cst ((cmd,cid),_) ->
      let open Basic in
      let name = mk_name (mk_mident cmd) (mk_ident cid) in
-     let ty =
-       match Env.get_type dloc name with
-       | OK ty -> ty
-       | _ -> assert false
-     in
+     let ty = Env.get_type dloc name in
      let ty' = CType.compile_wrapped_type Environ.empty_env ty in
      is_prop ty' ||
        not @@ Signature.is_static (Env.get_signature ()) dloc name

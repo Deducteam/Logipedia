@@ -35,12 +35,11 @@ let rec mk_pattern p =
 
 let mk_rule r = QSet.union (mk_pattern r.pat) (mk_term r.rhs)
 
-let dep_of_entry e =
-  match e with
+let dep_of_entry = function
   | Decl (_, _, _, te) -> mk_term te
   | Def (_, _, _, None, te) -> mk_term te
   | Def (_, _, _, Some ty, te) -> QSet.union (mk_term ty) (mk_term te)
-  | Rules rs -> qset_of_list mk_rule rs
+  | Rules (_, rs) -> qset_of_list mk_rule rs
   | Eval (_, _, te) -> mk_term te
   | Infer (_, _, te) -> mk_term te
   | Check (_, _, _, Convert (t1, t2)) -> QSet.union (mk_term t1) (mk_term t2)

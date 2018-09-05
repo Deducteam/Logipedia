@@ -9,20 +9,13 @@ module CTerm = Compile_term
 
 let infer env _te =
   let tedk = Decompile.decompile__term env.dk _te in
-  match Env.infer ~ctx:env.dk tedk with
-  | OK ty -> CType.compile_type env ty
-  | Err err -> Errors.fail_env_error err
+  CType.compile_type env (Env.infer ~ctx:env.dk tedk)
 
 let _infer env _te =
   let tedk = Decompile.decompile__term env.dk _te in
-  match Env.infer ~ctx:env.dk tedk with
-  | OK ty ->
-    begin
-      try
-        CType.compile__type env ty
-      with _ -> Errors.fail dloc "Inference failed because type is polymorphic"
-    end
-  | Err err -> Errors.fail_env_error err
+  let ty = Env.infer ~ctx:env.dk tedk in
+  try CType.compile__type env ty
+  with _ -> Errors.fail_exit 1 dloc "Inference failed because type is polymorphic"; exit 1
 
 let _eq env left right =
   let leftdk = Decompile.decompile__term env.dk left in
@@ -49,49 +42,33 @@ let print_te env fmt te =
 
 module Strategy =
 struct
+  open Reduction
 
+  let one_whnf = { default_cfg with nb_steps = Some 1; target = Whnf }
 
-  let one_whnf : Reduction.red_cfg =
-    let open Reduction in
-    { nb_steps= Some 1
-    ; beta= true
-    ; strategy= Reduction.Whnf
-    ; select= None }
+  let beta_snf = { default_cfg with select = Some (fun _ -> false) }
+  let beta_steps n = { beta_snf with nb_steps = Some n}
+  let beta_one     = { beta_snf with nb_steps = Some 1; target = Whnf }
 
-  let beta_snf : Reduction.red_cfg =
-    let open Reduction in
-    { nb_steps= None
-    ; beta= true
-    ; strategy= Reduction.Snf
-    ; select= Some (fun _ -> false) }
+  let delta (cst:Basic.name) =
+    let open Rule in
+    let filter = function Delta cst' -> name_eq cst' cst | _ -> false in
+    { default_cfg with
+      nb_steps = Some 1; beta = false; target = Snf; select = Some filter }
 
-  let beta_one =
-    let open Reduction in
-    { nb_steps= Some 1
-    ; beta= true
-    ; strategy= Reduction.Whnf
-    ; select= Some (fun _ -> false) }
+  let beta_only = beta_snf
 
-  let beta_steps n =
-    let open Reduction in
-    { nb_steps= Some n
-    ; beta= true
-    ; strategy= Reduction.Snf
-    ; select= Some (fun _ -> false) }
+  let beta_only_n (n:int) = beta_steps n
 
-  let delta : Basic.name -> Reduction.red_cfg =
- fun cst ->
-  let open Reduction in
-  let open Rule in
-  { nb_steps= Some 1
-  ; beta = false
-  ; strategy= Reduction.Snf
-  ; select=
-      Some
-        (fun name ->
-          match name with
-          | Delta cst' -> if name_eq cst' cst then true else false
-          | _ -> false ) }
+  let beta_one = { beta_only with nb_steps = Some 1; target = Whnf }
+
+  let beta_delta_only =
+    let open Rule in
+    let filter = function Delta _ -> true | _ -> false in
+    { beta_only with select = Some filter}
+
+  let delta_only cst  = delta cst
+
 end
 
 let _is_beta_normal env _te =

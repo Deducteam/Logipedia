@@ -21,33 +21,27 @@ let set_export s =
 
 let handle_entry md e =
   match e with
-  | Decl (lc, id, st, ty) -> (
-    match Env.declare lc id st ty with
-    | OK () -> Compile.compile_declaration (mk_name md id) ty
-    | Err e -> Errors.fail_env_error e )
-  | Def (lc, id, opaque, Some ty, te) -> (
-      let define = if opaque then Env.define_op else Env.define in
-      match define lc id te (Some ty) with
-      | OK () -> Compile.compile_definition (mk_name md id) ty te
-      | Err e -> Errors.fail_env_error e )
+  | Decl (lc, id, st, ty) ->
+    ( Env.declare lc id st ty;
+      Compile.compile_declaration (mk_name md id) ty )
+  | Def (lc, id, opaque, Some ty, te) ->
+    ( Env.define lc id opaque te (Some ty);
+      Compile.compile_definition (mk_name md id) ty te  )
   | Def _ -> failwith "Definition without types are not supported"
   | Rules _ -> failwith "Rules are not part of the sttforall logic"
   | _ -> failwith "Commands are not supported"
 
 let handle_entry_dep md e =
   match e with
-  | Decl (lc, id, st, ty) -> (
-    match Env.declare lc id st ty with
-    | OK () -> Sttfa.compile_declaration (mk_name md id) ty
-    | Err e -> Errors.fail_env_error e )
-  | Def (lc, id, opaque, Some ty, te) -> (
-      let define = if opaque then Env.define_op else Env.define in
-      match define lc id te (Some ty) with
-      | OK () -> Sttfa.compile_definition (mk_name md id) ty te
-      | Err e -> Errors.fail_env_error e )
-  | Def _ -> failwith "Definition without types are not supported"
+  | Decl (lc, id, st, ty) ->
+    ( Env.declare lc id st ty;
+      Sttfa.compile_declaration (mk_name md id) ty )
+  | Def (lc, id, opaque, Some ty, te) ->
+    ( Env.define lc id opaque te (Some ty);
+      Sttfa.compile_definition (mk_name md id) ty te )
+  | Def   _ -> failwith "Definition without types are not supported"
   | Rules _ -> failwith "Rules are not part of the sttforall logic"
-  | _ -> failwith "Commands are not supported"
+  | _       -> failwith "Commands are not supported"
 
 let export_file file ast system =
   let basename = try Filename.chop_extension file with _ -> file in
@@ -69,19 +63,16 @@ let run_on_file to_bdd file =
       let dep = List.fold_left
           (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
       let ast = {md = string_of_mident md; dep; items} in
-      Confluence.finalize () ;
-      if not (Env.export ()) then
-        Errors.fail dloc "Fail to export module '%a'." pp_mident md;
+      Confluence.finalize ();
+      Env.export ();
       let (module M:Export.E) = Export.of_system !system in
       if !system <> `Sttfa then
         export_file file ast !system;
       begin
         if to_bdd then
           if !system = `Sttfa then
-            begin
-              let md = Env.init file in
-              List.iter (handle_entry_dep md) entries
-            end
+            let md = Env.init file in
+            List.iter (handle_entry_dep md) entries
           else
             M.print_bdd ast
       end;
@@ -104,10 +95,7 @@ let _ =
     List.rev !files
   in
   try List.iter (run_on_file !to_bdd) files with
-  | Parse_error (loc, msg) ->
-    let l, c = of_loc loc in
-    err_msg "Parse error at (%i,%i): %s@." l c msg ;
-    exit 1
+  | Env.EnvError (l,e) -> Errors.fail_env_error l e
   | Failure err ->
       err_msg "Failure: %s@." err;
       exit 2

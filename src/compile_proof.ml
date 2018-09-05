@@ -2,6 +2,7 @@ open Basic
 open Ast
 open Sttforall
 open Environ
+open Sttfatyping
 
 module CType = Compile_type
 module CTerm = Compile_term
@@ -9,52 +10,6 @@ module CTerm = Compile_term
 let make_judgment env hyp thm = {ty= env.ty; te= env.te; hyp; thm}
 
 let rec extract_te te = match te with Te _te -> _te | _ -> assert false
-
-let beta_only : Reduction.red_cfg =
-  let open Reduction in
-  { nb_steps= None
-  ; beta= true
-  ; strategy= Reduction.Snf
-  ; select= Some (fun _ -> false) }
-
-
-let beta_only_n : int -> Reduction.red_cfg =
- fun i ->
-  let open Reduction in
-  { nb_steps= Some i
-  ; beta= true
-  ; strategy= Reduction.Snf
-  ; select= Some (fun _ -> false) }
-
-let beta_one =
-  let open Reduction in
-  { nb_steps= Some 1
-  ; beta= true
-  ; strategy= Reduction.Whnf
-  ; select= Some (fun _ -> false) }
-
-let beta_delta_only : Reduction.red_cfg =
-  let open Reduction in
-  let open Rule in
-  { nb_steps= None
-  ; beta= true
-  ; strategy= Reduction.Snf
-  ; select= Some (fun cst -> match cst with Delta _ -> true | _ -> false) }
-
-
-let delta_only : Basic.name -> Reduction.red_cfg =
- fun cst ->
-  let open Reduction in
-  let open Rule in
-  { nb_steps= Some 1
-  ; beta = false
-  ; strategy= Reduction.Snf
-  ; select=
-      Some
-        (fun name ->
-          match name with
-          | Delta cst' -> if name_eq cst' cst then true else false
-          | _ -> false ) }
 
 let rec compile_proof env proof =
   match proof with
@@ -90,13 +45,10 @@ let rec compile_proof env proof =
     in
     (j, ImplI (j, proof, string_of_ident id))
   | Term.Const (lc, name) ->
-      let te' =
-        match Env.get_type lc name with
-        | OK te -> CTerm.compile_wrapped_term empty_env te
-        | Err err -> assert false
-      in
-      let j = make_judgment env (TeSet.of_list env.prf) te' in
-      (j, Lemma (of_name name, j))
+    let te = Env.get_type lc name in
+    let te' = CTerm.compile_wrapped_term empty_env te in
+    let j = make_judgment env (TeSet.of_list env.prf) te' in
+    (j, Lemma (of_name name, j))
   | Term.App (f, a, args) ->
     let j,f' = compile_proof env f in
     List.fold_left (fun (j,f') a ->compile_arg env j f' a) (j,f') (a::args)

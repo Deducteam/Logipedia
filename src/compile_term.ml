@@ -8,9 +8,8 @@ let rec type_arity_of te =
   match te with ForallK (_, te) -> 1 + type_arity_of te | _ -> 0
 
 let get_type_arity env lc name =
-  match Env.get_type lc name with
-  | Basic.OK ty -> type_arity_of (CType.compile_wrapped_type env ty)
-  | Basic.Err err -> Errors.fail_signature_error err
+  try type_arity_of (CType.compile_wrapped_type env (Env.get_type lc name))
+  with Env.EnvError (l,e) -> Errors.fail_env_error l e
 
 
 let rec compile__term env _te =

@@ -32,13 +32,6 @@ let rec mk_ty = function
     mk_ty ty
   | Ty(_ty) -> mk__ty _ty
 
-let beta_only : Reduction.red_cfg =
-  let open Reduction in
-  { nb_steps= None
-  ; beta= true
-  ; strategy= Reduction.Snf
-  ; select= Some (fun _ -> false) }
-
 let rec mk__te ctx = function
   | TeVar(var) ->
     let _ty = List.assoc var ctx.te in
@@ -74,11 +67,9 @@ let rec mk__te ctx = function
       | [] -> Term.mk_Const dloc name
       | x::t -> Term.mk_App (Term.mk_Const dloc name) x t
     in
-    match Env.infer ~ctx:ctx.dk cst' with
-    | OK _ty ->
-      let _ty' = CType.compile_wrapped__type ctx (Env.unsafe_reduction ~red:beta_only _ty) in
-      term_of_const (const_of_name (mk_qid cst)) (mk__ty _ty')
-    | Err err -> Errors.fail_env_error err
+    let _ty = Env.infer ~ctx:ctx.dk cst' in
+    let _ty' = CType.compile_wrapped__type ctx (Env.unsafe_reduction ~red:ST.Strategy.beta_only _ty) in
+    term_of_const (const_of_name (mk_qid cst)) (mk__ty _ty')
 
 let rec mk_te ctx = function
   | ForallP(var,te) ->
@@ -97,7 +88,7 @@ let thm_of_const cst =
     let te = Env.unsafe_reduction ~red:(ST.Strategy.delta name) (term) in
     let te' = CTerm.compile_term Environ.empty_env te in
     let te' = mk_te empty_env te' in
-    let ty = match Env.infer term with | Basic.OK ty -> ty | _ -> assert false in
+    let ty = Env.infer term in
     let ty' = CType.compile_wrapped_type Environ.empty_env ty in
     let ty' = mk_ty ty' in
     let const = const_of_name (mk_qid cst) in
@@ -124,11 +115,7 @@ let mk_rewrite ctx r =
     mk_betaConv t'
   | Delta((md,id),_tys) ->
     let cst = mk_name (mk_mident md) (mk_ident id) in
-    let ty =
-      match Env.get_type dloc cst with
-      | OK ty -> ty
-      | Err _ -> assert false
-    in
+    let ty = Env.get_type dloc cst in
     let ty' = CType.compile_type ctx ty in
     let vars = get_vars ty' in
     assert (List.length vars = List.length _tys);
@@ -147,11 +134,7 @@ let mk_delta ctx cst _tys =
   let term =
     Term.mk_Const dloc (mk_name (mk_mident (fst cst)) (mk_ident (snd cst)))
   in
-  let ty =
-    match Env.infer ~ctx:[] term  with
-    | OK ty -> ty
-    | Err err -> assert false
-  in
+  let ty = Env.infer ~ctx:[] term in
   let ty' = CType.compile_wrapped_type ctx ty in
   let vars = get_vars ty' in
   let vars' = List.map mk_id vars in
@@ -243,13 +226,10 @@ let rec mk_proof env =
   | Assume(j,var) -> mk_assume (mk_te env j.thm)
   | Lemma(cst,j) ->
     begin
-      try
-        thm_of_lemma (mk_qid cst)
+      try thm_of_lemma (mk_qid cst)
       with _ ->
-      match Env.get_type dloc (name_of cst) with
-      | OK te ->
+        let te = Env.get_type dloc (name_of cst) in
         mk_axiom (mk_hyp []) (mk_te empty_env (CTerm.compile_wrapped_term empty_env te))
-      | Err err -> Errors.fail_signature_error err
     end
   | ForallE(j,proof, u) ->
     begin
