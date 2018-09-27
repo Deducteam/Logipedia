@@ -38,10 +38,7 @@ let fct_insert_dependances (md,id) (md',id') =
   if new_iddep md id md' id' then
     begin
       if new_mddep md md' then
-        begin
-          Mongodb.insert_mdDep md md';
-          update_md md md'
-        end;
+        update_md md md'; (* module dependencies are inserted at thend *)
       Mongodb.insert_idDep md id md' id';
       update_id md id md' id'
     end
@@ -90,6 +87,37 @@ let compile_definition name ty term =
     matcher_dep (of_name name) a;
     matcher_dep (of_name name) term
   | _ -> assert false
+
+let handle_entry_dep md e =
+  let open Entry in
+  match e with
+  | Decl (lc, id, st, ty) ->
+    ( Env.declare lc id st ty;
+      compile_declaration (mk_name md id) ty )
+  | Def (lc, id, opaque, Some ty, te) ->
+    ( Env.define lc id opaque te (Some ty);
+      compile_definition (mk_name md id) ty te )
+  | Def   _ -> failwith "Definition without types are not supported"
+  | Rules _ -> failwith "Rules are not part of the sttforall logic"
+  | _       -> failwith "Commands are not supported"
+
+let remove_transitive_deps deps =
+  let remove_dep dep deps =
+    let md = Basic.mk_mident dep in
+    let md_deps = Signature.get_md_deps Basic.dloc md in
+    QSet.diff deps (QSet.of_list (List.map Basic.string_of_mident md_deps))
+  in
+  QSet.fold remove_dep deps deps
+
+
+let handle_dep md entries =
+  List.iter (handle_entry_dep md) entries;
+  let md = string_of_mident md in
+  let mds = QSet.of_list (Hashtbl.find mddep md) in
+  let mds' = remove_transitive_deps mds in
+  QSet.iter (fun md' -> Mongodb.insert_mdDep md md' "false") mds';
+  let mds'' = QSet.diff mds mds' in
+  QSet.iter (fun md' -> Mongodb.insert_mdDep md md' "true") mds''
 
 let print_ast _ _ _ = ()
 let print_bdd _ = ()

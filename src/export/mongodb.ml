@@ -55,9 +55,9 @@ let insert_idDep md id mdDep idDep =
   let keyval = List.combine keys values in
   insert c_idDep keyval
 
-let insert_mdDep md mdDep =
-  let values = List.map of_string [md; mdDep] in
-  let keys = ["md"; "mdDep"] in
+let insert_mdDep md mdDep bool =
+  let values = List.map of_string [md; mdDep;bool] in
+  let keys = ["md"; "mdDep"; "isInTransClosure"] in
   let keyval = List.combine keys values in
   insert c_mdDep keyval
 

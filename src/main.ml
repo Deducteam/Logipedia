@@ -31,18 +31,6 @@ let handle_entry md e =
   | Rules _ -> failwith "Rules are not part of the sttforall logic"
   | _ -> failwith "Commands are not supported"
 
-let handle_entry_dep md e =
-  match e with
-  | Decl (lc, id, st, ty) ->
-    ( Env.declare lc id st ty;
-      Sttfa.compile_declaration (mk_name md id) ty )
-  | Def (lc, id, opaque, Some ty, te) ->
-    ( Env.define lc id opaque te (Some ty);
-      Sttfa.compile_definition (mk_name md id) ty te )
-  | Def   _ -> failwith "Definition without types are not supported"
-  | Rules _ -> failwith "Rules are not part of the sttforall logic"
-  | _       -> failwith "Commands are not supported"
-
 let export_file file ast system =
   let basename = try Filename.chop_extension file with _ -> file in
   let (module M:Export.E) = Export.of_system system in
@@ -72,7 +60,7 @@ let run_on_file to_bdd file =
         if to_bdd then
           if !system = `Sttfa then
             let md = Env.init file in
-            List.iter (handle_entry_dep md) entries
+            Sttfa.handle_dep md entries
           else
             M.print_bdd ast
       end;
