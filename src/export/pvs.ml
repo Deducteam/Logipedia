@@ -379,7 +379,7 @@ let print_ast : Format.formatter -> string -> ast -> unit =
    let postfix s = s^pf in
    line oc "%s : THEORY" (postfix prefix);
    line oc "BEGIN";
-   let deps oc deps =
+   let print_deps oc deps =
      let l = QSet.elements (QSet.remove "sttfa" deps) in
      let l = List.map postfix l in
      let rec deps oc l =
@@ -392,7 +392,17 @@ let print_ast : Format.formatter -> string -> ast -> unit =
      | [] -> ()
      | _ -> line oc "IMPORTING %a" deps l
    in
-   deps oc ast.dep ;
+   let deps = ast.dep in
+   let remove_transitive_deps deps =
+     let remove_dep dep deps =
+       let md = Basic.mk_mident dep in
+       let md_deps = Signature.get_md_deps Basic.dloc md in
+       QSet.diff deps (QSet.of_list (List.map Basic.string_of_mident md_deps))
+     in
+     QSet.fold remove_dep deps deps
+   in
+   let deps = remove_transitive_deps deps in
+   print_deps oc deps ;
    line oc "";
    List.iter (print_item oc prefix) ast.items;
    line oc "END %s_sttfa" prefix
