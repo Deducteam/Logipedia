@@ -1,0 +1,10 @@
+
+# Requirements
+
+The website needs the system packages
+
+- mongodb (>=v4.0.2)
+- php-zip
+- pecl
+
+It also requires the php package mongo that you can install with the utilitary 'pecl': `pecl install mongodb`.

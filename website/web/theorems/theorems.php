@@ -926,7 +926,7 @@
 <?php
   //Nous bouclons pour chaque module et nous ecrivons selon si l'element courant est un parametre/definitions/etc
   foreach($tabModuleR as $val){
-    writeFile2("\ninclude basics/pts.\n", $nameOfFile,'matita');
+    writeFile2("\ninclude \"basics/pts.ma\".\n", $nameOfFile,'matita');
     for($cpt=0;$cpt<sizeof($tabFinal);$cpt++){
       unset($result2);
       unset($entry2);
@@ -1129,10 +1129,10 @@
         }
         else{
           if($tabFinal[$cpt][1]=="refl" || $tabFinal[$cpt][1]=="eq" || $tabFinal[$cpt][1]=="pred" || $tabFinal[$cpt][1]=="le" || $tabFinal[$cpt][1]=="lt" || $tabFinal[$cpt][1]=="decidable_lt" || $tabFinal[$cpt][1]=="decidable_le"){
-            writeFile2("\n\t".$entry2['computable']." ".$tabFinal[$cpt][1]. "_ : ".$entry2['type']." := ".$entry2['body']."\n", $nameOfFile,'lean');
+            writeFile2("\n\t".$entry2['kw']." ".$tabFinal[$cpt][1]. "_ : ".$entry2['type']." := ".$entry2['body']."\n", $nameOfFile,'lean');
           }
           else{
-            writeFile2("\n\t".$entry2['computable']." ".$tabFinal[$cpt][1]. " : ".$entry2['type']." := ".$entry2['body']."\n", $nameOfFile,'lean');
+            writeFile2("\n\t".$entry2['kw']." ".$tabFinal[$cpt][1]. " : ".$entry2['type']." := ".$entry2['body']."\n", $nameOfFile,'lean');
           }
         }
       }
@@ -1307,7 +1307,7 @@
     unlink('download/openTheory/'.$nameOfFile);
   }
   $_SESSION['openTheory'] = 'openTheory/'.$nameOfFile;
-  
+
   /*
         ARCHIVE
   */
@@ -1357,7 +1357,7 @@ exec("rm download/openTheory/*.art");
       </div>
       </br>
     </div>
-    
+
     <script src="theorems.js"></script>
   </body>
 </html>

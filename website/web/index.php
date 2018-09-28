@@ -48,8 +48,8 @@
         <form method="post" class="col-md-12">
           <div class="row">
             <div class="col-md-3 col-sm-3 col-3"> </div>
-            <input type="search" name="inp" class="input-sm form-control col-md-5 col-sm-5 col-5" placeholder="Recherche" >
-            <button type="submit" name="sub" class="btn btn-secondary btn-sm"><span class="glyphicon glyphicon-eye-open"></span> Chercher</button>
+            <input type="search" name="search_input" class="input-sm form-control col-md-5 col-sm-5 col-5" placeholder="Recherche" >
+            <button type="submit" name="submit" class="btn btn-secondary btn-sm"><span class="glyphicon glyphicon-eye-open"></span> Chercher</button>
           </div>
         </form>
       </div>
@@ -58,14 +58,15 @@
 
     <div class="container">
       <div class="list-group">
+
 <?php
   $mongo = new MongoDB\Client('mongodb://localhost:27017'); //Acces au SGBD
   try
   {
     $collection = $mongo->logipedia->definitions; //Recherche sur la collection definitions
-    if ((isset($_POST['inp']) && isset($_POST['sub'])) || isset($_SESSION['search']) || isset($_GET['thm'])) { // Si une saisie a ete faite
-      if(isset($_POST['inp'])){
-        $tabInp = explode(" ",$_POST['inp']); // On recupere les mots
+    if ((isset($_POST['search_input']) && isset($_POST['submit'])) || isset($_SESSION['search']) || isset($_GET['thm'])) { // Si une saisie a ete faite
+      if(isset($_POST['search_input'])){
+        $tabInp = explode(" ",$_POST['search_input']); // On recupere les mots
       }
       elseif(isset($_GET['thm'])){
         $tabInp = explode(" ",$_GET['thm']);
@@ -321,7 +322,7 @@
             }
             $_SESSION['tuple']=$tab; // On enregistre les tuples rechercher dans la session et on y accedera grace au compteur
             unset($_SESSION['search']);
-          }
+    }
           else{
             $compt=0;
             unset($tab);
@@ -357,12 +358,13 @@
       </div>
     </div>
     </br>
-<?php
+    <?php
             }catch (MongoDB\Driver\Exception\ConnectionTimeoutException $e)
             {
-              echo "Erreur";
+              echo "Error";
             }
 ?>
-    <script src="index.js"></script>
+
+       <script src="index.js"></script>
   </body>
 </html>
