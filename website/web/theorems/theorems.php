@@ -159,29 +159,12 @@
     $collection = $mongo->logipedia->$collect;
     $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']]);
   }
-
-
-
-
+// This prints the left floatting menu
       echo '<a href="#matita" id="a-matita">Matita &nbsp; &nbsp; &nbsp;<img src="../picture/matita.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
-
-
-
       echo '<a href="#coq" id="a-coq">coq &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/coq.png" class="img-fluid" alt="Load" style="margin-left:10px;width:50px;height:50px;"></a>';
-
-
-
       echo '<a href="#lean" id="a-lean">Lean &nbsp; &nbsp; &nbsp; &nbsp;<img src="../picture/lean.jpg" class="img-fluid" alt="Load" style="margin-left:5px;width:50px;height:50px;"></a>';
-
-
-
       echo '<a href="#pvs" id="a-pvs">PVS &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/pvs.jpg" class="img-fluid" alt="Load" style="margin-left:5px;width:50px;height:50px;"></a>';
-
-
-
       echo '<a href="#openTheory" id="a-openTheory"><small>openTheory</small> <img src="../picture/openTheory.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
-
-
 ?>
       </div>
     </div>
@@ -1300,7 +1283,7 @@
 
     <div id="openTheory">
       <hr class="my-4">
-      <img src="../picture/openTheory-jumb.jpg" class="img-fluid image" alt="OpenTheory-jumb">
+      <img src="../picture/openTheory.png" class="img-fluid image" alt="OpenTheory">
       <hr class="my-4">
 <?php
   unset($result);
@@ -1330,30 +1313,54 @@ $filename = "download/openTheory/".$nameOfFile;
 if ($zip->open($filename, ZipArchive::CREATE)!==TRUE) {
     exit("Impossible d'ouvrir le fichier <$filename>\n");
 }
-/*
-$zip->addFromString("testfilephp.txt" . time(), "#1 Ceci est une chaîne texte, ajoutée comme testfilephp.txt.\n");
-$zip->addFromString("testfilephp2.txt" . time(), "#2 Ceci est une chaîne texte, ajoutée comme testfilephp2.txt.\n");
-*/
+
 exec("python3 ./gen-thy-file.py ".$mod." > download/openTheory/".$mod.".thy");
 $zip->addFile("download/openTheory/".$mod.".thy", $mod.".thy");
 foreach($tabModuleR as $val){
-unset($result2);
-  unset($entry2);
-              $collection = $mongo->logipedia->openTheory;
-              $result2 = $collection->find(['md' => $val], ['projection' => ['_id' => false]]);
-              foreach ($result2 as $entry2) {
+    unset($result2);
+    unset($entry2);
+    $collection = $mongo->logipedia->openTheory;
+    $result2 = $collection->find(['md' => $val], ['projection' => ['_id' => false]]);
+    foreach($result2 as $entry2) {
+        writeFile2($entry2['content'], $val.".art",'openTheory');
+        $zip->addFile("download/openTheory/".$val.".art", $val.".art");
+    }
+    $collectionMD = $mongo->logipedia->mdDep;
+    $resultMD = $collectionMD->find(['md' => $val], ['projection' => ['_id' => false]]);
+    foreach($resultMD as $entryMD) {
+        $val = $entryMD['mdDep'];
+        $collection = $mongo->logipedia->openTheory;
+        $result2 = $collection->find(['md' => $val], ['projection' => ['_id' => false]]);
+        foreach ($result2 as $entry2) {
+            break;
+        }
+        if($val=="nat") {
+            unset($result2);
+            $result2 = $collection->find(['md' => $val."0"], ['projection' => ['_id' => false]]);
+            foreach ($result2 as $entry2) {
                 break;
-              }
-              if(empty($entry2['content']))
-              {
-                echo $val." oui";
-              }
-              else
-              {
-                writeFile2($entry2['content'], $nameOfFile2.".art",'openTheory');
-                $zip->addFile("download/openTheory/".$nameOfFile2.".art", $nameOfFile2.".art");
-              }
+            }
+            writeFile2($entry2['content'], $val.".art",'openTheory');
+            unset($result2);
+            $result2 = $collection->find(['md' => $val."1"], ['projection' => ['_id' => false]]);
+            foreach ($result2 as $entry2) {
+                break;
+            }
+            writeFile2($entry2['content'], $val.".art",'openTheory');
+            $zip->addFile("download/openTheory/".$val.".art", $val.".art");
+        }
+        else if(empty($entry2['content']))
+        {
+            die("This should not happen");
+        }
+        else
+        {
+            writeFile2($entry2['content'], $val.".art",'openTheory');
+            $zip->addFile("download/openTheory/".$val.".art", $val.".art");
+        }
+    }
 }
+set_time_limit(300);
 $zip->close();
 exec("rm download/openTheory/".$mod.".thy");
 exec("rm download/openTheory/*.art");

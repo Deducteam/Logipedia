@@ -15,7 +15,7 @@
         $file=$file.'.pvs';
         break;
     case 'openTheory':
-        $file=$file.'.art';
+        $file=$file.'.zip';
         break;
     }
   $path = $_SESSION[$_GET['lang']];

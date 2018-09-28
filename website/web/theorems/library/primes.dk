@@ -1,0 +1,705 @@
+divides :
+  sttfa.etap (sttfa.p (sttfa.arrow nat.nat (sttfa.arrow nat.nat sttfa.bool))).
+
+quotient :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.forall nat.nat
+             (q:(sttfa.etap (sttfa.p nat.nat)) =>
+              sttfa.impl (logic.eq nat.nat m (nat.times n q))
+                (primes.divides n m))))).
+
+match_divides_prop :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.forall sttfa.bool
+             (return_type:(sttfa.etap (sttfa.p sttfa.bool)) =>
+              sttfa.impl
+                (sttfa.forall nat.nat
+                   (q:(sttfa.etap (sttfa.p nat.nat)) =>
+                    sttfa.impl (logic.eq nat.nat m (nat.times n q))
+                      return_type))
+                (sttfa.impl (primes.divides n m) return_type))))).
+
+def reflexive_divides :
+  sttfa.eps (relations.reflexive nat.nat primes.divides)
+  :=
+  x:(sttfa.etap (sttfa.p nat.nat)) =>
+  primes.quotient x x (nat.S nat.O)
+    (logic.rewrite_r nat.nat (nat.times x (nat.S nat.O))
+       (__:(sttfa.etap (sttfa.p nat.nat)) =>
+        logic.eq nat.nat __ (nat.times x (nat.S nat.O)))
+       (logic.refl nat.nat (nat.times x (nat.S nat.O))) x (nat.times_n_1 x)).
+
+def divides_to_div_mod_spec :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.lt nat.O n)
+             (sttfa.impl (primes.divides n m)
+                (div_mod.div_mod_spec m n (div_mod.div m n) nat.O)))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  posn:(sttfa.eps (nat.lt nat.O n)) =>
+  _clearme:(sttfa.eps (primes.divides n m)) =>
+  primes.match_divides_prop n m
+    (div_mod.div_mod_spec m n (div_mod.div m n) nat.O)
+    (q:(sttfa.etap (sttfa.p nat.nat)) =>
+     eqm:(sttfa.eps (logic.eq nat.nat m (nat.times n q))) =>
+     div_mod.div_mod_spec_intro m n (div_mod.div m n) nat.O posn
+       (logic.eq_ind_r nat.nat (nat.times n q)
+          (x:(sttfa.etap (sttfa.p nat.nat)) =>
+           logic.eq nat.nat x
+             (nat.plus (nat.times (div_mod.div x n) n) nat.O))
+          (logic.eq_ind_r nat.nat (nat.times q n)
+             (x:(sttfa.etap (sttfa.p nat.nat)) =>
+              logic.eq nat.nat x
+                (nat.plus (nat.times (div_mod.div x n) n) nat.O))
+             (logic.eq_ind_r nat.nat q
+                (x:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq nat.nat (nat.times q n)
+                   (nat.plus (nat.times x n) nat.O))
+                (logic.rewrite_r nat.nat (nat.times n q)
+                   (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                    logic.eq nat.nat __ (nat.plus (nat.times q n) nat.O))
+                   (logic.rewrite_l nat.nat m
+                      (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat __ (nat.plus (nat.times q n) nat.O))
+                      (logic.rewrite_r nat.nat (nat.times n q)
+                         (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat m (nat.plus __ nat.O))
+                         (logic.rewrite_l nat.nat m
+                            (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                             logic.eq nat.nat m (nat.plus __ nat.O))
+                            (logic.rewrite_l nat.nat m
+                               (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                                logic.eq nat.nat m __)
+                               (logic.refl nat.nat m) (nat.plus m nat.O)
+                               (nat.plus_n_O m)) (nat.times n q) eqm)
+                         (nat.times q n) (nat.commutative_times q n))
+                      (nat.times n q) eqm) (nat.times q n)
+                   (nat.commutative_times q n))
+                (div_mod.div (nat.times q n) n) (div_mod.div_times q n posn))
+             (nat.times n q) (nat.commutative_times n q)) m eqm)) _clearme.
+
+def divides_to_mod_O :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.lt nat.O n)
+             (sttfa.impl (primes.divides n m)
+                (logic.eq nat.nat (div_mod.mod m n) nat.O)))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  posn:(sttfa.eps (nat.lt nat.O n)) =>
+  divnm:(sttfa.eps (primes.divides n m)) =>
+  div_mod.div_mod_spec_to_eq2 m n (div_mod.div m n) (div_mod.mod m n)
+    (div_mod.div m n) nat.O (div_mod.div_mod_spec_div_mod m n posn)
+    (primes.divides_to_div_mod_spec n m posn divnm).
+
+def mod_O_to_divides :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.lt nat.O n)
+             (sttfa.impl (logic.eq nat.nat (div_mod.mod m n) nat.O)
+                (primes.divides n m)))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  auto:(sttfa.eps (nat.lt nat.O n)) =>
+  auto':(sttfa.eps (logic.eq nat.nat (div_mod.mod m n) nat.O)) =>
+  primes.quotient n m (div_mod.div m n)
+    (logic.rewrite_l nat.nat (nat.times n (div_mod.div m n))
+       (__:(sttfa.etap (sttfa.p nat.nat)) =>
+        logic.eq nat.nat __ (nat.times n (div_mod.div m n)))
+       (logic.refl nat.nat (nat.times n (div_mod.div m n))) m
+       (logic.rewrite_r nat.nat (nat.minus m nat.O)
+          (__:(sttfa.etap (sttfa.p nat.nat)) =>
+           logic.eq nat.nat (nat.times n (div_mod.div m n)) __)
+          (logic.rewrite_l nat.nat (div_mod.mod m n)
+             (__:(sttfa.etap (sttfa.p nat.nat)) =>
+              logic.eq nat.nat (nat.times n (div_mod.div m n))
+                (nat.minus m __))
+             (logic.rewrite_l nat.nat (nat.times (div_mod.div m n) n)
+                (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq nat.nat __ (nat.minus m (div_mod.mod m n)))
+                (div_mod.eq_times_div_minus_mod m n)
+                (nat.times n (div_mod.div m n))
+                (nat.commutative_times (div_mod.div m n) n)) nat.O auto') m
+          (nat.minus_n_O m))).
+
+def divides_n_O :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) => primes.divides n nat.O))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  primes.quotient n nat.O nat.O
+    (logic.rewrite_r nat.nat (nat.times n nat.O)
+       (__:(sttfa.etap (sttfa.p nat.nat)) =>
+        logic.eq nat.nat __ (nat.times n nat.O))
+       (logic.refl nat.nat (nat.times n nat.O)) nat.O (nat.times_n_O n)).
+
+def divides_n_n :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) => primes.divides n n))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) => primes.reflexive_divides n.
+
+def eq_mod_to_divides :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.forall nat.nat
+             (q:(sttfa.etap (sttfa.p nat.nat)) =>
+              sttfa.impl (nat.lt nat.O q)
+                (sttfa.impl
+                   (logic.eq nat.nat (div_mod.mod n q) (div_mod.mod m q))
+                   (primes.divides q (nat.minus n m)))))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  q:(sttfa.etap (sttfa.p nat.nat)) =>
+  posq:(sttfa.eps (nat.lt nat.O q)) =>
+  eqmod:(sttfa.eps (logic.eq nat.nat (div_mod.mod n q) (div_mod.mod m q))) =>
+  nat.leb_elim n m
+    (__:(sttfa.etap (sttfa.p bool.bool)) => primes.divides q (nat.minus n m))
+    (nm:(sttfa.eps (nat.le n m)) =>
+     logic.eq_coerc (primes.divides q nat.O)
+       (primes.divides q (nat.minus n m)) (primes.divides_n_O q)
+       (logic.rewrite_r nat.nat nat.O
+          (__:(sttfa.etap (sttfa.p nat.nat)) =>
+           logic.eq sttfa.bool (primes.divides q nat.O) (primes.divides q __))
+          (logic.refl sttfa.bool (primes.divides q nat.O)) (nat.minus n m)
+          (logic.sym_eq nat.nat nat.O (nat.minus n m)
+             (logic.eq_coerc
+                (logic.eq nat.nat (nat.minus nat.O (nat.minus m n))
+                   (nat.minus (nat.plus nat.O n) m))
+                (logic.eq nat.nat nat.O (nat.minus n m))
+                (nat.minus_le_minus_minus_comm m n nat.O nm)
+                (logic.rewrite_l nat.nat nat.O
+                   (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                    logic.eq sttfa.bool
+                      (logic.eq nat.nat __ (nat.minus (nat.plus nat.O n) m))
+                      (logic.eq nat.nat nat.O (nat.minus n m)))
+                   (logic.rewrite_l nat.nat n
+                      (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq sttfa.bool
+                         (logic.eq nat.nat nat.O (nat.minus __ m))
+                         (logic.eq nat.nat nat.O (nat.minus n m)))
+                      (logic.refl sttfa.bool
+                         (logic.eq nat.nat nat.O (nat.minus n m)))
+                      (nat.plus nat.O n) (nat.plus_O_n n))
+                   (nat.minus nat.O (nat.minus m n))
+                   (nat.minus_O_n (nat.minus m n)))))))
+    (nm:(sttfa.eps (connectives.Not (nat.le n m))) =>
+     primes.quotient q (nat.minus n m)
+       (nat.minus (div_mod.div n q) (div_mod.div m q))
+       (logic.eq_ind_r nat.nat
+          (nat.minus (nat.times q (div_mod.div n q))
+             (nat.times q (div_mod.div m q)))
+          (x:(sttfa.etap (sttfa.p nat.nat)) =>
+           logic.eq nat.nat (nat.minus n m) x)
+          (logic.eq_ind_r nat.nat (nat.times (div_mod.div n q) q)
+             (x:(sttfa.etap (sttfa.p nat.nat)) =>
+              logic.eq nat.nat (nat.minus n m)
+                (nat.minus x (nat.times q (div_mod.div m q))))
+             (logic.eq_ind_r nat.nat (nat.times (div_mod.div m q) q)
+                (x:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq nat.nat (nat.minus n m)
+                   (nat.minus (nat.times (div_mod.div n q) q) x))
+                (logic.eq_ind_r nat.nat (nat.minus n (div_mod.mod n q))
+                   (x:(sttfa.etap (sttfa.p nat.nat)) =>
+                    logic.eq nat.nat (nat.minus n m)
+                      (nat.minus x (nat.times (div_mod.div m q) q)))
+                   (logic.eq_ind_r nat.nat
+                      (nat.minus n
+                         (nat.plus (div_mod.mod n q)
+                            (nat.times (div_mod.div m q) q)))
+                      (x:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat (nat.minus n m) x)
+                      (logic.eq_ind_r nat.nat (div_mod.mod m q)
+                         (x:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat (nat.minus n m)
+                            (nat.minus n
+                               (nat.plus x (nat.times (div_mod.div m q) q))))
+                         (logic.eq_ind_r nat.nat
+                            (nat.plus (nat.times (div_mod.div m q) q)
+                               (div_mod.mod m q))
+                            (x:(sttfa.etap (sttfa.p nat.nat)) =>
+                             logic.eq nat.nat (nat.minus n m) (nat.minus n x))
+                            (logic.eq_ind nat.nat m
+                               (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
+                                logic.eq nat.nat (nat.minus n m)
+                                  (nat.minus n x_1))
+                               (logic.refl nat.nat (nat.minus n m))
+                               (nat.plus (nat.times (div_mod.div m q) q)
+                                  (div_mod.mod m q)) (div_mod.div_mod m q))
+                            (nat.plus (div_mod.mod m q)
+                               (nat.times (div_mod.div m q) q))
+                            (nat.commutative_plus (div_mod.mod m q)
+                               (nat.times (div_mod.div m q) q)))
+                         (div_mod.mod n q) eqmod)
+                      (nat.minus (nat.minus n (div_mod.mod n q))
+                         (nat.times (div_mod.div m q) q))
+                      (nat.minus_plus n (div_mod.mod n q)
+                         (nat.times (div_mod.div m q) q)))
+                   (nat.times (div_mod.div n q) q)
+                   (logic.rewrite_r nat.nat (nat.times q (div_mod.div n q))
+                      (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat __ (nat.minus n (div_mod.mod n q)))
+                      (logic.rewrite_l nat.nat
+                         (nat.times q (div_mod.div n q))
+                         (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat (nat.times q (div_mod.div n q)) __)
+                         (logic.refl nat.nat (nat.times q (div_mod.div n q)))
+                         (nat.minus n (div_mod.mod n q))
+                         (logic.rewrite_l nat.nat
+                            (nat.times (div_mod.div n q) q)
+                            (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                             logic.eq nat.nat __
+                               (nat.minus n (div_mod.mod n q)))
+                            (div_mod.eq_times_div_minus_mod n q)
+                            (nat.times q (div_mod.div n q))
+                            (nat.commutative_times (div_mod.div n q) q)))
+                      (nat.times (div_mod.div n q) q)
+                      (nat.commutative_times (div_mod.div n q) q)))
+                (nat.times q (div_mod.div m q))
+                (nat.commutative_times q (div_mod.div m q)))
+             (nat.times q (div_mod.div n q))
+             (nat.commutative_times q (div_mod.div n q)))
+          (nat.times q (nat.minus (div_mod.div n q) (div_mod.div m q)))
+          (nat.distributive_times_minus q (div_mod.div n q) (div_mod.div m q)))).
+
+def let_clause_1531 :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.lt nat.O m)
+             (sttfa.impl (primes.divides n m)
+                (sttfa.forall nat.nat
+                   (d:(sttfa.etap (sttfa.p nat.nat)) =>
+                    sttfa.impl (logic.eq nat.nat m (nat.times n nat.O))
+                      (logic.eq nat.nat m nat.O)))))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  posm:(sttfa.eps (nat.lt nat.O m)) =>
+  _clearme:(sttfa.eps (primes.divides n m)) =>
+  d:(sttfa.etap (sttfa.p nat.nat)) =>
+  eqm:(sttfa.eps (logic.eq nat.nat m (nat.times n nat.O))) =>
+  logic.rewrite_r nat.nat (nat.times n nat.O)
+    (__:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat m __) eqm nat.O
+    (nat.times_n_O n).
+
+def let_clause_15311 :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.lt nat.O m)
+             (sttfa.impl (primes.divides n m)
+                (sttfa.forall nat.nat
+                   (d:(sttfa.etap (sttfa.p nat.nat)) =>
+                    sttfa.forall nat.nat
+                      (p:(sttfa.etap (sttfa.p nat.nat)) =>
+                       sttfa.impl
+                         (logic.eq nat.nat m (nat.times n (nat.S p)))
+                         (logic.eq nat.nat m (nat.plus n (nat.times n p))))))))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  posm:(sttfa.eps (nat.lt nat.O m)) =>
+  _clearme:(sttfa.eps (primes.divides n m)) =>
+  d:(sttfa.etap (sttfa.p nat.nat)) =>
+  p:(sttfa.etap (sttfa.p nat.nat)) =>
+  eqm:(sttfa.eps (logic.eq nat.nat m (nat.times n (nat.S p)))) =>
+  logic.rewrite_r nat.nat (nat.times n (nat.S p))
+    (__:(sttfa.etap (sttfa.p nat.nat)) => logic.eq nat.nat m __) eqm
+    (nat.plus n (nat.times n p)) (nat.times_n_Sm n p).
+
+def divides_to_le :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.lt nat.O m)
+             (sttfa.impl (primes.divides n m) (nat.le n m)))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  posm:(sttfa.eps (nat.lt nat.O m)) =>
+  _clearme:(sttfa.eps (primes.divides n m)) =>
+  primes.match_divides_prop n m (nat.le n m)
+    (d:(sttfa.etap (sttfa.p nat.nat)) =>
+     nat.match_nat_prop
+       (__:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (logic.eq nat.nat m (nat.times n __)) (nat.le n m))
+       (eqm:(sttfa.eps (logic.eq nat.nat m (nat.times n nat.O))) =>
+        connectives.falsity (nat.le n m)
+          (logic.absurd (nat.le (nat.S m) nat.O)
+             (logic.eq_coerc (nat.le (nat.S nat.O) m)
+                (nat.le (nat.S m) nat.O) posm
+                (logic.rewrite_l nat.nat m
+                   (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                    logic.eq sttfa.bool (nat.le (nat.S __) m)
+                      (nat.le (nat.S m) nat.O))
+                   (logic.rewrite_l nat.nat m
+                      (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq sttfa.bool (nat.le (nat.S m) m)
+                         (nat.le (nat.S m) __))
+                      (logic.refl sttfa.bool (nat.le (nat.S m) m)) nat.O
+                      (primes.let_clause_1531 n m posm _clearme d eqm))
+                   nat.O (primes.let_clause_1531 n m posm _clearme d eqm)))
+             (nat.not_le_Sn_O m)))
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        eqm:(sttfa.eps (logic.eq nat.nat m (nat.times n (nat.S p)))) =>
+        logic.eq_ind_r nat.nat (nat.times n (nat.S p))
+          (x:(sttfa.etap (sttfa.p nat.nat)) => nat.le n x)
+          (logic.eq_coerc (nat.le n (nat.plus n (nat.times n p)))
+             (nat.le n (nat.times n (nat.S p)))
+             (nat.le_plus_n_r (nat.times n p) n)
+             (logic.rewrite_l nat.nat (nat.plus n (nat.times n p))
+                (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                 logic.eq sttfa.bool (nat.le n (nat.plus n (nat.times n p)))
+                   (nat.le n __))
+                (logic.rewrite_l nat.nat m
+                   (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                    logic.eq sttfa.bool
+                      (nat.le n (nat.plus n (nat.times n p))) (nat.le n __))
+                   (logic.rewrite_l nat.nat m
+                      (__:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq sttfa.bool (nat.le n __) (nat.le n m))
+                      (logic.refl sttfa.bool (nat.le n m))
+                      (nat.plus n (nat.times n p))
+                      (primes.let_clause_15311 n m posm _clearme d p eqm))
+                   (nat.plus n (nat.times n p))
+                   (primes.let_clause_15311 n m posm _clearme d p eqm))
+                (nat.times n (nat.S p)) (nat.times_n_Sm n p))) m eqm) d)
+    _clearme.
+
+def dividesb :
+  sttfa.etap (sttfa.p (sttfa.arrow nat.nat (sttfa.arrow nat.nat bool.bool)))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) => nat.eqb (div_mod.mod m n) nat.O.
+
+def dividesb_true_to_divides :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (logic.eq bool.bool (primes.dividesb n m) bool.true)
+             (primes.divides n m))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  connectives.match_Or_prop (nat.lt nat.O n) (logic.eq nat.nat nat.O n)
+    (sttfa.impl (logic.eq bool.bool (primes.dividesb n m) bool.true)
+       (primes.divides n m))
+    (posn:(sttfa.eps (nat.lt nat.O n)) =>
+     divbnm:
+     (sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.true)) =>
+     primes.mod_O_to_divides n m posn
+       (nat.eqb_true_to_eq (div_mod.mod m n) nat.O divbnm))
+    (eqnO:(sttfa.eps (logic.eq nat.nat nat.O n)) =>
+     logic.eq_ind nat.nat nat.O
+       (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (logic.eq bool.bool (primes.dividesb x_1 m) bool.true)
+          (primes.divides x_1 m))
+       (nat.sym_eq_match_nat_type_O nat.nat m
+          (p:(sttfa.etap (sttfa.p nat.nat)) => div_mod.mod_aux m m p)
+          (y:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (logic.eq bool.bool (nat.eqb y nat.O) bool.true)
+             (primes.divides nat.O m))
+          (eqbmO:
+           (sttfa.eps (logic.eq bool.bool (nat.eqb m nat.O) bool.true)) =>
+           logic.eq_ind_r nat.nat nat.O
+             (x:(sttfa.etap (sttfa.p nat.nat)) => primes.divides nat.O x)
+             (primes.divides_n_n nat.O) m (nat.eqb_true_to_eq m nat.O eqbmO)))
+       n eqnO) (nat.le_to_or_lt_eq nat.O n (nat.le_O_n n)).
+
+def dividesb_false_to_not_divides :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (logic.eq bool.bool (primes.dividesb n m) bool.false)
+             (connectives.Not (primes.divides n m)))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  connectives.match_Or_prop (nat.lt nat.O n) (logic.eq nat.nat nat.O n)
+    (sttfa.impl (logic.eq bool.bool (primes.dividesb n m) bool.false)
+       (connectives.Not (primes.divides n m)))
+    (posn:(sttfa.eps (nat.lt nat.O n)) =>
+     ndivbnm:
+     (sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.false)) =>
+     logic.not_to_not (primes.divides n m)
+       (logic.eq nat.nat (div_mod.mod m n) nat.O)
+       (primes.divides_to_mod_O n m posn)
+       (nat.eqb_false_to_not_eq (div_mod.mod m n) nat.O ndivbnm))
+    (eqnO:(sttfa.eps (logic.eq nat.nat nat.O n)) =>
+     logic.eq_ind nat.nat nat.O
+       (x_1:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (logic.eq bool.bool (primes.dividesb x_1 m) bool.false)
+          (connectives.Not (primes.divides x_1 m)))
+       (nat.sym_eq_match_nat_type_O nat.nat m
+          (p:(sttfa.etap (sttfa.p nat.nat)) => div_mod.mod_aux m m p)
+          (y:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (logic.eq bool.bool (nat.eqb y nat.O) bool.false)
+             (connectives.Not (primes.divides nat.O m)))
+          (nat.nat_case m
+             (__:(sttfa.etap (sttfa.p nat.nat)) =>
+              sttfa.impl (logic.eq bool.bool (nat.eqb __ nat.O) bool.false)
+                (connectives.Not (primes.divides nat.O __)))
+             (nat.sym_eq_eqb nat.O
+                (y:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
+                 sttfa.impl (logic.eq nat.nat m nat.O)
+                   (sttfa.impl (logic.eq bool.bool (y nat.O) bool.false)
+                      (connectives.Not (primes.divides nat.O nat.O))))
+                (nat.sym_eq_filter_nat_type_O
+                   (sttfa.arrow nat.nat bool.bool) nat.eqb_body
+                   (y:
+                    (sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
+                    sttfa.impl (logic.eq nat.nat m nat.O)
+                      (sttfa.impl (logic.eq bool.bool (y nat.O) bool.false)
+                         (connectives.Not (primes.divides nat.O nat.O))))
+                   (nat.sym_eq_eqb_body_O
+                      (y:
+                       (sttfa.etap (sttfa.p (sttfa.arrow nat.nat bool.bool))) =>
+                       sttfa.impl (logic.eq nat.nat m nat.O)
+                         (sttfa.impl
+                            (logic.eq bool.bool (y nat.O) bool.false)
+                            (connectives.Not (primes.divides nat.O nat.O))))
+                      (nat.sym_eq_match_nat_type_O bool.bool bool.true
+                         (q:(sttfa.etap (sttfa.p nat.nat)) => bool.false)
+                         (y:(sttfa.etap (sttfa.p bool.bool)) =>
+                          sttfa.impl (logic.eq nat.nat m nat.O)
+                            (sttfa.impl (logic.eq bool.bool y bool.false)
+                               (connectives.Not (primes.divides nat.O nat.O))))
+                         (auto:(sttfa.eps (logic.eq nat.nat m nat.O)) =>
+                          auto':
+                          (sttfa.eps
+                             (logic.eq bool.bool bool.true bool.false)) =>
+                          logic.not_to_not (primes.divides nat.O nat.O)
+                            (logic.eq bool.bool bool.true bool.false)
+                            (auto'':
+                             (sttfa.eps (primes.divides nat.O nat.O)) =>
+                             logic.rewrite_l bool.bool bool.true
+                               (__:(sttfa.etap (sttfa.p bool.bool)) =>
+                                logic.eq bool.bool bool.true __)
+                               (logic.refl bool.bool bool.true) bool.false
+                               auto') bool.not_eq_true_false)))))
+             (a:(sttfa.etap (sttfa.p nat.nat)) =>
+              __:(sttfa.eps (logic.eq nat.nat m (nat.S a))) =>
+              _0:
+              (sttfa.eps
+                 (logic.eq bool.bool (nat.eqb (nat.S a) nat.O) bool.false)) =>
+                 connectives.nmk (divides nat.O (nat.S a)) (
+              _clearme:(sttfa.eps (primes.divides nat.O (nat.S a))) =>
+              primes.match_divides_prop nat.O (nat.S a) connectives.False
+                (q:(sttfa.etap (sttfa.p nat.nat)) =>
+                 auto:
+                 (sttfa.eps (logic.eq nat.nat (nat.S a) (nat.times nat.O q))) =>
+                 logic.absurd (logic.eq nat.nat nat.O (nat.S a))
+                   (logic.rewrite_r nat.nat n
+                      (__1:(sttfa.etap (sttfa.p nat.nat)) =>
+                       logic.eq nat.nat __1 (nat.S a))
+                      (logic.rewrite_l nat.nat (nat.S a)
+                         (__1:(sttfa.etap (sttfa.p nat.nat)) =>
+                          logic.eq nat.nat __1 (nat.S a))
+                         (logic.refl nat.nat (nat.S a)) n
+                         (logic.rewrite_l nat.nat nat.O
+                            (__1:(sttfa.etap (sttfa.p nat.nat)) =>
+                             logic.eq nat.nat (nat.S a) __1)
+                            (logic.rewrite_r nat.nat (nat.times q nat.O)
+                               (__1:(sttfa.etap (sttfa.p nat.nat)) =>
+                                logic.eq nat.nat (nat.S a) __1)
+                               (logic.rewrite_l nat.nat (nat.times nat.O q)
+                                  (__1:(sttfa.etap (sttfa.p nat.nat)) =>
+                                   logic.eq nat.nat (nat.S a) __1) auto
+                                  (nat.times q nat.O)
+                                  (nat.commutative_times nat.O q)) nat.O
+                               (nat.times_n_O q)) n eqnO)) nat.O eqnO)
+                   (nat.not_eq_O_S a)) _clearme)))) n eqnO)
+    (nat.le_to_or_lt_eq nat.O n (nat.le_O_n n)).
+
+def decidable_divides :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           logic.decidable (primes.divides n m))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  connectives.match_Or_prop (logic.eq bool.bool (primes.dividesb n m) bool.true)
+    (logic.eq bool.bool (primes.dividesb n m) bool.false)
+    (logic.decidable (primes.divides n m))
+    (auto:(sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.true)) =>
+     connectives.or_introl (primes.divides n m) (connectives.Not (primes.divides n m))
+       (primes.dividesb_true_to_divides n m
+          (logic.rewrite_r bool.bool bool.true
+             (__:(sttfa.etap (sttfa.p bool.bool)) =>
+              logic.eq bool.bool __ bool.true)
+             (logic.refl bool.bool bool.true) (primes.dividesb n m) auto)))
+    (auto:
+     (sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.false)) =>
+     connectives.or_intror (primes.divides n m) (connectives.Not (primes.divides n m))
+       (primes.dividesb_false_to_not_divides n m
+          (logic.rewrite_r bool.bool bool.false
+             (__:(sttfa.etap (sttfa.p bool.bool)) =>
+              logic.eq bool.bool __ bool.false)
+             (logic.refl bool.bool bool.false) (primes.dividesb n m) auto)))
+    (bool.true_or_false (primes.dividesb n m)).
+
+def divides_to_dividesb_true :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.lt nat.O n)
+             (sttfa.impl (primes.divides n m)
+                (logic.eq bool.bool (primes.dividesb n m) bool.true)))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  posn:(sttfa.eps (nat.lt nat.O n)) =>
+  divnm:(sttfa.eps (primes.divides n m)) =>
+  connectives.match_Or_prop (logic.eq bool.bool (primes.dividesb n m) bool.true)
+    (logic.eq bool.bool (primes.dividesb n m) bool.false)
+    (logic.eq bool.bool (primes.dividesb n m) bool.true)
+    (auto:(sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.true)) =>
+     logic.rewrite_r bool.bool bool.true
+       (__:(sttfa.etap (sttfa.p bool.bool)) =>
+        logic.eq bool.bool __ bool.true) (logic.refl bool.bool bool.true)
+       (primes.dividesb n m) auto)
+    (ndivbnm:
+     (sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.false)) =>
+     connectives.falsity (logic.eq bool.bool (primes.dividesb n m) bool.true)
+       (logic.absurd (primes.divides n m) divnm
+          (primes.dividesb_false_to_not_divides n m
+             (logic.rewrite_r bool.bool bool.false
+                (__:(sttfa.etap (sttfa.p bool.bool)) =>
+                 logic.eq bool.bool __ bool.false)
+                (logic.refl bool.bool bool.false) (primes.dividesb n m)
+                ndivbnm)))) (bool.true_or_false (primes.dividesb n m)).
+
+def not_divides_to_dividesb_false :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.lt nat.O n)
+             (sttfa.impl (connectives.Not (primes.divides n m))
+                (logic.eq bool.bool (primes.dividesb n m) bool.false)))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  posn:(sttfa.eps (nat.lt nat.O n)) =>
+  connectives.match_Or_prop (logic.eq bool.bool (primes.dividesb n m) bool.true)
+    (logic.eq bool.bool (primes.dividesb n m) bool.false)
+    (sttfa.impl (connectives.Not (primes.divides n m))
+       (logic.eq bool.bool (primes.dividesb n m) bool.false))
+    (divbnm:
+     (sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.true)) =>
+     ndivnm:(sttfa.eps (connectives.Not (primes.divides n m))) =>
+     connectives.falsity (logic.eq bool.bool (primes.dividesb n m) bool.false)
+       (logic.absurd (primes.divides n m)
+          (primes.dividesb_true_to_divides n m
+             (logic.rewrite_r bool.bool bool.true
+                (__:(sttfa.etap (sttfa.p bool.bool)) =>
+                 logic.eq bool.bool __ bool.true)
+                (logic.refl bool.bool bool.true) (primes.dividesb n m) divbnm))
+          ndivnm))
+    (auto:
+     (sttfa.eps (logic.eq bool.bool (primes.dividesb n m) bool.false)) =>
+     auto':(sttfa.eps (connectives.Not (primes.divides n m))) =>
+     logic.rewrite_r bool.bool bool.false
+       (__:(sttfa.etap (sttfa.p bool.bool)) =>
+        logic.eq bool.bool __ bool.false) (logic.refl bool.bool bool.false)
+       (primes.dividesb n m) auto) (bool.true_or_false (primes.dividesb n m)).
+
+def prime :
+  sttfa.etap (sttfa.p (sttfa.arrow nat.nat sttfa.bool))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  connectives.And (nat.lt (nat.S nat.O) n)
+    (sttfa.forall nat.nat
+       (m:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (primes.divides m n)
+          (sttfa.impl (nat.lt (nat.S nat.O) m) (logic.eq nat.nat m n)))).
+
+def prime_to_lt_O :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (primes.prime p) (nat.lt nat.O p)))
+  :=
+  p:(sttfa.etap (sttfa.p nat.nat)) =>
+  _clearme:(sttfa.eps (primes.prime p)) =>
+  connectives.match_And_prop (nat.lt (nat.S nat.O) p)
+    (sttfa.forall nat.nat
+       (m:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (primes.divides m p)
+          (sttfa.impl (nat.lt (nat.S nat.O) m) (logic.eq nat.nat m p))))
+    (nat.lt nat.O p)
+    (lt1p:(sttfa.eps (nat.lt (nat.S nat.O) p)) =>
+     auto:
+     (sttfa.eps
+        (sttfa.forall nat.nat
+           (m:(sttfa.etap (sttfa.p nat.nat)) =>
+            sttfa.impl (primes.divides m p)
+              (sttfa.impl (nat.lt (nat.S nat.O) m) (logic.eq nat.nat m p))))) =>
+     nat.lt_S_to_lt nat.O p lt1p) _clearme.
+
+def prime_to_lt_SO :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (p:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (primes.prime p) (nat.lt (nat.S nat.O) p)))
+  :=
+  p:(sttfa.etap (sttfa.p nat.nat)) =>
+  _clearme:(sttfa.eps (primes.prime p)) =>
+  connectives.match_And_prop (nat.lt (nat.S nat.O) p)
+    (sttfa.forall nat.nat
+       (m:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (primes.divides m p)
+          (sttfa.impl (nat.lt (nat.S nat.O) m) (logic.eq nat.nat m p))))
+    (nat.lt (nat.S nat.O) p)
+    (lt1p:(sttfa.eps (nat.lt (nat.S nat.O) p)) =>
+     auto:
+     (sttfa.eps
+        (sttfa.forall nat.nat
+           (m:(sttfa.etap (sttfa.p nat.nat)) =>
+            sttfa.impl (primes.divides m p)
+              (sttfa.impl (nat.lt (nat.S nat.O) m) (logic.eq nat.nat m p))))) =>
+     lt1p) _clearme.
