@@ -36,12 +36,14 @@ pvs-strategies
 # OPENTHEORY files
 *.thy
 *.art
+*.zip
 
 #LEAN files
 *.lean
 
 # BDD files
 *.json
+*.bson
 
 # MAKEFILE temporary files
 .library_depend*

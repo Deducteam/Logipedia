@@ -40,9 +40,11 @@ let print_var oc id =
   Format.fprintf oc "%s" (sanitize_name_pvs id)
 
 let print_qualified_name : string -> Format.formatter -> name -> unit =
- fun pvs_md oc (m, n) ->
-  let name = sanitize_name_pvs n in
-  Format.fprintf oc "%s_sttfa.%s" m name
+  fun pvs_md oc (m, n) ->
+   let name = sanitize_name_pvs n in
+   if m = pvs_md
+   then Format.fprintf oc "%s_sttfa.%s" m name
+   else Format.fprintf oc "%s_sttfa_th.%s" m name
 
 let print__ty_pvs : string -> Format.formatter -> _ty -> unit =
   let rec print is_atom modul oc _ty =
@@ -350,7 +352,7 @@ let print_item oc pvs_md it =
         line ""
 
 let print_dep oc x = Format.fprintf oc
-  "IMPORTING %s_sttfa AS = %s_sttfa_th\n" x x
+  "IMPORTING %s_sttfa AS %s_sttfa_th\n" x x
 
 let print_dep2 oc x = Format.fprintf oc "%s_sttfa_th := %s_pvs_th\n" x x
 
@@ -402,7 +404,7 @@ let print_ast : Format.formatter -> string -> ast -> unit =
      QSet.fold remove_dep deps deps
    in
    let deps = remove_transitive_deps deps in
-   print_deps oc deps ;
+   QSet.iter (print_dep oc) deps;
    line oc "";
    List.iter (print_item oc prefix) ast.items;
    line oc "END %s_sttfa" prefix

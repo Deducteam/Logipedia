@@ -1,6 +1,6 @@
 <?php
   session_start(); //Ouverture de la session
-  require '../vendor/autoload.php'; // Librairie mongodb
+  require 'vendor/autoload.php'; // Librairie mongodb
 ?>
 <!DOCTYPE html>
 <html lang="en">

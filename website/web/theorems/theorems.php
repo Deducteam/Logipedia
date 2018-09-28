@@ -1,6 +1,6 @@
 <?php
   session_start();
-  require '../../vendor/autoload.php';
+  require '../vendor/autoload.php';
   $mongo = new MongoDB\Client('mongodb://localhost:27017');
 ?>
 <!DOCTYPE html>
@@ -1216,7 +1216,20 @@
 <?php
   //Nous bouclons pour chaque module et nous ecrivons selon si l'element courant est un parametre/definitions/etc
   foreach($tabModuleR as $val){
-    writeFile2("\nModule ".$val."\n", $nameOfFile,'pvs');
+    writeFile2("\n".$val."_sttfa : THEORY\nBEGIN\n", $nameOfFile,'pvs');
+    $collection = $mongo->logipedia->mdDep;
+    $result2 = $collection->find(['isInTransClosure' => "false", 'md' => $val]);
+
+    $n = 0;
+    foreach ($result2 as $entry2) {
+        if($entry2['mdDep']=="sttfa") {
+        }
+        else {
+            writeFile2("IMPORTING ".$entry2['mdDep']."_sttfa AS ".$entry2['mdDep']."_sttfa_th\n", $nameOfFile,'pvs');
+
+        }
+    }
+    writeFile2("\n", $nameOfFile,'pvs');
     for($cpt=0;$cpt<sizeof($tabFinal);$cpt++){
       unset($result2);
       unset($entry2);
@@ -1272,7 +1285,7 @@
         }
       }
     }
-    writeFile2("\nEnd ".$val."\n", $nameOfFile,'pvs');
+    writeFile2("\nEND ".$val."_sttfa\n", $nameOfFile,'pvs');
   }
 ?>
       </br>
@@ -1311,7 +1324,7 @@
   /*
         ARCHIVE
   */
-  $zip = new ZipArchive();
+$zip = new ZipArchive();
 $filename = "download/openTheory/".$nameOfFile;
 
 if ($zip->open($filename, ZipArchive::CREATE)!==TRUE) {

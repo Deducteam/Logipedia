@@ -39,7 +39,7 @@
       </div>
     </nav>
 
-    <div class="container"> 
+    <div class="container">
       <hr class="my-4">
       <div class="page-header">
         <h1 id="timeline" class="text-center">Five things you need to know about <a href="../index.php" style="color:grey;"> Logipedia </a></h1>
@@ -103,7 +103,7 @@
         </li>
       </ul>
     </div>
-
+<!--
     <hr class="my-4">
     <div class="container-fluid">
       <form method="post">
@@ -142,7 +142,7 @@
                   </div>
                 </div>
               </div>
-              
+
               <div class="row">
                 <div class="col-md-12 col-xs-12 col-sm-12">
                   <div class="form-group">
@@ -179,6 +179,7 @@
         </div>
       </form>
     </div>
+-->
 <?php
   if(isset($_POST["formName"]) && isset($_POST["FormMail"]) && isset($_POST["FormMessage"]) && isset($_POST["FormSubj"]) && isset($_POST["FormSubmit"]))
   {
@@ -190,9 +191,9 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h2><i class="fas fa-thumbs-up"></i></h2> 
+            <h2><i class="fas fa-thumbs-up"></i></h2>
             <h2 style="margin: 0 auto;"><strong> Thank you !</strong></h2>
-            <h2><i class="fas fa-thumbs-up"></i></h2> 
+            <h2><i class="fas fa-thumbs-up"></i></h2>
           </div>
           <div class="modal-body text-center bg-success">
             <h5><strong>Your email has been sent.</strong></h5>
@@ -214,9 +215,9 @@
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h2><i class="fas fa-thumbs-down"></i></h2> 
+            <h2><i class="fas fa-thumbs-down"></i></h2>
             <h2 style="margin: 0 auto;"><strong> Try again !</strong></h2>
-            <h2><i class="fas fa-thumbs-down"></i></h2> 
+            <h2><i class="fas fa-thumbs-down"></i></h2>
           </div>
           <div class="modal-body text-center bg-danger">
             <h5><strong>I am sorry but your email was not sent.</strong></h5>
@@ -250,4 +251,3 @@
     <script src="about.js"></script>
   </body>
 </html>
-
