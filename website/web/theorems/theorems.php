@@ -159,29 +159,29 @@
     $collection = $mongo->logipedia->$collect;
     $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']]);
   }
-  foreach ($result as $entry) {
-    $type = $entry['sys'];
-    if($type == '2')
-    {
+
+
+
+
       echo '<a href="#matita" id="a-matita">Matita &nbsp; &nbsp; &nbsp;<img src="../picture/matita.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
-    }
-    if($type == '3')
-    {
-      echo '<a href="#coq" id="a-coq">Coq &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/coq.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
-    }
-    if($type == '4')
-    {
+
+
+
+      echo '<a href="#coq" id="a-coq">coq &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/coq.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
+
+
+
       echo '<a href="#lean" id="a-lean">Lean &nbsp; &nbsp; &nbsp; &nbsp;<img src="../picture/lean.jpg" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
-    }
-    if($type == '5')
-    {
+
+
+
       echo '<a href="#pvs" id="a-pvs">PVS &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/pvs.jpg" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
-    }
-    if($type == '6')
-    {
+
+
+
       echo '<a href="#openTheory" id="a-openTheory"><small>openTheory</small> <img src="../picture/openTheory.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
-    }
-  }
+
+
 ?>
       </div>
     </div>
