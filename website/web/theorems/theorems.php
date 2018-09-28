@@ -167,15 +167,15 @@
 
 
 
-      echo '<a href="#coq" id="a-coq">coq &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/coq.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
+      echo '<a href="#coq" id="a-coq">coq &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/coq.png" class="img-fluid" alt="Load" style="margin-left:10px;width:50px;height:50px;"></a>';
 
 
 
-      echo '<a href="#lean" id="a-lean">Lean &nbsp; &nbsp; &nbsp; &nbsp;<img src="../picture/lean.jpg" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
+      echo '<a href="#lean" id="a-lean">Lean &nbsp; &nbsp; &nbsp; &nbsp;<img src="../picture/lean.jpg" class="img-fluid" alt="Load" style="margin-left:5px;width:50px;height:50px;"></a>';
 
 
 
-      echo '<a href="#pvs" id="a-pvs">PVS &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/pvs.jpg" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
+      echo '<a href="#pvs" id="a-pvs">PVS &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/pvs.jpg" class="img-fluid" alt="Load" style="margin-left:5px;width:50px;height:50px;"></a>';
 
 
 
