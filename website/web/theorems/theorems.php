@@ -1322,52 +1322,86 @@ foreach($tabModuleR as $val){
     $collection = $mongo->logipedia->openTheory;
     $result2 = $collection->find(['md' => $val], ['projection' => ['_id' => false]]);
     foreach($result2 as $entry2) {
-        writeFile2($entry2['content'], $val.".art",'openTheory');
-        $zip->addFile("download/openTheory/".$val.".art", $val.".art");
+        break ;
     }
-    $collectionMD = $mongo->logipedia->mdDep;
-    $resultMD = $collectionMD->find(['md' => $val], ['projection' => ['_id' => false]]);
-    foreach($resultMD as $entryMD) {
-        $val = $entryMD['mdDep'];
-        $collection = $mongo->logipedia->openTheory;
-        $result2 = $collection->find(['md' => $val], ['projection' => ['_id' => false]]);
+    if($val=="nat") {
+        unset($result2);
+        $result2 = $collection->find(['md' => $val."0"], ['projection' => ['_id' => false]]);
         foreach ($result2 as $entry2) {
             break;
         }
-        if($val=="nat") {
-            unset($result2);
-            $result2 = $collection->find(['md' => $val."0"], ['projection' => ['_id' => false]]);
-            foreach ($result2 as $entry2) {
-                break;
-            }
-            writeFile2($entry2['content'], $val.".art",'openTheory');
-            unset($result2);
-            $result2 = $collection->find(['md' => $val."1"], ['projection' => ['_id' => false]]);
-            foreach ($result2 as $entry2) {
-                break;
-            }
-            writeFile2($entry2['content'], $val.".art",'openTheory');
-            $zip->addFile("download/openTheory/".$val.".art", $val.".art");
+        writeFile2($entry2['content'], $val.".art",'openTheory');
+        unset($result2);
+        $result2 = $collection->find(['md' => $val."1"], ['projection' => ['_id' => false]]);
+        foreach ($result2 as $entry2) {
+            break;
         }
-        else if(empty($entry2['content']))
-        {
-            die("This should not happen");
-        }
-        else
-        {
-            writeFile2($entry2['content'], $val.".art",'openTheory');
-            $zip->addFile("download/openTheory/".$val.".art", $val.".art");
-        }
+        writeFile2($entry2['content'], $val.".art",'openTheory');
+        $zip->addFile("download/openTheory/".$val.".art", $val.".art");
+    }
+    else if(empty($entry2['content']))
+    {
+        echo($val);
+        die("This should not happen");
+    }
+    else
+    {
+        writeFile2($entry2['content'], $val.".art",'openTheory');
+        $zip->addFile("download/openTheory/".$val.".art", $val.".art");
     }
 }
 set_time_limit(300);
 $zip->close();
-exec("rm download/openTheory/".$mod.".thy");
+exec("rm download/openTheory/*.thy");
 exec("rm download/openTheory/*.art");
 ?>
 
-      <h1 class="text-center"> Coming soon <i class="fas fa-exclamation-triangle"></i> </h1>
-      </br>
+      <div class="container">
+<?php
+    $collection = $mongo->logipedia->$collect;
+if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
+    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id'], 'sys' => "5"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
+}
+else
+{
+    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId'], 'sys' => "5"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
+}
+foreach ($result as $entry) {
+    $array =  (array) $entry;
+    break;
+}
+$keyP=array_keys($array);
+foreach ($keyP as $res) {
+    if($res!='proof' && $res!="kw"){
+        ?>
+        <fieldset class="scheduler-border">
+        <legend class="scheduler-border">
+<?php
+        switch ($res) {
+          case "statement":
+                  echo "Statement";
+          break;
+          case "type":
+                  echo "Type";
+          break;
+          case "body":
+                  echo "body";
+          break;
+        }
+?>
+        </legend>
+        <p class="text-center">
+<?php
+      echo "Printing for OpenTheory is not working at the moment.";
+?>
+        </p>
+<?php
+    }
+    echo "</fieldset>";
+  }
+?>
+      </div>
+
       <div class="container">
         <div class="col-md-12 text-center">
           <a class="btn btn-secondary btn-lg down-col" href="download/download.php?lang=openTheory">
