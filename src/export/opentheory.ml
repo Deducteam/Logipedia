@@ -291,7 +291,6 @@ let print_item oc =
   | Parameter(cst,ty) -> ()
   | Definition(cst,ty,te) ->
     let te' = mk_te empty_env te in
-    mk_const (mk_qid cst) te';
     let cst' = mk_qid cst in
     let te' = mk_te Environ.empty_env te in
     let ty' = mk_ty ty in
