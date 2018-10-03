@@ -290,7 +290,7 @@ let print_item oc =
   function
   | Parameter(cst,ty) -> ()
   | Definition(cst,ty,te) ->
-    let te' = mk_te empty_env te in
+    (*    let te' = mk_te empty_env te in *)
     let cst' = mk_qid cst in
     let te' = mk_te Environ.empty_env te in
     let ty' = mk_ty ty in

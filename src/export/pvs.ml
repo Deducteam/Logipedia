@@ -381,7 +381,7 @@ let print_ast : Format.formatter -> string -> ast -> unit =
    let postfix s = s^pf in
    line oc "%s : THEORY" (postfix prefix);
    line oc "BEGIN";
-   let print_deps oc deps =
+(*   let print_deps oc deps =
      let l = QSet.elements (QSet.remove "sttfa" deps) in
      let l = List.map postfix l in
      let rec deps oc l =
@@ -393,7 +393,7 @@ let print_ast : Format.formatter -> string -> ast -> unit =
      match l with
      | [] -> ()
      | _ -> line oc "IMPORTING %a" deps l
-   in
+     in *)
    let deps = ast.dep in
    let remove_transitive_deps deps =
      let remove_dep dep deps =
