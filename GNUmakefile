@@ -49,10 +49,6 @@ library/%.pvs: library/%.dk theories/sttfa.dko .library_depend_pvs $(MAIN)
 library/%.v: library/%.dk theories/sttfa.dko .library_depend_v $(MAIN)
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export coq $(BDD) $<
-ifdef COQC
-	@coqc -R library "" -beautify $@
-	@mv $@.beautified $@
-endif
 
 library/%.ma: library/%.dk theories/sttfa.dko .library_depend_ma $(MAIN)
 	@echo "[EXPORT] $@"

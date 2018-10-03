@@ -56,9 +56,17 @@ let rec matcher_dep (md,id) a =
 
 let rec print__ty fmt = function
   | TyVar x -> Format.fprintf fmt "%s" x
-  | Arrow(left,right) -> Format.fprintf fmt "%a → %a" print__ty left print__ty right
-  | TyOp(tyOp,list) -> Format.fprintf fmt "%s.%s" (fst tyOp) (snd tyOp)
+  | Arrow(left,right) -> Format.fprintf fmt "%a → %a" print__ty_wp left print__ty right
+  | TyOp(tyOp,[]) -> Format.fprintf fmt "%s.%s" (fst tyOp) (snd tyOp)
+  | TyOp _ -> assert false (* Not handle right now, but eventually it should be *)
   | Prop -> Format.fprintf fmt "ℙ"
+
+and print__ty_wp fmt _ty =
+  match _ty with
+  | TyVar _
+  | Prop
+  | TyOp _ -> print__ty fmt _ty
+  | Arrow _ -> Format.fprintf fmt "(%a)" print__ty _ty
 
 let rec print_ty fmt = function
   | Ty _ty -> Format.fprintf fmt "%a" print__ty _ty
@@ -67,11 +75,18 @@ let rec print_ty fmt = function
 let rec print__te fmt = function
   | TeVar x -> Format.fprintf fmt "%s" x
   | Abs(var,_, _te) -> Format.fprintf fmt "λ%s. %a" var print__te _te (*No need to print type *)
-  | App(f,a) -> Format.fprintf fmt "%a %a" print__te f print__te a
+  | App(f,a) -> Format.fprintf fmt "%a %a" print__te f print__te_wp a
   | Forall(var, _, _te) -> Format.eprintf "∀ %s, %a" var print__te _te
-  | Impl(l,r) -> Format.fprintf fmt "%a ⇒ %a" print__te l print__te r
-  | AbsTy(var, _te) -> Format.eprintf "%a" print__te _te
+  | Impl(l,r) -> Format.fprintf fmt "%a ⇒ %a" print__te_wp l print__te r
+  | AbsTy(var, _te) -> Format.eprintf "%a" print__te _te (* Types are not printed *)
   | Cst(cst,_) -> Format.fprintf fmt "%s.%s" (fst cst) (snd cst)
+
+and print__te_wp fmt _te =
+  match _te with
+  | TeVar _
+  | Cst _
+  | AbsTy _ -> print__te fmt _te
+  | _ -> Format.fprintf fmt "(%a)" print__te _te
 
 let rec print_te fmt = function
   | Te _te -> Format.fprintf fmt "%a" print__te _te
@@ -141,7 +156,6 @@ let remove_transitive_deps deps =
 
 
 let handle_dep md entries =
-  Format.eprintf "%d@." (List.length entries);
   List.iter (handle_entry_dep md) entries;
   let md = string_of_mident md in
   let mds = QSet.of_list (Hashtbl.find mddep md) in

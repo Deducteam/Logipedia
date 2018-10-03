@@ -33,10 +33,19 @@ let rec print__ty oc = function
   | TyVar(var) ->
     Format.fprintf oc "%a" print_var var
   | Arrow(_tyl,_tyr) ->
-    Format.fprintf oc "(%a) -> %a" print__ty _tyl print__ty _tyr
+    Format.fprintf oc "%a -> %a" print__ty_wp _tyl print__ty _tyr
+  | TyOp(tyOp, []) ->
+    Format.fprintf oc "%a" print_name tyOp
   | TyOp(tyOp, _tys) ->
-    Format.fprintf oc "(%a) %a" print_name tyOp (print_list " " print__ty) _tys
+    Format.fprintf oc "%a %a" print_name tyOp (print_list " " print__ty) _tys
   | Prop -> Format.fprintf oc "Prop"
+
+and print__ty_wp fmt _ty =
+  match _ty with
+  | TyVar _
+  | Prop
+  | TyOp _ -> print__ty fmt _ty
+  | Arrow _ -> Format.fprintf fmt "(%a)" print__ty _ty
 
 let rec print_ty oc = function
   | ForallK(var, ty) ->
@@ -48,8 +57,10 @@ let rec print__te oc = function
     Format.fprintf oc "%a" print_var var
   | Abs(var,_ty,_te) ->
     Format.fprintf oc "\\lambda %a : %a. %a" print_var var print__ty _ty print__te _te
+  | App(Abs _ as _tel,_ter) -> (* Some proofs are not in beta normal form *)
+    Format.fprintf oc "((%a) %a)" print__te _tel print__te_wp _ter
   | App(_tel,_ter) ->
-    Format.fprintf oc "(%a) (%a)" print__te _tel print__te _ter
+    Format.fprintf oc "%a %a" print__te _tel print__te_wp _ter
   | Forall(var,_ty,_te) ->
     Format.fprintf oc "\\forall (%a:%a). %a" print_var var print__ty _ty print__te _te
   | Impl(_tel,_ter) ->
@@ -58,6 +69,12 @@ let rec print__te oc = function
     Format.fprintf oc "\\lambda %a : Type[0]. %a" print_var var print__te _te
   | Cst(cst, _tys) ->
     Format.fprintf oc "(%a) %a" print_name cst (print_list " " print__ty) _tys
+
+and print__te_wp fmt _te =
+  match _te with
+  | TeVar _
+  | Cst(_,[]) -> Format.fprintf fmt "%a" print__te _te
+  | _ -> Format.fprintf fmt "(%a)" print__te _te
 
 let rec print_te oc = function
   | ForallP(var,te) ->
