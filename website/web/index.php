@@ -1,6 +1,7 @@
 <?php
-  session_start(); //Ouverture de la session
-  require 'vendor/autoload.php'; // Librairie mongodb
+  session_start();
+  require 'vendor/autoload.php';
+  $mongo = new MongoDB\Client('mongodb://localhost:27017'); //Acces au SGBD
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -24,16 +25,8 @@
             <li class="nav-item">
               <a class="nav-link" href="about/about.php">About</a>
             </li>
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  Add <i class="fas fa-ban"></i>
-                </a>
-                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="#">Axiom</a>
-                  <a class="dropdown-item" href="#">Constant</a>
-                  <a class="dropdown-item" href="#">Definition</a>
-                  <a class="dropdown-item" href="#">Theorem</a>
-                </div>
+            <li class="nav-item">
+              <a class="nav-link" href="about/modules.php">Modules</a>
             </li>
           </ul>
         </div>
@@ -48,8 +41,8 @@
         <form method="post" class="col-md-12">
           <div class="row">
             <div class="col-md-3 col-sm-3 col-3"> </div>
-            <input type="search" name="search_input" class="input-sm form-control col-md-5 col-sm-5 col-5" placeholder="Recherche" >
-            <button type="submit" name="submit" class="btn btn-secondary btn-sm"><span class="glyphicon glyphicon-eye-open"></span> Chercher</button>
+            <input type="search" name="search_input" class="input-sm form-control col-md-5 col-sm-5 col-5" placeholder="Search" >
+            <button type="submit" name="submit" class="btn btn-secondary btn-sm"><span class="glyphicon glyphicon-eye-open"></span> Search</button>
           </div>
         </form>
       </div>
@@ -60,16 +53,15 @@
       <div class="list-group">
 
 <?php
-  $mongo = new MongoDB\Client('mongodb://localhost:27017'); //Acces au SGBD
   try
   {
     $collection = $mongo->logipedia->definitions; //Recherche sur la collection definitions
-    if ((isset($_POST['search_input']) && isset($_POST['submit'])) || isset($_SESSION['search']) || isset($_GET['thm'])) { // Si une saisie a ete faite
+    if ((isset($_POST['search_input']) && isset($_POST['submit'])) || isset($_GET['search']) || isset($_SESSION['search'])) { // Si une saisie a ete faite
       if(isset($_POST['search_input'])){
         $tabInp = explode(" ",$_POST['search_input']); // On recupere les mots
       }
-      elseif(isset($_GET['thm'])){
-        $tabInp = explode(" ",$_GET['thm']);
+      elseif (isset($_GET['search'])) {
+        $tabInp = explode(" ",$_GET['search']);
       }
       else{
         $tabInp = explode(" ",$_SESSION['search']);
