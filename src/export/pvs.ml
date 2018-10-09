@@ -305,7 +305,7 @@ let print_proof_pvs : string -> Format.formatter -> proof -> unit =
         (print__te_pvs pvs_md) _te
         (print acc pvs_md) p
     | ForallI(j,p,n)      ->
-      Format.fprintf oc "%%|- (then@ (sttfa-forall-i \"%s\")\n%a)"
+      Format.fprintf oc "%%|- (then%@ (sttfa-forall-i \"%s\")\n%a)"
         (sanitize_name_pvs n)
         (print acc pvs_md) p
     | ForallPE(j,p,_ty)   -> print (_ty::acc) pvs_md oc p
@@ -395,6 +395,7 @@ let print_ast : Format.formatter -> string -> ast -> unit =
      | _ -> line oc "IMPORTING %a" deps l
      in *)
    let deps = ast.dep in
+   let deps = QSet.remove "sttfa" deps in
    let remove_transitive_deps deps =
      let remove_dep dep deps =
        let md = Basic.mk_mident dep in
@@ -413,13 +414,13 @@ let to_string fmt = Format.asprintf "%a" fmt
 
 let print_bdd_item = function
   | Parameter((md,id),ty) ->
-    Mongodb.insert_constant sys "" md id (to_string (print_ty_pvs md) ty)
+    Mongodb.insert_constant sys (Format.asprintf "%a" (print_prenex_ty_pvs md) ty) md id (to_string (print_ty_pvs md) ty)
   | Definition((md,id),ty,te) ->
-    Mongodb.insert_definition sys "" md id (to_string (print_ty_pvs md) ty) (to_string (print_te_pvs md) te)
+    Mongodb.insert_definition sys (Format.asprintf "%a" (print_prenex_ty_pvs md) ty) md id (to_string (print_ty_pvs md) ty) (to_string (print_te_pvs md) te)
   | Axiom((md,id),te) ->
-    Mongodb.insert_axiom sys "AXIOM" md id (to_string (print_te_pvs md) te)
+    Mongodb.insert_axiom sys (Format.asprintf "%a AXIOM" (print_prenex_te_pvs md) te) md id (to_string (print_te_pvs md) te)
   | Theorem((md,id),te,proof) ->
-    Mongodb.insert_theorem sys "LEMMA" md id (to_string (print_te_pvs md) te) (to_string (print_proof_pvs md) proof)
+    Mongodb.insert_theorem sys (Format.asprintf "%a LEMMA" (print_prenex_te_pvs md) te) md id (to_string (print_te_pvs md) te) (to_string (print_proof_pvs md) proof)
   | TyOpDef((md,id),arity) ->
     Mongodb.insert_constant sys "TYPE+" md id (to_string print_arity arity)
 
