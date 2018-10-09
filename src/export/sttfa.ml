@@ -100,7 +100,8 @@ let _ =
   Hashtbl.add bop ("primes","divides") (fun x y -> x^" | "^y);
   Hashtbl.add bop ("exp","exp") (fun x y -> x^" ^ "^y);
 
-  Hashtbl.add top ("cong","congruent") (fun x y z -> x^" ≡ "^y^" ["^z^"]")
+  Hashtbl.add top ("cong","congruent") (fun x y z -> x^" ≡ "^y^" ["^z^"]");
+  Hashtbl.add top ("bool","match_bool_type") (fun x y z -> "if "^z^" then "^x^" else "^y)
 
 let symbol_of_unary_operator cst =
   Hashtbl.find uop cst
@@ -186,10 +187,105 @@ and print_app fmt f r =
   | _ ->
     Format.fprintf fmt "%a %a" print__te f print__te_wp r
 
+let te_of_hyp j proof =
+  let j' = judgment_of proof in
+  let hyp = TeSet.diff j'.hyp j.hyp in
+  assert (TeSet.cardinal hyp = 1);
+  snd @@ (TeSet.choose hyp)
 
 let rec print_te fmt = function
   | Te _te -> Format.fprintf fmt "%a" print__te _te
   | ForallP(var,te) -> Format.fprintf fmt "%a" print_te te
+
+type couple_spine =
+  | SForall of string * _te
+  | SImpl of _te * string
+
+type proof_spine =
+  | SLemma of (string * string) * te * couple_spine list
+  | SHyp of string * te * couple_spine list
+
+let rec unfold_spine_left proof =
+  match proof with
+  | ImplE(_,proof,_) ->    unfold_spine_left proof
+  | ForallE(_,proof,_) ->  unfold_spine_left proof
+  | ForallPE(_,proof,_) -> unfold_spine_left proof
+  | Lemma(name,j) -> SLemma(name,j.thm, [])
+  | Assume(j,h) -> SHyp(h,j.thm, [])
+  | Conv(_,proof,_) -> unfold_spine_left proof
+  | _ -> assert false
+
+let rec print_proof beginning fmt proof =
+  match proof with
+  | Assume(j,h) -> Format.eprintf "use %s" h
+  | Lemma(name,j) ->
+    Format.eprintf "use %s" (snd name)
+  | Conv(j,proof,trace) ->
+    print_proof beginning fmt proof
+  | ImplE (j,proofl, proofr) ->
+    begin
+      match unfold_spine_left proofl with
+      | SLemma(name,te,_) ->
+        Format.eprintf "Since %a from theorem {%s} then@." print_te j.thm (snd name)
+      | SHyp(h,te,_) ->
+        Format.eprintf "Since %a from variable {%s} then@." print_te te h
+    end;
+    Format.eprintf "ImplL@.";
+    print_proof false fmt proofl;
+    Format.eprintf "ImplR@.";
+    print_proof false fmt proofr;
+  | ImplI(j,proof,var) ->
+    Format.eprintf "Assume %a as [%s]\n" print__te (te_of_hyp j proof) var;
+    print_proof false fmt proof
+  | ForallE(j,proof, _te) ->
+    Format.eprintf "ForallE@.";
+    print_proof false fmt proof
+  | ForallI(j,proof,te_var) ->
+    if beginning then
+      print_proof true fmt proof
+    else
+      begin
+        Format.eprintf "Let %s : TODO\n" te_var;
+        print_proof true fmt proof
+      end
+  | ForallPE(j,proof, _ty) ->
+    print_proof false fmt proof
+  | ForallPI(j,proof,ty_var) ->
+    print_proof true fmt proof
+
+module SetString = Set.Make(struct type t = string * string let compare = compare end)
+
+let rec get__dfns _te =
+  match _te with
+  | TeVar x -> SetString.empty
+  | Abs(var,_, _te) -> get__dfns _te
+  | App(f,a) -> SetString.union (get__dfns f) (get__dfns a)
+  | Forall(var, _, _te) -> get__dfns _te
+  | Impl(l,r) -> SetString.union (get__dfns l) (get__dfns r)
+  | AbsTy(var, _te) -> get__dfns _te
+  | Cst(cst,_) -> SetString.singleton cst
+
+let rec get_dfns te =
+  match te with
+  | Te _te -> get__dfns _te
+  | ForallP(_,te) -> get_dfns te
+
+let print_prelude_proof fmt theorem proof =
+  let defns = get_dfns theorem in
+  if SetString.cardinal defns > 0 then
+    Format.eprintf "Recall that:@.";
+  SetString.iter (fun cst ->
+      let name = (Environ.name_of cst) in
+      if not (Env.is_static dloc (Environ.name_of cst)) then
+        let cfg = Reduction.({default_cfg with select = Some (fun m -> m = Rule.Delta name)}) in
+        let te = Env.reduction ~red:cfg (Term.mk_Const dloc name) in
+        let te' = (CTerm.compile_term empty_env te) in
+        Format.eprintf "- %s is defined as:@.%a@." (snd cst) print_te te') defns;
+  Format.eprintf "@."
+
+let print_proof theorem fmt proof =
+  print_prelude_proof fmt theorem proof;
+  print_proof true fmt proof
 
 let compile_declaration name ty =
   let md,id = of_name name in
@@ -226,9 +322,12 @@ let compile_definition name ty term =
     matcher_dep (of_name name) term
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eps cst ->
     Format.eprintf "[COMPILE] theorem: %a@." Pp.print_name name ;
-    let a' = Format.asprintf "%a@." print_te (Compile.CTerm.compile_term Environ.empty_env a) in
-    Format.eprintf "%s@." a';
-    Mongodb.insert_theorem sys "def" md id a' (to_string Pp.print_term term);
+    let a' = Compile.CTerm.compile_term Environ.empty_env a in
+    let str_a' = Format.asprintf "%a@." print_te a' in
+    Format.eprintf "%s@." str_a';
+    Format.eprintf "%a@." (print_proof a')
+      (snd @@ (Compile.CProof.compile_proof Environ.empty_env term));
+    Mongodb.insert_theorem sys "def" md id str_a' (to_string Pp.print_term term);
     matcher_dep (of_name name) a;
     matcher_dep (of_name name) term
   | _ -> assert false
