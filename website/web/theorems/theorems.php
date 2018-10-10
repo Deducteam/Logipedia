@@ -1260,11 +1260,11 @@
             }
             else
             {
-              writeFile2("\n\t".$tabFinal[$cpt][1]." ".$entry2['type'].": ".$entry2['type']."\n", $nameOfFile,'pvs');
+              writeFile2("\n\t".$tabFinal[$cpt][1]." ".$entry2['kw'].": ".$entry2['type']."\n", $nameOfFile,'pvs');
             }
         }
         else{
-          writeFile2("\n\t".$tabFinal[$cpt][1]." ".$entry2['type']." : ".$entry2['type']." = ".$entry2['body']."\n", $nameOfFile,'pvs');
+          writeFile2("\n\t".$tabFinal[$cpt][1]." ".$entry2['kw']." : ".$entry2['type']." = ".$entry2['body']."\n", $nameOfFile,'pvs');
         }
       }
     }
