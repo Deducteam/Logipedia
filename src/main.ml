@@ -44,7 +44,7 @@ let run_on_file to_bdd file =
   let md = Env.init file in
   Confluence.initialize () ;
   let input = open_in file in
-  let entries = Parser.parse_channel md input in
+  let entries = Parse_channel.parse md input in
   close_in input ;
   begin
     let items = List.map (handle_entry md) entries in
