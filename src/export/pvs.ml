@@ -422,6 +422,7 @@ let print_bdd_item = function
   | Theorem((md,id),te,proof) ->
     Mongodb.insert_theorem sys (Format.asprintf "%a LEMMA" (print_prenex_te_pvs md) te) md id (to_string (print_te_pvs md) te) (to_string (print_proof_pvs md) proof)
   | TyOpDef((md,id),arity) ->
-    Mongodb.insert_constant sys "TYPE+" md id (to_string print_arity arity)
+    assert (arity = 0);
+    Mongodb.insert_constant sys "" md id "TYPE+"
 
 let print_bdd ast = List.iter print_bdd_item ast.items;
