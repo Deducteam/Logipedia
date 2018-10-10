@@ -56,7 +56,6 @@ let insert_idDep md id mdDep idDep =
   insert c_idDep keyval
 
 let insert_mdDep md mdDep bool =
-  Format.eprintf "%s@." md;
   let values = List.map of_string [md; mdDep;bool] in
   let keys = ["md"; "mdDep"; "isInTransClosure"] in
   let keyval = List.combine keys values in

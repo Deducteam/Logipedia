@@ -287,6 +287,71 @@ let print_proof theorem fmt proof =
   print_prelude_proof fmt theorem proof;
   print_proof true fmt proof
 
+
+let rec has__lambda = function
+  | Cst _
+  | TeVar _ -> false
+  | Abs _ -> true
+  | App(l,r) -> has__lambda l || has__lambda r
+  | Forall(_,_,t) -> has__lambda t
+  | Impl(l,r) -> has__lambda l || has__lambda r
+  | AbsTy(_,te) -> has__lambda te
+
+let rec has_lambda = function
+  | ForallP(_,te) -> has_lambda te
+  | Te te -> has__lambda te
+
+let rec is__ho = function
+  | Cst _
+  | TeVar _ -> false
+  | Abs(_,_,t) -> is__ho t
+  | App(l,r) -> is__ho l || is__ho r
+  | Forall(_,Arrow _,t) -> true
+  | Forall(_,_,t) -> is__ho t
+  | Impl(l,r) -> is__ho l || is__ho r
+  | AbsTy(_,te) -> is__ho te
+
+let rec is_ho = function
+  | ForallP(_,te) -> is_ho te
+  | Te te -> is__ho te
+
+
+module TySet = Set.Make(struct type t = _ty let compare = compare end)
+
+let all_of_them = ref TySet.empty
+
+let insert _ty =
+  if TySet.mem _ty !all_of_them then
+    ()
+  else (
+    Format.eprintf "check:type %a@." print__ty _ty;
+    all_of_them := TySet.add _ty !all_of_them
+  )
+
+let rec check__term = function
+  | Cst(_,tys) -> List.iter insert tys
+  | TeVar _ -> ()
+  | Abs(_,_,_te) -> check__term _te
+  | App(l,r) -> check__term l; check__term r
+  | Forall(_,_,t) -> check__term t
+  | Impl(l,r) -> check__term l; check__term r
+  | AbsTy(_,te) -> check__term te
+
+let rec check_term = function
+  | ForallP(_,te) -> check_term te
+  | Te _te -> check__term _te
+
+let rec check_proof = function
+  | Assume _ -> ()
+  | Lemma _ -> ()
+  | Conv(_,p,_) -> check_proof p
+  | ImplE(_,pl,pr) -> check_proof pl; check_proof pr
+  | ImplI(_,p,_) -> check_proof p
+  | ForallE(_,p,_) -> check_proof p
+  | ForallI(_,p,_) -> check_proof p
+  | ForallPE(_,p,_ty) -> insert _ty; check_proof p
+  | ForallPI(_,p,_) -> check_proof p
+
 let compile_declaration name ty =
   let md,id = of_name name in
   match ty with
@@ -324,9 +389,9 @@ let compile_definition name ty term =
     Format.eprintf "[COMPILE] theorem: %a@." Pp.print_name name ;
     let a' = Compile.CTerm.compile_term Environ.empty_env a in
     let str_a' = Format.asprintf "%a@." print_te a' in
-    Format.eprintf "%s@." str_a';
+(*    Format.eprintf "%s@." str_a';
     Format.eprintf "%a@." (print_proof a')
-      (snd @@ (Compile.CProof.compile_proof Environ.empty_env term));
+      (snd @@ (Compile.CProof.compile_proof Environ.empty_env term)); *)
     Mongodb.insert_theorem sys "def" md id str_a' (to_string Pp.print_term term);
     matcher_dep (of_name name) a;
     matcher_dep (of_name name) term
