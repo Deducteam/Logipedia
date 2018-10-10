@@ -2,6 +2,34 @@
   session_start();
   require '../vendor/autoload.php';
   $mongo = new MongoDB\Client('mongodb://localhost:27017');
+
+  //Fonction permettant de trouver toutes les dÃ©pendances de manieres recursive
+  function Recursive($mongo, $md,$id, &$tabRetour)
+  {
+    $collection = $mongo->logipedia->idDep;
+    $result = $collection->find(['md' => $md, 'id' => $id], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
+    foreach ($result as $entry) {
+      if(!is_null($entry['mdDep']) && !in_array(array($entry['mdDep'],$entry['idDep']), $tabRetour)){
+          Recursive($mongo,$entry['mdDep'],$entry['idDep'], $tabRetour);
+          array_push($tabRetour, array($entry['mdDep'],$entry['idDep']));
+      }
+    }
+  }
+
+  //Fonction permettant de trouver toutes les dépendances des modules de manieres recursive
+  function RecursiveMod($mongo,$md,&$tabRetour,$tab2)
+  {
+    $collection = $mongo->logipedia->mdDep;
+
+    $result = $collection->find(['md' => $md], ['projection' => ['_id' => false]]);
+    foreach ($result as $entry) {
+      if(!is_null($entry['mdDep']) && !in_array($entry['mdDep'], $tabRetour) && in_array($entry['mdDep'],$tab2)){
+          RecursiveMod($mongo,$entry['mdDep'],$tabRetour,$tab2);
+          array_push($tabRetour, $entry['mdDep']);
+      }
+    }
+  }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,35 +43,7 @@
   </head>
   <body onLoad="document.getElementById('attente').style.display='none'">
 <?php
-  //Fonction permettant de trouver toutes les dÃ©pendances de manieres recursive
-  function Recursive($md,$id, &$tabRetour)
-  {
-    ob_start();
-    $mongo = new MongoDB\Client('mongodb://localhost:27017');
-    $collection = $mongo->logipedia->idDep;
-    $result = $collection->find(['md' => $md, 'id' => $id], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
-    foreach ($result as $entry) {
-      if(!is_null($entry['mdDep']) && !in_array(array($entry['mdDep'],$entry['idDep']), $tabRetour)){
-        Recursive($entry['mdDep'],$entry['idDep'], $tabRetour);
-        array_push($tabRetour, array($entry['mdDep'],$entry['idDep']));
-      }
-    }
-    ob_end_clean();
-  }
-  //Fonction permettant de trouver toutes les dépendances des modules de manieres recursive
-  function RecursiveMod($md,&$tabRetour,$tab2)
-  {
-    $mongo = new MongoDB\Client('mongodb://localhost:27017');
-    $collection = $mongo->logipedia->mdDep;
 
-    $result = $collection->find(['md' => $md], ['projection' => ['_id' => false]]);
-    foreach ($result as $entry) {
-      if(!is_null($entry['mdDep']) && !in_array($entry['mdDep'], $tabRetour) && in_array($entry['mdDep'],$tab2)){
-        RecursiveMod($entry['mdDep'],$tabRetour,$tab2);
-        array_push($tabRetour, $entry['mdDep']);
-      }
-    }
-  }
   //Fonction permettant l'ecriture sur fichier
   function writeFile2($fichier_contenu,$fichier_nom,$lang)
   {
@@ -286,7 +286,7 @@
     $compteur=0;
     $tabRetour=[];
     foreach ($result as $entry) {
-      Recursive($entry['mdDep'],$entry['idDep'], $tabRetour);
+      Recursive($mongo,$entry['mdDep'],$entry['idDep'], $tabRetour);
       unset($result2);
       unset($entry2);
       $collection = $mongo->logipedia->axioms;
@@ -697,7 +697,7 @@
   $tabModuleNoDB=array_unique($tabModule); // Nous retirons les doublons
   $tabModuleR=[]; //Tableau contenant les dependances des modules
   foreach($tabModuleNoDB as $mod){
-    RecursiveMod($mod,$tabModuleR,$tabModuleNoDB);
+    RecursiveMod($mongo,$mod,$tabModuleR,$tabModuleNoDB);
   }
   // Nous inversons le tableau pour faciliter l'ajout des modules manquants
   $tabModuleR=array_reverse($tabModuleR);
