@@ -30,6 +30,12 @@
     }
   }
 
+  //Fonction permettant l'ecriture sur fichier
+  function writeFile2($fichier_contenu,$fichier_nom,$lang)
+  {
+    file_put_contents(dirname(__FILE__).'/download/'.$lang.'/'.$fichier_nom, $fichier_contenu, FILE_APPEND);
+  }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -42,30 +48,6 @@
     <link rel="stylesheet" type="text/css" href="theorems.css">
   </head>
   <body onLoad="document.getElementById('attente').style.display='none'">
-<?php
-
-  //Fonction permettant l'ecriture sur fichier
-  function writeFile2($fichier_contenu,$fichier_nom,$lang)
-  {
-    file_put_contents(dirname(__FILE__).'/download/'.$lang.'/'.$fichier_nom, $fichier_contenu, FILE_APPEND);
-  }
-  //Fonction permettant d'écrire en début de fichier
-  function writeFile($arg,$file)
-  {
-    $oldContents = file_get_contents($file);
-    $fr = fopen($file, 'w');
-    fwrite($fr, $arg);
-    fwrite($fr, $oldContents);
-    fclose($fr);
-  }
-
-  if(isset($_POST['search']) && isset($_POST['submit']) && !empty($_POST['search'])){
-    $_SESSION['search'] = $_POST['search'];
-    header("location:../index.php");
-    die();
-  }
-?>
-
     <nav class="navbar navbar-expand-md bg-dark navbar-dark fixed-top">
       <div class="container">
         <a class="navbar-brand" href="../index.php"><i class="fas fa-award"></i> Logipedia</a>
@@ -339,6 +321,7 @@
     $collection = $mongo->logipedia->idDep;
     if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
       $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id']], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
+
     }
     else{
       $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false, 'md' => false, 'id' => false]]);
