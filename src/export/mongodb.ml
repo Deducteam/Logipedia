@@ -11,19 +11,21 @@ let of_system = fun sys ->
 
 let sys_id s = string_of_int (of_system s)
 
-let c_constants   () = Mongo.create_local_default db_name "constants"
-let c_definitions () = Mongo.create_local_default db_name "definitions"
-let c_theorems    () = Mongo.create_local_default db_name "theorems"
-let c_axioms      () = Mongo.create_local_default db_name "axioms"
-let c_idDep       () = Mongo.create_local_default db_name "idDep"
-let c_mdDep       () = Mongo.create_local_default db_name "mdDep"
+let c_constants    = Mongo.create_local_default db_name "constants"
+let c_definitions  = Mongo.create_local_default db_name "definitions"
+let c_theorems     = Mongo.create_local_default db_name "theorems"
+let c_axioms       = Mongo.create_local_default db_name "axioms"
+let c_idKind       = Mongo.create_local_default db_name "idKind"
+let c_idDep        = Mongo.create_local_default db_name "idDep"
+let c_closureIdDep = Mongo.create_local_default db_name "closureIdDep"
+let c_mdDep        = Mongo.create_local_default db_name "mdDep"
+let c_openTheory   = Mongo.create_local_default db_name "openTheory"
 
-let c_openTheory  () = Mongo.create_local_default db_name "openTheory"
 let of_string = Bson.create_string
 
 let insert collection keyval =
   let doc = List.fold_left (fun doc (key,value) -> Bson.add_element key value doc) Bson.empty keyval in
-  Mongo.insert (collection ()) [doc]
+  Mongo.insert collection [doc]
 
 let insert_constant s kw md id ty =
   let values = List.map of_string [kw; md; id; ty; sys_id s] in
@@ -60,6 +62,19 @@ let insert_mdDep md mdDep bool =
   let keys = ["md"; "mdDep"; "isInTransClosure"] in
   let keyval = List.combine keys values in
   insert c_mdDep keyval
+
+let insert_kind md id kind =
+  let values = List.map of_string [md; id; kind] in
+  let keys = ["md"; "id"; "kind"] in
+  let keyval = List.combine keys values in
+  insert c_idKind keyval
+
+let insert_closureidDep md id deplist =
+  List.iteri (fun order (mdDep,idDep) ->
+      let values = List.map of_string [md; id; mdDep; idDep; string_of_int order] in
+      let keys = ["md"; "id"; "mdDep"; "idDep"; "order"] in
+      let keyval = List.combine keys values in
+      insert c_closureIdDep keyval) deplist
 
 let rec insert_openTheory ?(chunk=0) md content =
   let size = String.length content in

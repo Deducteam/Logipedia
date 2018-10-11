@@ -9,6 +9,44 @@ module CType  = Compile_type
 module CTerm  = Compile_term
 module CProof = Compile_proof
 
+module Closure =
+struct
+
+  let closure : (Ast.name, (string * (Ast.name list)) list) Hashtbl.t = Hashtbl.create 91
+
+  let init name = Hashtbl.add closure name []
+
+  (*  let shift n set = NameSet.map (fun (order,name) -> (order+n,name)) set *)
+
+  let to_set l =
+    List.fold_left
+        (fun set (s,l) -> List.fold_left
+            (fun set name -> NameSet.add name set) set l) NameSet.empty l
+
+  let merge base newdeps =
+    let rec add base name =
+      match base with
+      | [] -> [fst name, [name]]
+      | (md,l)::base' -> if fst name = md then (md,l@[name])::base' else (md,l)::(add base' name)
+    in
+    List.fold_left (fun base name -> add base name) base newdeps
+
+  let add_dep name nameDep =
+    let sdep = NameSet.add nameDep (to_set (Hashtbl.find closure nameDep)) in
+    let dep  = Hashtbl.find closure name in
+    let sdiff = NameSet.diff sdep (to_set dep) in
+    let dep' = merge dep (NameSet.elements sdiff) in
+    Hashtbl.replace closure name dep'
+
+  let close name : unit =
+    let rec concat l =
+      match l with
+      | [] -> []
+      | (_,x)::t -> x@(concat t)
+    in
+    Mongodb.insert_closureidDep (fst name) (snd name) (concat (Hashtbl.find closure name))
+end
+
 let sys = "sttfa"
 
 let to_string fmt = Format.asprintf "%a" fmt
@@ -18,6 +56,8 @@ let mddep = Hashtbl.create 11
 let iddep = Hashtbl.create 101
 
 let update_id md id md' id' =
+  if md' <> sys then
+    Closure.add_dep (md,id) (md',id');
   let l = try Hashtbl.find iddep (md,id) with _ -> [] in
   let l' = (md',id')::l in
   Hashtbl.replace iddep (md,id) l'
@@ -356,45 +396,60 @@ let compile_declaration name ty =
   let md,id = of_name name in
   match ty with
   | Term.App (cst, a, []) when is_sttfa_const sttfa_etap cst ->
-    Format.eprintf "[COMPILE] parameter: %a@." Pp.print_name name ;
+    Format.eprintf "[BDD] constant: %a@." Pp.print_name name ;
     let a' = Format.asprintf "%a@." print_ty (Compile.CType.compile_type Environ.empty_env a) in
+    Mongodb.insert_kind md id "constant";
     Mongodb.insert_constant sys "" md id a';
-    matcher_dep (of_name name) a
+    Closure.init (of_name name);
+    matcher_dep (of_name name) a;
+    Closure.close (of_name name)
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eta cst ->
-    Format.eprintf "[COMPILE] parameter: %a@." Pp.print_name name ;
+    Format.eprintf "[BDD] constant: %a@." Pp.print_name name ;
     let a' = Format.asprintf "%a@." print__ty (Compile.CType.compile__type Environ.empty_env a) in
+    Mongodb.insert_kind md id "constant";
     Mongodb.insert_constant sys "" md id a';
-    matcher_dep (of_name name) a
+    Closure.init (of_name name);
+    matcher_dep (of_name name) a;
+    Closure.close (of_name name)
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eps cst ->
-    Format.eprintf "[COMPILE] axiom: %a@." Pp.print_name name ;
+    Format.eprintf "[BDD] axiom: %a@." Pp.print_name name ;
     let a' = Format.asprintf "%a@." print_te (Compile.CTerm.compile_term Environ.empty_env a) in
+    Mongodb.insert_kind md id "axiom";
     Mongodb.insert_axiom sys "" md id a';
-    matcher_dep (of_name name) a
+    Closure.init (of_name name);
+    matcher_dep (of_name name) a;
+    Closure.close (of_name name);
   | Term.Const (_, _) when is_sttfa_const sttfa_type ty -> (* Partial function *)
-    Format.eprintf "[COMPILE] typeop: %a@." Pp.print_name name ;
+    Format.eprintf "[BDD] typeop: %a@." Pp.print_name name ;
+    Closure.init (of_name name);
+    Mongodb.insert_kind md id "typeop";
     Mongodb.insert_constant sys "" md id (to_string Pp.print_term ty);
+    Closure.close (of_name name)
   | _ -> assert false
 
 let compile_definition name ty term =
   let md,id = of_name name in
   match ty with
   | Term.App (cst, a, []) when is_sttfa_const sttfa_etap cst ->
-    Format.eprintf "[COMPILE] definition: %a@." Pp.print_name name ;
+    Format.eprintf "[BDD] definition: %a@." Pp.print_name name ;
     let a' = Format.asprintf "%a@." print_ty (Compile.CType.compile_type Environ.empty_env a) in
     let term' = Format.asprintf "%a@." print_te (Compile.CTerm.compile_term Environ.empty_env term) in
+    Mongodb.insert_kind md id "definition";
     Mongodb.insert_definition sys "def" md id a' term';
+    Closure.init (of_name name);
     matcher_dep (of_name name) a;
-    matcher_dep (of_name name) term
+    matcher_dep (of_name name) term;
+    Closure.close (of_name name)
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eps cst ->
-    Format.eprintf "[COMPILE] theorem: %a@." Pp.print_name name ;
+    Format.eprintf "[BDD] theorem: %a@." Pp.print_name name ;
     let a' = Compile.CTerm.compile_term Environ.empty_env a in
     let str_a' = Format.asprintf "%a@." print_te a' in
-(*    Format.eprintf "%s@." str_a';
-    Format.eprintf "%a@." (print_proof a')
-      (snd @@ (Compile.CProof.compile_proof Environ.empty_env term)); *)
+    Mongodb.insert_kind md id "theorem";
     Mongodb.insert_theorem sys "def" md id str_a' (to_string Pp.print_term term);
+    Closure.init (of_name name);
     matcher_dep (of_name name) a;
-    matcher_dep (of_name name) term
+    matcher_dep (of_name name) term;
+    Closure.close (of_name name)
   | _ -> assert false
 
 let handle_entry_dep md e =
@@ -417,7 +472,6 @@ let remove_transitive_deps deps =
     QSet.diff deps (QSet.of_list (List.map Basic.string_of_mident md_deps))
   in
   QSet.fold remove_dep deps deps
-
 
 let handle_dep md entries =
   List.iter (handle_entry_dep md) entries;

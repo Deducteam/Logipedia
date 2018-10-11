@@ -6,6 +6,8 @@ type hyp_var = string
 
 type name = string * string
 
+module NameSet = Set.Make(struct type t = name let compare = compare end)
+
 type tyOp = name
 
 type cst = name
