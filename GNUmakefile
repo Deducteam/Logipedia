@@ -93,9 +93,7 @@ opentheory: library/fermat.thy
 	opentheory info library/fermat.thy
 
 bdd-dep: $(LIBDKS) _build/src/main.native theories/sttfa.dko
-	for i in $(SORTEDDKS) ; do \
-		./main.native  -I library -I theories --export sttfa --export-bdd $$i ; \
-	done
+	./main.native  -I library -I theories --export sttfa --export-bdd $(SORTEDDKS)
 
 .library_depend_dko: $(wildcard library/*.dk theories/*.dk examples/*.dk)
 	@echo "[DEP] $@"
