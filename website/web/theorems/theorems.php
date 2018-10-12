@@ -1,9 +1,124 @@
 <?php
-  session_start();
-  require '../vendor/autoload.php';
-  $mongo = new MongoDB\Client('mongodb://localhost:27017');
+require '../vendor/autoload.php';
+$mongo = new MongoDB\Client('mongodb://localhost:27017');
 
-  //Fonction permettant de trouver toutes les dÃ©pendances de manieres recursive
+if(isset($_GET['md']) && isset($_GET['id']) && isset($_GET['kind'])) {
+    $md=$_GET['md'];
+    $id=$_GET['id'];
+    $kind=$_GET['kind'];
+    switch ($kind) {
+    case "definition":
+        $collection = $mongo->logipedia->definitions;
+        $pp_kind="Definition";
+        break;
+    case "theorem":
+        $collection = $mongo->logipedia->theorems;
+        $pp_kind="Theorem";
+        break;
+    case "constant":
+        $collection = $mongo->logipedia->constants;
+        $pp_kind="Constant";
+        break;
+    case "axiom":
+        $collection = $mongo->logipedia->axioms;
+        $pp_kind="Axiom";
+        break;
+    default:
+        die("Unknown kind '$kind'");
+    }
+}
+else {
+    die();
+}
+
+$query=$collection->find(['md' => $md, 'id' => $id]);
+$entry=array();
+foreach($query as $line) {
+     if($kind == "definition") {
+          $entry[$line["sys"]]=["type" => $line["type"]];
+          $entry[$line["sys"]]=["body" => $line["body"]];
+     }
+     else if ($kind == "theorem" || $kind == "axiom") {
+          $entry[$line["sys"]]=["statement" => $line["statement"]];
+     }
+     else if ($kind == "constant") {
+          $entry[$line["sys"]]=["type" => $line["type"]];
+     }
+}
+
+$query=$mongo->logipedia->idDep->aggregate([
+    ['$match' => ['md' => $md, 'id' => $id]],
+    ['$lookup' => ['from' => "idKind", 'localField' => "id", 'foreignField' => 'id', 'as' => 'idKind']],
+    ['$unwind' => '$idKind']]);
+$directDeps=array();
+foreach($query as $line) {
+echo($line['md']);
+$json = MongoDB\BSON\toJSON(MongoDB\BSON\fromPHP($line['idKind']));
+echo($json);
+echo($line['idKind']['id']);
+echo($line['idKind']['kind']);
+}
+function print_container($header, $body) {
+    echo '<div class="container">';
+    echo '<fieldset class="scheduler-border">';
+    echo '<legend class="scheduler-border">';
+    echo $header;
+    echo '</legend>';
+    echo '<p class="text-center">';
+    echo $body;
+    echo "</p></fieldset></div>";
+}
+
+function print_constant($body) {
+    print_container("Type", $body);
+}
+
+function print_axiom($body) {
+    print_container("Statement", $body);
+}
+
+function print_definition($type, $body) {
+    print_container("Type", $type);
+    print_container("Body", $body);
+}
+
+function print_theorem($body) {
+    print_container("Statement", $body);
+}
+
+function print_entry($kind, $entry) {
+     if($kind == "definition") {
+          print_definition($entry["type"],$entry["body"]);
+     }
+     else if ($kind == "theorem") {
+          print_theorem($entry["statement"]);
+     }
+     else if ($kind == "axiom") {
+          print_axiom($entry["statement"]);
+     }
+     else if ($kind == "constant") {
+          print_constant($entry["type"]);
+     }
+}
+
+function print_system($kind,$entry,$system) {
+     if($system == "dedukti") {
+          print_entry($kind,$entry[1]);
+     }
+     else if ($kind == "coq") {
+          print_entry($kind,$entry[2]);
+     }
+     else if ($kind == "matita") {
+          print_entry($kind,$entry[3]);
+     }
+     else if ($kind == "lean") {
+          print_entry($kind,$entry[4]);
+     }
+     else if ($kind == "pvs") {
+          print_entry($kind,$entry[5]);
+     }
+}
+
   function Recursive($mongo, $md,$id, &$tabRetour)
   {
     $collection = $mongo->logipedia->idDep;
@@ -16,7 +131,6 @@
     }
   }
 
-  //Fonction permettant de trouver toutes les dépendances des modules de manieres recursive
   function RecursiveMod($mongo,$md,&$tabRetour,$tab2)
   {
     $collection = $mongo->logipedia->mdDep;
@@ -78,76 +192,15 @@
         </div>
       </div>
     </nav>
-
+    // This prints the left floatting menu
+    <a href="#matita" id="a-matita">Matita &nbsp; &nbsp; &nbsp;<img src="../picture/matita.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>
+    <a href="#coq" id="a-coq">coq &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/coq.png" class="img-fluid" alt="Load" style="margin-left:10px;width:50px;height:50px;"></a>
+    <a href="#lean" id="a-lean">Lean &nbsp; &nbsp; &nbsp; &nbsp;<img src="../picture/lean.jpg" class="img-fluid" alt="Load" style="margin-left:5px;width:50px;height:50px;"></a>
+    <a href="#pvs" id="a-pvs">PVS &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/pvs.jpg" class="img-fluid" alt="Load" style="margin-left:5px;width:50px;height:50px;"></a>
+    <a href="#openTheory" id="a-openTheory"><small>openTheory</small> <img src="../picture/openTheory.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>
     <div id="mySidenav" class="sidenav d-none d-sm-block">
       <div class="container">
         <a href="#dedukti" id="a-dedukti">Dedukti &nbsp; &nbsp;<img src="../picture/dedukti.png" class="img-fluid" alt="Load"></i></a>
-<?php
-  if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $collect=(string)$_GET['collection'];
-    $id=(int)$_GET['id'];
-    $collection = $mongo->logipedia->$collect;
-    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id']]);
-  }
-  else{
-    $collection = $mongo->logipedia->definitions;
-    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false]]);
-    foreach ($result as $entry) {
-      break;
-    }
-    if(empty($entry['md']))
-    {
-      $collection = $mongo->logipedia->constants;
-      $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false]]);
-      foreach ($result as $entry) {
-        break;
-      }
-      if(empty($entry['md']))
-      {
-        $collection = $mongo->logipedia->axioms;
-        $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false]]);
-        foreach ($result as $entry) {
-          break;
-        }
-        if(empty($entry['md']))
-        {
-          $collection = $mongo->logipedia->theorems;
-          $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']], ['projection' => ['_id' => false]]);
-          foreach ($result as $entry) {
-            break;
-          }
-          if(empty($entry['md']))
-          {
-            echo "ref inexistante";
-          }
-          else
-          {
-            $collect='theorems';
-          }
-        }
-        else
-        {
-          $collect='axioms';
-        }
-      }
-      else
-      {
-        $collect='constants';
-      }
-    }
-    else{
-      $collect='definitions';
-    }
-    $collection = $mongo->logipedia->$collect;
-    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId']]);
-  }
-// This prints the left floatting menu
-      echo '<a href="#matita" id="a-matita">Matita &nbsp; &nbsp; &nbsp;<img src="../picture/matita.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
-      echo '<a href="#coq" id="a-coq">coq &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/coq.png" class="img-fluid" alt="Load" style="margin-left:10px;width:50px;height:50px;"></a>';
-      echo '<a href="#lean" id="a-lean">Lean &nbsp; &nbsp; &nbsp; &nbsp;<img src="../picture/lean.jpg" class="img-fluid" alt="Load" style="margin-left:5px;width:50px;height:50px;"></a>';
-      echo '<a href="#pvs" id="a-pvs">PVS &nbsp; &nbsp; &nbsp; &nbsp; <img src="../picture/pvs.jpg" class="img-fluid" alt="Load" style="margin-left:5px;width:50px;height:50px;"></a>';
-      echo '<a href="#openTheory" id="a-openTheory"><small>openTheory</small> <img src="../picture/openTheory.png" class="img-fluid" alt="Load" style="width:50px;height:50px;"></a>';
-?>
       </div>
     </div>
     <div id="dedukti">
@@ -158,91 +211,10 @@
       <hr class="my-4">
       <h3 class="text-center"><b>
 <?php
-  switch ($collect) {
-    case "definitions":
-      $collect2="Definition";
-      break;
-    case "theorems":
-      $collect2="Theorem";
-      break;
-    case "constants":
-      $collect2="Constant";
-      break;
-    case "axioms":
-      $collect2="Axiom";
-      break;
-  }
-  if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
+    print_container($pp_kind, $md.".".$id);
+    print_system($kind, $entry, "dedukti");
 ?>
-      <div class="container">
-        <fieldset class="scheduler-border">
-          <legend class="scheduler-border">
-<?php
-                echo $collect2;
-          echo '</legend><p class="text-center">';
-                echo $_SESSION['tuple'][$id]['md'].".".$_SESSION['tuple'][$id]['id'];
-        echo "</p></fieldset></div>";
-  }
-  else
-  {
-?>
-      <div class="container">
-        <fieldset class="scheduler-border">
-          <legend class="scheduler-border">
-<?php
-                echo $collect2;
-          echo "</legend>";
-          echo '</legend><p class="text-center">';
-                echo $_GET['rechMd'].".".$_GET['rechId'];
-        echo "</p></fieldset></div>";
-  }
-?>
-      </b></h1>
-      <div class="container">
-<?php
-  $collection = $mongo->logipedia->$collect;
-  if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){
-    $result = $collection->find(['md' => $_SESSION['tuple'][$id]['md'], 'id' => $_SESSION['tuple'][$id]['id'], 'sys' => "1"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
-  }
-  else
-  {
-    $result = $collection->find(['md' => $_GET['rechMd'], 'id' => $_GET['rechId'], 'sys' => "1"], ['projection' => ['_id' => false, 'sys' => false, 'md' => false, 'id' => false]]);
-  }
-  foreach ($result as $entry) {
-    $array =  (array) $entry;
-    break;
-  }
-  $keyP=array_keys($array);
-  foreach ($keyP as $res) {
-    if($res!='proof' && $res!="kw"){
-?>
-        <fieldset class="scheduler-border">
-          <legend class="scheduler-border">
-<?php
-        switch ($res) {
-          case "statement":
-                  echo "Statement";
-          break;
-          case "type":
-                  echo "Type";
-          break;
-          case "body":
-                  echo "Body";
-          break;
-        }
-?>
-          </legend>
-          <p class="text-center">
-<?php
-      echo $entry[$res];
-?>
-          </p>
-<?php
-    }
-    echo "</fieldset>";
-  }
-?>
-      </div>
+    </b></h1>
 <?php
   $collection = $mongo->logipedia->idDep;
   if(!isset($_GET['rechMd']) && !isset($_GET['rechId'])){

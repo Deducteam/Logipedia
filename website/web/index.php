@@ -1,11 +1,10 @@
 <?php
-  session_start();
   require 'vendor/autoload.php';
   $mongo = new MongoDB\Client('mongodb://localhost:27017'); //Acces au SGBD
 
-  function print_entry($md,$id, $collection)
+  function print_entry($md,$id, $kind)
   {
-      echo '<a href="theorems/theorems.php?md='.$md.'&id='.$id.'&collection='.$collection.'" class="list-group-item list-group-item-action text-center list-group-bg-mar\">';
+      echo '<a href="theorems/theorems.php?md='.$md.'&id='.$id.'&kind='.$kind.'" class="list-group-item list-group-item-action text-center list-group-bg-mar\">';
       echo '<h4 class="h4-color"><b>'.$md.'.'.$id.'</b></h4>';
       echo '</a>';
   }
