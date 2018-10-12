@@ -20,3 +20,4 @@ else
     cd bdd
     mongo < noDoublon.js
 fi
+mongo < createIndex.js
