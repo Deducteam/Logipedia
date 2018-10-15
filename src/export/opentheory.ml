@@ -310,7 +310,7 @@ let print_item oc =
 
 let content = ref ""
 
-let print_ast oc file ast =
+let print_ast oc ast =
   let oc_tmp = Format.str_formatter in
   set_oc oc_tmp;
   version ();

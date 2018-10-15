@@ -152,7 +152,7 @@ let print_item oc = function
   | TyOpDef(tyop,arity) ->
     Format.fprintf oc "axiom %a : %a.\n" print_name tyop print_arity arity
 
-let print_ast oc file ast =
+let print_ast oc ast =
   QSet.iter (print_dep oc) ast.dep;
   List.iter (print_item oc) ast.items
 

@@ -47,6 +47,9 @@ struct
     Mongodb.insert_closureidDep (fst name) (snd name) (concat (Hashtbl.find closure name))
 end
 
+
+let dag : Dag.t = Dag.init ()
+
 let sys = "sttfa"
 
 let to_string fmt = Format.asprintf "%a" fmt
@@ -57,7 +60,10 @@ let iddep = Hashtbl.create 101
 
 let update_id md id md' id' =
   if md' <> sys then
-    Closure.add_dep (md,id) (md',id');
+    begin
+      Closure.add_dep (md,id) (md',id');
+      Dag.add_edge (md,id) (md',id') dag
+    end;
   let l = try Hashtbl.find iddep (md,id) with _ -> [] in
   let l' = (md',id')::l in
   Hashtbl.replace iddep (md,id) l'
@@ -392,39 +398,64 @@ let rec check_proof = function
   | ForallPE(_,p,_ty) -> insert _ty; check_proof p
   | ForallPI(_,p,_) -> check_proof p
 
+
+let theory = Hashtbl.create 11
+
+let theory_of_children is_theorem children =
+  Ast.NameSet.fold (fun (md,id) set ->
+      let (is_dep_def,th) = (Hashtbl.find theory (md,id)) in
+      if is_dep_def && is_theorem then set
+      else Ast.NameSet.union th set) children Ast.NameSet.empty
+
 let compile_declaration name ty =
   let md,id = of_name name in
   match ty with
   | Term.App (cst, a, []) when is_sttfa_const sttfa_etap cst ->
     Format.eprintf "[BDD] constant: %a@." Pp.print_name name ;
     let a' = Format.asprintf "%a@." print_ty (Compile.CType.compile_type Environ.empty_env a) in
-    Mongodb.insert_kind md id "constant";
-    Mongodb.insert_constant sys "" md id a';
     Closure.init (of_name name);
+    Dag.add_node (of_name name) dag;
     matcher_dep (of_name name) a;
-    Closure.close (of_name name)
+    Dag.reduce_node dag (of_name name);
+    let theory' = theory_of_children false (Dag.get dag (of_name name)).Dag.children in
+    Hashtbl.add theory (of_name name) (false,Ast.NameSet.add (of_name name) theory');
+    Closure.close (of_name name);
+    Mongodb.insert_kind md id "constant";
+    Mongodb.insert_constant sys "" md id a'
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eta cst ->
     Format.eprintf "[BDD] constant: %a@." Pp.print_name name ;
     let a' = Format.asprintf "%a@." print__ty (Compile.CType.compile__type Environ.empty_env a) in
-    Mongodb.insert_kind md id "constant";
-    Mongodb.insert_constant sys "" md id a';
     Closure.init (of_name name);
+    Dag.add_node (of_name name) dag;
     matcher_dep (of_name name) a;
-    Closure.close (of_name name)
+    Dag.reduce_node dag (of_name name);
+    let theory' = theory_of_children false (Dag.get dag (of_name name)).Dag.children in
+    Hashtbl.add theory (of_name name) (false,Ast.NameSet.add (of_name name) theory');
+    Closure.close (of_name name);
+    Mongodb.insert_kind md id "constant";
+    Mongodb.insert_constant sys "" md id a'
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eps cst ->
     Format.eprintf "[BDD] axiom: %a@." Pp.print_name name ;
     let a' = Format.asprintf "%a@." print_te (Compile.CTerm.compile_term Environ.empty_env a) in
-    Mongodb.insert_kind md id "axiom";
-    Mongodb.insert_axiom sys "" md id a';
     Closure.init (of_name name);
+    Dag.add_node (of_name name) dag;
     matcher_dep (of_name name) a;
+    Dag.reduce_node dag (of_name name);
+    let theory' = theory_of_children false (Dag.get dag (of_name name)).Dag.children in
+    Hashtbl.add theory (of_name name) (false,Ast.NameSet.add (of_name name) theory');
     Closure.close (of_name name);
+    Mongodb.insert_kind md id "axiom";
+    Mongodb.insert_axiom sys "" md id a'
   | Term.Const (_, _) when is_sttfa_const sttfa_type ty -> (* Partial function *)
     Format.eprintf "[BDD] typeop: %a@." Pp.print_name name ;
     Closure.init (of_name name);
-    Mongodb.insert_kind md id "typeop";
-    Mongodb.insert_constant sys "" md id (to_string Pp.print_term ty);
-    Closure.close (of_name name)
+    Dag.add_node (of_name name) dag;
+    Dag.reduce_node dag (of_name name);
+    let theory' = theory_of_children false (Dag.get dag (of_name name)).Dag.children in
+    Hashtbl.add theory (of_name name) (false,Ast.NameSet.add (of_name name) theory');
+    Closure.close (of_name name);
+    Mongodb.insert_kind md id "constant";
+    Mongodb.insert_constant sys "" md id (to_string Pp.print_term ty)
   | _ -> assert false
 
 let compile_definition name ty term =
@@ -434,22 +465,30 @@ let compile_definition name ty term =
     Format.eprintf "[BDD] definition: %a@." Pp.print_name name ;
     let a' = Format.asprintf "%a@." print_ty (Compile.CType.compile_type Environ.empty_env a) in
     let term' = Format.asprintf "%a@." print_te (Compile.CTerm.compile_term Environ.empty_env term) in
-    Mongodb.insert_kind md id "definition";
-    Mongodb.insert_definition sys "def" md id a' term';
     Closure.init (of_name name);
+    Dag.add_node (of_name name) dag;
     matcher_dep (of_name name) a;
     matcher_dep (of_name name) term;
-    Closure.close (of_name name)
+    Dag.reduce_node dag (of_name name);
+    let theory' = (theory_of_children false (Dag.get dag (of_name name)).Dag.children) in
+    Hashtbl.add theory (of_name name) (true,Ast.NameSet.add (of_name name) theory');
+    Closure.close (of_name name);
+    Mongodb.insert_kind md id "definition";
+    Mongodb.insert_definition sys "def" md id a' term'
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eps cst ->
     Format.eprintf "[BDD] theorem: %a@." Pp.print_name name ;
     let a' = Compile.CTerm.compile_term Environ.empty_env a in
     let str_a' = Format.asprintf "%a@." print_te a' in
-    Mongodb.insert_kind md id "theorem";
-    Mongodb.insert_theorem sys "def" md id str_a' (to_string Pp.print_term term);
     Closure.init (of_name name);
+    Dag.add_node (of_name name) dag;
     matcher_dep (of_name name) a;
     matcher_dep (of_name name) term;
-    Closure.close (of_name name)
+    Dag.reduce_node dag (of_name name);
+    let theory' = theory_of_children true (Dag.get dag (of_name name)).Dag.children in
+    Hashtbl.add theory (of_name name) (false, theory');
+    Closure.close (of_name name);
+    Mongodb.insert_kind md id "theorem";
+    Mongodb.insert_theorem sys "def" md id str_a' (to_string Pp.print_term term)
   | _ -> assert false
 
 let handle_entry_dep md e =
@@ -457,10 +496,12 @@ let handle_entry_dep md e =
   match e with
   | Decl (lc, id, st, ty) ->
     ( Env.declare lc id st ty;
-      compile_declaration (mk_name md id) ty )
+      compile_declaration (mk_name md id) ty
+    )
   | Def (lc, id, opaque, Some ty, te) ->
     ( Env.define lc id opaque te (Some ty);
-      compile_definition (mk_name md id) ty te )
+      compile_definition (mk_name md id) ty te
+    )
   | Def   _ -> failwith "Definition without types are not supported"
   | Rules _ -> failwith "Rules are not part of the sttforall logic"
   | _       -> failwith "Commands are not supported"
@@ -482,5 +523,5 @@ let handle_dep md entries =
   let mds'' = QSet.diff mds mds' in
   QSet.iter (fun md' -> Mongodb.insert_mdDep md md' "true") mds''
 
-let print_ast _ _ _ = ()
+let print_ast _ _ = ()
 let print_bdd _ = ()

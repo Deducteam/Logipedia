@@ -316,40 +316,40 @@ let print_proof_pvs : string -> Format.formatter -> proof -> unit =
 
 let print_item oc pvs_md it =
   let line fmt = Format.fprintf oc (fmt ^^ "\n") in
-    match it with
-    | TyOpDef (op, ar) -> Format.fprintf oc "%a : TYPE+" (print_name pvs_md) op;
-      line "";
-      line ""
-    | Parameter (n, ty) ->
-      line "%a %a: %a"
-        (print_name pvs_md) n
-        (print_prenex_ty_pvs pvs_md) ty
-        (print_ty_pvs pvs_md) ty;
-        line ""
-    | Definition (n, ty, te) ->
-      line "%a %a : %a = %a"
-        (print_name pvs_md) n
-        (print_prenex_ty_pvs pvs_md) ty
-        (print_ty_pvs pvs_md) ty
-        (print_te_pvs pvs_md) te;
-        line ""
-    | Axiom (n, te) ->
-      line "%a %a : AXIOM %a"
-        (print_name pvs_md) n
-        (print_prenex_te_pvs pvs_md) te
-        (print_te_pvs pvs_md) te;
-        line ""
-    | Theorem (n, te, prf) ->
-      line "%a %a : LEMMA %a"
-        (print_name pvs_md) n
-        (print_prenex_te_pvs pvs_md) te
-        (print_te_pvs pvs_md) te;
-        line "" ;
-      line "%%|- %a : PROOF"
-        (print_name pvs_md) n ;
-        (print_proof_pvs pvs_md oc) prf ;
-        line "%%|- QED" ;
-        line ""
+  match it with
+  | TyOpDef (op, ar) -> Format.fprintf oc "%a : TYPE+" (print_name pvs_md) op;
+    line "";
+    line ""
+  | Parameter (n, ty) ->
+    line "%a %a: %a"
+      (print_name pvs_md) n
+      (print_prenex_ty_pvs pvs_md) ty
+      (print_ty_pvs pvs_md) ty;
+    line ""
+  | Definition (n, ty, te) ->
+    line "%a %a : %a = %a"
+      (print_name pvs_md) n
+      (print_prenex_ty_pvs pvs_md) ty
+      (print_ty_pvs pvs_md) ty
+      (print_te_pvs pvs_md) te;
+    line ""
+  | Axiom (n, te) ->
+    line "%a %a : AXIOM %a"
+      (print_name pvs_md) n
+      (print_prenex_te_pvs pvs_md) te
+      (print_te_pvs pvs_md) te;
+    line ""
+  | Theorem (n, te, prf) ->
+    line "%a %a : LEMMA %a"
+      (print_name pvs_md) n
+      (print_prenex_te_pvs pvs_md) te
+      (print_te_pvs pvs_md) te;
+    line "" ;
+    line "%%|- %a : PROOF"
+      (print_name pvs_md) n ;
+    (print_proof_pvs pvs_md oc) prf ;
+    line "%%|- QED" ;
+    line ""
 
 let print_dep oc x = Format.fprintf oc
   "IMPORTING %s_sttfa AS %s_sttfa_th\n" x x
@@ -373,27 +373,13 @@ let remove_transitive_deps deps =
 
 let line oc fmt = Format.fprintf oc (fmt ^^ "\n")
 
-let print_ast : Format.formatter -> string -> ast -> unit =
- fun oc prefix ast ->
-   let prefix = Filename.basename prefix in
-   current_module := ast.md ;
+let print_ast : Format.formatter -> ast -> unit =
+ fun oc ast ->
+   current_module := ast.md;
    let pf = "_sttfa" in
    let postfix s = s^pf in
-   line oc "%s : THEORY" (postfix prefix);
+   line oc "%s : THEORY" (postfix ast.md);
    line oc "BEGIN";
-(*   let print_deps oc deps =
-     let l = QSet.elements (QSet.remove "sttfa" deps) in
-     let l = List.map postfix l in
-     let rec deps oc l =
-       match l with
-       | [] -> assert false
-       | [x] -> Format.fprintf oc "%s" x
-       | x::t -> Format.fprintf oc "%s,%a" x deps t
-     in
-     match l with
-     | [] -> ()
-     | _ -> line oc "IMPORTING %a" deps l
-     in *)
    let deps = ast.dep in
    let deps = QSet.remove "sttfa" deps in
    let remove_transitive_deps deps =
@@ -407,8 +393,8 @@ let print_ast : Format.formatter -> string -> ast -> unit =
    let deps = remove_transitive_deps deps in
    QSet.iter (print_dep oc) deps;
    line oc "";
-   List.iter (print_item oc prefix) ast.items;
-   line oc "END %s_sttfa" prefix
+   List.iter (print_item oc ast.md) ast.items;
+   line oc "END %s_sttfa" ast.md
 
 let to_string fmt = Format.asprintf "%a" fmt
 

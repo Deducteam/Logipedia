@@ -2,10 +2,10 @@ open Systems
 
 module type E =
 sig
-    val system    : system
-    val extension : string
-    val print_ast : Format.formatter -> string -> Ast.ast -> unit
-    val print_bdd : Ast.ast -> unit
+  val system         : Systems.system
+  val extension      : string
+  val print_ast      : Format.formatter -> Ast.ast -> unit
+  val print_bdd      : Ast.ast -> unit
 end
 
 module PVS : E =

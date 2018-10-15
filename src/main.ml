@@ -37,7 +37,7 @@ let export_file file ast system =
   let stt_file = basename ^ "." ^ M.extension in
   let oc = open_out stt_file in
   let fmt = Format.formatter_of_out_channel oc in
-  M.print_ast fmt basename ast ;
+  M.print_ast fmt ast ;
   close_out oc
 
 let run_on_file to_bdd file =
@@ -48,6 +48,7 @@ let run_on_file to_bdd file =
   close_in input ;
   begin
     let items = List.map (handle_entry md) entries in
+    let items = items in
     let dep = List.fold_left
         (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
     let ast = {md = string_of_mident md; dep; items} in

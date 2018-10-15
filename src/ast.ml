@@ -119,6 +119,8 @@ type ast = {
   dep  : QSet.t;
   items: item list}
 
+type meta_ast = ast list
+
 let judgment_of = function
   | Assume(j,_)     -> j
   | Lemma(_,j)      -> j
