@@ -116,6 +116,15 @@ let print_ast oc ast =
   QSet.iter (print_dep oc) ast.dep;
   List.iter (print_item oc) ast.items
 
+(* FIXME: Probably there is something to do in case of a conflict name *)
+let print_meta_ast fmt meta_ast =
+  let print_ast fmt ast =
+    QSet.iter (print_dep fmt) ast.dep;
+    List.iter (print_item fmt) ast.items
+  in
+  print_dep fmt "basics/pts";
+  List.iter (print_ast fmt) meta_ast
+
 let to_string fmt = Format.asprintf "%a" fmt
 
 let print_bdd_item = function

@@ -524,4 +524,5 @@ let handle_dep md entries =
   QSet.iter (fun md' -> Mongodb.insert_mdDep md md' "true") mds''
 
 let print_ast _ _ = ()
+let print_meta_ast _ _ = ()
 let print_bdd _ = ()

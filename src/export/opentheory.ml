@@ -319,5 +319,17 @@ let print_ast oc ast =
   content := Buffer.contents Format.stdbuf;
   Format.fprintf oc "%s" !content
 
+let print_meta_ast fmt meta_ast =
+  let oc_tmp = Format.str_formatter in
+  set_oc oc_tmp;
+  version ();
+  let print_ast ast =
+    List.iter (print_item oc_tmp) ast.items;
+  in
+  List.iter print_ast meta_ast;
+  clean ();
+  content := Buffer.contents Format.stdbuf;
+  Format.fprintf fmt "%s" !content
+
 let print_bdd ast =
   Mongodb.insert_openTheory ast.md !content

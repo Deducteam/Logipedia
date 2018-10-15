@@ -156,6 +156,14 @@ let print_ast oc ast =
   QSet.iter (print_dep oc) ast.dep;
   List.iter (print_item oc) ast.items
 
+let print_meta_ast fmt meta_ast =
+  let print_ast fmt ast =
+    Format.fprintf fmt "namespace %s\n" ast.md;
+    print_ast fmt ast;
+    Format.fprintf fmt "end %s\n\n" ast.md
+  in
+  List.iter (print_ast fmt) meta_ast
+
 let to_string fmt = Format.asprintf "%a" fmt
 
 let print_bdd_item = function
