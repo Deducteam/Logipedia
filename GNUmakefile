@@ -180,9 +180,10 @@ distclean: clean
 	@find library -name "*.lean" -exec rm {} \;
 	@find library -name "*.json" -exec rm {} \;
 	@find library -name "*.art"  -exec rm {} \;
+	@find library -name "*.thy"  -exec rm {} \;
 	@find library -name "*.summary" -exec rm {} \;
 	@find library -name "*.beautified" -exec rm {} \;
-	@find library -name ".pvs_context" -exec rm {} \;
+	@find library -name ".pvscontext" -exec rm {} \;
 	@rm -rf /tmp/fermat
 
 .PHONY: all clean distclean examples library coq matita pvs bdd-dep opentheory
