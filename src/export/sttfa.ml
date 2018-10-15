@@ -525,4 +525,5 @@ let handle_dep md entries =
 
 let print_ast _ _ = ()
 let print_meta_ast _ _ = ()
+let pretty_print_item _ = ""
 let print_bdd _ = ()

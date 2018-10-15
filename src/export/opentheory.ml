@@ -331,5 +331,7 @@ let print_meta_ast fmt meta_ast =
   content := Buffer.contents Format.stdbuf;
   Format.fprintf fmt "%s" !content
 
+let pretty_print_item item = ""
+
 let print_bdd ast =
   Mongodb.insert_openTheory ast.md !content

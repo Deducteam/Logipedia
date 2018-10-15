@@ -317,7 +317,9 @@ let print_proof_pvs : string -> Format.formatter -> proof -> unit =
 let print_item oc pvs_md it =
   let line fmt = Format.fprintf oc (fmt ^^ "\n") in
   match it with
-  | TyOpDef (op, ar) -> Format.fprintf oc "%a : TYPE+" (print_name pvs_md) op;
+  | TyOpDef (op, ar) ->
+    assert (ar = 0);
+    Format.fprintf oc "%a : TYPE+" (print_name pvs_md) op;
     line "";
     line ""
   | Parameter (n, ty) ->
@@ -400,6 +402,32 @@ let print_meta_ast fmt meta_ast =
   List.iter (print_ast fmt) meta_ast
 
 let to_string fmt = Format.asprintf "%a" fmt
+
+let pretty_print_item = function
+  | Parameter((md,id),ty) ->
+    Format.asprintf "%a %a : %a"
+      (print_name md) (md,id)
+      (print_prenex_ty_pvs md) ty
+      (print_ty_pvs md) ty
+  | Definition((md,id),ty,te) ->
+    Format.asprintf "%a %a : %a = %a"
+      (print_name md) (md,id)
+      (print_prenex_ty_pvs md) ty
+      (print_ty_pvs md) ty
+      (print_te_pvs md) te
+  | Axiom((md,id),te) ->
+    Format.asprintf "%a %a : AXIOM %a"
+      (print_name md) (md,id)
+      (print_prenex_te_pvs md) te
+      (print_te_pvs md) te
+  | Theorem((md,id),te,proof) ->
+    Format.asprintf "%a %a : LEMMA %a"
+      (print_name md) (md,id)
+      (print_prenex_te_pvs md) te
+      (print_te_pvs md) te
+  | TyOpDef((md,id),arity) ->
+    assert(arity = 0);
+    Format.asprintf "%a : TYPE+" (print_name md) (md,id)
 
 let print_bdd_item = function
   | Parameter((md,id),ty) ->
