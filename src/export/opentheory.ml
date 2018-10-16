@@ -32,6 +32,23 @@ let rec mk_ty = function
     mk_ty ty
   | Ty(_ty) -> mk__ty _ty
 
+(* FIXME: buggy don't know why
+let memoization_ty = Hashtbl.create 101
+
+let mk__ty =
+  let counter = ref (-1) in
+  fun _ty ->
+    if Hashtbl.mem memoization_ty _ty then
+      mk_ref (Hashtbl.find memoization_ty _ty)
+    else
+      begin
+        incr counter;
+        Hashtbl.add memoization_ty _ty !counter;
+        let ty' = mk__ty _ty in
+        Format.eprintf "%a@." Web.print__ty _ty;
+        mk_def ty' !counter
+      end
+*)
 let rec mk__te ctx = function
   | TeVar(var) ->
     let _ty = List.assoc var ctx.te in
@@ -77,8 +94,23 @@ let rec mk_te ctx = function
     mk_te ctx' te
   | Te(_te) -> mk__te ctx _te
 
+(* FIXME: buggy don't know why
+let memoization_te = Hashtbl.create 101
 
-
+let mk__te =
+  let counter = ref (-1) in
+  fun ctx _te ->
+    if Hashtbl.mem memoization_te _te then
+      mk_ref (Hashtbl.find memoization_te _te)
+    else
+      begin
+        incr counter;
+        Hashtbl.add memoization_te _te !counter;
+        let te' = mk__te ctx _te in
+        Format.eprintf "%a@." Web.print__te _te;
+        mk_def te' !counter
+      end
+*)
 let thm_of_const cst =
   try
     thm_of_const_name (mk_qid cst)
@@ -286,6 +318,50 @@ let rec mk_proof env =
     let mp = mk_eqMp proof (mk_trace env left right trace) in
     mp
 
+let content = ref ""
+
+let pretty_print_item item =
+  let print_item fmt = function
+    | Parameter(name,ty) ->
+      let ty' = mk_ty ty in
+      let name' = mk_qid name in
+      let lhs = term_of_const (const_of_name name') ty' in
+      let eq = mk_equal_term lhs lhs ty' in
+      mk_thm name' eq (mk_hyp []) (mk_refl lhs)
+    | Definition(cst,ty,te) ->
+      let cst' = mk_qid cst in
+      let te' = mk_te Environ.empty_env te in
+      let ty' = mk_ty ty in
+      let eq = mk_equal_term (term_of_const (const_of_name cst') ty') te' ty' in
+      let thm = thm_of_const cst in
+      mk_thm cst' eq (mk_hyp []) thm
+  | Theorem(cst,te,_)
+  | Axiom(cst,te) ->
+    let te' = mk_te empty_env te in
+    let hyp = mk_hyp [] in
+    mk_thm (mk_qid cst)  te' hyp (mk_axiom hyp te')
+  | TyOpDef(tyop,arity) ->
+    let tyop' = mk_qid tyop in
+    let tyop' = mk_tyOp tyop' in
+    let ty' = ty_of_tyOp tyop' [] in
+    let name' = mk_qid ("","foo") in
+    let lhs = term_of_const (const_of_name  name') ty' in
+    let eq = mk_equal_term lhs lhs ty' in
+    mk_thm name' eq (mk_hyp []) (mk_refl lhs)
+  in
+  (* let fmt = Format.formatter_of_out_channel @@ open_out "/tmp/test.art" in *)
+  let str_fmt = Format.str_formatter in
+  set_oc str_fmt;
+  let length = Buffer.length Format.stdbuf in
+  version ();
+  print_item str_fmt item;
+  clean ();
+  let length' = Buffer.length Format.stdbuf in
+  content := Buffer.sub Format.stdbuf length (length'-length);
+  Buffer.truncate Format.stdbuf length;
+  !content
+
+
 let print_item oc =
   function
   | Parameter(cst,ty) -> ()
@@ -308,30 +384,27 @@ let print_item oc =
     mk_thm (mk_qid cst) te' hyp' proof'
   | TyOpDef(tyop,arity) -> ()
 
-let content = ref ""
-
 let print_ast oc ast =
   let oc_tmp = Format.str_formatter in
   set_oc oc_tmp;
   version ();
-  List.iter (print_item oc_tmp) ast.items;
+  List.iter (fun item -> print_item oc_tmp item) ast.items;
   clean ();
   content := Buffer.contents Format.stdbuf;
   Format.fprintf oc "%s" !content
 
 let print_meta_ast fmt meta_ast =
-  let oc_tmp = Format.str_formatter in
-  set_oc oc_tmp;
+  let fmt_tmp = Format.str_formatter in
+  set_oc fmt_tmp;
   version ();
   let print_ast ast =
-    List.iter (print_item oc_tmp) ast.items;
+    List.iter (fun item -> print_item fmt_tmp item) ast.items;
   in
   List.iter print_ast meta_ast;
   clean ();
   content := Buffer.contents Format.stdbuf;
   Format.fprintf fmt "%s" !content
-
-let pretty_print_item item = ""
-
+(*
 let print_bdd ast =
   Mongodb.insert_openTheory ast.md !content
+*)

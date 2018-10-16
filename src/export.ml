@@ -5,8 +5,6 @@ sig
   val system            : Systems.system
   val extension         : string
   val print_ast         : Format.formatter -> Ast.ast -> unit
-  val print_meta_ast    : Format.formatter -> Ast.meta_ast -> unit
-  val print_bdd         : Ast.ast -> unit
   val pretty_print_item : Ast.item -> string
 end
 
@@ -45,13 +43,6 @@ struct
   let extension = "lean"
 end
 
-module STTFA : E =
-struct
-  include Sttfa
-  let system    = `Sttfa
-  let extension = "dk"
-end
-
 let of_system : system -> (module E) = fun sys ->
   match sys with
   | `Pvs        -> (module PVS)
@@ -59,4 +50,3 @@ let of_system : system -> (module E) = fun sys ->
   | `Matita     -> (module MATITA)
   | `OpenTheory -> (module OPENTHEORY)
   | `Lean       -> (module LEAN)
-  | `Sttfa    -> (module STTFA)

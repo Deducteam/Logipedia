@@ -138,7 +138,7 @@ let pretty_print_item = function
     Format.asprintf "theorem %s : %a." id print_te te
   | TyOpDef((md,id),arity) ->
     Format.asprintf "axiom %s : %a" id print_arity arity
-
+(*
 let print_bdd_item = function
   | Parameter((md,id),ty) ->
     Mongodb.insert_constant sys "axiom" md id (to_string print_ty ty)
@@ -153,3 +153,4 @@ let print_bdd_item = function
     Mongodb.insert_constant sys "axiom" md id (to_string print_arity arity)
 
 let print_bdd ast = (List.iter print_bdd_item) ast.items;
+  *)

@@ -8,15 +8,13 @@ open Format
 module CType  = Compile_type
 module CTerm  = Compile_term
 module CProof = Compile_proof
-
+(*
 module Closure =
 struct
 
   let closure : (Ast.name, (string * (Ast.name list)) list) Hashtbl.t = Hashtbl.create 91
 
   let init name = Hashtbl.add closure name []
-
-  (*  let shift n set = NameSet.map (fun (order,name) -> (order+n,name)) set *)
 
   let to_set l =
     List.fold_left
@@ -50,7 +48,7 @@ end
 
 let dag : Dag.t = Dag.init ()
 
-let sys = "sttfa"
+let sys = "web"
 
 let to_string fmt = Format.asprintf "%a" fmt
 
@@ -514,6 +512,8 @@ let remove_transitive_deps deps =
   in
   QSet.fold remove_dep deps deps
 
+  *)
+(*
 let handle_dep md entries =
   List.iter (handle_entry_dep md) entries;
   let md = string_of_mident md in
@@ -522,8 +522,32 @@ let handle_dep md entries =
   QSet.iter (fun md' -> Mongodb.insert_mdDep md md' "false") mds';
   let mds'' = QSet.diff mds mds' in
   QSet.iter (fun md' -> Mongodb.insert_mdDep md md' "true") mds''
+*)
 
-let print_ast _ _ = ()
-let print_meta_ast _ _ = ()
-let pretty_print_item _ = ""
-let print_bdd _ = ()
+let gen_sys_archive item deps sys =
+  let (module E:Export.E) = Export.of_system sys in
+  let gen_sys_ast ast =
+    let path = "/tmp/"^ast.md^E.extension in
+    let oc = open_out path in
+    let fmt = Format.formatter_of_out_channel oc in
+    E.print_ast fmt ast
+  in
+  List.iter gen_sys_ast deps;
+  let _ = "/tmp/Makefile" in
+  let _ = failwith "todo" in
+  let archive_name = (Ast.string_of_name (Ast.name_of_item item))^".zip" in
+  if Sys.command (Format.sprintf "cd /tmp && zip %s Makefile *.%s" archive_name E.extension) <> 0 then
+    failwith "Error while trying to generate a zip file"
+
+let mk_env entries = failwith "todo"
+
+let deps_of_entry entry = failwith "todo"
+
+let gen_file entry =
+  let deps = deps_of_entry entry in
+  let item = failwith "todo" in
+  List.iter (gen_sys_archive item deps) Systems.systems
+
+let export_entries entries =
+  mk_env entries;
+  List.iter (gen_file) entries

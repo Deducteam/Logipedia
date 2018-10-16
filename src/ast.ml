@@ -8,14 +8,12 @@ type name = string * string
 
 module NameSet = Set.Make(struct type t = name let compare = compare end)
 
-type tyOp = name
-
 type cst = name
 
 type _ty =
   | TyVar of ty_var
   | Arrow of _ty * _ty
-  | TyOp of tyOp * _ty list
+  | TyOp of name * _ty list
   | Prop
 
 type ty = ForallK of ty_var * ty | Ty of _ty
@@ -106,7 +104,7 @@ type item =
   | Definition of name * ty * te
   | Axiom of name * te
   | Theorem of name * te * proof
-  | TyOpDef of tyOp * arity
+  | TyOpDef of name * arity
 
 module QSet = Set.Make (struct
   type t = string
@@ -119,8 +117,6 @@ type ast = {
   dep  : QSet.t;
   items: item list}
 
-type meta_ast = ast list
-
 let judgment_of = function
   | Assume(j,_)     -> j
   | Lemma(_,j)      -> j
@@ -131,3 +127,12 @@ let judgment_of = function
   | ForallI(j,_,_)  -> j
   | ForallPE(j,_,_) -> j
   | ForallPI(j,_,_) -> j
+
+let name_of_item = function
+  | Parameter(name,_)
+  | Definition(name,_,_)
+  | Axiom(name,_)
+  | Theorem(name,_,_)
+  | TyOpDef(name,_) -> name
+
+let string_of_name (md,id) = Format.sprintf "%s.%s" md id

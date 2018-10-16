@@ -50,7 +50,7 @@ let add_edge a b dag =
 
 let cpt = ref 0
 
-let get dag a = (Hashtbl.find dag.nodes a)
+let get dag a = Hashtbl.find dag.nodes a
 
 let copy src =
   let nodes = Hashtbl.fold (fun k v acc -> (k,v) :: acc) src.nodes [] in
@@ -77,7 +77,6 @@ let reduce dag =
           List.iter (fun (z,zn) ->
               if is_acc x y dag && is_acc y z dag then
                 if Ast.NameSet.mem z xn.children then (
-                  Format.eprintf "%d@." !cpt;
                   incr cpt;
                   let xn = get reducedDag x in
                   xn.children <- Ast.NameSet.remove z xn.children
@@ -86,3 +85,23 @@ let reduce dag =
         ) nodes
     ) nodes;
   reducedDag
+
+let dfs dag a =
+  let dependencies = ref [] in
+  let add_name (md,id) =
+    if List.mem_assoc md !dependencies then
+      let md_dep = List.assoc md !dependencies in
+      if not (List.mem id !md_dep) then
+        md_dep := id::!md_dep;
+    else
+      dependencies := (md, ref [id])::!dependencies
+  in
+  let rec dfs dag a =
+    let node = Hashtbl.find dag.nodes a in
+    Ast.NameSet.iter (fun name ->
+        dfs dag name;
+        add_name name
+      ) node.children;
+  in
+  dfs dag a;
+  List.fold_left (fun res (md,l) -> (md,List.rev !l)::res) [] !dependencies

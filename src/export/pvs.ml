@@ -398,9 +398,6 @@ let print_ast : Format.formatter -> ast -> unit =
    List.iter (print_item oc ast.md) ast.items;
    line oc "END %s_sttfa" ast.md
 
-let print_meta_ast fmt meta_ast =
-  List.iter (print_ast fmt) meta_ast
-
 let to_string fmt = Format.asprintf "%a" fmt
 
 let pretty_print_item = function
@@ -428,7 +425,7 @@ let pretty_print_item = function
   | TyOpDef((md,id),arity) ->
     assert(arity = 0);
     Format.asprintf "%a : TYPE+" (print_name md) (md,id)
-
+(*
 let print_bdd_item = function
   | Parameter((md,id),ty) ->
     Mongodb.insert_constant sys (Format.asprintf "%a" (print_prenex_ty_pvs md) ty) md id (to_string (print_ty_pvs md) ty)
@@ -443,3 +440,4 @@ let print_bdd_item = function
     Mongodb.insert_constant sys "" md id "TYPE+"
 
 let print_bdd ast = List.iter print_bdd_item ast.items;
+  *)

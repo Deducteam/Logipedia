@@ -10,8 +10,13 @@ type thm
 
 type 'a obj
 
+val set_oc : Format.formatter -> unit
+
 val mk_name : string list -> string -> name obj
 
+val mk_def : 'a obj -> int -> 'a obj
+
+val mk_ref : int -> 'a obj
 
 val mk_var : name obj -> ty obj -> var obj
 
@@ -98,7 +103,5 @@ val thm_of_lemma : name obj -> thm obj
 val debug : 'a obj -> unit
 
 val version : unit -> unit
-
-val set_oc : Format.formatter -> unit
 
 val clean : unit -> unit
