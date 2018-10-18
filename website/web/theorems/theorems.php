@@ -116,7 +116,7 @@ function print_system($kind,$entry,$system) {
 }
 
 function print_download_button($sys, $md, $id) {
-     echo '<a class="btn btn-secondary btn-lg down-col" href="download/download.php?lang='.$sys.'&md='.$md.'&id='.$id.'">';
+     echo '<a class="btn btn-secondary btn-lg down-col" href="download/download.php?sys='.$sys.'&md='.$md.'&id='.$id.'">';
 }
 
 ?>
@@ -238,7 +238,7 @@ function print_download_button($sys, $md, $id) {
       </br>
       <div class="container">
         <div class="col-md-12 text-center">
-            <?php print_download_button("coq",$md, $id) ?>
+            <?php print_download_button("matita",$md, $id) ?>
             <i class="fas fa-file-download"></i>
           </a>
         </div>
@@ -252,7 +252,7 @@ function print_download_button($sys, $md, $id) {
       </br>
       <div class="container">
         <div class="col-md-12 text-center">
-            <?php print_download_button("coq",$md, $id) ?>
+            <?php print_download_button("lean",$md, $id) ?>
             <i class="fas fa-file-download"></i>
           </a>
         </div>
@@ -267,7 +267,7 @@ function print_download_button($sys, $md, $id) {
       </br>
       <div class="container">
         <div class="col-md-12 text-center">
-            <?php print_download_button("coq",$md, $id) ?>
+            <?php print_download_button("pvs",$md, $id) ?>
             <i class="fas fa-file-download"></i>
           </a>
         </div>

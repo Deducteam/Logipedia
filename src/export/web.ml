@@ -447,8 +447,12 @@ let gen_file item =
   let ldeps = List.sort ast_compare ldeps in
   List.iter (gen_sys_archive item ldeps) (List.filter (fun sys -> sys <> `OpenTheory) Systems.systems)
 
+let install_files () =
+  ignore(Sys.command (Format.sprintf "mv /tmp/logipedia/*.zip website/web/theorems/download/files"))
+
 let export_entries ast =
   Hashtbl.add env.md_deps ast.md ast.dep;
   add_ordered_md ast.md;
   List.iter handle_web_item ast.items;
-  List.iter gen_file ast.items
+  List.iter gen_file ast.items;
+  install_files ()
