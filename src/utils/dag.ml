@@ -1,11 +1,11 @@
-type dagnode =
+type 'a dagnode =
   {
-    mutable children : Ast.NameSet.t
+    mutable children : 'a list
   }
 
-type t =
+type 'a t =
   {
-    nodes : (Ast.name, dagnode) Hashtbl.t
+    nodes : ('a, 'a dagnode) Hashtbl.t
   }
 
 let init () =
@@ -20,7 +20,7 @@ let rec is_acc a b dag =
     true
   else
     let anode = Hashtbl.find dag.nodes a in
-    Ast.NameSet.exists (fun a' -> is_acc a' b dag) anode.children
+    List.exists (fun a' -> is_acc a' b dag) anode.children
 
 let is_acc a b dag =
   try
@@ -30,23 +30,23 @@ let is_acc a b dag =
       false
   with Not_found -> false
 
-let add_node a dag =  Hashtbl.add dag.nodes a { children = Ast.NameSet.empty }
+let add_node a dag =  Hashtbl.add dag.nodes a { children = [] }
 
 let add_edge a b dag =
   let anode = try Some (Hashtbl.find dag.nodes a) with Not_found -> None in
   let bnode = try Some (Hashtbl.find dag.nodes b) with Not_found -> None in
   match (anode, bnode) with
   | None, None ->
-    Hashtbl.add dag.nodes a { children = Ast.NameSet.singleton b };
-    Hashtbl.add dag.nodes b { children = Ast.NameSet.empty }
+    Hashtbl.add dag.nodes a { children = [b] };
+    Hashtbl.add dag.nodes b { children = [] }
   | None, Some _ ->
-    Hashtbl.add dag.nodes a { children = Ast.NameSet.singleton b }
+    Hashtbl.add dag.nodes a { children = [b] }
   | Some aNode, None ->
-    aNode.children <- Ast.NameSet.add b aNode.children;
-    Hashtbl.add dag.nodes b { children = Ast.NameSet.empty }
+    aNode.children <- b::aNode.children;
+    Hashtbl.add dag.nodes b { children = [] }
   | Some aNode, Some bNode ->
     if not (is_acc a b dag) then
-      aNode.children <- Ast.NameSet.add b aNode.children
+      aNode.children <- b::aNode.children
 
 let cpt = ref 0
 
@@ -57,34 +57,18 @@ let copy src =
   let dst = init () in
   List.iter (fun (k,v) -> Hashtbl.add dst.nodes k {children = v.children}) nodes;
   dst
-
+(*
 let reduce_node dag node =
   let children = (get dag node).children in
-  let accessibles = ref Ast.NameSet.empty in
-  Ast.NameSet.iter (fun child ->
-      Ast.NameSet.iter (fun child' ->
+  let accessibles = ref [] in
+  List.iter (fun child ->
+      List.iter (fun child' ->
           if child <> child' && is_acc child' child dag then
-            accessibles := Ast.NameSet.add child !accessibles;
+            accessibles := child::!accessibles;
         ) children
     ) children;
   (get dag node).children <- Ast.NameSet.diff children !accessibles
-
-let reduce dag =
-  let reducedDag = copy dag in
-  let nodes = Hashtbl.fold (fun k v l -> (k,v)::l) dag.nodes [] in
-  List.iter (fun (x,xn) ->
-      List.iter (fun (y,yn) ->
-          List.iter (fun (z,zn) ->
-              if is_acc x y dag && is_acc y z dag then
-                if Ast.NameSet.mem z xn.children then (
-                  incr cpt;
-                  let xn = get reducedDag x in
-                  xn.children <- Ast.NameSet.remove z xn.children
-                );
-            ) nodes
-        ) nodes
-    ) nodes;
-  reducedDag
+                             *)
 
 let dfs dag a =
   let dependencies = ref [] in
@@ -96,12 +80,12 @@ let dfs dag a =
     else
       dependencies := (md, ref [id])::!dependencies
   in
-  let rec dfs dag a =
+  let rec dfs seen dag a =
     let node = Hashtbl.find dag.nodes a in
-    Ast.NameSet.iter (fun name ->
-        dfs dag name;
+    List.iter (fun name ->
+        dfs (name::seen) dag name;
         add_name name
       ) node.children;
   in
-  dfs dag a;
+  dfs [a] dag a;
   List.fold_left (fun res (md,l) -> (md,List.rev !l)::res) [] !dependencies

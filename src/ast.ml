@@ -106,11 +106,7 @@ type item =
   | Theorem of name * te * proof
   | TyOpDef of name * arity
 
-module QSet = Set.Make (struct
-  type t = string
-
-  let compare = compare
-end)
+module QSet = Set.Make (struct type t = string let compare = compare end)
 
 type ast = {
   md   : string;

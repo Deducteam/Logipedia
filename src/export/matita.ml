@@ -101,15 +101,15 @@ let rec print_proof oc = function
 
 let print_item oc = function
   | Parameter(name,ty) ->
-    Format.fprintf oc "axiom %a : %a.\n" print_name name print_ty ty
+    Format.fprintf oc "axiom %a : %a.@." print_name name print_ty ty
   | Definition(name,ty,te) ->
-    Format.fprintf oc "definition %a : %a := %a.\n" print_name name print_ty ty print_te te
+    Format.fprintf oc "definition %a : %a := %a.@." print_name name print_ty ty print_te te
   | Axiom(name,te) ->
-    Format.fprintf oc "axiom %a : %a.\n" print_name name print_te te
+    Format.fprintf oc "axiom %a : %a.@." print_name name print_te te
   | Theorem(name,te,proof) ->
-    Format.fprintf oc "definition %a : %a := %a.\n" print_name name print_te te print_proof proof
+    Format.fprintf oc "definition %a : %a := %a.@." print_name name print_te te print_proof proof
   | TyOpDef(tyop,arity) ->
-    Format.fprintf oc "axiom %a : %a.\n" print_name tyop print_arity arity
+    Format.fprintf oc "axiom %a : %a.@." print_name tyop print_arity arity
 
 let print_ast oc ast =
   print_dep oc "basics/pts";

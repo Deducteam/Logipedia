@@ -15,3 +15,10 @@ let system_of_string : string -> system = fun s ->
     `Lean
   else
     failwith (Format.sprintf "%s is not among the supported systems@." s)
+
+let string_of_system : system -> string = function
+  | `Coq -> "coq"
+  | `Matita -> "matita"
+  | `OpenTheory -> "opentheory"
+  | `Pvs -> "pvs"
+  | `Lean -> "lean"

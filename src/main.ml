@@ -36,16 +36,19 @@ let export_file file ast system =
   M.print_ast fmt ast ;
   close_out oc
 
+let mk_ast md entries =
+  let items = List.map (handle_entry md) entries in
+  let dep = List.fold_left
+      (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
+  {md = string_of_mident md; dep; items}
+
 let run_on_file file =
   let md = Env.init file in
   let input = open_in file in
   let entries = Parse_channel.parse md input in
   close_in input ;
   begin
-    let items = List.map (handle_entry md) entries in
-    let dep = List.fold_left
-        (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
-    let sttfa_ast = {md = string_of_mident md; dep; items} in
+    let sttfa_ast = mk_ast md entries in
     Env.export ();
     let (module M:Export.E) = Export.of_system !system in
     export_file file sttfa_ast !system;
@@ -57,7 +60,8 @@ let export_web files =
     let input = open_in file in
     let entries = Parse_channel.parse md input in
     close_in input;
-    Web.export_entries entries
+    Web.export_entries (mk_ast md entries);
+    Env.export()
   in
   List.iter export_file files
 

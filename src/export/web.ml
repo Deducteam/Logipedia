@@ -1,8 +1,8 @@
+open Basic
 open Term
 open Ast
 open Sttforall
 open Environ
-open Basic
 open Format
 
 module CType  = Compile_type
@@ -524,30 +524,277 @@ let handle_dep md entries =
   QSet.iter (fun md' -> Mongodb.insert_mdDep md md' "true") mds''
 *)
 
+type web_item =
+  {
+    entry : Entry.entry;
+    item  : item
+  }
+
+let items : (name, item) Hashtbl.t = Hashtbl.create 101
+
+let insert_item item =
+  Hashtbl.add items (name_of_item item) item;
+  match item with
+  | Parameter((md,id),_) ->
+    Mongodb.insert_item md id "constant"
+  | Definition((md,id),_,_) ->
+    Mongodb.insert_item md id "definition"
+  | Axiom((md,id),_) ->
+    Mongodb.insert_item md id "axiom"
+  | Theorem((md,id),_,_) ->
+    Mongodb.insert_item md id "theorem"
+  | TyOpDef((md,id),_) ->
+    Mongodb.insert_item md id "constant"
+
+
+let is_axiom name =
+  match Hashtbl.find items name with
+  | Axiom _ -> true
+  | _ -> false
+
+let is_constant name =
+  match Hashtbl.find items name with
+  | Parameter _
+  | TyOpDef _ -> true
+  | _ -> false
+
+let is_theorem name =
+  match Hashtbl.find items name with
+  | Theorem _ -> true
+  | _ -> false
+
+let is_definition name =
+  match Hashtbl.find items name with
+  | Definition _ -> true
+  | _ -> false
+
+type env = {
+    item_deps     : (name, (string,ast) Hashtbl.t)  Hashtbl.t;
+
+    theory        : (name, NameSet.t) Hashtbl.t;
+
+    main_deps     : (name, NameSet.t) Hashtbl.t;
+
+    undirect_deps : (name, NameSet.t) Hashtbl.t;
+
+    md_deps       : (string, QSet.t) Hashtbl.t
+  }
+
+let env =
+  {
+    item_deps     = Hashtbl.create 101;
+    theory        = Hashtbl.create 101;
+    main_deps     = Hashtbl.create 101;
+    undirect_deps = Hashtbl.create 101;
+    md_deps       = Hashtbl.create 101;
+  }
+
+let ordered_md = Hashtbl.create 11
+
+let add_ordered_md : string -> unit =
+  let counter = ref (-1) in
+  fun md ->
+    incr counter;
+    Hashtbl.add ordered_md md !counter
+
+let ordered_name = Hashtbl.create 101
+
+let add_ordered_name : name -> unit =
+  let counter = ref (-1) in
+  fun name ->
+    incr counter;
+    Hashtbl.add ordered_name name !counter
+
+let find table key =
+  if Hashtbl.mem table key then
+    Hashtbl.find table key
+  else
+    NameSet.empty
+
+let update check add table key value =
+  let deps = find table key in
+  if not (check value deps) then
+    Hashtbl.replace table key (add value deps)
+
+let update_main_deps key value =
+  update (NameSet.mem) (NameSet.add) env.main_deps key value
+
+let update_unidrect_deps key dep =
+  let ukey = find env.undirect_deps key in
+  let udep = find env.undirect_deps dep in
+  Hashtbl.replace env.undirect_deps key (NameSet.union ukey udep)
+
+let update_theory key dep =
+  let item_dep = Hashtbl.find items dep in
+  let theory  = find env.theory dep in
+  let theory' =
+    match item_dep with
+    | Parameter(name,_)
+    | Axiom(name,_)
+    | TyOpDef(name,_) -> NameSet.add name theory
+    | Theorem(name,_,_) -> theory
+    | Definition(name,_,_) ->
+      let item = Hashtbl.find items key in
+      match item with
+      | Axiom(_,_) -> NameSet.add name theory
+      | _ -> theory
+  in
+  Hashtbl.replace env.theory key theory'
+
+let pp_name fmt (md,id) =
+  Format.fprintf fmt "%s.%s" md id
+
+let pp_item fmt item = Format.fprintf fmt "%a" pp_name (name_of_item item)
+
+let name_compare name name' =
+  Pervasives.compare (Hashtbl.find ordered_name name) (Hashtbl.find ordered_name name')
+
+let md_compare md md' =
+  Pervasives.compare (Hashtbl.find ordered_md md) (Hashtbl.find ordered_md md')
+
+let item_compare item item' = name_compare (name_of_item item) (name_of_item item')
+
+let ast_compare ast ast' = md_compare ast.md ast'.md
+
+let find_ast table md =
+  if Hashtbl.mem table md then
+    Hashtbl.find table md
+  else
+    {md; dep=QSet.empty; items=[]}
+
+let merge_ast ast ast' =
+  let dep = QSet.union ast.dep ast'.dep in
+  let items = List.sort_uniq item_compare (ast.items@ast'.items) in
+  {ast with dep;items}
+
+let merge_asts asts asts' =
+  Hashtbl.iter (fun md ast' ->
+      let ast = find_ast asts md in
+      Hashtbl.replace asts md (merge_ast ast ast')) asts'
+
+let update_ast key dep =
+  let md' = fst dep in
+  let item = Hashtbl.find items dep in
+  let asts = Hashtbl.find env.item_deps key in
+  (* TODO: fix this *)
+  let ast = find_ast asts md' in
+  let rec insert dep l =
+    match l with
+    | [] -> [item]
+    | x::l' ->
+      let namex = name_of_item x in
+      if name_compare dep namex > 0 then
+        x::(insert dep l')
+      else if name_compare dep namex = 0 then
+        x::l'
+      else
+        item::x::l'
+  in
+  let dep' = if md' <> fst key then QSet.add md' ast.dep else ast.dep in
+  Hashtbl.replace asts md' {ast with dep = dep'; items = insert dep ast.items}
+
+(* Can do better if name name' has been already seen *)
+let mk_dep name name' =
+  update_main_deps name name';
+  update_unidrect_deps name name';
+  update_theory name name';
+  update_ast name name'
+
+let mk_env_consistent name =
+  let main_deps = find env.main_deps name in
+  let undir_deps = find env.undirect_deps name in
+  let main_deps' = NameSet.diff main_deps undir_deps in
+  Hashtbl.replace env.main_deps name main_deps'
+
+let cur_name = ref ("","")
+
+let rec mk__ty_dep = function
+  | TyVar _ | Prop -> ()
+  | TyOp(name',_tys) -> mk_dep !cur_name name'; List.iter mk__ty_dep _tys
+  | Arrow(_tyl,_tyr) -> mk__ty_dep _tyl; mk__ty_dep _tyr
+
+let rec mk_ty_dep = function
+  | ForallK(var,ty) -> mk_ty_dep ty
+  | Ty(_ty) -> mk__ty_dep _ty
+
+let rec mk__te_dep = function
+  | TeVar _ -> ()
+  | Abs(_,_ty,_te) -> mk__ty_dep _ty; mk__te_dep _te
+  | App(_tel,_ter) -> mk__te_dep _tel; mk__te_dep _ter
+  | Forall(_,_ty,_te) -> mk__ty_dep _ty; mk__te_dep _te
+  | Impl(_tel,_ter) -> mk__te_dep _tel; mk__te_dep _ter
+  | AbsTy(_,_te) -> mk__te_dep _te
+  | Cst(name',_tys) -> mk_dep !cur_name name'; List.iter mk__ty_dep _tys
+
+let rec mk_te_dep = function
+  | ForallP(var,te) -> mk_te_dep te
+  | Te(_te) ->         mk__te_dep _te
+
+let rec mk_proof_dep = function
+  | Assume _ -> ()
+  | Lemma(name',_) ->        mk_dep !cur_name name'
+  | Conv(_,proof,_) ->       mk_proof_dep proof
+  | ImplE(_,prfl,prfr) ->    mk_proof_dep prfl; mk_proof_dep prfr
+  | ImplI(_,proof,_) ->      mk_proof_dep proof
+  | ForallE(_,proof,_te) ->  mk__te_dep _te; mk_proof_dep proof
+  | ForallI(_,proof,_) ->    mk_proof_dep proof
+  | ForallPE(_,proof,_ty) -> mk__ty_dep _ty; mk_proof_dep proof
+  | ForallPI(_,proof,_) ->   mk_proof_dep proof
+
+let mk_item_dep = function
+  | Parameter(name,ty) -> mk_ty_dep ty
+  | Definition(name,ty,te) -> mk_ty_dep ty; mk_te_dep te;
+  | Axiom(name,te) -> mk_te_dep te;
+  | Theorem(name,te,proof) -> mk_te_dep te; mk_proof_dep proof
+  | TyOpDef(name,arity)  -> ()
+
+let handle_web_item item =
+  let open Entry in
+  insert_item item;
+  let name = name_of_item item in
+  let md = fst name in
+  cur_name := name;
+  add_ordered_name name;
+  Hashtbl.add env.theory name (NameSet.singleton name);
+  let ast_init = Hashtbl.create 3 in
+  Hashtbl.add ast_init md {md; dep=QSet.empty;items=[item]};
+  Hashtbl.add env.item_deps name ast_init;
+  mk_item_dep item;
+  mk_env_consistent (name_of_item item)
+
+let init tmp_dir =
+  try ignore(Sys.is_directory tmp_dir);
+  with _ -> Unix.mkdir tmp_dir 0o766
+
+let close tmp_dir ext =
+  ignore(Sys.command (Format.sprintf "rm %s/*.%s" tmp_dir ext))
+
 let gen_sys_archive item deps sys =
   let (module E:Export.E) = Export.of_system sys in
+  let tmp_dir = Filename.get_temp_dir_name () ^ "/logipedia" in
+  init tmp_dir;
   let gen_sys_ast ast =
-    let path = "/tmp/"^ast.md^E.extension in
+    let path = tmp_dir^"/"^ast.md^"."^E.extension in
     let oc = open_out path in
     let fmt = Format.formatter_of_out_channel oc in
-    E.print_ast fmt ast
+    E.print_ast fmt ast;
+    close_out oc
   in
   List.iter gen_sys_ast deps;
-  let _ = "/tmp/Makefile" in
-  let _ = failwith "todo" in
-  let archive_name = (Ast.string_of_name (Ast.name_of_item item))^".zip" in
-  if Sys.command (Format.sprintf "cd /tmp && zip %s Makefile *.%s" archive_name E.extension) <> 0 then
-    failwith "Error while trying to generate a zip file"
+  let archive_name = Systems.string_of_system sys^"."^(string_of_name (name_of_item item))^".zip" in
+  let cmd = (Format.sprintf "cd %s && zip %s *.%s 2>&1 >/dev/null" tmp_dir archive_name E.extension) in
+  if Sys.command cmd <> 0 then
+    failwith "Error while trying to generate a zip file";
+  close tmp_dir E.extension
 
-let mk_env entries = failwith "todo"
+let gen_file item =
+  let deps = Hashtbl.find env.item_deps (name_of_item item) in
+  let ldeps = Hashtbl.fold (fun _ v l -> v::l) deps [] in
+  let ldeps = List.sort ast_compare ldeps in
+  List.iter (gen_sys_archive item ldeps) Systems.systems
 
-let deps_of_entry entry = failwith "todo"
-
-let gen_file entry =
-  let deps = deps_of_entry entry in
-  let item = failwith "todo" in
-  List.iter (gen_sys_archive item deps) Systems.systems
-
-let export_entries entries =
-  mk_env entries;
-  List.iter (gen_file) entries
+let export_entries ast =
+  Hashtbl.add env.md_deps ast.md ast.dep;
+  add_ordered_md ast.md;
+  List.iter handle_web_item ast.items;
+  List.iter gen_file ast.items

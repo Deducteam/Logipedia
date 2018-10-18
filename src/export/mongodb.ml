@@ -10,15 +10,15 @@ let insert collection keyval =
   let doc = List.fold_left (fun doc (key,value) -> Bson.add_element key value doc) Bson.empty keyval in
   Mongo.insert collection [doc]
 
-let insert_theory md id kind mdDep idDep =
-  let values = List.map of_string [md; id; kind; mdDep; idDep] in
-  let keys = ["md";"id";"kind";"mdDep";"idDep"] in
+let insert_theory md id mdDep idDep =
+  let values = List.map of_string [md; id; mdDep; idDep] in
+  let keys = ["md";"id";"mdDep";"idDep"] in
   let keyval = List.combine keys values in
   insert mongo_theory keyval
 
-let insert_dependency md id kind mdDep idDep =
-  let values = List.map of_string [md; id; kind; mdDep; idDep] in
-  let keys = ["md";"id";"kind";"mdDep";"idDep"] in
+let insert_dependency md id mdDep idDep =
+  let values = List.map of_string [md; id; mdDep; idDep] in
+  let keys = ["md";"id";"mdDep";"idDep"] in
   let keyval = List.combine keys values in
   insert mongo_dependencies keyval
 
