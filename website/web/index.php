@@ -1,7 +1,7 @@
 <?php
   require 'vendor/autoload.php';
   $mongo = new MongoDB\Client('mongodb://localhost:27017'); //Acces au SGBD
-
+  $mongo->logipedia->items->createIndex(["md" => "text", "id" => "text"]);
   function print_entry($md,$id, $kind)
   {
       echo '<a href="theorems/theorems.php?md='.$md.'&id='.$id.'&kind='.$kind.'" class="list-group-item list-group-item-action text-center list-group-bg-mar\">';
@@ -60,7 +60,7 @@
 <?php
   try
   {
-      $collection = $mongo->logipedia->idKind;
+      $collection = $mongo->logipedia->items;
       if (isset($_GET['search'])) {
           $input = $_GET['search'];
           $result = $collection->find(['$text' => ['$search' => "$input", '$caseSensitive' => false]]);

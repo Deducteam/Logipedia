@@ -32,24 +32,17 @@ $mongo = new MongoDB\Client('mongodb://localhost:27017'); //Acces au SGBD
        </div>
        </div>
        </nav>
-       <!--
-       <hr class="my-4">
-       <div class="row">
-       <div class="col-md-3 col-sm-3 col-3"> </div>
-       <h4 class="h4-color"> This page lists all the modules available in Logipedia</h4>
-       </div>
-       -->
        <hr class="my-4">
 
        <div class="container">
        <div class="list-group">
        <?php
-       $collection  = $mongo->logipedia->mdDep;
+       $collection  = $mongo->logipedia->items;
        $query       = $collection->find([], ['projection' => ['_id' => false]]);
        $all_modules = [];
        foreach($query as $dep_md) {
-           if(!(in_array($dep_md['mdDep'], $all_modules))) {
-               array_push($all_modules, $dep_md['mdDep']);
+           if(!(in_array($dep_md['md'], $all_modules))) {
+               array_push($all_modules, $dep_md['md']);
            }
            if(!(in_array($dep_md['md'], $all_modules))) {
                array_push($all_modules, $dep_md['md']);
