@@ -105,3 +105,5 @@ val debug : 'a obj -> unit
 val version : unit -> unit
 
 val clean : unit -> unit
+
+val reset : unit -> unit

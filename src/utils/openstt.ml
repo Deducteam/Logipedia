@@ -471,6 +471,12 @@ struct
 
   let memory : type a. (hash_op,int) Hashtbl.t = Obj.magic @@ Hashtbl.create 87
 
+  let reset () =
+    Hashtbl.reset memory;
+    Hashtbl.reset lemmas_defined;
+    Hashtbl.reset const_defined;
+    counter := 0
+
   let save (t:'a push) : 'a obj =
     if Hashtbl.mem memory (Hash (t.push Empty)) then
       {instr=t; id = Hashtbl.find memory (Hash(t.push Empty))}

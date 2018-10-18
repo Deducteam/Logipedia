@@ -320,7 +320,7 @@ let rec mk_proof env =
 
 let content = ref ""
 
-let pretty_print_item item =
+let pretty_print_item item = "Printing for OpenTheory is not supported right now." (*
   let print_item fmt = function
     | Parameter(name,ty) ->
       let ty' = mk_ty ty in
@@ -360,7 +360,7 @@ let pretty_print_item item =
   content := Buffer.sub Format.stdbuf length (length'-length);
   Buffer.truncate Format.stdbuf length;
   !content
-
+*)
 
 let print_item oc =
   function
@@ -385,6 +385,8 @@ let print_item oc =
   | TyOpDef(tyop,arity) -> ()
 
 let print_ast oc ast =
+  Buffer.clear Format.stdbuf;
+  reset ();
   let oc_tmp = Format.str_formatter in
   set_oc oc_tmp;
   version ();
@@ -392,7 +394,7 @@ let print_ast oc ast =
   clean ();
   content := Buffer.contents Format.stdbuf;
   Format.fprintf oc "%s" !content
-
+(*
 let print_meta_ast fmt meta_ast =
   let fmt_tmp = Format.str_formatter in
   set_oc fmt_tmp;
@@ -403,7 +405,7 @@ let print_meta_ast fmt meta_ast =
   List.iter print_ast meta_ast;
   clean ();
   content := Buffer.contents Format.stdbuf;
-  Format.fprintf fmt "%s" !content
+  Format.fprintf fmt "%s" !content *)
 (*
 let print_bdd ast =
   Mongodb.insert_openTheory ast.md !content

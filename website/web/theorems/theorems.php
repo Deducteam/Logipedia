@@ -288,7 +288,7 @@ function print_download_button($sys, $md, $id) {
       </div>
       <div class="container">
         <div class="col-md-12 text-center">
-          <a class="btn btn-secondary btn-lg down-col" href="download/download.php?lang=openTheory">
+            <?php print_download_button("opentheory",$md, $id) ?>
             <i class="fas fa-file-download"></i>
           </a>
         </div>

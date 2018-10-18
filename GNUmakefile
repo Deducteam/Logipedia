@@ -76,6 +76,10 @@ library/%.summary: library/%.pvs
 	@echo "[SUMMARY]"
 	proveit --importchain -sf $<
 
+web: theories/sttfa.dko $(MAIN)
+	mongo < ./bdd/dropLogipedia.js
+	time ./main.native  -I library -I theories --export-web $(SORTEDDKS)
+
 coq: library/fermat.vo
 
 matita: library/fermat.ma
@@ -89,11 +93,8 @@ lean: library/fermat.lean
 	cp library/*.lean /tmp/fermat/src/
 	lean /tmp/fermat/src/fermat.lean
 
-opentheory: library/fermat.thy
+opentheory: library/fermat.thy library/fermat.art
 	opentheory info library/fermat.thy
-
-bdd-dep: $(LIBDKS) _build/src/main.native theories/sttfa.dko
-	./main.native  -I library -I theories --export sttfa --export-bdd $(SORTEDDKS)
 
 .library_depend_dko: $(wildcard library/*.dk theories/*.dk examples/*.dk)
 	@echo "[DEP] $@"

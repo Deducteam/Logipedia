@@ -421,6 +421,7 @@ let close tmp_dir ext =
   ignore(Sys.command (Format.sprintf "rm %s/*.%s" tmp_dir ext))
 
 let gen_sys_archive item deps sys =
+  Format.eprintf "[FILE %s] %a@." (Systems.string_of_system sys) pp_item item;
   let (module E:Export.E) = Export.of_system sys in
   let tmp_dir = Filename.get_temp_dir_name () ^ "/logipedia" in
   init tmp_dir;
@@ -428,6 +429,7 @@ let gen_sys_archive item deps sys =
     let path = tmp_dir^"/"^ast.md^"."^E.extension in
     let oc = open_out path in
     let fmt = Format.formatter_of_out_channel oc in
+    assert (ast.items <> []);
     E.print_ast fmt ast;
     close_out oc
   in
@@ -441,11 +443,10 @@ let gen_sys_archive item deps sys =
   close tmp_dir E.extension
 
 let gen_file item =
-  Format.eprintf "[FILE] %a@." pp_item item;
   let deps = Hashtbl.find env.item_deps (name_of_item item) in
   let ldeps = Hashtbl.fold (fun _ v l -> v::l) deps [] in
   let ldeps = List.sort ast_compare ldeps in
-  List.iter (gen_sys_archive item ldeps) (List.filter (fun sys -> sys <> `OpenTheory) Systems.systems)
+  List.iter (gen_sys_archive item ldeps) Systems.systems
 
 let install_files () =
   ignore(Sys.command (Format.sprintf "mv /tmp/logipedia/*.zip website/web/theorems/download/files"))
