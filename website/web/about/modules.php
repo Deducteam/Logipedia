@@ -14,7 +14,7 @@ $mongo = new MongoDB\Client('mongodb://localhost:27017'); //Acces au SGBD
        <link rel="stylesheet" type="text/css" href="about.css">
        </head>
        <body>
-       <?php require '../header.php' ?>
+       <?php include '../header.php' ?>
        <hr class="my-4">
 
        <div class="container">
