@@ -27,6 +27,7 @@ $directDeps["axiom"] = [];
 $directDeps["theorem"] = [];
 $directDeps["constant"] = [];
 $directDeps["definition"] = [];
+$directDeps["tyop"] = [];
 foreach($query as $line) {
      array_push($directDeps[$line['idKind']['kind']], ['md' => $line['mdDep'], "id" => $line['idDep']]);
 }
@@ -93,7 +94,7 @@ function print_theorem($body) {
 }
 
 function print_tyOp($body) {
-    print_container("Type Operator", $body);
+    print_container("Arity", $body);
 }
 
 function print_entry($kind, $entry) {
@@ -108,6 +109,9 @@ function print_entry($kind, $entry) {
      }
      else if ($kind == "constant") {
           print_constant($entry["content"]);
+     }
+     else if ($kind == "tyop") {
+          print_tyOp($entry["content"]);
      }
 }
 
@@ -131,28 +135,7 @@ function print_download_button($sys, $md, $id) {
     <link rel="stylesheet" type="text/css" href="theorems.css">
   </head>
   <body onLoad="document.getElementById('attente').style.display='none'">
-    <nav class="navbar navbar-expand-md bg-dark navbar-dark fixed-top">
-      <div class="container">
-        <a class="navbar-brand" href="../index.php"><i class="fas fa-award"></i> Logipedia</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="collapsibleNavbar">
-          <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
-            <li class="nav-item">
-              <a class="nav-link" href="../about/about.php">About</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="../about/modules.php">Modules</a>
-            </li>
-          </ul>
-          <form class="form-inline my-2 my-lg-0" action="../index.php" method="get">
-            <input class="form-control mr-sm-2 col-8" type="search" name="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-light my-2 my-sm-0 " type="submit">Search</button>
-          </form>
-        </div>
-      </div>
-    </nav>
+    <?php require '../header.php' ?>
     // This prints the left floatting menu
     <div id="mySidenav" class="sidenav d-none d-sm-block">
       <div class="container">
@@ -295,7 +278,6 @@ function print_download_button($sys, $md, $id) {
       </div>
       </br>
     </div>
-
     <script src="theorems.js"></script>
   </body>
 </html>
