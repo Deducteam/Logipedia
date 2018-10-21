@@ -56,14 +56,16 @@ foreach($query as $line) {
 }
 
 function print_dep($kind, $deps) {
-     echo '<div class="card col-md-3">';
-     echo '<div class="card-header text-center">'.$kind.'</div>';
-     echo '<div class="list-group">';
-     foreach ($deps[$kind] as $line)
-     {
-           echo '<a href="theorems.php?md='.$line["md"].'&id='.$line["id"].'&kind=axiom" class="list-group-item list-group-item-action text-center">'.$line["md"].".".$line["id"].'</a>';
-     }
-     echo '</div></div>';
+    if(count($deps[$kind]) != 0) {
+        echo '<div class="card col-md-3">';
+        echo '<div class="card-header text-center">'.$kind.'</div>';
+        echo '<div class="list-group">';
+        foreach ($deps[$kind] as $line)
+        {
+            echo '<a href="theorems.php?md='.$line["md"].'&id='.$line["id"].'&kind=axiom" class="list-group-item list-group-item-action text-center">'.$line["md"].".".$line["id"].'</a>';
+        }
+        echo '</div></div>';
+    }
 }
 
 function print_container($header, $body) {
@@ -156,7 +158,7 @@ function print_download_button($sys, $md, $id) {
 <?php print_system($kind, $entry, "dedukti"); ?>
       <div class="container">
         <fieldset class="scheduler-border">
-          <legend class="scheduler-border"> Dependences </legend>
+          <legend class="scheduler-border"> Main Dependencies </legend>
           <div class="card">
             <div class="card-header" id="headingOne">
                 <a class="list-group-item list-group-item-action text-center" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" id="btHide">
@@ -170,6 +172,7 @@ function print_download_button($sys, $md, $id) {
         print_dep("constant", $directDeps);
         print_dep("definition", $directDeps);
         print_dep("theorem", $directDeps);
+        print_dep("tyop", $directDeps);
      ?>
 
               </div>
@@ -193,6 +196,7 @@ function print_download_button($sys, $md, $id) {
         print_dep("constant", $theory);
         print_dep("definition", $theory);
         print_dep("theorem", $theory);
+        print_dep("tyop", $theory);
      ?>
             </div>
           </div>

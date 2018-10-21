@@ -14,7 +14,6 @@ if(isset($_GET['md']) && isset($_GET['id']) && isset($_GET['sys'])) {
     header("Content-Transfer-Encoding: binary");
     header('Pragma: no-cache');
     header('Expires: 0');
-    // Send the file contents.
     set_time_limit(0);
     readfile($file);
 }

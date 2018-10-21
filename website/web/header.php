@@ -2,6 +2,7 @@
 $index_path  = "/index.php";
 $about_path  = "/about/about.php";
 $module_path = "/about/modules.php";
+$faq_path = "/about/faq.php";
 ?>
     <nav class="navbar navbar-expand-md bg-dark navbar-dark fixed-top">
       <div class="container">
@@ -17,7 +18,14 @@ $module_path = "/about/modules.php";
             <li class="nav-item">
               <a class="nav-link" href="<?php echo $module_path; ?>">Modules</a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="<?php echo $faq_path; ?>">FAQ</a>
+            </li>
           </ul>
         </div>
+          <form class="form-inline my-2 my-lg-0" method="post">
+                <input class="form-control mr-sm-2 col-8" type="search" name="search" placeholder="Search" aria-label="Search">
+                <button class="btn pull-right btn-outline-light my-2 my-sm-0 " type="submit" name="submit">Search</button>
+          </form>
       </div>
     </nav>
