@@ -7,7 +7,7 @@ This repository presents an arithmetic library that is shared between several pr
 - Lean
 - PVS
 
-If you want to export this library to your favorite system, please send me a mail to francois.thire@inria.fr. All contributions are welcome!
+If you want to export this library to your favorite system, please send us an email: gilles.dowek@inria.fr, francois.thire@inria.fr. All contributions are welcome!
 
 # Compiling the project
 
@@ -23,9 +23,15 @@ To export the library you can use the command
 make <system>
 ```
 
-where `<system>` can be either *coq*, *matita*. *lean* or *pvs*. For *opentheory*, you can compile any file in the */library* directory one by one.
+where `<system>` can be either *coq*, *matita*. *lean* or *pvs* or *opentheory*. You can also compile all the files one:
 
-# Exporting the proofs on MongoDB
+``` bash
+make library/nat.v
+```
+
+to generate coq files for example.
+
+# Exporting the MongoDB Database
 
 This process requires first to have a MongoDB server. You can install one with the following command:
 `sudo apt install mongodb`
@@ -33,8 +39,10 @@ This process requires first to have a MongoDB server. You can install one with t
 Then you need to run a server with the following command:
 `mongo`
 
-To export your theorems, you just need to use the option `--export-bdd`. Using the command `make`, you can do it by setting the environment variable `BDD`. For example:
-`make BDD=--export-bdd library/fermat.art`
+To export the Mongo DB, you just need to invoke the Makefile with the following command:
+`make bdd-dep`
+
+In the `bdd` folder, you will find scripts related to the bdd. In particular, since we are using MongoDB, it is better if you drop the old database before updating it.
 
 # Maintainers
 
@@ -45,3 +53,4 @@ To export your theorems, you just need to use the option `--export-bdd`. Using t
 
 - We don't use the functor mechanism of Coq for the moment because it is heavy to instantiate and hard to use.
 - OpenTheory output comsumes a lot of memory (about 4Go). This is due to a memoization problem on our side. This should be fixed in a future version.
+- Files are generated all at the same time. In later versions, we would like to generate them one by one.
