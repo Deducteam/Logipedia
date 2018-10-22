@@ -9,7 +9,7 @@ if(isset($_GET['md']) && isset($_GET['id']) && isset($_GET['sys'])) {
     if(!file_exists($file))
         die("The file does seem to exist or cannot be generated. This error should be reported");
     $type=filetype($file);
-    header("Content-type: $type");
+    header("Content-type: application/octet-stream");
     header("Content-Disposition: attachment;filename=".$file);
     header("Content-Transfer-Encoding: binary");
     header('Pragma: no-cache');
