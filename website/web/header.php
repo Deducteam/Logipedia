@@ -23,9 +23,9 @@ $faq_path = "/about/faq.php";
             </li>
           </ul>
         </div>
-          <form class="form-inline my-2 my-lg-0" method="post">
+          <form class="form-inline my-2 my-lg-0" action="/index.php" method="get">
                 <input class="form-control mr-sm-2 col-8" type="search" name="search" placeholder="Search" aria-label="Search">
-                <button class="btn pull-right btn-outline-light my-2 my-sm-0 " type="submit" name="submit">Search</button>
+                <button class="btn pull-right btn-outline-light my-2 my-sm-0 " type="submit">Search</button>
           </form>
       </div>
     </nav>
