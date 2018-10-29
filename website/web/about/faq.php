@@ -17,7 +17,7 @@
         <div class="panel panel-default ">
             <div class="panel-heading accordion-toggle collapsed question-toggle" data-toggle="collapse" data-parent="#faqAccordion" data-target="#question1">
                  <h4 class="panel-title">
-                    <a href="#" class="ing">What does the field "Theory" means?</a>
+                    <a href="#" class="ing">What is the field "Theory"?</a>
               </h4>
 
             </div>
@@ -25,14 +25,14 @@
                 <div class="panel-body">
                      <h5><span class="label label-primary">Answer</span></h5>
 
-      <p>For a theorem, the theory is defined as the set of the constants, type operators and axioms used by this theorem and the transitive closure of its dependencies. It contains also definitions that appear in the statement of axioms. This notion of theory is extended in a natural way to the other kind of objects.</p>
+      <p>The theory of a theorem is the set of constants, axioms, and definitions needed to prove this theorem. It contains also the definitions that appear in the statement of axioms. This notion of theory is extended in a natural way to the other kind of objects.</p>
                 </div>
             </div>
         </div>
         <div class="panel panel-default ">
             <div class="panel-heading accordion-toggle collapsed question-toggle" data-toggle="collapse" data-parent="#faqAccordion" data-target="#question2">
                  <h4 class="panel-title">
-                    <a href="#" class="ing">What does the field "Main Dependencies" means?</a>
+                    <a href="#" class="ing">What is the field "Main Dependencies"?</a>
               </h4>
 
             </div>
@@ -40,7 +40,7 @@
                 <div class="panel-body">
                      <h5><span class="label label-primary">Answer</span></h5>
 
-                    <p> Main dependencies are direct dependencies of a theorem that do not appear in the transitive closure of dependencies of that theorem.
+      <p> The main dependencies of a theorem are the constants, axioms, definitions, and lemmas that are used in its proof that do not appear in the transitive closure of dependencies of that theorem.
                 </div>
             </div>
         </div>
@@ -56,7 +56,7 @@
                 <div class="panel-body">
                      <h5><span class="label label-primary">Answer</span></h5>
 
-      <p> A constant is a symbol that does not have a definition. In general, such symbol comes with axioms it has to satisfy.
+      <p> A constant is a symbol that does not have a definition. In general, such symbol comes with axioms that define its meaning.
       </p>
                 </div>
             </div>
@@ -73,7 +73,7 @@
                 <div class="panel-body">
                      <h5><span class="label label-primary">Answer</span></h5>
 
-                   <p>A Type Operator is an abstract type (such as "nat"). It has not definition and can also be seen as a constant.</p>
+      <p>A Type Operator is a type constant, such as the type "nat" of natural numbers. It has no definition.</p>
                 </div>
             </div>
         </div>
@@ -104,7 +104,7 @@
                 <div class="panel-body">
                      <h5><span class="label label-primary">Answer</span></h5>
 
-      <p>We suppose as the user of the target system, you already know how to build a generic Makefile to compile the files.</p>
+      <p>We suppose that, as the user of the target system, you already know how to build a generic Makefile to compile the files.</p>
                 </div>
             </div>
         </div>
@@ -121,7 +121,7 @@
                      <h5><span class="label label-primary">Answer</span></h5>
 
                     <p>
-      If you want to add your system on Logipedia, we invite you to send us an email: <a href="mailto:gilles.dowek@inria.fr">Gilles Dowek</a>, <a href="mailto:francois.thire@inria.fr">François Thiré</a>
+      If you want to add your system on Logipedia, we invite you to Gilles Dowek and François Thiré.</a>
                     </p>
                 </div>
             </div>
@@ -139,7 +139,7 @@
                 <div class="panel-body">
                      <h5><span class="label label-primary">Answer</span></h5>
 
-      <p>At the moment, only one logic is supported on Logipedia: <a href="https://arxiv.org/pdf/1807.01873.pdf">STTForall</a>. We want to add more logics in the next few months. If you want discuss how we could add proofs from your logic into Logipedia, send us an email: <a href="mailto:gilles.dowek@inria.fr">Gilles Dowek</a>, <a href="mailto:francois.thire@inria.fr">François Thiré</a></p>
+      <p>Logipedia is an encyclopedia of proofs expressed in any theory defined in Dedukti. Currently, all proofs are expressed in the same theory: <a href="https://arxiv.org/pdf/1807.01873.pdf">STTForall</a>. If you want add more STTForall proofs or define a new logic in Dedukti, contact Gilles Dowek and François Thiré.</p>
                 </div>
             </div>
         </div>

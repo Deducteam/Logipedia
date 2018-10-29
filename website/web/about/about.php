@@ -16,7 +16,7 @@
     <div class="container">
       <hr class="my-4">
       <div class="page-header">
-        <h1 id="timeline" class="text-center">Five things you need to know about <a href="../index.php" style="color:grey;"> Logipedia </a></h1>
+        <h1 id="timeline" class="text-center">Logipedia in a nutshell </h1>
       </div>
       <hr class="my-4">
       <ul class="timeline">
@@ -68,7 +68,18 @@
           <div class="timeline-badge info"><i class="fas fa-dice-five"></i></div>
           <div class="timeline-panel">
             <div class="timeline-heading">
-              <h4 class="timeline-title"><a href="../index.php?thm=fermat" style="color:grey;"> This proof of Fermat's little theorem </a>, originally developed in <a href="http://matita.cs.unibo.it/" style="color:grey;"> Matita </a>, has been expressed in a formulation of the Calculus of Inductive Constructions in <a href="https://deducteam.github.io/" style="color:grey;">Dedukti</a>, it has then been translated to a formulation of Simple type theory in <a href="https://deducteam.github.io/" style="color:grey;">Dedukti</a>, and exported to <a href="http://opentheory.gilith.com/" style="color:grey;"> Open theory </a>, <a href="https://coq.inria.fr/" style="color:grey;"> Coq </a>, <a href="http://matita.cs.unibo.it/" style="color:grey;"> Matita </a>, <a href="https://leanprover.github.io/" style="color:grey;"> Lean </a>, and <a href="http://pvs.csl.sri.com/" style="color:grey;"> PVS </a>.</h4>
+              <h4 class="timeline-title">These proofs, originally developed in <a href="http://matita.cs.unibo.it/" style="color:grey;"> Matita </a>, has been expressed in a formulation of the Calculus of Inductive Constructions in <a href="https://deducteam.github.io/" style="color:grey;">Dedukti</a>, it has then been translated to a formulation of Simple type theory in <a href="https://deducteam.github.io/" style="color:grey;">Dedukti</a>, and exported to <a href="http://opentheory.gilith.com/" style="color:grey;"> Open theory </a>, <a href="https://coq.inria.fr/" style="color:grey;"> Coq </a>, <a href="http://matita.cs.unibo.it/" style="color:grey;"> Matita </a>, <a href="https://leanprover.github.io/" style="color:grey;"> Lean </a>, and <a href="http://pvs.csl.sri.com/" style="color:grey;"> PVS </a>.</h4>
+            </div>
+            <div class="timeline-body">
+              <p></p>
+            </div>
+          </div>
+        </li>
+        <li class="timeline-inverted">
+          <div class="timeline-badge"><i class="fas fa-dice-six"></i></div>
+          <div class="timeline-panel">
+            <div class="timeline-heading">
+              <h4 class="timeline-title"> You can find more information in the <a href="faq.php">FAQ</a>
             </div>
             <div class="timeline-body">
               <p></p>

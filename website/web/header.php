@@ -13,10 +13,10 @@ $faq_path = "/about/faq.php";
         <div class="collapse navbar-collapse" id="collapsibleNavbar">
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo $about_path; ?>">About</a>
+              <a class="nav-link" href="<?php echo $module_path; ?>">Modules</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="<?php echo $module_path; ?>">Modules</a>
+              <a class="nav-link" href="<?php echo $about_path; ?>">About</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="<?php echo $faq_path; ?>">FAQ</a>
