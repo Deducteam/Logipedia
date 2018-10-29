@@ -79,7 +79,7 @@
           <div class="timeline-badge"><i class="fas fa-dice-six"></i></div>
           <div class="timeline-panel">
             <div class="timeline-heading">
-              <h4 class="timeline-title"> You can find more information in the <a href="faq.php">FAQ</a>
+              <h4 class="timeline-title"> You can find more information in the <a href="faq.php" style="color:grey;">FAQ</a>
             </div>
             <div class="timeline-body">
               <p></p>
