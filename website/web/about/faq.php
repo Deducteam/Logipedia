@@ -25,7 +25,7 @@
                 <div class="panel-body">
                      <h5><span class="label label-primary">Answer</span></h5>
 
-      <p>For a theorem, the theory is defined as the set of the constants, type operators and axioms used by this theorem and the transituve closure of its dependencies. It contains also definitions that appear in the statement of axioms. This notion of theory is extended in a natural way to the other kind of objects.</p>
+      <p>For a theorem, the theory is defined as the set of the constants, type operators and axioms used by this theorem and the transitive closure of its dependencies. It contains also definitions that appear in the statement of axioms. This notion of theory is extended in a natural way to the other kind of objects.</p>
                 </div>
             </div>
         </div>
