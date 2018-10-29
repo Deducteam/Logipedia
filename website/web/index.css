@@ -1,11 +1,14 @@
 .image{
-  background: no-repeat center center;
-  position: relative;
-  width: 100%;
-  height: 300px;
-  top:0;
-  left:0;
-  z-index: -1;
+    background: no-repeat center center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    /*  width: 100%; */
+    height: 300px;
+    top:0;
+    /*  left:0; */
+    z-index: -1;
 }
 #toTop{
   position: fixed;

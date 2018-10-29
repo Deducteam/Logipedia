@@ -375,6 +375,9 @@ let remove_transitive_deps deps =
 
 let line oc fmt = Format.fprintf oc (fmt ^^ "\n")
 
+(* FIXME: web will compute the correct dependencies but we should get rid off thi boolean *)
+let web = ref false
+
 let print_ast : Format.formatter -> ast -> unit =
  fun oc ast ->
    current_module := ast.md;
@@ -384,6 +387,7 @@ let print_ast : Format.formatter -> ast -> unit =
    line oc "BEGIN";
    let deps = ast.dep in
    let deps = QSet.remove "sttfa" deps in
+   (* FIXME: buggy with the module web. This code should not rely on Signature *)
    let remove_transitive_deps deps =
      let remove_dep dep deps =
        let md = Basic.mk_mident dep in
@@ -392,7 +396,7 @@ let print_ast : Format.formatter -> ast -> unit =
      in
      QSet.fold remove_dep deps deps
    in
-   let deps = remove_transitive_deps deps in
+   let deps = if !web then deps else remove_transitive_deps deps in
    QSet.iter (print_dep oc) deps;
    line oc "";
    List.iter (print_item oc ast.md) ast.items;
@@ -425,19 +429,3 @@ let pretty_print_item = function
   | TyOpDef((md,id),arity) ->
     assert(arity = 0);
     Format.asprintf "%a : TYPE+" (print_name md) (md,id)
-(*
-let print_bdd_item = function
-  | Parameter((md,id),ty) ->
-    Mongodb.insert_constant sys (Format.asprintf "%a" (print_prenex_ty_pvs md) ty) md id (to_string (print_ty_pvs md) ty)
-  | Definition((md,id),ty,te) ->
-    Mongodb.insert_definition sys (Format.asprintf "%a" (print_prenex_ty_pvs md) ty) md id (to_string (print_ty_pvs md) ty) (to_string (print_te_pvs md) te)
-  | Axiom((md,id),te) ->
-    Mongodb.insert_axiom sys (Format.asprintf "%a AXIOM" (print_prenex_te_pvs md) te) md id (to_string (print_te_pvs md) te)
-  | Theorem((md,id),te,proof) ->
-    Mongodb.insert_theorem sys (Format.asprintf "%a LEMMA" (print_prenex_te_pvs md) te) md id (to_string (print_te_pvs md) te) (to_string (print_proof_pvs md) proof)
-  | TyOpDef((md,id),arity) ->
-    assert (arity = 0);
-    Mongodb.insert_constant sys "" md id "TYPE+"
-
-let print_bdd ast = List.iter print_bdd_item ast.items;
-  *)

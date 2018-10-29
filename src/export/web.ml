@@ -5,6 +5,8 @@ open Sttforall
 open Environ
 open Format
 
+(* FIXME: some hackish sutff for PVS, see other readme *)
+
 let pp_name fmt (md,id) =
   Format.fprintf fmt "%s.%s" md id
 
@@ -244,6 +246,28 @@ let env =
     md_deps       = Hashtbl.create 101;
   }
 
+(* FIXME: should be in pvs but this is not modular so... *)
+let fix_pvs_deps ast name md =
+  let table = Hashtbl.find env.item_deps name in
+  let ast_of_md md = Hashtbl.find table md in
+  let rec clot_refl md =
+    if md <> "sttfa" then
+      QSet.fold
+        (fun md set -> QSet.union (clot_refl md) set) (ast_of_md md).dep (QSet.singleton md)
+    else
+      QSet.empty
+  in
+  let clot md =
+    if md <> "sttfa" then
+      QSet.fold
+        (fun md set -> QSet.union (clot_refl md) set) (ast_of_md md).dep QSet.empty
+    else
+      QSet.empty
+  in
+  let trans_deps = QSet.fold (fun md set -> QSet.union (clot md) set) ast.dep QSet.empty in
+  let pvs_deps = QSet.diff ast.dep trans_deps in
+  {ast with dep = pvs_deps}
+
 let ordered_md = Hashtbl.create 11
 
 let add_ordered_md : string -> unit =
@@ -430,6 +454,14 @@ let gen_sys_archive item deps sys =
     let oc = open_out path in
     let fmt = Format.formatter_of_out_channel oc in
     assert (ast.items <> []);
+    let ast =
+      match sys with
+      | `Pvs ->
+        let name = name_of_item item in
+        let md = fst name in
+        fix_pvs_deps ast name md
+      | _ -> ast
+    in
     E.print_ast fmt ast;
     close_out oc
   in
@@ -437,7 +469,15 @@ let gen_sys_archive item deps sys =
   db_insert_pretty_item item;
   List.iter gen_sys_ast deps;
   let archive_name = Systems.string_of_system sys^"."^(string_of_name (name_of_item item))^".zip" in
-  let cmd = (Format.sprintf "cd %s && zip %s *.%s 2>&1 >/dev/null" tmp_dir archive_name E.extension) in
+  begin (* FIXME: should be generic. Probably pvs output can be changed to avoid that hack *)
+    match sys with
+    | `Pvs ->
+      let cmd = Format.sprintf "cp library/pvs-strategies %s" tmp_dir in
+      ignore(Sys.command cmd);
+    | _ -> ()
+  end;
+  let pvs_strategies = if sys = `Pvs then "pvs-strategies" else "" in (*FIXME *)
+  let cmd = Format.sprintf "cd %s && zip %s %s *.%s 2>&1 >/dev/null" tmp_dir archive_name pvs_strategies E.extension in
   if Sys.command cmd <> 0 then
     failwith "Error while trying to generate a zip file";
   close tmp_dir E.extension
@@ -446,12 +486,13 @@ let gen_file item =
   let deps = Hashtbl.find env.item_deps (name_of_item item) in
   let ldeps = Hashtbl.fold (fun _ v l -> v::l) deps [] in
   let ldeps = List.sort ast_compare ldeps in
-  List.iter (gen_sys_archive item ldeps) Systems.systems
+  List.iter (gen_sys_archive item ldeps) [`Pvs]
 
 let install_files () =
   ignore(Sys.command (Format.sprintf "mv /tmp/logipedia/*.zip website/web/theorems/download/files"))
 
 let export_entries ast =
+  Pvs.web := true; (* FIXME: fix computation of dependencies in PVS *)
   Hashtbl.add env.md_deps ast.md ast.dep;
   add_ordered_md ast.md;
   List.iter handle_web_item ast.items;
