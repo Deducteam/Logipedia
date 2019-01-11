@@ -1,0 +1,15 @@
+The OpenTheory packages <http://opentheory.gilith.com/packages>
+
+Generation:
+
+- download the opentheory package manager at
+  <http://www.gilith.com/software/opentheory/download.html>
+
+- compile it
+
+- generate article files: path/to/opentheory install base
+  By default, files are generated in $(HOME)/.opentheory
+
+- generate dedukti file from them using Holide
+  <https://github.com/Deducteam/Holide>
+  Note: some do not check with dedukti
