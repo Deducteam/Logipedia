@@ -8,13 +8,17 @@ all: $(MAIN)
 
 #### Main program ##################################################
 
-$(MAIN): $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli src/utils/*.ml src/utils/*.mli)
+$(MAIN): $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli src/hol/*.ml src/hol/*.mli src/utils/*.ml src/utils/*.mli)
 	@echo "[BUILD] main.native"
-	@ocamlbuild -use-ocamlfind -quiet -Is src/,src/utils,src/export -tag thread -package mongo -package dedukti src/main.native
+	@ocamlbuild -use-ocamlfind -quiet -Is src/,src/utils,src/export,src/hol -tag thread -package mongo -package dedukti src/main.native
 
 #### Producing the theory file #####################################
 
 theories/sttfa.dko: theories/sttfa.dk
+	@echo "[CHECK] $^"
+	@$(DKCHECK) -e $^
+
+theories/hol.dko: theories/hol.dk
 	@echo "[CHECK] $^"
 	@$(DKCHECK) -e $^
 
@@ -76,7 +80,11 @@ library/%.summary: library/%.pvs
 	@echo "[SUMMARY]"
 	proveit --importchain -sf $<
 
-web: theories/sttfa.dko $(MAIN)
+library/open_theory/packages/%.art: library/open_theory/packages/%.dk theories/hol.dko .library_depend_art $(MAIN)
+	@echo "[EXPORT] $@"
+	@./main.native -I library -I theories --theory hol --export opentheory $(BDD) $<
+
+web: theories/sttfa.dko theories/hol.dko $(MAIN)
 	mongo < ./bdd/dropLogipedia.js
 	time ./main.native  -I library -I theories --export-web $(SORTEDDKS)
 
@@ -129,6 +137,7 @@ opentheory: library/fermat.thy library/fermat.art
 	@echo "[DEP] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
 	@sed -i s/theories\\/sttfa.dko//g $@
+	@sed -i s/theories\\/hol.dko//g $@
 	@sed -i s/dko/art/g $@
 
 .library_depend_lean: $(wildcard library/*.dk theories/*.dk examples/*.dk)

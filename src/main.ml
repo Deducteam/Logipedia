@@ -60,7 +60,9 @@ let run_on_file file =
          let (module M:Export.E) = Export.of_system !system in
          export_file file sttfa_ast !system;
        end
-    | `HOL -> Printf.printf "HOL!\n"
+    | `HOL ->
+       let _ = Hol_compile.mk_ast md entries in
+       Printf.printf "HOL ok\n"
 
 let export_web files =
   let export_file file =
