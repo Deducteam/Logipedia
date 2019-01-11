@@ -15,6 +15,11 @@ let set_export s =
   let open Export in
   system := Systems.system_of_string s
 
+let theory : Theories.theory ref = ref (`STTFA)
+
+let set_theory s =
+  theory := Theories.theory_of_string s
+
 let handle_entry md e =
   match e with
   | Decl (lc, id, st, ty) ->
@@ -47,12 +52,15 @@ let run_on_file file =
   let input = open_in file in
   let entries = Parse_channel.parse md input in
   close_in input ;
-  begin
-    let sttfa_ast = mk_ast md entries in
-    Env.export ();
-    let (module M:Export.E) = Export.of_system !system in
-    export_file file sttfa_ast !system;
-  end
+  match !theory with
+    | `STTFA ->
+       begin
+         let sttfa_ast = mk_ast md entries in
+         Env.export ();
+         let (module M:Export.E) = Export.of_system !system in
+         export_file file sttfa_ast !system;
+       end
+    | `HOL -> Printf.printf "HOL!\n"
 
 let export_web files =
   let export_file file =
@@ -73,7 +81,8 @@ let _ =
       Arg.align
         [ ("-I", Arg.String Basic.add_path, " Add folder to Dedukti path") ;
           ("--export", Arg.String set_export, " Set exporting system") ;
-          ("--export-web", Arg.Set to_web, " Generate informations for the website") ]
+          ("--export-web", Arg.Set to_web, " Generate informations for the website") ;
+          ("--theory", Arg.String set_theory, " Set theory (default: STTFA)") ]
     in
     let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
     let usage = usage ^ "Available options:" in
