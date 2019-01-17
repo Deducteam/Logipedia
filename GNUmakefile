@@ -18,9 +18,9 @@ theories/sttfa.dko: theories/sttfa.dk
 	@echo "[CHECK] $^"
 	@$(DKCHECK) -e $^
 
-theories/hol.dko: theories/hol.dk
-	@echo "[CHECK] $^"
-	@$(DKCHECK) -e $^
+theories/hol.dko: theories/hol.dk theories/sttfa.dko
+	@echo "[CHECK] $<"
+	@$(DKCHECK) -I theories -e $<
 
 #### Running examples ##############################################
 
