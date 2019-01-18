@@ -106,17 +106,9 @@ let compile_definition lc env name ty term =
   else
     failwith ("Term definitions not supported yet for HOL theory at "^(Basic.string_of pp_loc lc))
 
-(* let compile_definition lc name ty term =
- *   match ty with
- *     | _ when is_hol_const hol_type ty ->
- *        Format.eprintf "[COMPILE] type alias: %a@." Pp.print_name name ;
- *        TyAlias (of_name name, compile_type term)
- *     | Term.App (cst, a, []) when is_hol_const hol_term cst ->
- *        Format.eprintf "[COMPILE] term alias: %a@." Pp.print_name name ;
- *        TeAlias (of_name name, compile_type a, compile_term term)
- *     | _ -> failwith ("Entry \"Def\" not supported for HOL theory at "^(Basic.string_of pp_loc lc)) *)
 
-
+(* env contain type definitions: currently they are unfolded since they
+   cannot be represented in the STTFA ast *)
 let compile env md e =
   match e with
   | Decl (lc, _, _, _) -> failwith ("Entry \"Decl\" not supported for HOL theory at "^(Basic.string_of pp_loc lc))
