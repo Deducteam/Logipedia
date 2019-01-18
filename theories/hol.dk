@@ -95,11 +95,12 @@ a : type => b : type => f : term (arr a b) => g : term (arr a b) => x : term a =
 (;   proof (eq bool p q) -> ;)
 (;   proof p -> ;)
 (;   proof q. ;)
-(; def BETA_CONV : a : type -> b : type -> f : (term a -> term b) -> u : term a -> ;)
-(;   proof (eq b (f u) (f u)) := ;)
-(;     a : type => b : type => f : (term a -> term b) => u : term a => ;)
-(;     REFL b (f u). ;)
-(;  ;)
+
+def BETA_CONV : a : type -> b : type -> f : (term a -> term b) -> u : term a ->
+  proof (eq b (f u) (f u)) :=
+    a : type => b : type => f : (term a -> term b) => u : term a =>
+    REFL b (f u).
+
 (; def SYM (a : type) (t : term a) (u : term a) (H : proof (eq a t u)) : proof (eq a u t) ;)
 (; := ;)
 (;   EQ_MP ;)
@@ -139,53 +140,52 @@ a : type => b : type => f : term (arr a b) => g : term (arr a b) => x : term a =
 (;         (APP_THM a (arr a bool) (eq a) (eq a) u t (REFL (arr a (arr a bool)) (eq a)) (SYM a t u H1)) ;)
 (;         (REFL a v)) ;)
 (;     H2. ;)
-(;  ;)
-(; def PROVE_HYP (x : term bool) (y : term bool) (H1 : proof x) (H2 : proof x -> proof y) : proof y := H2 H1. ;)
-(;  ;)
-(;  ;)
+
+def PROVE_HYP (x : term bool) (y : term bool) (H1 : proof x) (H2 : proof x -> proof y) : proof y := H2 H1.
+
 (;---------------------;)
 (; Derived Connectives ;)
 (;---------------------;)
-(;  ;)
-(; def true : term bool := ;)
-(;   eq (arr bool bool) (p : term bool => p) (p : term bool => p). ;)
-(;  ;)
-(; def forall : a : type -> p : term (arr a bool) -> term bool := ;)
-(;   a : type => p : term (arr a bool) => ;)
-(;   eq (arr a bool) p (x : term a => true). ;)
-(;  ;)
-(; def false : term bool := ;)
-(;   forall bool (p : term bool => p). ;)
-(;  ;)
-(; def and : term (arr bool (arr bool bool)) := ;)
-(;   p : term bool => q : term bool => ;)
-(;   eq (arr (arr bool (arr bool bool)) bool) ;)
-(;     (f : term (arr bool (arr bool bool)) => f p q) ;)
-(;     (f : term (arr bool (arr bool bool)) => f true true). ;)
-(;  ;)
-(; def imp : term (arr bool (arr bool bool)) := ;)
-(;   p : term bool => q : term bool => ;)
-(;   eq bool (and p q) p. ;)
-(;  ;)
-(; def or : term (arr bool (arr bool bool)) := ;)
-(;   p : term bool => q : term bool => ;)
-(;   forall bool (r : term bool => imp (imp p r) (imp (imp q r) r)). ;)
-(;  ;)
-(; def cond : a : type -> term (arr bool (arr a (arr a a))) := ;)
-(;   a : type => t : term bool => t1 : term a => t2 : term a => ;)
-(;   select a (x : term a => ;)
-(;     and ;)
-(;       (imp (eq bool t true) (eq a x t1)) ;)
-(;       (imp (eq bool t false) (eq a x t2))). ;)
-(;  ;)
-(; def not (p : term bool) := ;)
-(;   imp p false. ;)
-(;  ;)
+
+def true : term bool :=
+  eq (arr bool bool) (p : term bool => p) (p : term bool => p).
+
+def forall : a : type -> p : term (arr a bool) -> term bool :=
+  a : type => p : term (arr a bool) =>
+  eq (arr a bool) p (x : term a => true).
+
+def false : term bool :=
+  forall bool (p : term bool => p).
+
+def and : term (arr bool (arr bool bool)) :=
+  p : term bool => q : term bool =>
+  eq (arr (arr bool (arr bool bool)) bool)
+    (f : term (arr bool (arr bool bool)) => f p q)
+    (f : term (arr bool (arr bool bool)) => f true true).
+
+def imp : term (arr bool (arr bool bool)) :=
+  p : term bool => q : term bool =>
+  eq bool (and p q) p.
+
+def or : term (arr bool (arr bool bool)) :=
+  p : term bool => q : term bool =>
+  forall bool (r : term bool => imp (imp p r) (imp (imp q r) r)).
+
+def cond : a : type -> term (arr bool (arr a (arr a a))) :=
+  a : type => t : term bool => t1 : term a => t2 : term a =>
+  select a (x : term a =>
+    and
+      (imp (eq bool t true) (eq a x t1))
+      (imp (eq bool t false) (eq a x t2))).
+
+def not (p : term bool) :=
+  imp p false.
+
 (; witness : a : type -> term a. ;)
-(;  ;)
-(; def true_intro : proof true := ;)
-(;   REFL (arr bool bool) (p : term bool => p). ;)
-(;  ;)
+
+def true_intro : proof true :=
+  REFL (arr bool bool) (p : term bool => p).
+
 (; def eq_sym (a : type) (x : term a) (y : term a) (h : proof (eq a x y)) : proof (eq a y x) := ;)
 (;   EQ_MP (eq a x x) (eq a y x) ;)
 (;     (APP_THM a bool (eq a x) (eq a y) x x ;)
