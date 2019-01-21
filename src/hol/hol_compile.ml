@@ -63,48 +63,65 @@ let rec apply_type ty tyl =
     | _, _ -> assert false
 
 
-let rec compile_type lc env vars ty =
+let rec compile_type lc env tvars ty =
   match ty with
-    | Term.DB (_, _, n) -> TyVar (List.nth (List.rev vars) n)
+    | Term.DB (_, _, n) -> TyVar (List.nth (List.rev tvars) n)
     | Term.App (a, ty1, [ty2]) when is_hol_const hol_arr a ->
-       let ty1 = compile_type lc env vars ty1 in
-       let ty2 = compile_type lc env vars ty2 in
+       let ty1 = compile_type lc env tvars ty1 in
+       let ty2 = compile_type lc env tvars ty2 in
        Arrow (ty1, ty2)
     | Term.App ((Term.Const (_, f)), ty, tyl) ->
        let f = List.assoc f env in
-       apply_type f (List.map (compile_type lc env vars) (ty::tyl))
+       apply_type f (List.map (compile_type lc env tvars) (ty::tyl))
     | _ -> failwith ("HOL type not supported yet at "^(Basic.string_of pp_loc lc))
+
+
+let rec compile_term lc env tvars vars te =
+  match te with
+    | Term.DB (_, _, n) -> TeVar (fst (List.nth (List.rev vars) n))
+    | _ -> failwith ("HOL term not supported yet at "^(Basic.string_of pp_loc lc))
+
 
 
 let rec compile_dk_type ty =
   match ty with
     | Term.Pi (_, _, dom, cod) when is_hol_const hol_type dom ->
-       let (nvars, cod) = compile_dk_type cod in
-       (nvars+1, cod)
-    | Term.Pi (lc, _, _, _) -> failwith ("Error at "^(Basic.string_of pp_loc lc))
-    | _ -> (0, ty)
+       let (ntvars, nvars, cod) = compile_dk_type cod in
+       (ntvars+1, nvars, cod)
+    | Term.Pi (_, _, Term.App(t, ty, _), cod) when is_hol_const hol_term t ->
+       let (ntvars, nvars, cod) = compile_dk_type cod in
+       (ntvars, (ty::nvars), cod)
+    | _ -> (0, [], ty)
 
 
-let rec compile_dk_term nvars te =
-  if nvars = 0 then
-    ([], te)
-  else
-    match te with
-      | Term.Lam (_, x, _, te) ->
-         let (vars, res) = compile_dk_term (nvars-1) te in
-         ((Basic.string_of_ident x)::vars, res)
-      | _ -> assert false
+let rec compile_dk_term ntvars nvars te =
+  match ntvars, nvars, te with
+    | 0, [], _ -> ([], [], te)
+    | 0, ty::nvars, Term.Lam (_, x, _, te) ->
+       let (tvars, vars, res) = compile_dk_term ntvars nvars te in
+       (tvars, (Basic.string_of_ident x, ty)::vars, res)
+    | _, _, Term.Lam (_, x, _, te) ->
+       let (tvars, vars, res) = compile_dk_term (ntvars-1) nvars te in
+       ((Basic.string_of_ident x)::tvars, vars, res)
+    | _, _, _ -> assert false
 
 
 let compile_definition lc env name ty term =
-  let (nvars, cod) = compile_dk_type ty in
-  let (vars, res) = compile_dk_term nvars term in
-  if is_hol_const hol_type cod then
-    let ty = compile_type lc env vars res in
-    let ty = List.fold_right (fun x t -> ForallK (x, t)) vars (Ty ty) in
-    (None, (name, ty)::env)
-  else
-    failwith ("Term definitions not supported yet for HOL theory at "^(Basic.string_of pp_loc lc))
+  let (ntvars, nvars, cod) = compile_dk_type ty in
+  let (tvars, vars, res) = compile_dk_term ntvars nvars term in
+  match cod with
+    | _ when is_hol_const hol_type cod ->
+       let ty = compile_type lc env tvars res in
+       let ty = List.fold_right (fun x t -> ForallK (x, t)) tvars (Ty ty) in
+       (None, (name, ty)::env)
+    | Term.App (t, _, _) when is_hol_const hol_term t ->
+       let te = compile_term lc env tvars vars res in
+       let te = List.fold_right (fun (x, ty) t ->
+                    let ty = compile_type lc env tvars ty in
+                    Abs (x, ty, t)) vars te in
+       let te = List.fold_right (fun x t -> ForallP (x, t)) tvars (Te te) in
+       (Some te, env)
+    | _ -> failwith ("Unsupported definition for HOL theory at "^(Basic.string_of pp_loc lc))
 
 
 (* env contain type definitions: currently they are unfolded since they
