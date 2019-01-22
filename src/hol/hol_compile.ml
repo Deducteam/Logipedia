@@ -96,9 +96,9 @@ let compile_definition lc env name ty term =
        let ty = List.fold_right (fun t ty -> Arrow (t, ty)) varsty ty in
        let ty = List.fold_right (fun x ty -> ForallK (x, ty)) tvarsty (Ty ty) in
        let te = compile_term lc env tvarste varste res in
-       let te = List.fold_right (fun (x, t) ty -> Abs (x, t, ty)) varste te in
-       let te = List.fold_right (fun x ty -> ForallP (x, ty)) tvarste (Te te) in
-       (Some (Definition (of_name name, ty, te)), env)
+       let te = List.fold_right (fun (x, t) te -> Abs (x, t, te)) varste te in
+       let te = List.fold_right (fun x te -> AbsTy (x, te)) tvarste te in
+       (Some (Definition (of_name name, ty, (Te te))), env)
     (* | Term.App(t, _, _) when is_hol_const hol_proot t ->
      *    let jp = compile_proof lc env tvars vars res in
      *    let jp =
