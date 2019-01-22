@@ -138,8 +138,15 @@ let compile env md e =
 
 
 let mk_ast md entries =
-  List.fold_left (fun (res, env) e ->
-      match compile env md e with
-        | (Some r, env) -> (r::res, env)
-        | (None, env) -> (res, env)
-    ) ([], []) entries
+  let (items, _) =
+    List.fold_left (fun (res, env) e ->
+        match compile env md e with
+          | (Some r, env) -> (r::res, env)
+          | (None, env) -> (res, env)
+      ) ([], []) entries
+  in
+  (* TODO: compute deps *)
+  let dep = QSet.empty in
+  (* let dep = List.fold_left
+   *     (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in *)
+  {md = string_of_mident md; dep; items}

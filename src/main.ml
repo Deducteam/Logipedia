@@ -52,17 +52,16 @@ let run_on_file file =
   let input = open_in file in
   let entries = Parse_channel.parse md input in
   close_in input ;
-  match !theory with
-    | `STTFA ->
-       begin
-         let sttfa_ast = mk_ast md entries in
-         Env.export ();
-         let (module M:Export.E) = Export.of_system !system in
-         export_file file sttfa_ast !system;
-       end
-    | `HOL ->
-       let _ = Hol_compile.mk_ast md entries in
-       Printf.printf "HOL ok\n"
+  begin
+    let sttfa_ast =
+      match !theory with
+        | `STTFA -> mk_ast md entries
+        | `HOL -> Hol_compile.mk_ast md entries
+    in
+    Env.export ();
+    let (module M:Export.E) = Export.of_system !system in
+    export_file file sttfa_ast !system;
+  end
 
 let export_web files =
   let export_file file =

@@ -22,12 +22,12 @@ def term_2 : A : hol.type -> B : hol.type -> f : hol.term (type_2 A B) -> hol.te
   A : hol.type => B : hol.type => f : hol.term (type_2 A B) => f.
 
 (; thm : f x = f x ;)
-thm thm_eq :
-  A : hol.type -> B : hol.type ->
-  x : hol.term (type_0 A) ->
-  f : hol.term (type_2 A B) ->
-  hol.proof (hol.eq (type_1 B) ((term_2 A B f) (term_0 A x)) ((term_2 A B f) (term_0 A x))) :=
-  A : hol.type => B : hol.type =>
-  x : hol.term (type_0 A) =>
-  f : hol.term (type_2 A B) =>
-  hol.APP_THM A B f f x x (hol.REFL (hol.arr A B) f) (hol.REFL A x).
+(; thm thm_eq : ;)
+(;   A : hol.type -> B : hol.type -> ;)
+(;   x : hol.term (type_0 A) -> ;)
+(;   f : hol.term (type_2 A B) -> ;)
+(;   hol.proof (hol.eq (type_1 B) ((term_2 A B f) (term_0 A x)) ((term_2 A B f) (term_0 A x))) := ;)
+(;   A : hol.type => B : hol.type => ;)
+(;   x : hol.term (type_0 A) => ;)
+(;   f : hol.term (type_2 A B) => ;)
+(;   hol.APP_THM A B f f x x (hol.REFL (hol.arr A B) f) (hol.REFL A x). ;)

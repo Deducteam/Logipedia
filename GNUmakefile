@@ -84,6 +84,10 @@ library/open_theory/%.art: library/open_theory/%.dk theories/hol.dko .library_de
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --theory hol --export opentheory $(BDD) $<
 
+library/open_theory/%.v: library/open_theory/%.dk theories/hol.dko .library_depend_art $(MAIN)
+	@echo "[EXPORT] $@"
+	@./main.native -I library -I theories --theory hol --export coq $(BDD) $<
+
 library/open_theory/packages/%.art: library/open_theory/packages/%.dk theories/hol.dko .library_depend_art $(MAIN)
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --theory hol --export opentheory $(BDD) $<
