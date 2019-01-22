@@ -146,7 +146,6 @@ let mk_ast md entries =
       ) ([], []) entries
   in
   (* TODO: compute deps *)
-  let dep = QSet.empty in
-  (* let dep = List.fold_left
-   *     (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in *)
+  let dep = List.fold_left
+      (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
   {md = string_of_mident md; dep; items}
