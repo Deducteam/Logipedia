@@ -38,7 +38,7 @@ let rec compile_type lc env tvars nvars ty =
   match ty with
     | Term.DB (lc, _, n) ->
        (try
-          TyVar (List.nth (List.rev tvars) (n - nvars))
+          TyVar (List.nth tvars (n - nvars))
         with
           | Failure s -> failwith ("s at "^(Basic.string_of pp_loc lc))
           | Invalid_argument s -> raise (Invalid_argument ("s at "^(Basic.string_of pp_loc lc))))
@@ -56,7 +56,7 @@ let rec compile_term lc env tvars vars te =
   match te with
     | Term.DB (lc, _, n) ->
        (try
-          TeVar (fst (List.nth (List.rev vars) n))
+          TeVar (fst (List.nth vars n))
         with Failure s -> failwith ("s at "^(Basic.string_of pp_loc lc)))
     | _ -> failwith ("HOL term not supported yet at "^(Basic.string_of pp_loc lc))
 
@@ -89,15 +89,15 @@ let compile_definition lc env name ty term =
     | _ when is_hol_const hol_type cod ->
        assert (varste = []);
        let ty = compile_type lc env tvarste 0 res in
-       let ty = List.fold_right (fun x t -> ForallK (x, t)) tvarste (Ty ty) in
+       let ty = List.fold_right (fun x t -> ForallK (x, t)) (List.rev tvarste) (Ty ty) in
        (None, (name, ty)::env)
     | Term.App (t, ty, _) when is_hol_const hol_term t ->
        let ty = compile_type lc env tvarsty (List.length varsty) ty in
-       let ty = List.fold_right (fun t ty -> Arrow (t, ty)) varsty ty in
-       let ty = List.fold_right (fun x ty -> ForallK (x, ty)) tvarsty (Ty ty) in
+       let ty = List.fold_right (fun t ty -> Arrow (t, ty)) (List.rev varsty) ty in
+       let ty = List.fold_right (fun x ty -> ForallK (x, ty)) (List.rev tvarsty) (Ty ty) in
        let te = compile_term lc env tvarste varste res in
-       let te = List.fold_right (fun (x, t) te -> Abs (x, t, te)) varste te in
-       let te = List.fold_right (fun x te -> AbsTy (x, te)) tvarste te in
+       let te = List.fold_right (fun (x, t) te -> Abs (x, t, te)) (List.rev varste) te in
+       let te = List.fold_right (fun x te -> AbsTy (x, te)) (List.rev tvarste) te in
        (Some (Definition (of_name name, ty, (Te te))), env)
     (* | Term.App(t, _, _) when is_hol_const hol_proot t ->
      *    let jp = compile_proof lc env tvars vars res in
@@ -145,6 +145,7 @@ let mk_ast md entries =
           | (None, env) -> (res, env)
       ) ([], []) entries
   in
+  let items = List.rev items in
   (* TODO: compute deps *)
   let dep = List.fold_left
       (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
