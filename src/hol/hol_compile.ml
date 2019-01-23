@@ -89,15 +89,15 @@ let compile_definition lc env name ty term =
     | _ when is_hol_const hol_type cod ->
        assert (varste = []);
        let ty = compile_type lc env tvarste 0 res in
-       let ty = List.fold_right (fun x t -> ForallK (x, t)) (List.rev tvarste) (Ty ty) in
+       let ty = List.fold_left (fun t x -> ForallK (x, t)) (Ty ty) tvarste in
        (None, (name, ty)::env)
     | Term.App (t, ty, _) when is_hol_const hol_term t ->
        let ty = compile_type lc env tvarsty (List.length varsty) ty in
-       let ty = List.fold_right (fun t ty -> Arrow (t, ty)) (List.rev varsty) ty in
-       let ty = List.fold_right (fun x ty -> ForallK (x, ty)) (List.rev tvarsty) (Ty ty) in
+       let ty = List.fold_left (fun ty t -> Arrow (t, ty)) ty varsty in
+       let ty = List.fold_left (fun ty x -> ForallK (x, ty)) (Ty ty) tvarsty in
        let te = compile_term lc env tvarste varste res in
-       let te = List.fold_right (fun (x, t) te -> Abs (x, t, te)) (List.rev varste) te in
-       let te = List.fold_right (fun x te -> AbsTy (x, te)) (List.rev tvarste) te in
+       let te = List.fold_left (fun te (x, t) -> Abs (x, t, te)) te varste in
+       let te = List.fold_left (fun te x -> AbsTy (x, te)) te tvarste in
        (Some (Definition (of_name name, ty, (Te te))), env)
     (* | Term.App(t, _, _) when is_hol_const hol_proot t ->
      *    let jp = compile_proof lc env tvars vars res in
