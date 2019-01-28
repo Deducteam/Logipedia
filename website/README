@@ -7,4 +7,4 @@ The website needs the system packages
 - php-zip
 - pecl
 
-It also requires the php package mongo that you can install with the utilitary 'pecl': `pecl install mongodb`.
+It also requires the php package mongo that you can install with the utilitary 'pecl': `pecl install mongodb`. Don't forget to have the `php-<version>-dev` package installed.
