@@ -144,21 +144,3 @@ let pretty_print_item = function
     Format.asprintf "Theorem %s : %a." id print_te te
   | TyOpDef((md,id),arity) ->
     Format.asprintf "Parameter %s : %a" id print_arity arity
-(*
-let print_bdd_item = function
-  | Parameter((md,id),ty) ->
-    Mongodb.insert_constant sys "Parameter" md id (to_string print_ty ty)
-  | Definition((md,id),ty,te) ->
-    Mongodb.insert_definition sys "Definition" md id (to_string print_ty ty) (to_string print_te te)
-  | Axiom((md,id),te) ->
-    Mongodb.insert_axiom sys "Axiom" md id (to_string print_te te)
-  | Theorem((md,id),te,proof) ->
-    Mongodb.insert_theorem sys "Definition" md id
-      (to_string print_te te) (to_string print_proof proof)
-  | TyOpDef((md,id),arity) ->
-    Mongodb.insert_constant sys "Parameter" md id (to_string print_arity arity)
-
-let print_bdd ast =
-  cur_md := ast.md;
-  List.iter print_bdd_item ast.items;
-*)

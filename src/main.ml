@@ -47,32 +47,28 @@ let mk_ast md entries =
       (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
   {md = string_of_mident md; dep; items}
 
-let run_on_file file =
+let export_system file =
   let md = Env.init file in
   let input = open_in file in
   let entries = Parse_channel.parse md input in
   close_in input ;
   begin
-    let sttfa_ast =
-      match !theory with
-        | `STTFA -> mk_ast md entries
-        | `HOL -> Hol_compile.mk_ast md entries
-    in
+    let sttfa_ast = mk_ast md entries in
     Env.export ();
     let (module M:Export.E) = Export.of_system !system in
     export_file file sttfa_ast !system;
   end
 
-let export_web files =
-  let export_file file =
-    let md = Env.init file in
-    let input = open_in file in
-    let entries = Parse_channel.parse md input in
-    close_in input;
-    Web.export_entries (mk_ast md entries);
-    Env.export()
-  in
-  List.iter export_file files
+
+let export_web file =
+  Environ.set_package file;
+  let md = Env.init file in
+  let input = open_in file in
+  let entries = Parse_channel.parse md input in
+  close_in input;
+  Web.export_entries (mk_ast md entries);
+  Env.export()
+
 
 
 let _ =
@@ -93,9 +89,9 @@ let _ =
       List.rev !files
     in
     if !to_web then
-      export_web files
+      List.iter export_web files
     else
-      List.iter run_on_file files
+      List.iter export_system files
  with
   | Env.EnvError (l,e) -> Errors.fail_env_error l e
   | Failure err ->

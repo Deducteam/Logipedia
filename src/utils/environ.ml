@@ -1,6 +1,17 @@
 open Ast
 open Basic
 
+let package = ref ""
+
+let set_package file =
+  let path = Filename.dirname file in
+  let sep = Filename.dir_sep in
+  assert (String.length sep = 1);
+  let sep = String.get sep 0  in
+  match List.rev @@ String.split_on_char sep path with
+  | [] -> failwith "Files should be in a directory (which is interpreted as a package)"
+  | x::_ -> package := x
+
 let renaming = ref true
 
 (* Use a list rather than a sec for List.mem_assoc *)
