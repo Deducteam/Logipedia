@@ -48,7 +48,6 @@ struct
 
   let beta_snf = { default_cfg with select = Some (fun _ -> false) }
   let beta_steps n = { beta_snf with nb_steps = Some n}
-  let beta_one     = { beta_snf with nb_steps = Some 1; target = Whnf }
 
   let delta (cst:Basic.name) =
     let open Rule in
@@ -100,7 +99,7 @@ let subst env f a =
   let thm = (judgment_of f).thm in
   let te = Decompile.to_eps (Decompile.decompile_term env.dk thm) in
   let te = Env.unsafe_reduction ~red:(Strategy.one_whnf) te in
-  let _,b = match te with | Term.Pi(_,var,tya,tyb) -> tya,tyb | _ -> assert false in
+  let _,b = match te with | Term.Pi(_,_,tya,tyb) -> tya,tyb | _ -> assert false in
   let b' = Subst.subst b a in
   let b' =
     match b' with
@@ -127,7 +126,7 @@ struct
   let rec get_app_redex side ctx tyf' =
     match tyf' with
     | App(Abs _, _te) -> side, ctx, Beta(tyf')
-    | App (f, a)      -> get_app_redex side (CAppL::ctx) f
+    | App (f, _)      -> get_app_redex side (CAppL::ctx) f
     | Cst(cst, _tys)  ->
       assert (is_defined cst);
       side, ctx, Delta (cst, _tys)
@@ -139,7 +138,7 @@ struct
   let rec _get_beta_redex env ctx term =
     match term with
     | TeVar _ -> raise Not_found
-    | Cst(cst,_tys) -> raise Not_found
+    | Cst(_,_tys) -> raise Not_found
     | Abs(var,_ty,_te) ->
       let env' = add_te_var env var _ty in
       _get_beta_redex env' (CAbs::ctx) _te
@@ -300,7 +299,7 @@ struct
     | _, Te _te -> Te(_apply ctx newterm _te)
     | _ -> assert false
 
-  let newterm env ctx redex =
+  let newterm env _ redex =
       match redex with
       | Beta(_te) ->
         let _tedk = Decompile.decompile__term env.dk _te in

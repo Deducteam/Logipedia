@@ -1,3 +1,7 @@
+# Dune generated files
+.merlin
+logipedia
+
 # OCamlbuild files.
 _build/
 *.native
@@ -29,6 +33,8 @@ pvs-strategies
 *.v
 *.vo
 *.glob
+_CoqProject
+export/coq/Makefile
 
 # MATITA files
 *.ma

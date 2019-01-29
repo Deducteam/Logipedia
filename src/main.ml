@@ -1,8 +1,6 @@
 open Basic
-open Term
 open Entry
 open Parser
-open Rule
 open Ast
 
 let err_msg fmt =
@@ -12,12 +10,15 @@ let err_msg fmt =
 let system : Systems.system ref = ref (`Coq)
 
 let set_export s =
-  let open Export in
   system := Systems.system_of_string s
 
-let theory : Theories.theory ref = ref (`STTFA)
+(* Not used currently because only one theory is supported currently *)
+let theory : Theories.theory ref = ref `Sttfa
 
-let set_theory s =
+let set_output_theory s =
+  theory := Theories.theory_of_string s
+
+let set_input_theory s =
   theory := Theories.theory_of_string s
 
 let handle_entry md e =
@@ -32,14 +33,22 @@ let handle_entry md e =
   | Rules _ -> failwith "Rules are not part of the sttforall logic"
   | _ -> failwith "Commands are not supported"
 
-let export_file file ast system =
-  let basename = try Filename.chop_extension file with _ -> file in
+let output_file = ref None
+
+let set_output_file s =
+  output_file := Some s
+
+let export_file ast system =
   let (module M:Export.E) = Export.of_system system in
-  let out_file = basename ^ "." ^ M.extension in
-  let oc = open_out out_file in
-  let fmt = Format.formatter_of_out_channel oc in
-  M.print_ast fmt ast ;
-  close_out oc
+  let fmt =
+    match !output_file with
+    | None -> Format.std_formatter
+    | Some f ->
+      Format.formatter_of_out_channel (open_out f)
+  in
+  (* FIXME: The file is not closed, is this a problem? *)
+  M.print_ast fmt ast
+
 
 let mk_ast md entries =
   let items = List.map (handle_entry md) entries in
@@ -56,7 +65,7 @@ let export_system file =
     let sttfa_ast = mk_ast md entries in
     Env.export ();
     let (module M:Export.E) = Export.of_system !system in
-    export_file file sttfa_ast !system;
+    export_file sttfa_ast !system;
   end
 
 
@@ -69,17 +78,17 @@ let export_web file =
   Web.export_entries (mk_ast md entries);
   Env.export()
 
-
-
 let _ =
   try
     let to_web = ref false in
     let options =
       Arg.align
         [ ("-I", Arg.String Basic.add_path, " Add folder to Dedukti path") ;
+          ("-o", Arg.String set_output_file, " Set output file") ;
           ("--export", Arg.String set_export, " Set exporting system") ;
           ("--export-web", Arg.Set to_web, " Generate informations for the website") ;
-          ("--theory", Arg.String set_theory, " Set theory (default: STTFA)") ]
+          ("--theory-output", Arg.String set_output_theory, " Set theory (default: STTFA)") ;
+          ("--theory-input", Arg.String set_input_theory, " Set theory (default: STTFA)") ]
     in
     let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
     let usage = usage ^ "Available options:" in

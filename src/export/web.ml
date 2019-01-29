@@ -1,9 +1,4 @@
-open Basic
-open Term
 open Ast
-open Sttforall
-open Environ
-open Format
 
 (* FIXME: some hackish sutff for PVS, see other readme *)
 
@@ -78,7 +73,7 @@ struct
   let rec to_integer t =
     match t with
     | Cst _ -> 0
-    | App(f,l) -> 1+(to_integer l)
+    | App(_,l) -> 1+(to_integer l)
     | _ -> assert false
 
   let rec print__te fmt = function
@@ -87,7 +82,7 @@ struct
     | App(f,a) -> print_app fmt f a
     | Forall(var, _, _te) -> print_forall fmt [var] _te
     | Impl(l,r) -> Format.fprintf fmt "%a ⇒ %a" print__te l print__te r
-    | AbsTy(var, _te) -> Format.fprintf fmt "%a" print__te _te (* Types are not printed *)
+    | AbsTy(_, _te) -> Format.fprintf fmt "%a" print__te _te (* Types are not printed *)
     | Cst(cst,_) -> Format.fprintf fmt "%s" (snd cst)
 
   and print_forall fmt vars _te =
@@ -150,19 +145,19 @@ struct
 
   let rec print_te fmt = function
     | Te _te -> Format.fprintf fmt "%a" print__te _te
-    | ForallP(var,te) -> Format.fprintf fmt "%a" print_te te
+    | ForallP(_,te) -> Format.fprintf fmt "%a" print_te te
 
 
   let pretty_print_item = function
-    | Parameter(name, ty) ->
+    | Parameter(_, ty) ->
       Format.asprintf "%a" print_ty ty
-    | TyOpDef(name,arity) ->
+    | TyOpDef(_,arity) ->
       Format.asprintf "%d" arity
-    | Definition(name,ty,te) ->
+    | Definition(_,_,te) ->
       Format.asprintf "%a" print_te te
-    | Theorem(name,te,_) ->
+    | Theorem(_,te,_) ->
       Format.asprintf "%a" print_te te
-    | Axiom(name,te) ->
+    | Axiom(_,te) ->
       Format.asprintf "%a" print_te te
 
 end
@@ -247,7 +242,7 @@ let env =
   }
 
 (* FIXME: should be in pvs but this is not modular so... *)
-let fix_pvs_deps ast name md =
+let fix_pvs_deps ast name _ =
   let table = Hashtbl.find env.item_deps name in
   let ast_of_md md = Hashtbl.find table md in
   let rec clot_refl md =
@@ -312,7 +307,7 @@ let update_theory key dep =
     | Parameter(name,_)
     | Axiom(name,_)
     | TyOpDef(name,_) -> NameSet.add name theory
-    | Theorem(name,_,_) -> theory
+    | Theorem(_,_,_) -> theory
     | Definition(name,_,_) ->
       let item = Hashtbl.find items key in
       match item with
@@ -384,7 +379,7 @@ let rec mk__ty_dep = function
   | Arrow(_tyl,_tyr) -> mk__ty_dep _tyl; mk__ty_dep _tyr
 
 let rec mk_ty_dep = function
-  | ForallK(var,ty) -> mk_ty_dep ty
+  | ForallK(_,ty) -> mk_ty_dep ty
   | Ty(_ty) -> mk__ty_dep _ty
 
 let rec mk__te_dep = function
@@ -397,7 +392,7 @@ let rec mk__te_dep = function
   | Cst(name',_tys) -> mk_dep !cur_name name'; List.iter mk__ty_dep _tys
 
 let rec mk_te_dep = function
-  | ForallP(var,te) -> mk_te_dep te
+  | ForallP(_,te) -> mk_te_dep te
   | Te(_te) ->         mk__te_dep _te
 
 let rec mk_proof_dep = function
@@ -412,15 +407,14 @@ let rec mk_proof_dep = function
   | ForallPI(_,proof,_) ->   mk_proof_dep proof
 
 let mk_item_dep = function
-  | Parameter(name,ty) -> mk_ty_dep ty
-  | Definition(name,ty,te) -> mk_ty_dep ty; mk_te_dep te;
-  | Axiom(name,te) -> mk_te_dep te;
-  | Theorem(name,te,proof) -> mk_te_dep te; mk_proof_dep proof
-  | TyOpDef(name,arity)  -> ()
+  | Parameter(_,ty) -> mk_ty_dep ty
+  | Definition(_,ty,te) -> mk_ty_dep ty; mk_te_dep te;
+  | Axiom(_,te) -> mk_te_dep te;
+  | Theorem(_,te,proof) -> mk_te_dep te; mk_proof_dep proof
+  | TyOpDef(_,_)  -> ()
 
 let handle_web_item item =
   Format.eprintf "[WEB] %a@." pp_item item;
-  let open Entry in
   db_insert_item item;
   let name = name_of_item item in
   let md = fst name in

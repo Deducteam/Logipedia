@@ -1,0 +1,236 @@
+exp :
+  sttfa.etap (sttfa.p (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))).
+
+exp_body :
+  sttfa.etap (sttfa.p (sttfa.arrow nat.nat (sttfa.arrow nat.nat nat.nat))).
+
+axiom_exp :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           connectives.equal nat.nat (exp.exp n m)
+             (nat.filter_nat_type nat.nat (exp.exp_body n) m)))).
+
+def eq_exp :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           leibniz.leibniz nat.nat (exp.exp n m)
+             (nat.filter_nat_type nat.nat (exp.exp_body n) m)))) :=
+n:(sttfa.etap (sttfa.p nat.nat)) =>
+m:(sttfa.etap (sttfa.p nat.nat)) =>
+           connectives.equal_leibniz nat.nat (exp.exp n m)
+             (nat.filter_nat_type nat.nat (exp.exp_body n) m) (axiom_exp n m).
+
+def sym_eq_exp :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           leibniz.leibniz nat.nat
+             (nat.filter_nat_type nat.nat (exp.exp_body n) m) (exp.exp n m))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  leibniz.sym_leibniz nat.nat (exp.exp n m)
+    (nat.filter_nat_type nat.nat (exp.exp_body n) m) (exp.eq_exp n m).
+
+axiom_exp_body_O :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        connectives.equal nat.nat (exp.exp_body n nat.O) (nat.S nat.O))).
+
+def eq_exp_body_O :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.leibniz nat.nat (exp.exp_body n nat.O) (nat.S nat.O))) :=
+n:(sttfa.etap (sttfa.p nat.nat)) =>
+        connectives.equal_leibniz nat.nat (exp.exp_body n nat.O) (nat.S nat.O) (axiom_exp_body_O n).
+
+def sym_eq_exp_body_O :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        leibniz.leibniz nat.nat (nat.S nat.O) (exp.exp_body n nat.O)))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  leibniz.sym_leibniz nat.nat (exp.exp_body n nat.O) (nat.S nat.O)
+    (exp.eq_exp_body_O n).
+
+axiom_exp_body_S :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           connectives.equal nat.nat (exp.exp_body n (nat.S m))
+             (nat.times (exp.exp n m) n)))).
+
+def eq_exp_body_S :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           leibniz.leibniz nat.nat (exp.exp_body n (nat.S m))
+             (nat.times (exp.exp n m) n)))) :=
+n:(sttfa.etap (sttfa.p nat.nat)) =>
+m:(sttfa.etap (sttfa.p nat.nat)) =>
+           connectives.equal_leibniz nat.nat (exp.exp_body n (nat.S m))
+             (nat.times (exp.exp n m) n) (axiom_exp_body_S n m).
+
+def sym_eq_exp_body_S :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           leibniz.leibniz nat.nat (nat.times (exp.exp n m) n)
+             (exp.exp_body n (nat.S m)))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  leibniz.sym_leibniz nat.nat (exp.exp_body n (nat.S m))
+    (nat.times (exp.exp n m) n) (exp.eq_exp_body_S n m).
+
+def lt_O_exp :
+  sttfa.eps
+    (sttfa.forall nat.nat
+       (n:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.forall nat.nat
+          (m:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.lt nat.O n) (nat.lt nat.O (exp.exp n m)))))
+  :=
+  n:(sttfa.etap (sttfa.p nat.nat)) =>
+  m:(sttfa.etap (sttfa.p nat.nat)) =>
+  nat.nat_ind
+    (_x_365:(sttfa.etap (sttfa.p nat.nat)) =>
+     sttfa.impl (nat.lt nat.O n) (nat.lt nat.O (exp.exp n _x_365)))
+    (exp.sym_eq_exp n nat.O
+       (y:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl (nat.lt nat.O n) (nat.lt nat.O y))
+       (nat.sym_eq_filter_nat_type_O nat.nat (exp.exp_body n)
+          (y:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl (nat.lt nat.O n) (nat.lt nat.O y))
+          (exp.sym_eq_exp_body_O n
+             (y:(sttfa.etap (sttfa.p nat.nat)) =>
+              sttfa.impl (nat.lt nat.O n) (nat.lt nat.O y))
+             (auto:(sttfa.eps (nat.le (nat.S nat.O) n)) => nat.lt_O_S nat.O))))
+    (a:(sttfa.etap (sttfa.p nat.nat)) =>
+     exp.sym_eq_exp n (nat.S a)
+       (y:(sttfa.etap (sttfa.p nat.nat)) =>
+        sttfa.impl
+          (sttfa.impl (nat.lt nat.O n) (nat.lt nat.O (exp.exp n a)))
+          (sttfa.impl (nat.lt nat.O n) (nat.lt nat.O y)))
+       (nat.sym_eq_filter_nat_type_S nat.nat (exp.exp_body n) a
+          (y:(sttfa.etap (sttfa.p nat.nat)) =>
+           sttfa.impl
+             (sttfa.impl (nat.lt nat.O n) (nat.lt nat.O (exp.exp n a)))
+             (sttfa.impl (nat.lt nat.O n) (nat.lt nat.O y)))
+          (exp.sym_eq_exp_body_S n a
+             (y:(sttfa.etap (sttfa.p nat.nat)) =>
+              sttfa.impl
+                (sttfa.impl (nat.lt nat.O n) (nat.lt nat.O (exp.exp n a)))
+                (sttfa.impl (nat.lt nat.O n) (nat.lt nat.O y)))
+             (Hind:
+              (sttfa.eps
+                 (sttfa.impl (nat.le (nat.S nat.O) n)
+                    (nat.le (nat.S nat.O) (exp.exp n a)))) =>
+              posn:(sttfa.eps (nat.le (nat.S nat.O) n)) =>
+              nat.eq_times_body_O
+                (y:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+                 nat.le (nat.S (y (nat.S nat.O))) (nat.times (exp.exp n a) n))
+                (nat.eq_filter_nat_type_O (sttfa.arrow nat.nat nat.nat)
+                   nat.times_body
+                   (y:(sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+                    nat.le (nat.S (y (nat.S nat.O)))
+                      (nat.times (exp.exp n a) n))
+                   (nat.eq_times nat.O
+                      (y:
+                       (sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+                       nat.le (nat.S (y (nat.S nat.O)))
+                         (nat.times (exp.exp n a) n))
+                      (nat.eq_plus_body_O
+                         (y:
+                          (sttfa.etap (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+                          nat.le (nat.S (y (nat.times nat.O (nat.S nat.O))))
+                            (nat.times (exp.exp n a) n))
+                         (nat.eq_filter_nat_type_O
+                            (sttfa.arrow nat.nat nat.nat) nat.plus_body
+                            (y:
+                             (sttfa.etap
+                                (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+                             nat.le
+                               (nat.S (y (nat.times nat.O (nat.S nat.O))))
+                               (nat.times (exp.exp n a) n))
+                            (nat.eq_plus nat.O
+                               (y:
+                                (sttfa.etap
+                                   (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+                                nat.le
+                                  (nat.S (y (nat.times nat.O (nat.S nat.O))))
+                                  (nat.times (exp.exp n a) n))
+                               (nat.eq_plus_body_S nat.O
+                                  (y:
+                                   (sttfa.etap
+                                      (sttfa.p (sttfa.arrow nat.nat nat.nat))) =>
+                                   nat.le
+                                     (y (nat.times nat.O (nat.S nat.O)))
+                                     (nat.times (exp.exp n a) n))
+                                  (nat.eq_filter_nat_type_S
+                                     (sttfa.arrow nat.nat nat.nat)
+                                     nat.plus_body nat.O
+                                     (y:
+                                      (sttfa.etap
+                                         (sttfa.p
+                                            (sttfa.arrow nat.nat nat.nat))) =>
+                                      nat.le
+                                        (y (nat.times nat.O (nat.S nat.O)))
+                                        (nat.times (exp.exp n a) n))
+                                     (nat.eq_plus (nat.S nat.O)
+                                        (y:
+                                         (sttfa.etap
+                                            (sttfa.p
+                                               (sttfa.arrow nat.nat nat.nat))) =>
+                                         nat.le
+                                           (y (nat.times nat.O (nat.S nat.O)))
+                                           (nat.times (exp.exp n a) n))
+                                        (nat.eq_times_body_S nat.O
+                                           (y:
+                                            (sttfa.etap
+                                               (sttfa.p
+                                                  (sttfa.arrow nat.nat
+                                                     nat.nat))) =>
+                                            nat.le (y (nat.S nat.O))
+                                              (nat.times (exp.exp n a) n))
+                                           (nat.eq_filter_nat_type_S
+                                              (sttfa.arrow nat.nat nat.nat)
+                                              nat.times_body nat.O
+                                              (y:
+                                               (sttfa.etap
+                                                  (sttfa.p
+                                                     (sttfa.arrow nat.nat
+                                                        nat.nat))) =>
+                                               nat.le (y (nat.S nat.O))
+                                                 (nat.times (exp.exp n a) n))
+                                              (nat.eq_times (nat.S nat.O)
+                                                 (y:
+                                                  (sttfa.etap
+                                                     (sttfa.p
+                                                        (sttfa.arrow nat.nat
+                                                           nat.nat))) =>
+                                                  nat.le (y (nat.S nat.O))
+                                                    (nat.times (exp.exp n a)
+                                                       n))
+                                                 (nat.le_times (nat.S nat.O)
+                                                    (exp.exp n a)
+                                                    (nat.S nat.O) n
+                                                    (Hind posn) posn))))))))))))))))
+    m.

@@ -19,7 +19,7 @@ let print_dep oc dep =
   else
     Format.fprintf oc "include \"%s.ma\".\n" dep
 
-let print_name oc (md,id) =
+let print_name oc (_,id) =
   let id = sanitize id in
   Format.fprintf oc "%s" id
 
@@ -82,16 +82,16 @@ let rec print_te oc = function
   | Te(_te) -> print__te oc _te
 
 let rec print_proof oc = function
-  | Assume(j,var) -> Format.fprintf oc "%a" print_var var
-  | Lemma(name,j) -> Format.fprintf oc "%a" print_name name
+  | Assume(_,var) -> Format.fprintf oc "%a" print_var var
+  | Lemma(name,_) -> Format.fprintf oc "%a" print_name name
   | Conv(_,proof,_) -> Format.fprintf oc "%a" print_proof proof
   | ImplE(_,left,right) -> Format.fprintf oc "(%a) (%a)" print_proof left print_proof right
-  | ImplI(j,proof,var) ->
+  | ImplI(_,proof,var) ->
     let j' = judgment_of proof in
-    let _,_te = TeSet.choose (TeSet.filter (fun (x,te) -> if x = var then true else false) j'.hyp) in
+    let _,_te = TeSet.choose (TeSet.filter (fun (x,_) -> if x = var then true else false) j'.hyp) in
     Format.fprintf oc "\\lambda %a : %a. (%a)" print_var var print__te _te print_proof proof
   | ForallE(_,proof,_te) -> Format.fprintf oc "(%a) (%a)" print_proof proof print__te _te
-  | ForallI(j,proof,var) ->
+  | ForallI(_,proof,var) ->
     let j' = judgment_of proof in
     let _,_ty = List.find (fun (x,_ty) -> if x = var then true else false) j'.te in
     Format.fprintf oc "\\lambda %a : %a. %a" print_var var print__ty _ty print_proof proof
@@ -128,13 +128,13 @@ let print_meta_ast fmt meta_ast =
 let to_string fmt = Format.asprintf "%a" fmt
 
 let pretty_print_item = function
-  | Parameter((md,id),ty) ->
+  | Parameter((_,id),ty) ->
     Format.asprintf "axiom %s : %a" id print_ty ty
-  | Definition((md,id),ty,te) ->
+  | Definition((_,id),ty,te) ->
     Format.asprintf "definition %s : %a := %a" id print_ty ty print_te te
-  | Axiom((md,id),te) ->
+  | Axiom((_,id),te) ->
     Format.asprintf "axiom %s : %a" id print_te te
-  | Theorem((md,id),te,proof) ->
+  | Theorem((_,id),te,_) ->
     Format.asprintf "theorem %s : %a." id print_te te
-  | TyOpDef((md,id),arity) ->
+  | TyOpDef((_,id),arity) ->
     Format.asprintf "axiom %s : %a" id print_arity arity

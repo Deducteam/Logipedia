@@ -1,0 +1,10 @@
+lib: [
+  "_build/install/default/lib/logipedia/META" {"META"}
+  "_build/install/default/lib/logipedia/opam" {"opam"}
+]
+bin: [
+  "_build/install/default/bin/logipedia" {"logipedia"}
+]
+doc: [
+  "_build/install/default/doc/logipedia/README.md"
+]

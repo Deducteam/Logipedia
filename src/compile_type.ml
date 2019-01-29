@@ -7,12 +7,12 @@ let compile_tyop tyop =
 
 let rec compile__type env _ty =
   match _ty with
-  | Term.Const (_, cst) when is_sttfa_const sttfa_prop _ty -> Prop
+  | Term.Const (_, _) when is_sttfa_const sttfa_prop _ty -> Prop
   | Term.App (c, left, [right]) when is_sttfa_const sttfa_arrow c ->
       let left' = compile__type env left in
       let right' = compile__type env right in
       Arrow (left', right')
-  | Term.DB (_, var, n) ->
+  | Term.DB (_, _, n) ->
       let var = get_dk_var env n in
       TyVar var
   | Term.App (tyop, a, args) ->

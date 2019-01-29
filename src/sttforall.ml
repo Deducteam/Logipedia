@@ -22,10 +22,10 @@ let is_sttfa_const c t =
 
 let is_type t =
   match t with
-  | Term.App(cst, ty, _) when is_sttfa_const sttfa_eta cst -> true
+  | Term.App(cst, _, _) when is_sttfa_const sttfa_eta cst -> true
   | _ -> false
 
 let is_term t =
   match t with
-  | Term.App(cst, ty, _) when is_sttfa_const sttfa_eps cst -> true
+  | Term.App(cst, _, _) when is_sttfa_const sttfa_eps cst -> true
   | _ -> false

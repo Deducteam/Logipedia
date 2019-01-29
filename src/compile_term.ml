@@ -14,7 +14,7 @@ let get_type_arity env lc name =
 
 let rec compile__term env _te =
   match _te with
-  | Term.DB (_, var, n) ->
+  | Term.DB (_, _, n) ->
       let var = get_dk_var env n in
       TeVar var
   | Term.Lam (_, id, Some cst, _te) when is_sttfa_const sttfa_type cst ->
@@ -51,7 +51,7 @@ let rec compile__term env _te =
       let args' = List.map (fun x -> compile__term env x) (a :: args) in
       List.fold_left (fun app arg -> App (app, arg)) f' args'
   | Term.Lam (_, _, None, _) -> failwith "lambda untyped are not supported"
-  | Term.Const (lc, cst) -> Cst (of_name cst, [])
+  | Term.Const (_, cst) -> Cst (of_name cst, [])
   | _ ->
       Format.eprintf "%a@." Pp.print_term _te ;
       assert false
@@ -59,7 +59,7 @@ let rec compile__term env _te =
 
 let rec compile_term env te =
   match te with
-  | Term.App (cst, Term.Lam (_, x, Some ty, te), [])
+  | Term.App (cst, Term.Lam (_, x, Some _, te), [])
     when is_sttfa_const sttfa_forall_kind_prop cst ->
     let x = gen_fresh env x in
     let te' = compile_term (add_ty_var_dk env x) te in

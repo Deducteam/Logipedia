@@ -28,7 +28,7 @@ let rec mk__ty = function
     ty_of_tyOp (mk_tyOp (mk_id "bool")) []
 
 let rec mk_ty = function
-  | ForallK(var, ty) ->
+  | ForallK(_, ty) ->
     mk_ty ty
   | Ty(_ty) -> mk__ty _ty
 
@@ -178,7 +178,7 @@ let mk_delta ctx cst _tys =
 let rec mk__ctx env thm ctx left right =
   match ctx,left,right with
   | [], _ , _-> thm
-  | CAbsTy::ctx, AbsTy(var,_te), AbsTy(var',_te') ->
+  | CAbsTy::ctx, AbsTy(_,_te), AbsTy(_,_te') ->
     mk__ctx env thm ctx _te _te'
   | CAbs::ctx, Abs(var,_ty,_te), Abs(var',_ty',_te') ->
     assert (var = var');
@@ -255,15 +255,15 @@ let mk_trace env left right trace =
 let rec mk_proof env =
   let open Basic in
   function
-  | Assume(j,var) -> mk_assume (mk_te env j.thm)
-  | Lemma(cst,j) ->
+  | Assume(j,_) -> mk_assume (mk_te env j.thm)
+  | Lemma(cst,_) ->
     begin
       try thm_of_lemma (mk_qid cst)
       with _ ->
         let te = Env.get_type dloc (name_of cst) in
         mk_axiom (mk_hyp []) (mk_te empty_env (CTerm.compile_wrapped_term empty_env te))
     end
-  | ForallE(j,proof, u) ->
+  | ForallE(_,proof, u) ->
     begin
       match (judgment_of proof).thm with
       | Te(Forall(var,_ty,_te)) ->
@@ -274,7 +274,7 @@ let rec mk_proof env =
         mk_rule_elim_forall proof' f' _ty' u'
       | _ -> assert false
     end
-  | ForallI(j,proof,var) ->
+  | ForallI(_,proof,var) ->
     let j' = judgment_of proof in
     let _,_ty = List.find (fun (x,_ty) -> if x = var then true else false) j'.te in
     let env' = add_te_var env var _ty in
@@ -290,7 +290,7 @@ let rec mk_proof env =
     let prfp' = mk_proof env prfp in
     let prfpq' = mk_proof env prfpq in
     mk_rule_elim_impl prfp' prfpq' p' q'
-  | ImplI(j,proof,var) ->
+  | ImplI(_,proof,var) ->
     let j' = judgment_of proof in
     let _,p = TeSet.choose (TeSet.filter (fun (x,_ty) -> if x = var then true else false) j'.hyp) in
     let q = j'.thm in
@@ -320,7 +320,7 @@ let rec mk_proof env =
 
 let content = ref ""
 
-let pretty_print_item item = "Printing for OpenTheory is not supported right now." (*
+let pretty_print_item _ = "Printing for OpenTheory is not supported right now." (*
   let print_item fmt = function
     | Parameter(name,ty) ->
       let ty' = mk_ty ty in
@@ -362,9 +362,9 @@ let pretty_print_item item = "Printing for OpenTheory is not supported right now
   !content
 *)
 
-let print_item oc =
+let print_item _ =
   function
-  | Parameter(cst,ty) -> ()
+  | Parameter _ -> ()
   | Definition(cst,ty,te) ->
     (*    let te' = mk_te empty_env te in *)
     let cst' = mk_qid cst in
@@ -382,7 +382,7 @@ let print_item oc =
     let hyp' = mk_hyp [] in
     let proof' = mk_proof empty_env proof in
     mk_thm (mk_qid cst) te' hyp' proof'
-  | TyOpDef(tyop,arity) -> ()
+  | TyOpDef _ -> ()
 
 let print_ast oc ast =
   Buffer.clear Format.stdbuf;

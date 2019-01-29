@@ -1,0 +1,7 @@
+(include_subdirs unqualified)
+
+(executable
+        (name main)
+        (public_name logipedia)
+        (package logipedia)
+        (libraries unix mongo dedukti))

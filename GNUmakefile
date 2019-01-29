@@ -2,15 +2,21 @@ DKCHECK = dkcheck
 DKDEP   = dkdep
 MATITAC = matitac
 
-MAIN = _build/src/main.native
+logipedia: bin
+	@echo "[BUILD EXECUTABLE] logipedia"
+	@rm logipedia 2>/dev/null || true
+	@ln -s _build/default/src/main.exe logipedia
 
-all: $(MAIN)
+.PHONY: all
+all: logipedia
 
-#### Main program ##################################################
+.PHONY: bin
+bin:
+	@dune build
 
-$(MAIN): $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli src/hol/*.ml src/hol/*.mli src/utils/*.ml src/utils/*.mli)
-	@echo "[BUILD] main.native"
-	@ocamlbuild -use-ocamlfind -quiet -Is src/,src/utils,src/export,src/hol -tag thread -package mongo -package dedukti src/main.native
+.PHONY: doc
+doc:
+	@dune build @doc
 
 #### Producing the theory file #####################################
 
@@ -30,25 +36,61 @@ theories/hol_sttfa.dko: theories/hol_sttfa.dk theories/sttfa.dko theories/hol.dk
 	@echo "[CHECK] $<"
 	@$(DKCHECK) -I theories -e $<
 
-#### Running examples ##############################################
-
-EXADKS = $(wildcard examples/*.dk)
-
-examples: $(EXADKS:.dk=.stt) $(EXADKS:.dk=.pdf)
-
-examples/%.dko examples/%.stt examples/%.tex: examples/%.dk theories/sttfa.dko $(MAIN)
-	@echo "[STT] $<"
-	@./main.native -I theories $<
-
-examples/%.pdf: examples/%.tex
-	@echo "[PDF] $@"
-	@pdflatex -output-directory=examples $< > /dev/null || echo "ERROR on $@"
-
 #### Producing the Dedukti library #################################
 
-LIBDKS = $(wildcard library/*.dk)
-SORTEDDKS = $(shell dkdep -s -I theories/ -I library/ --ignore library/*.dk | cut -d" " -f 2,2-)
-COQC := $(shell command -v coqc 2> /dev/null)
+PACKAGE = arith_fermat
+LOGIC = sttfa
+IPATH = import/dedukti/$(LOGIC)/$(PACKAGE)
+DKS = $(wildcard $(IPATH)/*.dk)
+SORTEDDKS = $(shell dkdep -s --ignore -I $(IPATH) $(IPATH)/*.dk)
+COQPATH = export/coq
+
+
+#### Dependencies ##################################################
+
+.library_depend_dko: $(wildcard $(IPATH)/*.dk theories/$(LOGIC).dk)
+	@echo "[DKDEP (DK FILES)] $@"
+	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
+
+.library_depend_v: $(wildcard $(IPATH)/*.dk theories/$(LOGIC).dk)
+	@echo "[DKDEP (V FILES)] $@"
+	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
+	@sed -i s/theories\\/sttfa.dko//g $@
+	@sed -i s/dko/v/g $@
+	sed  -i "s:$(IPATH)/\([[:alnum:]]*\)\.v:$(COQPATH)/\1\.v:g" $@
+
+.library_depend_vo: $(wildcard $(IPATH)/*.dk theories/$(LOGIC).dk)
+	@echo "[DKDEP (VO FILES)] $@"
+	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
+	@sed -i s/theories\\/sttfa.dko//g $@
+	@sed -i s/dko/vo/g $@
+	@sed -i s/dk/v/g $@
+
+#### Export ########################################################
+
+#### Dedukti #######################################################
+
+$(IPATH)/%.dko: $(IPATH)/%.dk theories/$(LOGIC).dko
+	@echo "[CHECK] $@"
+	@$(DKCHECK) -e -I theories -I $(IPATH) $<
+
+#### Coq ###########################################################
+
+VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
+
+$(COQPATH)/%.v: $(IPATH)/%.dk $(IPATH)/%.dko theories/$(LOGIC).dko .library_depend_v logipedia
+	@echo "[EXPORT] $@"
+	@./logipedia -I $(IPATH) -I theories --export coq $< -o $@
+
+$(COQPATH)/_CoqProject: $(VFILES)
+	@cd $(COQPATH) && ls *.v > _CoqProject
+
+$(COQPATH)/Makefile: $(COQPATH)/_CoqProject
+	@cd $(COQPATH) && coq_makefile -f _CoqProject -o Makefile
+
+coq: $(COQPATH)/Makefile $(VFILES)
+	@cd $(COQPATH) && make
+	@echo "[COQ] CHECKED"
 
 library/%.lean:  library/%.dk theories/sttfa.dko .library_depend_lean $(MAIN)
 	@echo "[EXPORT] $@"
@@ -57,10 +99,6 @@ library/%.lean:  library/%.dk theories/sttfa.dko .library_depend_lean $(MAIN)
 library/%.pvs: library/%.dk theories/sttfa.dko .library_depend_pvs $(MAIN)
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export pvs $(BDD) $<
-
-library/%.v: library/%.dk theories/sttfa.dko .library_depend_v $(MAIN)
-	@echo "[EXPORT] $@"
-	@./main.native -I library -I theories --export coq $(BDD) $<
 
 library/%.ma: library/%.dk theories/sttfa.dko .library_depend_ma $(MAIN)
 	@echo "[EXPORT] $@"
@@ -73,10 +111,6 @@ library/%.art: library/%.dk theories/sttfa.dko .library_depend_art $(MAIN)
 library/%.thy: .library_depend_dko
 	@echo "[GENERATE] $@"
 	@python3 bin/gen-thy-file.py $(notdir $(basename $@)) > $@
-
-library/%.vo: library/%.v .library_depend_vo
-	@echo "[CHECK] $@"
-	@coqc -R library "" $<
 
 library/%.summary: library/%.pvs
 	@echo "[SUMMARY]"
@@ -104,8 +138,6 @@ web: theories/sttfa.dko theories/hol.dko $(MAIN)
 	mongo < ./bdd/dropLogipedia.js
 	time ./main.native  -I library -I theories --export-web $(SORTEDDKS)
 
-coq: library/fermat.vo
-
 matita: library/fermat.ma
 	$(MATITAC) library/fermat.ma | grep -v 'refinement' | grep -v 'ELPI' | grep -v 'type-checking'
 
@@ -120,28 +152,11 @@ lean: library/fermat.lean
 opentheory: library/fermat.thy library/fermat.art
 	opentheory info library/fermat.thy
 
-.library_depend_dko: $(wildcard library/*.dk theories/*.dk examples/*.dk)
-	@echo "[DEP] $@"
-	@$(DKDEP) -o $@ -I library -I theories $^
-
 .library_depend_pvs: $(wildcard library/*.dk theories/*.dk examples/*.dk)
 	@echo "[DEP] $@"
 	@$(DKDEP) -o $@ -I library -I theories $^
 	@sed -i s/theories\\/sttfa.dko//g $@
 	@sed -i s/dko/pvs/g $@
-
-.library_depend_v: $(wildcard library/*.dk theories/*.dk examples/*.dk)
-	@echo "[DEP] $@"
-	@$(DKDEP) -o $@ -I library -I theories $^
-	@sed -i s/theories\\/sttfa.dko//g $@
-	@sed -i s/dko/v/g $@
-
-.library_depend_vo: $(wildcard library/*.dk theories/*.dk examples/*.dk)
-	@echo "[DEP] $@"
-	@$(DKDEP) -o $@ -I library -I theories $^
-	@sed -i s/theories\\/sttfa.dko//g $@
-	@sed -i s/dko/vo/g $@
-	@sed -i s/dk/v/g $@
 
 .library_depend_ma: $(wildcard library/*.dk theories/*.dk examples/*.dk)
 	@echo "[DEP] $@"
@@ -187,29 +202,29 @@ clean:
 	@rm -f .library_depend_art
 
 distclean: clean
-	@find library -name "\#*"    -exec rm {} \;
+	@find . -name "\#*"          -exec rm {} \;
 	@find . -name "*~"           -exec rm {} \;
 	@find . -name "*.dko"        -exec rm {} \;
-	@find library -name "*.stt"  -exec rm {} \;
-	@find library -name "*.aux"  -exec rm {} \;
-	@find library -name "*.log"  -exec rm {} \;
-	@find library -name "*.pdf"  -exec rm {} \;
-	@find library -name "*.tex"  -exec rm {} \;
-	@find library -name "*.pvs"  -exec rm {} \;
-	@find library -name "*.prf"  -exec rm {} \;
-	@find library -name "*.bin"  -exec rm {} \;
-	@find library -name "*.dep"  -exec rm {} \;
-	@find library -name "*.ma"   -exec rm {} \;
-	@find library -name "*.v"    -exec rm {} \;
-	@find library -name "*.vo"   -exec rm {} \;
-	@find library -name "*.glob" -exec rm {} \;
-	@find library -name "*.lean" -exec rm {} \;
-	@find library -name "*.json" -exec rm {} \;
-	@find library -name "*.art"  -exec rm {} \;
-	@find library -name "*.thy"  -exec rm {} \;
-	@find library -name "*.summary" -exec rm {} \;
-	@find library -name "*.beautified" -exec rm {} \;
-	@find library -name ".pvscontext" -exec rm {} \;
+	@find . -name "*.stt"        -exec rm {} \;
+	@find . -name "*.aux"        -exec rm {} \;
+	@find . -name "*.log"        -exec rm {} \;
+	@find . -name "*.pdf"        -exec rm {} \;
+	@find . -name "*.tex"        -exec rm {} \;
+	@find . -name "*.pvs"        -exec rm {} \;
+	@find . -name "*.prf"        -exec rm {} \;
+	@find . -name "*.bin"        -exec rm {} \;
+	@find . -name "*.dep"        -exec rm {} \;
+	@find . -name "*.ma"         -exec rm {} \;
+	@find . -name "*.v"          -exec rm {} \;
+	@find . -name "*.vo"         -exec rm {} \;
+	@find . -name "*.glob"       -exec rm {} \;
+	@find . -name "*.lean"       -exec rm {} \;
+	@find . -name "*.json"       -exec rm {} \;
+	@find . -name "*.art"        -exec rm {} \;
+	@find . -name "*.thy"        -exec rm {} \;
+	@find . -name "*.summary"    -exec rm {} \;
+	@find . -name "*.beautified" -exec rm {} \;
+	@find . -name ".pvscontext"  -exec rm {} \;
 	@rm -rf /tmp/fermat
 
 .PHONY: all clean distclean examples library coq matita pvs bdd-dep opentheory
