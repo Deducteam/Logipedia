@@ -63,7 +63,6 @@ let export_system file =
   close_in input ;
   begin
     let sttfa_ast = mk_ast md entries in
-    Env.export ();
     let (module M:Export.E) = Export.of_system !system in
     export_file sttfa_ast !system;
   end
