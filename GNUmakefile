@@ -1,6 +1,7 @@
 DKCHECK = dkcheck
 DKDEP   = dkdep
 MATITAC = matitac
+LEAN    = lean
 
 LOGIPEDIA = _build/default/src/main.exe
 
@@ -60,6 +61,20 @@ SORTEDDKS = $(shell dkdep -s --ignore -I $(IPATH) $(IPATH)/*.dk)
 	@sed -i s/dko/v/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.v:$(COQPATH)/\1\.v:g" $@
 
+.library_depend_ma: $(wildcard $(IPATH)/*.dk theories/$(LOGIC).dk)
+	@echo "[DKDEP (MA FILES)] $@"
+	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
+	@sed -i s/theories\\/sttfa.dko//g $@
+	@sed -i s/dko/ma/g $@
+	sed  -i "s:$(IPATH)/\([^.]*\)\.ma:$(MATITAPATH)/\1\.ma:g" $@
+
+.library_depend_lean: $(wildcard $(IPATH)/*.dk theories/$(LOGIC).dk)
+	@echo "[DKDEP (LEAN FILES)] $@"
+	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
+	@sed -i s/theories\\/sttfa.dko//g $@
+	@sed -i s/dko/lean/g $@
+	sed  -i "s:$(IPATH)/\([^.]*\)\.lean:$(LEANPATH)/\1\.lean:g" $@
+
 #### Export ########################################################
 
 #### Dedukti #######################################################
@@ -89,6 +104,33 @@ coq: $(COQPATH)/Makefile $(VFILES)
 
 
 #### Matita ########################################################
+
+MATITAPATH = export/matita
+MAFILES=$(addprefix $(MATITAPATH)/, $(addsuffix .ma, $(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
+
+$(MATITAPATH)/%.ma: $(IPATH)/%.dko theories/$(LOGIC).dko .library_depend_ma $(LOGIPEDIA)
+	@echo "[EXPORT] $@"
+	@$(LOGIPEDIA) -I $(IPATH) -I theories --export matita $(<:.dko=.dk) -o $@
+
+$(MATITAPATH)/root:
+	@echo "baseuri = cic:/matita" > $@
+
+matita: $(MAFILES) $(MATITAPATH)/root
+	@cd $(MATITAPATH) && $(MATITAC) *.ma
+	@echo "[MATITA] CHECKED"
+
+#### Lean ##########################################################
+
+LEANPATH = export/lean
+LEANFILES=$(addprefix $(LEANPATH)/,$(addsuffix .lean,$(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
+
+$(LEANPATH)/%.lean: $(IPATH)/%.dko theories/$(LOGIC).dko .library_depend_lean $(LOGIPEDIA)
+	@echo "[EXPORT] $@"
+	@$(LOGIPEDIA) -I $(IPATH) -I theories --export lean $(<:.dko=.dk) -o $@
+
+lean: $(LEANFILES)
+	@cd $(LEANPATH) && $(LEAN) *.lean
+	@echo "[LEAN] CHECKED"
 
 # library/%.lean:  library/%.dk theories/sttfa.dko .library_depend_lean $(MAIN)
 # 	@echo "[EXPORT] $@"
@@ -177,13 +219,13 @@ coq: $(COQPATH)/Makefile $(VFILES)
 
 
 
+#### Dependencies ##################################################
+
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend_dko
--include .library_depend_pvs
--include .library_depend_vo
+-include .library_depend_v
 -include .library_depend_ma
--include .library_depend_art
 -include .library_depend_lean
 endif
 endif
