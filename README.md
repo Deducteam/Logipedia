@@ -1,13 +1,27 @@
 # Logipedia
-This repository presents an arithmetic library that is shared between several proof systems. For the moment, the proofs can be exported to the following systems:
 
-- Coq
-- Matita
-- OpenTheory
-- Lean
-- PVS
+Logipedia is a project that aims to share formal proofs between several systems. The systems supported are (E for export and I for import):
+- Coq (E)
+- Lean (E)
+- Matita (I/E)
+- OpenTheory (I/E)
+- PVS (E)
 
-If you want to export this library to your favorite system, please send us an email: gilles.dowek@inria.fr, francois.thire@inria.fr. All contributions are welcome!
+The project is based upon the logical framework [https://github.com/Deducteam/Dedukti](Dedukti). The project has also an interface via the [http;//logipedia.science](Logipedia) website.
+
+# Importing proofs
+
+Importhing proofs in Logipedia require first to import your proofs in Dedukti. Currently, this is possible only for Matita via [https://github.com/Deducteam/matita](Krajono) and OpenTheory via [https://github.com/Deducteam/Holide](Holide). A lot of efforts is made to support Coq via [https://github.com/Deducteam/CoqInE](CoqInE).
+
+# Exporting proofs
+
+Exporting proofs in Logipedia requires first to translate your proofs in a very weak logic called STTfa. Once your proofs can be expressed in this logic, we can export them to Coq, Lean, Matita, OpenTheory and PVS.
+
+Translating proofs from one logic to another is quite complicated and requires a lot of Dedukti knowledge. Currently, only the translation from HOL to STTfa has ben fully automatized. On the short run, it will be possible to have a partial translation from Matita to STTfa also.
+
+If you are interested in creating a new (partial) translation, please send us an email!
+
+On the long run, we plan also to support other logics than STTfa, but no plan has been made so far.
 
 # Compiling the project
 

@@ -3,11 +3,14 @@ import os
 import subprocess
 import sys
 
-if len(sys.argv) < 2:
+if len(sys.argv) != 4:
     print("ERROR: This script should take a module as parameter")
     exit(1)
 
-target = sys.argv[1]
+dkdep = sys.argv[1]
+directory = sys.argv[2]
+
+target = sys.argv[3]
 name = target
 version = "1.0"
 description = "Part of the arithmetic library automatically translated from Matita"
@@ -15,8 +18,6 @@ author = "François Thiré <francois.thire@inria.fr"
 license = "MIT"
 show = target
 
-dkdep = "dkdep"
-directory = "library"
 cmd = "{:s} --ignore -s -I {:s} {:s}/*.dk".format(dkdep, directory, directory)
 proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
 pre_sorted_modules = proc.stdout.read()
@@ -47,10 +48,11 @@ def print_module(module):
     print("}")
     print()
 
-def print_main(module):
+def print_main(modules):
     print("main")
     print("{")
-    print("\timport: {:s}".format(sanitize(clean(module))))
+    for i in modules:
+        print("\timport: {:s}".format(sanitize(clean(i))))
     print("}")
 
 
@@ -67,9 +69,5 @@ for i in sorted_modules:
         register[i] = register[i] | register[j]
     register[i] = (register[i] - {i})
     print_module(i)
-    if target == sanitize(clean(i)):
-        print_main(target)
-        exit(0)
 else:
-    print("ERROR: wrong module given as parameter")
-    exit(2)
+    print_main(sorted_modules)

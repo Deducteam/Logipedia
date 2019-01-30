@@ -35,9 +35,12 @@ pvs-strategies
 *.glob
 _CoqProject
 export/coq/Makefile
+export/coq/Makefile.conf
+export/coq/*.d
 
 # MATITA files
 *.ma
+export/matita/root
 
 # OPENTHEORY files
 *.thy
