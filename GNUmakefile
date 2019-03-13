@@ -48,16 +48,17 @@ theories/hol_sttfa.dko: theories/hol_sttfa.dk theories/sttfa.dko theories/hol.dk
 #### Producing the Dedukti library #################################
 
 PACKAGE = arith_fermat
-LOGIC = sttfa
-IPATH = import/dedukti/$(LOGIC)/$(PACKAGE)
+THEORY = sttfa
+IPATH = import/dedukti/$(THEORY)/$(PACKAGE)
 DKS = $(wildcard $(IPATH)/*.dk)
 SORTEDDKS = $(shell dkdep -s --ignore -I $(IPATH) $(IPATH)/*.dk)
+LOGIPEDIAOPTS = -I $(IPATH) -I theories --from $(THEORY)
 
 #### Export ########################################################
 
 #### Dedukti #######################################################
 
-$(IPATH)/%.dko: $(IPATH)/%.dk theories/$(LOGIC).dko
+$(IPATH)/%.dko: $(IPATH)/%.dk theories/$(THEORY).dko
 	@echo "[CHECK] $@"
 	@$(DKCHECK) -e -I theories -I $(IPATH) $<
 
@@ -66,9 +67,9 @@ $(IPATH)/%.dko: $(IPATH)/%.dk theories/$(LOGIC).dko
 COQPATH = export/coq
 VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
 
-$(COQPATH)/%.v: $(IPATH)/%.dko theories/$(LOGIC).dko .library_depend_v $(LOGIPEDIA)
+$(COQPATH)/%.v: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_v $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) -I $(IPATH) -I theories --export coq $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export coq $(<:.dko=.dk) -o $@
 
 $(COQPATH)/_CoqProject: $(VFILES)
 	@cd $(COQPATH) && ls *.v > _CoqProject
@@ -87,9 +88,9 @@ coq: $(COQPATH)/Makefile $(VFILES)
 MATITAPATH = export/matita
 MAFILES=$(addprefix $(MATITAPATH)/, $(addsuffix .ma, $(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
 
-$(MATITAPATH)/%.ma: $(IPATH)/%.dko theories/$(LOGIC).dko .library_depend_ma $(LOGIPEDIA)
+$(MATITAPATH)/%.ma: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_ma $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) -I $(IPATH) -I theories --export matita $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export matita $(<:.dko=.dk) -o $@
 
 $(MATITAPATH)/root:
 	@echo "baseuri = cic:/matita" > $@
@@ -104,9 +105,9 @@ matita: $(MAFILES) $(MATITAPATH)/root
 LEANPATH = export/lean
 LEANFILES=$(addprefix $(LEANPATH)/,$(addsuffix .lean,$(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
 
-$(LEANPATH)/%.lean: $(IPATH)/%.dko theories/$(LOGIC).dko .library_depend_lean $(LOGIPEDIA)
+$(LEANPATH)/%.lean: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_lean $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) -I $(IPATH) -I theories --export lean $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export lean $(<:.dko=.dk) -o $@
 
 .PHONY: lean
 lean: $(LEANFILES)
@@ -119,9 +120,9 @@ OTPATH = export/opentheory
 OTFILES=$(addprefix $(OTPATH)/,$(addsuffix .art,$(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
 THYFILE=$(OTPATH)/$(PACKAGE).thy
 
-$(OTPATH)/%.art: $(IPATH)/%.dko theories/$(LOGIC).dko .library_depend_art $(LOGIPEDIA)
+$(OTPATH)/%.art: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_art $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) -I $(IPATH) -I theories --export opentheory $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export opentheory $(<:.dko=.dk) -o $@
 
 .PHONY: opentheory
 opentheory: $(OTFILES)
@@ -137,9 +138,9 @@ PVSFILES=$(addprefix $(PVSPATH)/,$(addsuffix .pvs,$(basename $(notdir $(wildcard
 PVSSUM=$(addprefix $(PVSPATH)/,$(addsuffix .summary,$(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
 # For some weird reason, Make consider .pvs are temporary
 .PRECIOUS: library/%.pvs
-$(PVSPATH)/%.pvs: $(IPATH)/%.dko theories/$(LOGIC).dko .library_depend_pvs $(LOGIPEDIA)
+$(PVSPATH)/%.pvs: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_pvs $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) -I $(IPATH) -I theories --export pvs $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export pvs $(<:.dko=.dk) -o $@
 
 $(PVSPATH)/%.summary: $(PVSPATH)/%.pvs
 	@echo "[SUMMARY] $@"
@@ -158,39 +159,39 @@ export/web/pvs/%.zip : theories/sttfa.dko $(LOGIPEDIA)
 
 #### Dependencies ##################################################
 
-.library_depend_dko: $(wildcard $(IPATH)/*.dk theories/$(LOGIC).dk)
+.library_depend_dko: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
 	@echo "[DKDEP (DK FILES)] $@"
 	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
 
-.library_depend_v: $(wildcard $(IPATH)/*.dk theories/$(LOGIC).dk)
+.library_depend_v: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
 	@echo "[DKDEP (V FILES)] $@"
 	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
 	@sed -i s/theories\\/sttfa.dko//g $@
 	@sed -i s/dko/v/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.v:$(COQPATH)/\1\.v:g" $@
 
-.library_depend_ma: $(wildcard $(IPATH)/*.dk theories/$(LOGIC).dk)
+.library_depend_ma: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
 	@echo "[DKDEP (MA FILES)] $@"
 	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
 	@sed -i s/theories\\/sttfa.dko//g $@
 	@sed -i s/dko/ma/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.ma:$(MATITAPATH)/\1\.ma:g" $@
 
-.library_depend_lean: $(wildcard $(IPATH)/*.dk theories/$(LOGIC).dk)
+.library_depend_lean: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
 	@echo "[DKDEP (LEAN FILES)] $@"
 	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
 	@sed -i s/theories\\/sttfa.dko//g $@
 	@sed -i s/dko/lean/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.lean:$(LEANPATH)/\1\.lean:g" $@
 
-.library_depend_art: $(wildcard $(IPATH)/*.dk theories/$(LOGIC).dk)
+.library_depend_art: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
 	@echo "[DKDEP (ART FILES)] $@"
 	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
 	@sed -i s/theories\\/sttfa.dko//g $@
 	@sed -i s/dko/art/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.art:$(OTPATH)/\1\.art:g" $@
 
-.library_depend_pvs: $(wildcard $(IPATH)/*.dk theories/$(LOGIC).dk)
+.library_depend_pvs: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
 	@echo "[DKDEP (PVS FILES)] $@"
 	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
 	@sed -i s/theories\\/sttfa.dko//g $@

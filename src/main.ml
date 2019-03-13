@@ -3,7 +3,7 @@ open Parser
 open Ast
 
 let err_msg fmt =
-  Format.eprintf "%s" ("\027[31m" ^ "ERROR" ^ "\027[m");
+  Format.eprintf "%s" ("\027[31m" ^ "[ERROR] " ^ "\027[m");
   Format.eprintf fmt
 
 let system : Systems.system ref = ref (`Coq)
@@ -11,13 +11,7 @@ let system : Systems.system ref = ref (`Coq)
 let set_export s =
   system := Systems.system_of_string s
 
-(* Not used currently because only one theory is supported currently *)
-let output_theory : Theories.theory ref = ref `Sttfa
-
 let input_theory : Theories.theory ref = ref `Sttfa
-
-let set_output_theory s =
-  output_theory := Theories.theory_of_string s
 
 let set_input_theory s =
   input_theory := Theories.theory_of_string s
@@ -51,11 +45,14 @@ let export_system file =
   let input = open_in file in
   let entries = Parse_channel.parse md input in
   close_in input;
-  begin
-    let sttfa_ast = mk_ast md entries in
-    let (module M:Export.E) = Export.of_system !system in
-    export_file sttfa_ast !system;
-  end
+  if !input_theory <> `Sttfa then
+    failwith "todo"
+  else
+    begin
+      let sttfa_ast = mk_ast md entries in
+      let (module M:Export.E) = Export.of_system !system in
+      export_file sttfa_ast !system;
+    end
 
 (* Right now export stuff in the database *)
 let export_web file =
@@ -75,8 +72,7 @@ let _ =
           ("-o", Arg.String set_output_file, " Set output file") ;
           ("--export", Arg.String set_export, " Set exporting system") ;
           ("--export-web", Arg.Set to_web, " Generate informations for the website") ;
-          ("--theory-output", Arg.String set_output_theory, " Set theory (default: STTFA)") ;
-          ("--theory-input", Arg.String set_input_theory, " Set theory (default: STTFA)") ]
+          ("--from", Arg.String set_input_theory, " Set theory (default: STTFA)") ]
     in
     let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
     let usage = usage ^ "Available options:" in

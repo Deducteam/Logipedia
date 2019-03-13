@@ -1,0 +1,56 @@
+
+def type_0 : sttfa.type -> sttfa.type := A:sttfa.type => A.
+
+
+def type_1 :
+  sttfa.type -> sttfa.type -> sttfa.type
+  :=
+  B:sttfa.type => A:sttfa.type => sttfa.arrow (type_0 A) B.
+
+
+def type_2 :
+  sttfa.type -> sttfa.type -> sttfa.type
+  :=
+  B:sttfa.type => A:sttfa.type => sttfa.arrow (type_1 B A) sttfa.bool.
+
+
+Data_2EBool_2E_21 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p (type_0 x))).
+
+
+def term_0 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type =>
+                             sttfa.forallK (x0:sttfa.type =>
+                                            sttfa.p (sttfa.arrow (type_1 x x0) (
+                                                       type_1 x x0)))))
+  :=
+  B:sttfa.type =>
+  A:sttfa.type => t_1:(sttfa.etap (sttfa.p (type_1 B A))) => t_1.
+
+
+def term_1 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type =>
+                             sttfa.forallK (x0:sttfa.type =>
+                                            sttfa.p sttfa.bool)))
+  :=
+  B:sttfa.type =>
+  A:sttfa.type =>
+  Data_2EBool_2E_21 (sttfa.arrow (type_2 B A) sttfa.bool) (t_1:
+                                                           (sttfa.etap (
+                                                              sttfa.p (
+                                                                type_1 B A))) =>
+                                                           leibniz.eq (
+                                                             type_1 B A) (
+                                                             x_2:
+                                                             (sttfa.etap (
+                                                                sttfa.p (
+                                                                  type_0 A))) =>
+                                                             term_0 B A t_1 x_2) (
+                                                             term_0 B A t_1)).
+
+
+thm_0 :
+  sttfa.eps (sttfa.forallP (x:sttfa.type =>
+                            sttfa.forallP (x0:sttfa.type => term_1 x x0))).
+
+

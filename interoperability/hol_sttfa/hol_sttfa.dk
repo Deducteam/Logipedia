@@ -1,0 +1,246 @@
+(;-----------;)
+(; HOL Types ;)
+(;-----------;)
+
+[] hol.type --> sttfa.type.
+
+[] hol.bool --> sttfa.bool.
+[] hol.ind --> sttfa_hol_axioms.ind.
+[] hol.arr --> sttfa.arrow.
+
+(;-----------;)
+(; HOL Terms ;)
+(;-----------;)
+
+[] hol.term --> sttfa.eta.
+
+[] hol.eq --> leibniz.eq.
+[] hol.select --> sttfa_hol_axioms.select.
+
+(;------------;)
+(; HOL Proofs ;)
+(;------------;)
+
+[] hol.proof --> sttfa.eps.
+
+[] hol.REFL --> leibniz.refl.
+[] hol.ABS_THM --> sttfa_hol_axioms.ABS_THM.
+
+[a, b, f, g, x, y, H1, H2]
+  hol.APP_THM a b f g x y H1 H2 -->
+    leibniz.trans b (f x) (f y) (g y)
+      (P : hol.term (hol.arr b hol.bool) => H2 (z : hol.term a => P (f z)))
+      (P : hol.term (hol.arr b hol.bool) => H1 (h : hol.term (hol.arr a b) => P (h y))).
+
+[] hol.PROP_EXT --> sttfa_hol_axioms.PROP_EXT.
+[] hol.EQ_MP --> sttfa_hol_axioms.EQ_MP.
+
+[a, b, f, u] hol.BETA_CONV a b f u --> hol.REFL b (f u).
+
+[a, t, u, H] hol.SYM a t u H -->
+  hol.EQ_MP
+    (hol.eq a t t)
+    (hol.eq a u t)
+    (hol.APP_THM
+      a
+      hol.bool
+      (hol.eq a t)
+      (hol.eq a u)
+      t
+        t
+        (hol.APP_THM
+          a
+          (hol.arr a hol.bool)
+          (hol.eq a)
+          (hol.eq a)
+          t
+            u
+            (hol.REFL (hol.arr a (hol.arr a hol.bool)) (hol.eq a))
+            H)
+        (hol.REFL a t))
+    (hol.REFL a t).
+
+[a, t, u, v, H1, H2] hol.TRANS a t u v H1 H2 -->
+  hol.EQ_MP
+    (hol.eq a u v)
+    (hol.eq a t v)
+    (hol.APP_THM
+      a
+      hol.bool
+      (hol.eq a u)
+      (hol.eq a t)
+      v
+        v
+        (hol.APP_THM a (hol.arr a hol.bool) (hol.eq a) (hol.eq a) u t (hol.REFL (hol.arr a (hol.arr a hol.bool)) (hol.eq a)) (hol.SYM a t u H1))
+        (hol.REFL a v))
+    H2.
+
+[x, y, H1, H2] hol.PROVE_HYP x y H1 H2 --> H2 H1.
+
+
+(;---------------------;)
+(; Derived Connectives ;)
+(;---------------------;)
+
+[] hol.true --> hol.eq (hol.arr hol.bool hol.bool) (p : hol.term hol.bool => p) (p : hol.term hol.bool => p).
+
+[a, p] hol.forall a p -->
+  hol.eq (hol.arr a hol.bool) p (x : hol.term a => hol.true).
+
+[] hol.false --> hol.forall hol.bool (p : hol.term hol.bool => p).
+
+[] hol.and -->
+  p : hol.term hol.bool => q : hol.term hol.bool =>
+  hol.eq (hol.arr (hol.arr hol.bool (hol.arr hol.bool hol.bool)) hol.bool)
+    (f : hol.term (hol.arr hol.bool (hol.arr hol.bool hol.bool)) => f p q)
+    (f : hol.term (hol.arr hol.bool (hol.arr hol.bool hol.bool)) => f hol.true hol.true).
+
+[] hol.imp -->
+  p : hol.term hol.bool => q : hol.term hol.bool =>
+  hol.eq hol.bool (hol.and p q) p.
+
+[] hol.or -->
+  p : hol.term hol.bool => q : hol.term hol.bool =>
+  hol.forall hol.bool (r : hol.term hol.bool => hol.imp (hol.imp p r) (hol.imp (hol.imp q r) r)).
+
+[a, t, t1, t2] hol.cond a t t1 t2 -->
+  hol.select a (x : hol.term a =>
+    hol.and
+      (hol.imp (hol.eq hol.bool t hol.true) (hol.eq a x t1))
+      (hol.imp (hol.eq hol.bool t hol.false) (hol.eq a x t2))).
+
+[p] hol.not p --> hol.imp p hol.false.
+
+[] hol.witness --> sttfa_hol_axioms.witness.
+
+[] hol.true_intro -->
+  hol.REFL (hol.arr hol.bool hol.bool) (p : hol.term hol.bool => p).
+
+[a, x, y, h] hol.eq_sym a x y h -->
+  hol.EQ_MP (hol.eq a x x) (hol.eq a y x)
+    (hol.APP_THM a hol.bool (hol.eq a x) (hol.eq a y) x x
+      (hol.APP_THM a (hol.arr a hol.bool) (hol.eq a) (hol.eq a) x y
+        (hol.REFL (hol.arr a (hol.arr a hol.bool)) (hol.eq a))
+        (h))
+      (hol.REFL a x))
+    (hol.REFL a x).
+
+[p, h] hol.eq_true_intro p h -->
+  hol.PROP_EXT p hol.true (h2 : hol.proof hol.true => h) (h : hol.proof p => hol.true_intro).
+
+[p, h] hol.eq_true_elim p h -->
+  hol.EQ_MP hol.true p (hol.eq_sym hol.bool p hol.true h) hol.true_intro.
+
+[a, p, h] hol.forall_intro a p h -->
+  hol.ABS_THM a hol.bool p (x : hol.term a => hol.true) (x : hol.term a =>
+                                         hol.eq_true_intro (p x) (h x)).
+
+[a, p, h, x] hol.forall_elim a p h x -->
+  hol.eq_true_elim (p x)
+               (hol.APP_THM a hol.bool p (x : hol.term a => hol.true) x x h (hol.REFL a x)).
+
+[p, h] hol.false_elim p h -->
+  hol.forall_elim hol.bool (p : hol.term hol.bool => p) h p.
+
+[p, q, Hp, Hq] hol.and_intro p q Hp Hq -->
+  hol.ABS_THM
+    (hol.arr hol.bool (hol.arr hol.bool hol.bool))
+    hol.bool
+      (f : hol.term (hol.arr hol.bool (hol.arr hol.bool hol.bool)) => f p q)
+      (f : hol.term (hol.arr hol.bool (hol.arr hol.bool hol.bool)) => f hol.true hol.true)
+      (f : hol.term (hol.arr hol.bool (hol.arr hol.bool hol.bool)) =>
+       hol.APP_THM
+         hol.bool
+         hol.bool
+         (f p)
+         (f hol.true)
+         q
+           hol.true
+           (hol.APP_THM
+             hol.bool
+             (hol.arr hol.bool hol.bool)
+             f
+               f
+               p
+               hol.true
+               (hol.REFL (hol.arr hol.bool (hol.arr hol.bool hol.bool)) f)
+               (hol.eq_true_intro p Hp))
+           (hol.eq_true_intro q Hq)).
+
+[p, q, Hpq] hol.and_elim1 p q Hpq -->
+  hol.eq_true_elim p
+    (hol.APP_THM
+      (hol.arr hol.bool (hol.arr hol.bool hol.bool))
+      hol.bool
+        (f : (hol.term hol.bool -> hol.term hol.bool -> hol.term hol.bool) => f p q)
+        (f : (hol.term hol.bool -> hol.term hol.bool -> hol.term hol.bool) => f hol.true hol.true)
+        (x : hol.term hol.bool => y : hol.term hol.bool => x)
+        (x : hol.term hol.bool => y : hol.term hol.bool => x)
+        Hpq
+          (hol.REFL (hol.arr hol.bool (hol.arr hol.bool hol.bool)) (x : hol.term hol.bool => y : hol.term hol.bool => x))).
+
+[p, q, Hpq] hol.and_elim2 p q Hpq -->
+  hol.eq_true_elim q
+    (hol.APP_THM
+      (hol.arr hol.bool (hol.arr hol.bool hol.bool))
+      hol.bool
+        (f : (hol.term hol.bool -> hol.term hol.bool -> hol.term hol.bool) => f p q)
+        (f : (hol.term hol.bool -> hol.term hol.bool -> hol.term hol.bool) => f hol.true hol.true)
+        (x : hol.term hol.bool => y : hol.term hol.bool => y)
+        (x : hol.term hol.bool => y : hol.term hol.bool => y)
+        Hpq
+          (hol.REFL (hol.arr hol.bool (hol.arr hol.bool hol.bool)) (x : hol.term hol.bool => y : hol.term hol.bool => y))).
+
+[p, q, Hpq] hol.imp_intro p q Hpq -->
+  hol.PROP_EXT (hol.and p q) p
+             (Hp : hol.proof p =>
+              hol.and_intro p q Hp (Hpq Hp))
+             (hol.and_elim1 p q).
+
+[p, q, Hpq, Hp] hol.imp_elim p q Hpq Hp -->
+  hol.and_elim2 p q (hol.EQ_MP p (hol.and p q) (hol.eq_sym hol.bool (hol.and p q) p Hpq) Hp).
+
+[p, q, Hp] hol.or_intro1 p q Hp -->
+  hol.forall_intro
+    hol.bool
+    (r : hol.term hol.bool => hol.imp (hol.imp p r) (hol.imp (hol.imp q r) r))
+    (r : hol.term hol.bool =>
+     hol.imp_intro
+       (hol.imp p r)
+       (hol.imp (hol.imp q r) r)
+       (H : hol.proof (hol.imp p r) =>
+        hol.imp_intro
+          (hol.imp q r)
+          r
+            (__ : hol.proof (hol.imp q r) =>
+            hol.imp_elim p r H Hp))).
+
+[p, q, Hq] hol.or_intro2 p q Hq -->
+  hol.forall_intro
+    hol.bool
+    (r : hol.term hol.bool => hol.imp (hol.imp p r) (hol.imp (hol.imp q r) r))
+    (r : hol.term hol.bool =>
+     hol.imp_intro
+       (hol.imp p r)
+       (hol.imp (hol.imp q r) r)
+       (__ : hol.proof (hol.imp p r) =>
+       hol.imp_intro
+         (hol.imp q r)
+         r
+           (H : hol.proof (hol.imp q r) =>
+            hol.imp_elim q r H Hq))).
+
+[p, q, r, Hpq, Hpr, Hqr] hol.or_elim p q r Hpq Hpr Hqr -->
+  hol.imp_elim
+    (hol.imp q r)
+    r
+      (hol.imp_elim
+        (hol.imp p r)
+        (hol.imp (hol.imp q r) r)
+        (hol.forall_elim
+          hol.bool
+          (r : hol.term hol.bool => hol.imp (hol.imp p r) (hol.imp (hol.imp q r) r))
+          Hpq
+            r)
+        (hol.imp_intro p r Hpr))
+(hol.imp_intro q r Hqr).

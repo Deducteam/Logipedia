@@ -1,0 +1,52 @@
+
+def type_0 : sttfa.type := sttfa.bool.
+
+
+def type_1 : sttfa.type := sttfa.arrow type_0 type_0.
+
+
+def type_2 : sttfa.type -> sttfa.type := A:sttfa.type => A.
+
+
+def type_3 : sttfa.type := sttfa.arrow type_0 type_1.
+
+
+list_2Ddef_2D1_2E63 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p (type_2 x))).
+
+
+def term_0 : sttfa.etap (sttfa.p type_0) := list_2Ddef_2D1_2E63 type_0.
+
+
+def term_1 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p type_1))
+  :=
+  A:sttfa.type => leibniz.eq type_0 term_0.
+
+
+thm thm_0 :
+  sttfa.eps (sttfa.forallP (x:sttfa.type =>
+                            leibniz.eq type_1 (term_1 x) (term_1 x)))
+  :=
+  A:sttfa.type => leibniz.refl type_1 (term_1 A).
+
+
+thm thm_1 :
+  sttfa.eps (leibniz.eq type_0 term_0 term_0)
+  :=
+  leibniz.refl type_0 term_0.
+
+
+Data_2EList_2Elist : sttfa.type -> sttfa.type.
+
+
+__ :
+  sttfa.etap (sttfa.forallK (x:sttfa.type =>
+                             sttfa.p (sttfa.arrow type_0 (Data_2EList_2Elist (
+                                                            type_2 x))))).
+
+
+___ :
+  sttfa.etap (sttfa.forallK (x:sttfa.type =>
+                             sttfa.p (sttfa.arrow (Data_2EList_2Elist (
+                                                     type_2 x)) type_0))).
