@@ -1,6 +1,6 @@
 open Basic
 open Ast
-open Sttforall
+open Sttfadk
 open Environ
 
 module CType = Compile_type

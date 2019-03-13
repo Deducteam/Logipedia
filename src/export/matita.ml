@@ -15,9 +15,7 @@ let rec print_list sep pp oc = function
   | x::t -> Format.fprintf oc "(%a)%s%a" pp x sep (print_list sep pp) t
 
 let print_dep oc dep =
-  if dep = "sttfa" then ()
-  else
-    Format.fprintf oc "include \"%s.ma\".\n" dep
+  Format.fprintf oc "include \"%s.ma\".\n" dep
 
 let print_name oc (_,id) =
   let id = sanitize id in
@@ -111,10 +109,10 @@ let print_item oc = function
   | TyOpDef(tyop,arity) ->
     Format.fprintf oc "axiom %a : %a.@." print_name tyop print_arity arity
 
-let print_ast oc ast =
-  print_dep oc "basics/pts";
-  QSet.iter (print_dep oc) ast.dep;
-  List.iter (print_item oc) ast.items
+let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
+  print_dep fmt "basics/pts";
+  QSet.iter (print_dep fmt) ast.dep;
+  List.iter (print_item fmt) ast.items
 
 (* FIXME: Probably there is something to do in case of a conflict name *)
 let print_meta_ast fmt meta_ast =

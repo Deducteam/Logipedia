@@ -5,7 +5,7 @@ open Environ
 
 (* The memoization of Openstt is not efficient and can be highly increased. For that, the memoization of openstt should be turned off and the memoization should be done in this module. One may also want to handle alpha-renaming *)
 
-module ST = Sttfatyping
+module Conv = Sttfatyping.ComputeStrategy
 
 let cur_md = ref ""
 
@@ -85,7 +85,7 @@ let rec mk__te ctx = function
       | x::t -> Term.mk_App (Term.mk_Const dloc name) x t
     in
     let _ty = Env.infer ~ctx:ctx.dk cst' in
-    let _ty' = CType.compile_wrapped__type ctx (Env.unsafe_reduction ~red:ST.Strategy.beta_only _ty) in
+    let _ty' = CType.compile_wrapped__type ctx (Env.unsafe_reduction ~red:Conv.beta_only _ty) in
     term_of_const (const_of_name (mk_qid cst)) (mk__ty _ty')
 
 let rec mk_te ctx = function
@@ -117,7 +117,7 @@ let thm_of_const cst =
   with Failure _ ->
     let name = Environ.name_of cst in
     let term = Term.mk_Const Basic.dloc name in
-    let te = Env.unsafe_reduction ~red:(ST.Strategy.delta name) (term) in
+    let te = Env.unsafe_reduction ~red:(Conv.delta name) (term) in
     let te' = CTerm.compile_term Environ.empty_env te in
     let te' = mk_te empty_env te' in
     let ty = Env.infer term in
@@ -384,7 +384,7 @@ let print_item _ =
     mk_thm (mk_qid cst) te' hyp' proof'
   | TyOpDef _ -> ()
 
-let print_ast oc ast =
+let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
   Buffer.clear Format.stdbuf;
   reset ();
   let oc_tmp = Format.str_formatter in
@@ -393,20 +393,4 @@ let print_ast oc ast =
   List.iter (fun item -> print_item oc_tmp item) ast.items;
   clean ();
   content := Buffer.contents Format.stdbuf;
-  Format.fprintf oc "%s" !content
-(*
-let print_meta_ast fmt meta_ast =
-  let fmt_tmp = Format.str_formatter in
-  set_oc fmt_tmp;
-  version ();
-  let print_ast ast =
-    List.iter (fun item -> print_item fmt_tmp item) ast.items;
-  in
-  List.iter print_ast meta_ast;
-  clean ();
-  content := Buffer.contents Format.stdbuf;
-  Format.fprintf fmt "%s" !content *)
-(*
-let print_bdd ast =
-  Mongodb.insert_openTheory ast.md !content
-*)
+  Format.fprintf fmt "%s" !content

@@ -1,5 +1,5 @@
 open Ast
-open Sttforall
+open Sttfadk
 open Environ
 
 module CType  = Compile_type
@@ -32,7 +32,7 @@ let compile_definition name ty term =
       Definition (of_name name, CType.compile_type empty_env a, CTerm.compile_term empty_env term)
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eps cst ->
     Format.eprintf "[COMPILE] theorem: %a@." Pp.print_name name ;
-    (* The statement written and the one we get from the proof are beta,delta convertible *)
+    (* The statement written and the one we get from the proof are beta,delta convertible. *)
     let j, proof = CProof.compile_proof empty_env term in
     let a' = CTerm.compile_term empty_env a in
     let proof' =
@@ -46,3 +46,15 @@ let compile_definition name ty term =
     in
     Theorem (of_name name, CTerm.compile_term empty_env a, proof')
   | _ -> assert false
+
+let compile_entry md e =
+    match e with
+    | Entry.Decl (lc, id, st, ty) ->
+      ( Env.declare lc id st ty;
+        compile_declaration (Basic.mk_name md id) ty )
+    | Entry.Def (lc, id, opaque, Some ty, te) ->
+      ( Env.define lc id opaque te (Some ty);
+        compile_definition (Basic.mk_name md id) ty te  )
+    | Entry.Def _ -> failwith "Definition without types are not supported"
+    | Entry.Rules _ -> failwith "Rules are not part of the sttforall logic"
+    | _ -> failwith "Dedukti Commands are not supported"

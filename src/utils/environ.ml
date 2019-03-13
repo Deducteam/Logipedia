@@ -38,7 +38,7 @@ let name_of cst  = Basic.mk_name (Basic.mk_mident (fst cst)) (Basic.mk_ident (sn
 
 let add_ty_var env var =
   let open Basic in
-  let open Sttforall in
+  let open Sttfadk in
   { env with
     k= env.k + 1
   ; ty= var :: env.ty

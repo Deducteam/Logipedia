@@ -14,7 +14,11 @@ logipedia: bin
 	@ln -s _build/default/src/main.exe logipedia
 
 .PHONY: all
-all: $(LOGIPEDIA)
+all: bin
+
+.PHONY: bin
+bin:
+	@dune build
 
 $(LOGIPEDIA):
 	@dune build
@@ -145,9 +149,12 @@ $(PVSPATH)/%.summary: $(PVSPATH)/%.pvs
 pvs: $(PVSSUM)
 	@echo "[OT] CHECKED"
 
-# web: theories/sttfa.dko theories/hol.dko $(MAIN)
-# 	mongo < ./bdd/dropLogipedia.js
-# 	time ./main.native  -I library -I theories --export-web $(SORTEDDKS)
+#### web ###########################################################
+
+export/web/pvs/%.zip : theories/sttfa.dko $(LOGIPEDIA)
+	echo "$@";
+#	mongo < ./bdd/dropLogipedia.js
+#	time ./main.native  -I library -I theories --export-web $(SORTEDDKS)
 
 #### Dependencies ##################################################
 

@@ -364,39 +364,36 @@ let print_instance oc s deps x =
     List.iter (print_dep2 oc) deps;
     Format.fprintf oc "}}\n"
 
+let line oc fmt = Format.fprintf oc (fmt ^^ "\n")
 
-let remove_transitive_deps deps =
+let remove_transitive_deps mdeps deps =
   let remove_dep dep deps =
     let md = Basic.mk_mident dep in
-    let md_deps = Signature.get_md_deps Basic.dloc md in
-    QSet.diff deps (QSet.of_list (List.map Basic.string_of_mident md_deps))
+    let deps_from_signature md =
+      let deps = Signature.get_md_deps Basic.dloc md in
+      (QSet.of_list (List.map Basic.string_of_mident deps))
+    in
+    let md_deps =
+      match mdeps with
+      | None ->  deps_from_signature md
+      | Some l ->
+        if List.mem_assoc (Basic.string_of_mident md) l then
+          List.assoc (Basic.string_of_mident md) l
+        else
+          deps_from_signature md
+    in
+    QSet.diff deps md_deps
   in
   QSet.fold remove_dep deps deps
 
-let line oc fmt = Format.fprintf oc (fmt ^^ "\n")
-
-(* FIXME: web will compute the correct dependencies but we should get rid off thi boolean *)
-let web = ref false
-
-let print_ast : Format.formatter -> ast -> unit =
- fun oc ast ->
+let print_ast : Format.formatter -> ?mdeps:mdeps -> ast -> unit =
+ fun oc ?mdeps ast ->
    current_module := ast.md;
    let pf = "_sttfa" in
    let postfix s = s^pf in
    line oc "%s : THEORY" (postfix ast.md);
    line oc "BEGIN";
-   let deps = ast.dep in
-   let deps = QSet.remove "sttfa" deps in
-   (* FIXME: buggy with the module web. This code should not rely on Signature *)
-   let remove_transitive_deps deps =
-     let remove_dep dep deps =
-       let md = Basic.mk_mident dep in
-       let md_deps = Signature.get_md_deps Basic.dloc md in
-       QSet.diff deps (QSet.of_list (List.map Basic.string_of_mident md_deps))
-     in
-     QSet.fold remove_dep deps deps
-   in
-   let deps = if !web then deps else remove_transitive_deps deps in
+   let deps = remove_transitive_deps mdeps ast.dep in
    QSet.iter (print_dep oc) deps;
    line oc "";
    List.iter (print_item oc ast.md) ast.items;

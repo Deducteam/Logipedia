@@ -49,4 +49,5 @@ let dep_of_entry = function
   | Name (_, _) -> QSet.empty
   | Require (_, md) -> add_dep md
 
-let dep_of_entry (md:mident) e = QSet.remove (string_of_mident md) (dep_of_entry e)
+let dep_of_entry (mds:mident list) e =
+  List.fold_left (fun qset md -> QSet.remove (string_of_mident md) qset) (dep_of_entry e) mds

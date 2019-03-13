@@ -1,31 +1,35 @@
 open Basic
 
-let sttfa_module = mk_mident "sttfa"
-let sttfa_type = mk_ident "type"
-let sttfa_ptype = mk_ident "ptype"
-let sttfa_eta = mk_ident "eta"
-let sttfa_etap = mk_ident "etap"
-let sttfa_p = mk_ident "p"
-let sttfa_arrow = mk_ident "arrow"
-let sttfa_forall = mk_ident "forall"
-let sttfa_leibniz = mk_ident "leibniz"
-let sttfa_impl = mk_ident "impl"
-let sttfa_prop = mk_ident "bool"
-let sttfa_eps = mk_ident "eps"
-let sttfa_forall_kind_type = mk_ident "forallK"
-let sttfa_forall_kind_prop = mk_ident "forallP"
+module Dk =
+struct
 
-let is_sttfa_const c t =
-  match t with
-  | Term.Const(_, cst) -> name_eq cst (mk_name sttfa_module c)
-  | _ -> false
+end
 
-let is_type t =
-  match t with
-  | Term.App(cst, _, _) when is_sttfa_const sttfa_eta cst -> true
-  | _ -> false
+module Typing =
+struct
+end
 
-let is_term t =
-  match t with
-  | Term.App(cst, _, _) when is_sttfa_const sttfa_eps cst -> true
-  | _ -> false
+module Signature =
+struct
+
+  let sg = Signature.make ""
+
+  let cst_of : Ast.name -> Basic.name = fun name ->
+    Basic.mk_name (Basic.mk_mident (fst name)) (Basic.mk_ident (snd name))
+
+  let item_of_name : Ast.name -> Ast.item = fun name ->
+ (* Put that somewhere else *)
+      let cst = cst_of name in
+      let ty = Signature.get_type sg Basic.dloc cst in
+      let entry =
+        match Signature.get_rules sg Basic.dloc cst with
+        | [] -> Entry.Decl(Basic.dloc, Basic.id cst, Signature.Static,ty)
+        | [r] ->
+          assert (r.args = []);
+          assert (Basic.name_eq r.cst  cst);
+          Entry.Def(Basic.dloc, Basic.id cst, false, Some ty, r.rhs)
+        | _ -> failwith "Only total definitions are allowed"
+      in
+      failwith "what the fuck"
+      (* Compile.compile_entry (Basic.md cst) entry *)
+end

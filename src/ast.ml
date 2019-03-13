@@ -1,3 +1,6 @@
+(** This file defines a full AST of STTforall.
+    Informations are redundant to facilitate exportation. *)
+
 type ty_var  = string
 
 type te_var  = string
@@ -106,12 +109,30 @@ type item =
   | Theorem of name * te * proof
   | TyOpDef of name * arity
 
+type kind = [`Parameter | `Definition | `Axiom | `Theorem | `TypeOpDef ]
+
 module QSet = Set.Make (struct type t = string let compare = compare end)
 
 type ast = {
   md   : string;
   dep  : QSet.t;
   items: item list}
+
+type mdeps = (string * QSet.t) list
+
+let kind_of = function
+  | Parameter _ -> `Parameter
+  | Definition _ -> `Definition
+  | Axiom _ -> `Axiom
+  | Theorem _ -> `Theorem
+  | TyOpDef _ -> `TyOpDef
+
+let name_of = function
+  | Parameter(name,_)
+  | Definition(name,_,_)
+  | Axiom(name,_)
+  | Theorem(name,_,_)
+  | TyOpDef(name,_) -> name
 
 let judgment_of = function
   | Assume(j,_)     -> j
@@ -123,12 +144,5 @@ let judgment_of = function
   | ForallI(j,_,_)  -> j
   | ForallPE(j,_,_) -> j
   | ForallPI(j,_,_) -> j
-
-let name_of_item = function
-  | Parameter(name,_)
-  | Definition(name,_,_)
-  | Axiom(name,_)
-  | Theorem(name,_,_)
-  | TyOpDef(name,_) -> name
 
 let string_of_name (md,id) = Format.sprintf "%s.%s" md id

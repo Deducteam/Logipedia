@@ -13,25 +13,15 @@ let set_export s =
   system := Systems.system_of_string s
 
 (* Not used currently because only one theory is supported currently *)
-let theory : Theories.theory ref = ref `Sttfa
+let output_theory : Theories.theory ref = ref `Sttfa
+
+let input_theory : Theories.theory ref = ref `Sttfa
 
 let set_output_theory s =
-  theory := Theories.theory_of_string s
+  output_theory := Theories.theory_of_string s
 
 let set_input_theory s =
-  theory := Theories.theory_of_string s
-
-let handle_entry md e =
-  match e with
-  | Decl (lc, id, st, ty) ->
-    ( Env.declare lc id st ty;
-      Compile.compile_declaration (mk_name md id) ty )
-  | Def (lc, id, opaque, Some ty, te) ->
-    ( Env.define lc id opaque te (Some ty);
-      Compile.compile_definition (mk_name md id) ty te  )
-  | Def _ -> failwith "Definition without types are not supported"
-  | Rules _ -> failwith "Rules are not part of the sttforall logic"
-  | _ -> failwith "Commands are not supported"
+  input_theory := Theories.theory_of_string s
 
 let output_file = ref None
 
@@ -49,24 +39,23 @@ let export_file ast system =
   (* FIXME: The file is not closed, is this a problem? *)
   M.print_ast fmt ast
 
-
+(* Compute an STTforall ast from Dedukti entries *)
 let mk_ast md entries =
-  let items = List.map (handle_entry md) entries in
-  let dep = List.fold_left
-      (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
+  let items = List.map (Compile.compile_entry md) entries in
+  let fold_entry_dep dep e = QSet.union dep (Dep.dep_of_entry [Sttfadk.sttfa_module;md] e) in
+  let dep = List.fold_left fold_entry_dep QSet.empty entries in
   {md = string_of_mident md; dep; items}
 
 let export_system file =
   let md = Env.init file in
   let input = open_in file in
   let entries = Parse_channel.parse md input in
-  close_in input ;
+  close_in input;
   begin
     let sttfa_ast = mk_ast md entries in
     let (module M:Export.E) = Export.of_system !system in
     export_file sttfa_ast !system;
   end
-
 
 let export_web file =
   Environ.set_package file;
@@ -74,8 +63,7 @@ let export_web file =
   let input = open_in file in
   let entries = Parse_channel.parse md input in
   close_in input;
-  Web.export_entries (mk_ast md entries);
-  Env.export()
+  Web.export_entries (mk_ast md entries)
 
 let _ =
   try

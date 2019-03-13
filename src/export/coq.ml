@@ -16,9 +16,7 @@ let rec print_list sep pp oc = function
   | x::t -> Format.fprintf oc "(%a)%s%a" pp x sep (print_list sep pp) t
 
 let print_dep oc dep =
-  if dep = "sttfa" then ()
-  else
-    Format.fprintf oc "Require Import %s.\n" dep
+  Format.fprintf oc "Require Import %s.\n" dep
 
 let print_name oc (md,id) =
   let id = sanitize id in
@@ -117,10 +115,10 @@ let print_item oc = function
   | TyOpDef(tyop,arity) ->
     Format.fprintf oc "Parameter %a : %a.@." print_name tyop print_arity arity
 
-let print_ast oc ast =
+let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
   cur_md := ast.md;
-  QSet.iter (print_dep oc) ast.dep;
-  List.iter (print_item oc) ast.items
+  QSet.iter (print_dep fmt) ast.dep;
+  List.iter (print_item fmt) ast.items
 
 let print_meta_ast fmt meta_ast =
   let print_ast fmt ast =

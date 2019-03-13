@@ -1,4 +1,4 @@
-open Sttforall
+open Sttfadk
 open Ast
 open Basic
 open Term
