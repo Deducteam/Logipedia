@@ -106,8 +106,9 @@ let print_item oc = function
     Format.fprintf oc "axiom %a : %a.@." print_name name print_te te
   | Theorem(name,te,proof) ->
     Format.fprintf oc "definition %a : %a := %a.@." print_name name print_te te print_proof proof
-  | TyOpDef(tyop,arity) ->
+  | TypeDecl(tyop,arity) ->
     Format.fprintf oc "axiom %a : %a.@." print_name tyop print_arity arity
+  | TypeDef _ -> failwith "[Matita] Type definitions not handled right now"
 
 let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
   print_dep fmt "basics/pts";
@@ -134,5 +135,6 @@ let pretty_print_item = function
     Format.asprintf "axiom %s : %a" id print_te te
   | Theorem((_,id),te,_) ->
     Format.asprintf "theorem %s : %a." id print_te te
-  | TyOpDef((_,id),arity) ->
+  | TypeDecl((_,id),arity) ->
     Format.asprintf "axiom %s : %a" id print_arity arity
+  | TypeDef _ -> failwith "[Matita] Type definitions not handled right now"

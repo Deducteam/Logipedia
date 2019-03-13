@@ -22,7 +22,7 @@ let compile_declaration name ty =
       Axiom (of_name name, te')
   | Term.Const (_, _) when is_sttfa_const sttfa_type ty ->
     Format.eprintf "[COMPILE] typeop: %a@." Pp.print_name name ;
-      TyOpDef (of_name name, 0)
+      TypeDecl (of_name name, 0)
   | _ -> assert false
 
 let compile_definition name ty term =

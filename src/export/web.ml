@@ -59,7 +59,7 @@ let is_axiom name =
 let is_constant name =
   match Hashtbl.find items name with
   | Parameter _
-  | TyOpDef _ -> true
+  | TypeDecl _ -> true
   | _ -> false
 
 let is_theorem name =
@@ -136,7 +136,8 @@ let update_theory key dep =
     match item_dep with
     | Parameter(name,_)
     | Axiom(name,_)
-    | TyOpDef(name,_) -> NameSet.add name theory
+    | TypeDecl(name,_) -> NameSet.add name theory
+    | TypeDef _ -> failwith "type definition not handled"
     | Theorem(_,_,_) -> theory
     | Definition(name,_,_) ->
       let item = Hashtbl.find items key in
@@ -241,7 +242,8 @@ let mk_item_dep = function
   | Definition(_,ty,te) -> mk_ty_dep ty; mk_te_dep te;
   | Axiom(_,te) -> mk_te_dep te;
   | Theorem(_,te,proof) -> mk_te_dep te; mk_proof_dep proof
-  | TyOpDef(_,_)  -> ()
+  | TypeDecl(_,_)  -> ()
+  | TypeDef(_,_,ty) -> mk_ty_dep ty
 
 let handle_web_item item =
   Format.eprintf "[WEB] %a@." pp_item item;
@@ -302,15 +304,8 @@ let gen_file item =
 let install_files () =
   ignore(Sys.command (Format.sprintf "mv /tmp/logipedia/*.zip export/web"))
 
-
-let item_of_name : name -> item =
-  let dict = Hashtbl.create 11 in
-  fun name ->
-    if Hashtbl.mem dict name then
-      Hashtbl.find dict name
-    else
-
-
+(*
+let item_of_name : name -> item = failwith "todo"
 
 let rec web_item_of : item -> web_item = fun item ->
   let theory   = theory_of item in
@@ -326,6 +321,7 @@ and theory_of : ?is_axiom:bool -> item -> NameSet.t = fun ?is_axiom item ->
 and deps_of       : item -> NameSet.t = fun _ -> failwith "todo deps_of"
 and maindeps_of   : item -> NameSet.t = fun _ -> failwith "todo maindeps"
 and package_of    : item -> (string,web_item list) Hashtbl.t = fun _ -> failwith "todo package" in failwith "todo"
+*)
 
 let export_entries : ast -> unit = fun ast ->
   Hashtbl.add env.md_deps ast.md ast.dep;

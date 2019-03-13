@@ -317,11 +317,12 @@ let print_proof_pvs : string -> Format.formatter -> proof -> unit =
 let print_item oc pvs_md it =
   let line fmt = Format.fprintf oc (fmt ^^ "\n") in
   match it with
-  | TyOpDef (op, ar) ->
+  | TypeDecl (op, ar) ->
     assert (ar = 0);
     Format.fprintf oc "%a : TYPE+" (print_name pvs_md) op;
     line "";
     line ""
+  | TypeDef _ -> failwith "[PVS] Type definitions not handled right now"
   | Parameter (n, ty) ->
     line "%a %a: %a"
       (print_name pvs_md) n
@@ -423,6 +424,7 @@ let pretty_print_item = function
       (print_name md) (md,id)
       (print_prenex_te_pvs md) te
       (print_te_pvs md) te
-  | TyOpDef((md,id),arity) ->
+  | TypeDecl((md,id),arity) ->
     assert(arity = 0);
     Format.asprintf "%a : TYPE+" (print_name md) (md,id)
+  | TypeDef _ -> failwith "[PVS] Type definitions not handled right now"

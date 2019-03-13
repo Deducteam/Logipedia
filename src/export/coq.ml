@@ -112,8 +112,9 @@ let print_item oc = function
     Format.fprintf oc "Axiom %a : %a.@." print_name name print_te te
   | Theorem(name,te,proof) ->
     Format.fprintf oc "Definition %a : %a := %a.@." print_name name print_te te print_proof proof
-  | TyOpDef(tyop,arity) ->
+  | TypeDecl(tyop,arity) ->
     Format.fprintf oc "Parameter %a : %a.@." print_name tyop print_arity arity
+  | TypeDef _ -> failwith "[COQ] Type definitions not handled right now"
 
 let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
   cur_md := ast.md;
@@ -139,5 +140,6 @@ let pretty_print_item = function
     Format.asprintf "Axiom %s : %a" id print_te te
   | Theorem((_,id),te,_) ->
     Format.asprintf "Theorem %s : %a." id print_te te
-  | TyOpDef((_,id),arity) ->
+  | TypeDecl((_,id),arity) ->
     Format.asprintf "Parameter %s : %a" id print_arity arity
+  | TypeDef _ -> failwith "[COQ] Type definitions not handled right now"

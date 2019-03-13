@@ -7,13 +7,6 @@ let mongo_printing = Mongo.create_local_default db_name "printing"
 
 let of_string = Bson.create_string
 
-let string_of_kind = function
-  | `Parameter  -> "parameter"
-  | `Axiom      -> "axiom"
-  | `Definition -> "definition"
-  | `TyOpDef    -> "tyop"
-  | `Theorem    -> "theorem"
-
 let insert collection keyval =
   let doc = List.fold_left (fun doc (key,value) -> Bson.add_element key value doc) Bson.empty keyval in
   Mongo.insert collection [doc]
@@ -36,7 +29,7 @@ let insert_dependency name nameDep =
 
 let insert_item name kind =
   let md,id = name in
-  let kind = string_of_kind kind in
+  let kind = Ast.string_of_kind kind in
   let values = List.map of_string [md; id; kind] in
   let keys = ["md"; "id"; "kind"] in
   let keyval = List.combine keys values in

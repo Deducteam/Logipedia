@@ -1,5 +1,4 @@
 open Basic
-open Entry
 open Parser
 open Ast
 
@@ -46,6 +45,7 @@ let mk_ast md entries =
   let dep = List.fold_left fold_entry_dep QSet.empty entries in
   {md = string_of_mident md; dep; items}
 
+(* Export the file for the system choosen. *)
 let export_system file =
   let md = Env.init file in
   let input = open_in file in
@@ -57,6 +57,7 @@ let export_system file =
     export_file sttfa_ast !system;
   end
 
+(* Right now export stuff in the database *)
 let export_web file =
   Environ.set_package file;
   let md = Env.init file in

@@ -147,8 +147,9 @@ let print_item oc = function
     Format.fprintf oc "axiom %a : %a.\n" print_name name print_te te
   | Theorem(name,te,proof) ->
     Format.fprintf oc "theorem %a : %a := %a.\n" print_name name print_te te print_proof proof
-  | TyOpDef(tyop,arity) ->
+  | TypeDecl(tyop,arity) ->
     Format.fprintf oc "axiom %a : %a.\n" print_name tyop print_arity arity
+  | TypeDef _ -> failwith "[Lean] Type definitions not handled right now"
 
 let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
   QSet.iter (print_dep fmt) ast.dep;
@@ -176,5 +177,6 @@ let pretty_print_item = function
     Format.asprintf "axiom %s : %a" id print_te te
   | Theorem((_,id),te,_) ->
     Format.asprintf "theorem %s : %a." id print_te te
-  | TyOpDef((_,id),arity) ->
+  | TypeDecl((_,id),arity) ->
     Format.asprintf "axiom %s : %a" id print_arity arity
+  | TypeDef _ -> failwith "[Lean] Type definitions not handled right now"

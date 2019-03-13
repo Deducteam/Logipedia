@@ -382,7 +382,8 @@ let print_item _ =
     let hyp' = mk_hyp [] in
     let proof' = mk_proof empty_env proof in
     mk_thm (mk_qid cst) te' hyp' proof'
-  | TyOpDef _ -> ()
+  | TypeDecl _ -> ()
+  | TypeDef _ -> failwith "[OpenTheory] Type definitions not handled right now"
 
 let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
   Buffer.clear Format.stdbuf;

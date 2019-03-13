@@ -107,9 +107,10 @@ type item =
   | Definition of name * ty * te
   | Axiom of name * te
   | Theorem of name * te * proof
-  | TyOpDef of name * arity
+  | TypeDecl of name * arity
+  | TypeDef of name * arity * ty
 
-type kind = [`Parameter | `Definition | `Axiom | `Theorem | `TypeOpDef ]
+type kind = [`Parameter | `Definition | `Axiom | `Theorem | `TypeDecl | `TypeDef ]
 
 module QSet = Set.Make (struct type t = string let compare = compare end)
 
@@ -121,18 +122,29 @@ type ast = {
 type mdeps = (string * QSet.t) list
 
 let kind_of = function
-  | Parameter _ -> `Parameter
-  | Definition _ -> `Definition
-  | Axiom _ -> `Axiom
-  | Theorem _ -> `Theorem
-  | TyOpDef _ -> `TyOpDef
+  | Parameter _   -> `Parameter
+  | Definition _  -> `Definition
+  | Axiom _       -> `Axiom
+  | Theorem _     -> `Theorem
+  | TypeDecl _    -> `TypeDecl
+  | TypeDef _     -> `TypeDef
+
+
+let string_of_kind = function
+  | `Parameter   -> "parameter"
+  | `Definition  -> "definition"
+  | `Axiom       -> "axiom"
+  | `Theorem     -> "theorem"
+  | `TypeDecl    -> "tyop"
+  | `TypeDef     -> "type definition"
 
 let name_of = function
   | Parameter(name,_)
   | Definition(name,_,_)
   | Axiom(name,_)
   | Theorem(name,_,_)
-  | TyOpDef(name,_) -> name
+  | TypeDecl(name,_)
+  | TypeDef(name,_,_) -> name
 
 let judgment_of = function
   | Assume(j,_)     -> j

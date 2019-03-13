@@ -143,8 +143,10 @@ let rec print__ty fmt = function
   let pretty_print_item = function
     | Parameter(_, ty) ->
       Format.asprintf "%a" print_ty ty
-    | TyOpDef(_,arity) ->
+    | TypeDecl(_,arity) ->
       Format.asprintf "%d" arity
+    | TypeDef(_,_,ty) ->
+      Format.asprintf "%a" print_ty ty
     | Definition(_,_,te) ->
       Format.asprintf "%a" print_te te
     | Theorem(_,te,_) ->
