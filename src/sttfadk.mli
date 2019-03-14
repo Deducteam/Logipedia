@@ -18,3 +18,5 @@ val sttfa_ptype            : Basic.ident
 val sttfa_type             : Basic.ident
 
 val is_sttfa_const : Basic.ident  -> Term.term -> bool
+val is_tyop        : Term.term    -> bool
+val arity_of_tyop  : Term.term    -> int

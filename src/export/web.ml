@@ -243,7 +243,7 @@ let mk_item_dep = function
   | Axiom(_,te) -> mk_te_dep te;
   | Theorem(_,te,proof) -> mk_te_dep te; mk_proof_dep proof
   | TypeDecl(_,_)  -> ()
-  | TypeDef(_,_,ty) -> mk_ty_dep ty
+  | TypeDef(_,_,ty) -> mk__ty_dep ty
 
 let handle_web_item item =
   Format.eprintf "[WEB] %a@." pp_item item;

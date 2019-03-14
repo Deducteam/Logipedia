@@ -69,7 +69,8 @@ VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(basename $(notdir $(wildcard
 
 $(COQPATH)/%.v: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_v $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export coq $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --fast --export coq $(<:.dko=.dk) -o $@
+	@mv $@ $(addsuffix .v, $(subst -,_, $(subst .,_,$(basename $@)))) || true 2>/dev/null # avoid fail if there is no change
 
 $(COQPATH)/_CoqProject: $(VFILES)
 	@cd $(COQPATH) && ls *.v > _CoqProject
@@ -168,7 +169,7 @@ export/web/pvs/%.zip : theories/sttfa.dko $(LOGIPEDIA)
 	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
 	@sed -i s/theories\\/sttfa.dko//g $@
 	@sed -i s/dko/v/g $@
-	sed  -i "s:$(IPATH)/\([^.]*\)\.v:$(COQPATH)/\1\.v:g" $@
+	sed  -i "s:$(IPATH)/\([^/]\+\)\.v:$(COQPATH)/\1\.v:g" $@
 
 .library_depend_ma: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
 	@echo "[DKDEP (MA FILES)] $@"

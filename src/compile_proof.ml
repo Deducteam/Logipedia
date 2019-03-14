@@ -44,9 +44,9 @@ let rec compile_proof env proof =
     in
     (j, ImplI (j, proof, string_of_ident id))
   | Term.Const (lc, name) ->
-    let te = Env.get_type lc name in
-    let te' = CTerm.compile_wrapped_term empty_env te in
-    let j = make_judgment env (TeSet.of_list env.prf) te' in
+  let te = Env.get_type lc name in
+  let te' = CTerm.compile_wrapped_term empty_env te in
+  let j = make_judgment env (TeSet.of_list env.prf) te' in
     (j, Lemma (of_name name, j))
   | Term.App (f, a, args) ->
     let j,f' = compile_proof env f in
@@ -55,7 +55,6 @@ let rec compile_proof env proof =
 
 and compile_arg env j f' a =
   let te = Sttfatyping.subst env f' a in
-  assert (Sttfatyping.is_beta_normal env (judgment_of f').thm);
   let j' = {j with thm = te} in
   let j,f' = get_product env j f' in
   match j.thm with

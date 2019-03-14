@@ -112,6 +112,9 @@ let subst env f a =
 (** This module aims to implement functions that trace reduction steps checking if two terms are convertible. *)
 module Tracer =
 struct
+
+  let fast = ref false
+
   let is_defined cst =
     let name = name_of cst in
     not (Env.is_static dloc name)
@@ -182,8 +185,7 @@ struct
     List.rev ctx, redex
 
   let rec _get_redex (envl,envr) ctx (left,right) =
-    (*
-    Format.eprintf "left:%a@." (print__te envl) left;
+    (* Format.eprintf "left:%a@." (print__te envl) left;
     Format.eprintf "right:%a@." (print__te envr) right; *)
     match (left,right) with
     | TeVar _, TeVar _ -> raise Equal
@@ -200,6 +202,10 @@ struct
         (false, ctx, Delta(cst',_tys'))
       else
         raise Equal
+    | Cst (cst,_tys) , _ when is_defined cst ->
+      (true, ctx, Delta(cst, _tys))
+    | _ , Cst(cst,_tys) when is_defined cst ->
+      (false, ctx, Delta(cst, _tys))
     | Abs (var, _ty, _tel), Abs (var', _ty', _ter) ->
       let envl' = add_te_var envl var _ty in
       let envr' = add_te_var envr var' _ty' in
@@ -379,6 +385,12 @@ struct
       let trace, tenf = annotate_beta env te' in
       (redex, ctx)::trace, tenf
 
+  let annotate_beta env te =
+    if !fast then
+      [], te
+    else
+      annotate_beta env te
+
   let rec _annotate env left right =
     if _eq env left right then
       empty_trace
@@ -400,6 +412,12 @@ struct
         {left = trace_beta.left@trace''.left;
          right= trace_beta.right@trace''.right}
 
+  let _annotate env left right =
+    if !fast then
+      empty_trace
+    else
+      _annotate env left right
+
   let rec annotate env left right =
     if eq env left right then
       empty_trace
@@ -420,4 +438,10 @@ struct
         in
         {left = trace_beta.left@trace''.left;
          right= trace_beta.right@trace''.right}
+
+  let annotate env left right =
+    if !fast then
+      empty_trace
+    else
+      annotate env left right
 end

@@ -146,7 +146,7 @@ let rec print__ty fmt = function
     | TypeDecl(_,arity) ->
       Format.asprintf "%d" arity
     | TypeDef(_,_,ty) ->
-      Format.asprintf "%a" print_ty ty
+      Format.asprintf "%a" print__ty ty
     | Definition(_,_,te) ->
       Format.asprintf "%a" print_te te
     | Theorem(_,te,_) ->

@@ -4,4 +4,4 @@
         (name main)
         (public_name logipedia)
         (package logipedia)
-        (libraries unix mongo dedukti))
+        (libraries unix str mongo dedukti))

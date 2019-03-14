@@ -22,6 +22,10 @@ let rec compile__type env _ty =
   | Term.Const _ -> TyOp (compile_tyop _ty, [])
   | _ -> assert false
 
+let compile__type env _ty =
+  let _ty = Env.reduction ~ctx:env.dk ~red:{Reduction.default_cfg with target=Reduction.Snf} _ty  in
+  compile__type env _ty
+
 let rec compile_type (env: env) ty =
   match ty with
   | Term.App (c, Term.Lam (_, var, _, ty), [])
@@ -30,7 +34,7 @@ let rec compile_type (env: env) ty =
     let ty' = compile_type (add_ty_var_dk env var) ty in
     ForallK (soi var, ty')
   | Term.App (c, a, []) when is_sttfa_const sttfa_p c ->
-      Ty (compile__type env a)
+    Ty (compile__type env a)
   | _ -> assert false
 
 let compile_wrapped__type env (ty: Term.term) =
@@ -54,3 +58,11 @@ let compile_wrapped_type env (ty: Term.term) =
   | _ ->
       Format.eprintf "%a@." Pp.print_term ty ;
       assert false
+
+let rec compile_type_definition env (ty: Term.term) =
+  match ty with
+  | Term.Lam (_,x,_,ty) ->
+    compile_type_definition (add_ty_var_dk env x) ty
+  | _ ->
+    let vars = env.ty in
+    (vars, compile__type env ty)

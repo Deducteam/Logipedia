@@ -20,10 +20,14 @@ let compile_declaration name ty =
     Format.eprintf "[COMPILE] axiom: %a@." Pp.print_name name ;
       let te' = CTerm.compile_term empty_env a in
       Axiom (of_name name, te')
-  | Term.Const (_, _) when is_sttfa_const sttfa_type ty ->
-    Format.eprintf "[COMPILE] typeop: %a@." Pp.print_name name ;
-      TypeDecl (of_name name, 0)
-  | _ -> assert false
+  | _ ->
+    if is_tyop ty then
+      begin
+        Format.eprintf "[COMPILE] typeop: %a@." Pp.print_name name ;
+        TypeDecl (of_name name, arity_of_tyop ty)
+      end
+    else
+      assert false
 
 let compile_definition name ty term =
   match ty with
@@ -45,7 +49,15 @@ let compile_definition name ty term =
           )
     in
     Theorem (of_name name, CTerm.compile_term empty_env a, proof')
-  | _ -> assert false
+  | _ ->
+    if is_tyop ty then
+      begin
+        Format.eprintf "[COMPILE] typeop: %a@." Pp.print_name name ;
+        let vars,ty = CType.compile_type_definition empty_env term in
+        TypeDef(of_name name, vars, ty)
+      end
+    else
+      assert false
 
 let compile_entry md e =
     match e with

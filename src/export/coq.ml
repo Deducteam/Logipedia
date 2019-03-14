@@ -5,6 +5,10 @@ let sys = "coq"
 let cur_md = ref ""
 
 let sanitize id =
+  let id =
+    let regexp = Str.regexp "\\.\\|-" in
+    Str.global_replace regexp "_" id
+  in
   if id = "return" then id ^ "_" else id
 
 let print_var oc id =
@@ -20,6 +24,7 @@ let print_dep oc dep =
 
 let print_name oc (md,id) =
   let id = sanitize id in
+  let md = sanitize md in
   if !cur_md = md then
     Format.fprintf oc "%s" id
   else
@@ -114,10 +119,10 @@ let print_item oc = function
     Format.fprintf oc "Definition %a : %a := %a.@." print_name name print_te te print_proof proof
   | TypeDecl(tyop,arity) ->
     Format.fprintf oc "Parameter %a : %a.@." print_name tyop print_arity arity
-  | TypeDef _ -> failwith "[COQ] Type definitions not handled right now"
+  | TypeDef _ -> ()
 
 let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
-  cur_md := ast.md;
+  cur_md := sanitize ast.md;
   QSet.iter (print_dep fmt) ast.dep;
   List.iter (print_item fmt) ast.items
 

@@ -45,14 +45,11 @@ let export_system file =
   let input = open_in file in
   let entries = Parse_channel.parse md input in
   close_in input;
-  if !input_theory <> `Sttfa then
-    failwith "todo"
-  else
-    begin
-      let sttfa_ast = mk_ast md entries in
-      let (module M:Export.E) = Export.of_system !system in
-      export_file sttfa_ast !system;
-    end
+  begin
+    let sttfa_ast = mk_ast md entries in
+    let (module M:Export.E) = Export.of_system !system in
+    export_file sttfa_ast !system;
+  end
 
 (* Right now export stuff in the database *)
 let export_web file =
@@ -70,6 +67,7 @@ let _ =
       Arg.align
         [ ("-I", Arg.String Basic.add_path, " Add folder to Dedukti path") ;
           ("-o", Arg.String set_output_file, " Set output file") ;
+          ("--fast", Arg.Set Sttfatyping.Tracer.fast, " Set output file") ;
           ("--export", Arg.String set_export, " Set exporting system") ;
           ("--export-web", Arg.Set to_web, " Generate informations for the website") ;
           ("--from", Arg.String set_input_theory, " Set theory (default: STTFA)") ]

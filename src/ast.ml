@@ -108,7 +108,7 @@ type item =
   | Axiom of name * te
   | Theorem of name * te * proof
   | TypeDecl of name * arity
-  | TypeDef of name * arity * ty
+  | TypeDef of name * ty_var list * _ty
 
 type kind = [`Parameter | `Definition | `Axiom | `Theorem | `TypeDecl | `TypeDef ]
 
