@@ -1,0 +1,15 @@
+EXCLUDE_QUERY_DIR
+B /home/fthire/.opam/4.04.2/lib/bson
+B /home/fthire/.opam/4.04.2/lib/dedukti
+B /home/fthire/.opam/4.04.2/lib/mongo
+B /home/fthire/.opam/4.04.2/lib/ocaml
+B ../_build/default/src/.main.eobjs
+S /home/fthire/.opam/4.04.2/lib/bson
+S /home/fthire/.opam/4.04.2/lib/dedukti
+S /home/fthire/.opam/4.04.2/lib/mongo
+S /home/fthire/.opam/4.04.2/lib/ocaml
+S .
+S export
+S hol
+S utils
+FLG -w @a-4-29-40-41-42-44-45-48-58-59-60-40 -strict-sequence -strict-formats -short-paths -keep-locs
