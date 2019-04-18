@@ -56,7 +56,6 @@ let rec compile__term env _te =
       Format.eprintf "%a@." Pp.print_term _te ;
       assert false
 
-
 let rec compile_term env te =
   match te with
   | Term.App (cst, Term.Lam (_, x, Some _, te), [])
