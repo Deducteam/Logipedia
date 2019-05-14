@@ -1,0 +1,34 @@
+def elaboration : Type.
+    []  cic.prop   --> cic.enum cic.uzero.
+    [s] cic.type s --> cic.var.
+    [s] cic.succ s --> cic.var.
+
+def target : Type.
+    []  cic.Axiom cic.prop cic.type                --> cic.true.
+    []  cic.Axiom cic.type cic.kind                --> cic.true.
+
+
+    []  cic.Rule cic.prop cic.prop cic.prop        --> cic.true.
+    []  cic.Rule cic.prop cic.type cic.type        --> cic.true.
+
+    []  cic.Rule cic.type cic.prop cic.prop        --> cic.true.
+    []  cic.Rule cic.type cic.type cic.type        --> cic.true.
+
+    []  cic.Rule cic.kind cic.prop cic.prop        --> cic.true.
+    []  cic.Rule cic.kind cic.type cic.type        --> cic.true.
+    []  cic.Rule cic.kind cic.kind cic.kind        --> cic.true.
+
+
+    [a] cic.Cumul a a                              --> cic.true.
+
+def output : Type.
+    []  cic.enum cic.uzero                                     --> cic.prop.
+    []  cic.enum (cic.usucc cic.uzero)                         --> cic.type.
+    []  cic.enum (cic.usucc (cic.usucc cic.uzero))             --> cic.kind.
+
+def constraints : Type.
+    [] matita_arithmetics_nat.nat     --> cic.Cumul (cic.enum (cic.usucc cic.uzero)) cic.var.
+    [] matita_basics_bool.bool        --> cic.Cumul (cic.enum (cic.usucc cic.uzero)) cic.var.
+    [] matita_basics_lists_list.list  --> cic.Cumul (cic.enum (cic.usucc cic.uzero)) cic.var.
+
+def end : Type.
