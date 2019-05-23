@@ -14,7 +14,7 @@ If you want to export this library to your favorite system, please send us an em
 To compile the project, you need to install the last version of Dedukti (master branch) [https://github.com/Deducteam/Dedukti](https://github.com/Deducteam/Dedukti). The only dependency needed is `mongo` that you can install with `opam`. Currently, this dependency requires a version of OCaml `< 4.06`. However the `mongo` dependency will be dropped in the future. Then you can compile the project with
 
 ``` bash
-make main
+make
 ```
 
 To export the library you can use the command
