@@ -2,7 +2,14 @@
 *.md
 
 # omit shell scripts
-*.sh
+# *.sh
 
 # omit docker related files
 Dockerfile*
+
+# emacs
+*~
+.git*
+.merlin
+.depend
+.dockerignore
