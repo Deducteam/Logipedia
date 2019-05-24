@@ -49,4 +49,4 @@ This will start the container and display the website on [localhost:8000](localh
 
 The container uses PHP built in web server which runs only one single-threaded process, and should not be used in production environment.
 
-It assumes an existing MongoDb with logipedia database. 
+It assumes an existing MongoDB that contains **logipedia** database. 
