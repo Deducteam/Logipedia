@@ -2,7 +2,15 @@ DKCHECK = dkcheck
 DKDEP   = dkdep
 MATITAC = matitac
 
-MAIN = _build/src/main.native
+MAIN = directories _build/src/main.native
+
+FILES_DIR = website/web/theorems/download/files
+
+.PHONY: directories
+directories: $(FILES_DIR)
+
+$(FILES_DIR):
+	@mkdir -p $(FILES_DIR)
 
 all: $(MAIN)
 
