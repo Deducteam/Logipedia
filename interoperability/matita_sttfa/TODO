@@ -1,2 +1,0 @@
--Dependencies are buggy for the universo checking step (it recomputes the dependencies)
--Simplification is buggy when it is not from scratch

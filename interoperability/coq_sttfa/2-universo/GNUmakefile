@@ -21,7 +21,7 @@ OUT_NF_FILES=$(LIB:%=$(OUTPUT)/%.dk)
 IN_DEP_FILES=$(LIB:%=$(INPUT)/%.dep)
 OUT_DEP_FILES=$(LIB:%=$(OUTPUTRAW)/%.dep)
 
-THEORY=cic.dk
+THEORY=Coq.dk
 CONFIG=config.dk
 
 UNIVERSO_OPTIONS=\
