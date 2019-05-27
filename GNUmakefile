@@ -46,6 +46,10 @@ LIBDKS = $(wildcard library/*.dk)
 SORTEDDKS = $(shell dkdep -s -I theories/ -I library/ --ignore library/*.dk | cut -d" " -f 2,2-)
 COQC := $(shell command -v coqc 2> /dev/null)
 
+library/%.dko:  library/%.dk theories/sttfa.dko .library_depend_dko $(MAIN)
+	@echo "[CHECK] $@"
+	@dkcheck -e -I library -I theories $<
+
 library/%.lean:  library/%.dk theories/sttfa.dko .library_depend_lean $(MAIN)
 	@echo "[EXPORT] $@"
 	@./main.native -I library -I theories --export lean $(BDD) $<
@@ -87,6 +91,8 @@ library/%.summary: library/%.pvs
 web: theories/sttfa.dko $(MAIN)
 	mongo < ./bdd/dropLogipedia.js
 	time ./main.native  -I library -I theories --export-web $(SORTEDDKS)
+
+dedukti: library/fermat.dko
 
 coq: library/fermat.vo
 
