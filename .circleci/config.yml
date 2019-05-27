@@ -1,0 +1,12 @@
+ version: 2
+ jobs:
+   ddk_type_check:
+     docker:
+       - image: ocaml/opam2:ubuntu-18.04-ocaml-4.05
+     steps:
+       - checkout
+       - run: sudo apt-get install -qy build-essential m4 unzip git time zip
+       - run: opam update
+       - run: opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
+       - run: opam install mongo -qy
+       - run: eval $(opam env) && make dedukti
