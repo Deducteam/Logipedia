@@ -10,3 +10,9 @@
        - run: opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
        - run: opam install mongo -qy
        - run: eval $(opam env) && make dedukti
+
+ workflows:
+  version: 2
+  build:
+    jobs:
+      - ddk_type_check
