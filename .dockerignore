@@ -1,0 +1,15 @@
+# omit .md files
+*.md
+
+# omit shell scripts
+# *.sh
+
+# omit docker related files
+Dockerfile*
+
+# emacs
+*~
+.git*
+.merlin
+.depend
+.dockerignore

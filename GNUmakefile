@@ -2,7 +2,15 @@ DKCHECK = dkcheck
 DKDEP   = dkdep
 MATITAC = matitac
 
-MAIN = _build/src/main.native
+MAIN = directories _build/src/main.native
+
+FILES_DIR = website/web/theorems/download/files
+
+.PHONY: directories
+directories: $(FILES_DIR)
+
+$(FILES_DIR):
+	@mkdir -p $(FILES_DIR)
 
 all: $(MAIN)
 
@@ -37,6 +45,10 @@ examples/%.pdf: examples/%.tex
 LIBDKS = $(wildcard library/*.dk)
 SORTEDDKS = $(shell dkdep -s -I theories/ -I library/ --ignore library/*.dk | cut -d" " -f 2,2-)
 COQC := $(shell command -v coqc 2> /dev/null)
+
+library/%.dko:  library/%.dk theories/sttfa.dko .library_depend_dko $(MAIN)
+	@echo "[CHECK] $@"
+	@dkcheck -e -I library -I theories $<
 
 library/%.lean:  library/%.dk theories/sttfa.dko .library_depend_lean $(MAIN)
 	@echo "[EXPORT] $@"
@@ -79,6 +91,8 @@ library/%.summary: library/%.pvs
 web: theories/sttfa.dko $(MAIN)
 	mongo < ./bdd/dropLogipedia.js
 	time ./main.native  -I library -I theories --export-web $(SORTEDDKS)
+
+dedukti: library/fermat.dko
 
 coq: library/fermat.vo
 
