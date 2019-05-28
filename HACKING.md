@@ -6,8 +6,6 @@
 - *src/export* contains for each supported system a syntactic translation from an AST of STTforall to the corresponding system
 - *website* contains the HTML/CSS/PHP code for the website implemented using the Bootstrap framework
 - *bdd* contains the mongodb code used by the website
-- *bin* is outdated and contains a script to generate a thm file for OpenTheory
-- *little_theorem* is outdated and contains a single file with the proof of Fermat's little theorem
 
 # Adding a new target system
 
