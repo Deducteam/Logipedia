@@ -53,3 +53,4 @@ pvs-strategies
 
 # PHP dependencies (managed by composer)
 website/web/vendor
+composer.phar
