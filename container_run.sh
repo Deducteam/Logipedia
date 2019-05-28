@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker run  --network host logipedia:lib
+docker run -p 8000:8000 logipedia_lib

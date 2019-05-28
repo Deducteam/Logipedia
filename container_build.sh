@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker build -t logipedia:lib .
+docker build -t logipedia_lib .
