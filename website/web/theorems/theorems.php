@@ -1,6 +1,6 @@
 <?php
 require '../vendor/autoload.php';
-$mongo = new MongoDB\Client('mongodb://localhost:27017');
+$mongo = new MongoDB\Client('mongodb://localhost:27017/?readOnly=true');
 
 if(isset($_GET['md']) && isset($_GET['id']) && isset($_GET['kind'])) {
     $md=$_GET['md'];
