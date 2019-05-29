@@ -17,6 +17,12 @@ To compile the project, you need to install the last version of Dedukti (master 
 make
 ```
 
+To export the proofs to a local Mongo DB and a set of flat files, run
+
+``` bash
+make web
+```
+
 To export the library you can use the command
 
 ``` bash
