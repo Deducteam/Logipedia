@@ -1,6 +1,6 @@
 <?php
   require 'vendor/autoload.php';
-  $mongo = new MongoDB\Client('mongodb://localhost:27017'); //Acces au SGBD
+  $mongo = new MongoDB\Client('mongodb://localhost:27017/?readOnly=true'); //Acces au SGBD
   $mongo->logipedia->items->createIndex(["md" => "text", "id" => "text"]);
   function print_entry($md,$id, $kind)
   {
