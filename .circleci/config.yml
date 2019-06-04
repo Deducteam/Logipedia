@@ -1,4 +1,4 @@
- version: 2
+ version: 2.1
  jobs:
    ddk_type_check:
      docker:
@@ -12,7 +12,7 @@
        - run: eval $(opam env) && make dedukti
 
  workflows:
-  version: 2
+  version: 2.1
   build:
     jobs:
       - ddk_type_check
