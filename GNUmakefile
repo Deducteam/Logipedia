@@ -2,17 +2,18 @@ DKCHECK = dkcheck
 DKDEP   = dkdep
 MATITAC = matitac
 
-MAIN = directories
+MAIN = bin directories
+LOGIPEDIA = $(shell readlink -f _build/install/default/bin/logipedia)
 
 FILES_DIR = website/web/theorems/download/files
+
+all: $(MAIN)
 
 .PHONY: directories
 directories: $(FILES_DIR)
 
 $(FILES_DIR):
 	@mkdir -p $(FILES_DIR)
-
-all: $(MAIN) bin
 
 #### Main program ##################################################
 
@@ -33,7 +34,7 @@ examples: $(EXADKS:.dk=.stt) $(EXADKS:.dk=.pdf)
 
 examples/%.dko examples/%.stt examples/%.tex: examples/%.dk theories/sttfa.dko $(MAIN)
 	@echo "[STT] $<"
-	@./main.native -I theories $<
+	@$(LOGIPEDIA) -I theories $<
 
 examples/%.pdf: examples/%.tex
 	@echo "[PDF] $@"
@@ -51,23 +52,23 @@ library/%.dko:  library/%.dk theories/sttfa.dko .library_depend_dko $(MAIN)
 
 library/%.lean:  library/%.dk theories/sttfa.dko .library_depend_lean $(MAIN)
 	@echo "[EXPORT] $@"
-	@./main.native -I library -I theories --export lean $(BDD) $<
+	@$(LOGIPEDIA) -I library -I theories --export lean $(BDD) $<
 
 library/%.pvs: library/%.dk theories/sttfa.dko .library_depend_pvs $(MAIN)
 	@echo "[EXPORT] $@"
-	@./main.native -I library -I theories --export pvs $(BDD) $<
+	@$(LOGIPEDIA) -I library -I theories --export pvs $(BDD) $<
 
 library/%.v: library/%.dk theories/sttfa.dko .library_depend_v $(MAIN)
 	@echo "[EXPORT] $@"
-	@./main.native -I library -I theories --export coq $(BDD) $<
+	@$(LOGIPEDIA) -I library -I theories --export coq $(BDD) $<
 
 library/%.ma: library/%.dk theories/sttfa.dko .library_depend_ma $(MAIN)
 	@echo "[EXPORT] $@"
-	@./main.native -I library -I theories --export matita $(BDD) $<
+	@$(LOGIPEDIA) -I library -I theories --export matita $(BDD) $<
 
 library/%.art: library/%.dk theories/sttfa.dko .library_depend_art $(MAIN)
 	@echo "[EXPORT] $@"
-	@./main.native -I library -I theories --export opentheory $(BDD) $<
+	@$(LOGIPEDIA) -I library -I theories --export opentheory $(BDD) $<
 
 library/%.thy: .library_depend_dko
 	@echo "[GENERATE] $@"
@@ -89,7 +90,7 @@ library/%.summary: library/%.pvs
 
 web: theories/sttfa.dko $(MAIN)
 	mongo < ./bdd/dropLogipedia.js
-	time ./main.native  -I library -I theories --export-web $(SORTEDDKS)
+	time $(LOGIPEDIA)  -I library -I theories --export-web $(SORTEDDKS)
 
 dedukti: library/fermat.dko
 
