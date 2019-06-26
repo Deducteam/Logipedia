@@ -2,7 +2,7 @@ DKCHECK = dkcheck
 DKDEP   = dkdep
 MATITAC = matitac
 
-MAIN = directories _build/src/main.native
+MAIN = directories
 target = src/main.exe
 
 FILES_DIR = website/web/theorems/download/files
