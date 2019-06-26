@@ -175,19 +175,19 @@ type web_item =
 
 let items : (name, item) Hashtbl.t = Hashtbl.create 101
 
-let db_insert_item item =
-  Hashtbl.add items (name_of_item item) item;
-  match item with
-  | Parameter((md,id),_) ->
-    Mongodb.insert_item md id "constant"
-  | Definition((md,id),_,_) ->
-    Mongodb.insert_item md id "definition"
-  | Axiom((md,id),_) ->
-    Mongodb.insert_item md id "axiom"
-  | Theorem((md,id),_,_) ->
-    Mongodb.insert_item md id "theorem"
-  | TyOpDef((md,id),_) ->
-    Mongodb.insert_item md id "tyop"
+let db_insert_item item = ()
+  (* Hashtbl.add items (name_of_item item) item; *)
+  (* match item with *)
+  (* | Parameter((md,id),_) -> *)
+  (*   Mongodb.insert_item md id "constant" *)
+  (* | Definition((md,id),_,_) -> *)
+  (*   Mongodb.insert_item md id "definition" *)
+  (* | Axiom((md,id),_) -> *)
+  (*   Mongodb.insert_item md id "axiom" *)
+  (* | Theorem((md,id),_,_) -> *)
+  (*   Mongodb.insert_item md id "theorem" *)
+  (* | TyOpDef((md,id),_) -> *)
+  (*   Mongodb.insert_item md id "tyop" *)
 
 let db_insert_sys_item sys item =
   let (module E:Export.E) = Export.of_system sys in
