@@ -2,7 +2,7 @@ DKCHECK = dkcheck
 DKDEP   = dkdep
 MATITAC = matitac
 
-MAIN = directories _build/src/main.native
+MAIN = directories
 
 FILES_DIR = website/web/theorems/download/files
 
@@ -12,14 +12,13 @@ directories: $(FILES_DIR)
 $(FILES_DIR):
 	@mkdir -p $(FILES_DIR)
 
-all: $(MAIN)
+all: $(MAIN) bin
 
 #### Main program ##################################################
 
-$(MAIN): $(wildcard src/*.ml src/*.mli src/export/*.ml src/export/*.mli src/utils/*.ml src/utils/*.mli)
-	@echo "[BUILD] main.native"
-	@ocamlbuild -use-ocamlfind -quiet -Is src/,src/utils,src/export -tag thread -package mongo -package dedukti src/main.native
-
+.PHONY: bin.
+bin:
+	@dune build
 #### Producing the theory file #####################################
 
 theories/sttfa.dko: theories/sttfa.dk
