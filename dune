@@ -1,0 +1,4 @@
+;; Make warnings non fatal
+(env
+ (dev
+  (flags (:standard -warn-error -A))))

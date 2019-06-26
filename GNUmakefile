@@ -3,7 +3,6 @@ DKDEP   = dkdep
 MATITAC = matitac
 
 MAIN = directories
-target = src/main.exe
 
 FILES_DIR = website/web/theorems/download/files
 
@@ -13,13 +12,13 @@ directories: $(FILES_DIR)
 $(FILES_DIR):
 	@mkdir -p $(FILES_DIR)
 
-all: $(MAIN)
+all: $(MAIN) bin
 
 #### Main program ##################################################
 
 .PHONY: bin.
 bin:
-	@dune build $(target) --profile=release
+	@dune build
 #### Producing the theory file #####################################
 
 theories/sttfa.dko: theories/sttfa.dk
