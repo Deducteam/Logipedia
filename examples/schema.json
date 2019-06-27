@@ -36,7 +36,7 @@
                     "$ref": "#/definitions/taxon"
                 },
                 "ttype": {
-                    "type": "object"
+                  "$ref": "ppterm_schema.json#"
                 },
                 "body": {
                     "$comment": "Proof or definition",
