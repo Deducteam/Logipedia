@@ -1,7 +1,20 @@
 { "$schema": "http://json-schema.org/schema"
 , "title": "Logipedia object specification"
 , "description": ""
-, "examples": []
+, "examples": [
+  {
+  "id": 0,
+  "name": "Pi",
+  "taxonomy": "axiom",
+  "ttype": {},
+  "body": null,
+  "exports": [
+    {
+      "file": "path"
+    }
+  ]
+}
+]
 , "definitions":
     { "general":
       { "type": "object"
