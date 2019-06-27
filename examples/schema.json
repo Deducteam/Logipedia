@@ -1,0 +1,23 @@
+{ "$schema": "http://json-schema.org/schema"
+, "title": "Logipedia object specification"
+, "description": ""
+, "examples": []
+, "definitions":
+    { "general":
+      { "type": "object"
+      , "properties":
+          { "id": { "type": "integer" }
+          , "name": { "type": "string" }
+          , "taxonomy": { "type": "string"
+                        , "pattern": "^(axiom|theorem|definition|constant)$" }
+          , "ttype": { "type": "object" }
+          , "body": { "type": ["null", "object"] } } }
+       , "export":
+         { "type": "object"
+         , "properties":
+           { "file": { "type": "string" } } } }
+, "type": "object"
+, "properties": { "general": { "$ref": "#/definitions/general" }
+                , "exports": { "type": "array"
+                             , "items": { "$ref": "#/definitions/export" } } }
+}

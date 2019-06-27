@@ -42,7 +42,6 @@ pvs-strategies
 *.lean
 
 # BDD files
-*.json
 *.bson
 
 # MAKEFILE temporary files
