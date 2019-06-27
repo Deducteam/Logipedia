@@ -2,4 +2,5 @@
 (executable
  (name main)
  (public_name logipedia)
- (libraries dedukti))
+ (libraries dedukti ppx_deriving_yojson.runtime)
+ (preprocess (pps ppx_deriving_yojson)))
