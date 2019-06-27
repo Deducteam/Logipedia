@@ -26,6 +26,7 @@
             "type": "object",
             "properties": {
                 "id": {
+                    "$comment": "a unique identifier",
                     "type": "integer"
                 },
                 "name": {
@@ -38,6 +39,7 @@
                     "type": "object"
                 },
                 "body": {
+                    "$comment": "Proof or definition",
                     "type": [
                         "null",
                         "object"
@@ -70,10 +72,18 @@
                             }
                         }
                     }
+                },
+                "to": {
+                    "$comment": "Available export systems.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
         "export": {
+            "$comment": "Section concerning a particular export system.",
             "type": "object",
             "properties": {
                 "file": {
