@@ -88,7 +88,8 @@
             "properties": {
                 "file": {
                     "type": "string"
-                }
+                },
+                "etype": { "type": ["string", "null"]}
             }
         }
     },
