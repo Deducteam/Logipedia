@@ -18,6 +18,10 @@
         }
     ],
     "definitions": {
+        "taxon": {
+            "type": "string",
+            "pattern": "^(axiom|theorem|definition|constant)$"
+        },
         "general": {
             "type": "object",
             "properties": {
@@ -28,8 +32,7 @@
                     "type": "string"
                 },
                 "taxonomy": {
-                    "type": "string",
-                    "pattern": "^(axiom|theorem|definition|constant)$"
+                    "$ref": "#/definitions/taxon"
                 },
                 "ttype": {
                     "type": "object"
@@ -39,6 +42,34 @@
                         "null",
                         "object"
                     ]
+                },
+                "dependencies": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "taxonomy": {
+                                "$ref": "#/definitions/taxon"
+                            }
+                        }
+                    }
+                },
+                "theory": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "taxonomy": {
+                                "$ref": "#/definitions/taxon"
+                            }
+                        }
+                    }
                 }
             }
         },
