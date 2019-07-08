@@ -2,5 +2,29 @@
     "$schema": "http://json-schema.org/schema",
     "title": "Pretty printable terms",
     "description": "",
-    "examples": []
+    "examples": [],
+    "definitions": {
+        "Binder": {
+            "type": "object",
+            "properties": {
+                "symbol": {
+                    "type": "string"
+                },
+                "bound": {
+                    "type": "string"
+                },
+                "annotation": {
+                    "type": [
+                        "null",
+                        {
+                            "$ref": "#"
+                        }
+                    ]
+                },
+                "body": {
+                    "$ref": "#"
+                }
+            }
+        }
+    }
 }
