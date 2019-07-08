@@ -2,7 +2,12 @@
 ;; Even though we do not intend to write ppterms to files this way,
 ;; the ABNF is a convenient way to write down what we need.
 
-<id>     = RE("[_a-zA-Z][a-zA-Z0-9]*")
+;; / is the alternative
+;; SP is for an explicit space
+;; quantification is prefix i.e. *ALPHA for any number of characters
+;; [ x ] is the option
+
+<id>     = ("_" / ALPHA) *(ALPHA / DIGIT)
 ;; An identifer
 
 <qid>    = *(<id> ".") <id>
