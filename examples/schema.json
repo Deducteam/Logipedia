@@ -1,15 +1,16 @@
 {
     "$schema": "http://json-schema.org/schema",
     "title": "Logipedia object specification",
-    "description": "",
+    "description": "A single file describing a logipedia object, contains a
+                    general section and a section dedicated to export systems.",
     "examples": [
         {
-            "id": 0,
-            "name": "Pi",
-            "taxonomy": "axiom",
-            "ttype": {
+            "general": {
+                "name": "Example.Pi",
+                "taxonomy": "axiom",
+                "ttype": {},
+                "body": null
             },
-            "body": null,
             "exports": [
                 {
                     "file": "path"
@@ -25,18 +26,15 @@
         "general": {
             "type": "object",
             "properties": {
-                "id": {
-                    "$comment": "a unique identifier",
-                    "type": "integer"
-                },
                 "name": {
+                    "$comment": "Unique fully qualified name",
                     "type": "string"
                 },
                 "taxonomy": {
                     "$ref": "#/definitions/taxon"
                 },
                 "ttype": {
-                  "$ref": "ppterm_schema.json#"
+                    "$ref": "ppterm_schema.json#"
                 },
                 "body": {
                     "$comment": "Proof or definition",
@@ -89,7 +87,12 @@
                 "file": {
                     "type": "string"
                 },
-                "etype": { "type": ["string", "null"]}
+                "etype": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
             }
         }
     },
