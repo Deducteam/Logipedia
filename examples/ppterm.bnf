@@ -1,7 +1,21 @@
-id     ::= string
-db     ::= id, ppterm*
-binder ::= id, id, ppterm?, ppterm
-const  ::= qid, ppterm*
-ppterm ::= db
-         | binder
-         | const
+;; Augmented BNF for ppterm
+;; Even though we do not intend to write ppterms to files this way,
+;; the ABNF is a convenient way to write down what we need.
+
+<id>     = RE("[_a-zA-Z][a-zA-Z0-9]*")
+;; An identifer
+
+<qid>    = *(<id> ".") <id>
+;; A qualified identifier
+
+<var>    = <id> SP *<ppterm>
+;; [x t1 t2 ...] bound variable [x] applied to terms [ti].
+
+<binder> = <id> SP <id> SP [ <ppterm> ] SP <ppterm>
+;; [s x a t] is binder represented by [s] (typically λ or Π), binding
+;; variable [x] of optional type [a] into term [t].
+
+<const>  = <qid> SP <ppterm>*
+;; [c t1 t2 ...] is constant identifer [c] applied to arguments [ti]
+
+<ppterm> = <var> / <binder> / <const>
