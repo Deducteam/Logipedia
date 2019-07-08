@@ -8,7 +8,7 @@
        - run: sudo apt-get install -qy build-essential m4 unzip git time zip
        - run: opam update
        - run: opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
-       - run: opam install mongo -qy
+       - run: opam install dune mongo -qy
        - run: eval $(opam env) && make dedukti
 
  workflows:
