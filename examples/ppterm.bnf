@@ -1,0 +1,7 @@
+id     ::= string
+db     ::= id, ppterm*
+binder ::= id, id, ppterm?, ppterm
+const  ::= qid, ppterm*
+ppterm ::= db
+         | binder
+         | const
