@@ -8,7 +8,24 @@
             "general": {
                 "name": "Example.Pi",
                 "taxonomy": "axiom",
-                "ttype": {},
+                "ttype": [
+                    "Binder",
+                    {
+                        "symbol": "Π",
+                        "bound": "x",
+                        "annotation": "Nat",
+                        "body": [
+                            "Const",
+                            {
+                                "c_id": [
+                                    "Nat",
+                                    "c"
+                                ],
+                                "c_args": []
+                            }
+                        ]
+                    }
+                ],
                 "body": null
             },
             "exports": [
