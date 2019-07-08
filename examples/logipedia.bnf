@@ -1,8 +1,16 @@
 ;; Augmented BNF reprensenting the information on a web page
 ;; <ppterm> defined in an auxiliary file
 
-<name> = *<mod> SP <id>
-;; Fully qualified name of the object
+;; / is the alternative
+;; SP is for an explicit space
+;; quantification is prefix i.e. *ALPHA for any number of characters
+;; [ x ] is the option
+
+<id>     = ("_" / ALPHA) *(ALPHA / DIGIT)
+;; An identifer
+
+<qid> = *(<id> ".") <id>
+;; Fully qualified name of the object, must be unique
 
 <logic> = "coq" / "matita" / ...
 ;; The available logic systems
@@ -13,32 +21,21 @@
 <taxonomy> = "axiom" / "proof" / "definition" / "constant"
 ;; The category of the object
 
-<ttype> = <ppterm>
-;; Statement
-
-<body> = <ppterm>
-;; Body if definition
-
 <dependency> = <name> SP <taxonomy>
 ;; A single dependency
 
-<theory> = *(<dependency>)
-;; A list of dependencies composing the theory
-
-<to> = *<logic>
-;; The available logics to which the object has been exported
-
-<general> = <name> CR
-            *<from> CR
+<general> = <qid> CR
+            <logic> CR       ; logic of origin
             <taxonomy> CR
-            <ttype> CR
-            *<dependency> CR
-            <theory> CR
-            <to>
+            <ppterm> CR      ; statement
+            [ <ppterm> ] CR  ; body
+            *<dependency> CR ; dependencies
+            *<theory> CR     ; theory
+            *<logic>         ; available exports
 ;; Content of the general section
 
-<export> = <logic> CR ; the exported logic
-           <path> CR ; path of files to be downloaded
+<export> = <logic> CR    ; the exported logic
+           <path> CR     ; path of files to be downloaded
            [ *ALPHA ] CR ; statement in the foreign logic
 ;; Export section
 
