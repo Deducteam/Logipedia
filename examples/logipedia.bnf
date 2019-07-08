@@ -15,9 +15,6 @@
 <logic> = "coq" / "matita" / ...
 ;; The available logic systems
 
-<from> = <logic>
-;; The logic from which the object comes from
-
 <taxonomy> = "axiom" / "proof" / "definition" / "constant"
 ;; The category of the object
 
