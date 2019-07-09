@@ -1,0 +1,12 @@
+{
+    "general": {
+        "name": "Example.Pi",
+        "taxonomy": "axiom",
+        "ttype": [ "Const", { "csymb": "Example.pi", "capp": [] } ],
+        "body": null,
+        "theory": [],
+        "dependencies": [],
+        "to": []
+    },
+    "exports": []
+}
