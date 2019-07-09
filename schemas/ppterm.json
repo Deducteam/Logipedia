@@ -5,8 +5,8 @@
     "examples": [],
     "definitions": {
         "term": {
-            "$comment": "Main entity of the file"
-            "$comment": "Ocaml variants as arrays"
+            "$comment": "Main entity of the file",
+            "$comment": "Ocaml variants as arrays",
             "type": "array",
             "items": {
                 "oneOf": [
@@ -25,7 +25,7 @@
                     }
                 ]
             }
-        }
+        },
         "Var": {
             "type": "object",
             "required": [
