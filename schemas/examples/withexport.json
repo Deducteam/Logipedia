@@ -1,0 +1,24 @@
+{
+    "general": {
+        "name": "Example.Pi",
+        "taxonomy": "axiom",
+        "ttype": [
+            "Const",
+            {
+                "c_symb": "Example.pi",
+                "c_app": []
+            }
+        ],
+        "body": null,
+        "theory": [],
+        "dependencies": [],
+        "to": []
+    },
+    "exports": [
+        {
+            "system": "mysystem",
+            "file": "/path/to/downloadable/file",
+            "etype": "forall P: Prop, P => P"
+        }
+    ]
+}
