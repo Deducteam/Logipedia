@@ -3,38 +3,7 @@
     "title": "Logipedia object specification",
     "description": "A single file describing a logipedia object, contains a
 general section and a section dedicated to export systems.",
-    "examples": [
-        {
-            "general": {
-                "name": "Example.Pi",
-                "taxonomy": "axiom",
-                "ttype": [
-                    "Binder",
-                    {
-                        "symbol": "Π",
-                        "bound": "x",
-                        "annotation": "Nat",
-                        "body": [
-                            "Const",
-                            {
-                                "c_id": [
-                                    "Nat",
-                                    "c"
-                                ],
-                                "c_args": []
-                            }
-                        ]
-                    }
-                ],
-                "body": null
-            },
-            "exports": [
-                {
-                    "file": "path"
-                }
-            ]
-        }
-    ],
+    "type": "object",
     "definitions": {
         "taxon": {
             "type": "string",
@@ -135,7 +104,6 @@ general section and a section dedicated to export systems.",
             ]
         }
     },
-    "type": "object",
     "properties": {
         "general": {
             "$ref": "#/definitions/general"
