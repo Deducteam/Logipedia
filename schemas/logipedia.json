@@ -18,7 +18,7 @@ general section and a section dedicated to export systems.",
             "properties": {
                 "name": {
                     "$comment": "Unique fully qualified name",
-                    "$ref": "basics.json/definitions/qid"
+                    "$ref": "basics.json#/definitions/qid"
                 },
                 "taxonomy": {
                     "$ref": "#/definitions/taxon"
