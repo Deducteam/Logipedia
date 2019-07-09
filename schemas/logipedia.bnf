@@ -14,7 +14,7 @@
 <qid> = *(<id> ".") <id>
 ;; Fully qualified name of the object, must be unique
 
-<logic> = "coq" / "matita" / ...
+<logic> = 1*ALPHA
 ;; The available logic systems
 
 <taxonomy> = "axiom" / "proof" / "definition" / "constant"
