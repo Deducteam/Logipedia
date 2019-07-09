@@ -40,24 +40,30 @@
             "type": "string",
             "pattern": "^(axiom|theorem|definition|constant)$"
         },
+        "logic": {
+            "type": "string",
+            "pattern": "^(coq|matita|lean|pvs|dedukti)$"
+        },
         "general": {
             "type": "object",
             "properties": {
                 "name": {
                     "$comment": "Unique fully qualified name",
-                    "type": "string"
+                    "$ref": "basics.json/definitions/qid"
                 },
                 "taxonomy": {
                     "$ref": "#/definitions/taxon"
                 },
                 "ttype": {
-                    "$ref": "ppterm_schema.json#"
+                    "$ref": "ppterm.json#"
                 },
                 "body": {
                     "$comment": "Proof or definition",
-                    "type": [
+                    "oneOf": [
                         "null",
-                        "object"
+                        {
+                            "$ref": "ppterm.json#"
+                        }
                     ]
                 },
                 "dependencies": {
@@ -66,7 +72,7 @@
                         "type": "object",
                         "properties": {
                             "name": {
-                                "type": "string"
+                                "$ref": "basics.json#/definitions/qid"
                             },
                             "taxonomy": {
                                 "$ref": "#/definitions/taxon"
@@ -80,7 +86,7 @@
                         "type": "object",
                         "properties": {
                             "name": {
-                                "type": "string"
+                                "$ref": "basics.json#/definitions/qid"
                             },
                             "taxonomy": {
                                 "$ref": "#/definitions/taxon"
@@ -92,7 +98,7 @@
                     "$comment": "Available export systems.",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/logic"
                     }
                 }
             }
