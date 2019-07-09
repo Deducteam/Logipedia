@@ -70,8 +70,7 @@
     },
     "type": "array",
     "items": {
-        "$comment": "Translation of a variant in ocaml, first argument is label
-                 of variant and other items are the arguments.",
+        "$comment": "Translation of a variant in ocaml, first argument is label of variant and other items are the arguments.",
         "oneOf": [
             {
                 "type": "string",
