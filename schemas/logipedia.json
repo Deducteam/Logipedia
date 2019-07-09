@@ -10,8 +10,7 @@ general section and a section dedicated to export systems.",
             "pattern": "^(axiom|theorem|definition|constant)$"
         },
         "logic": {
-            "type": "string",
-            "pattern": "^(coq|matita|lean|pvs|dedukti)$"
+            "type": "string"
         },
         "general": {
             "type": "object",
