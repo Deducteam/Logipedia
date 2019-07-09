@@ -6,11 +6,11 @@
     "definitions": {
         "id": {
             "type": "string",
-            "pattern": "^[_a-zA-Z][a-zA-Z0-9]*"
+            "pattern": "^([_a-zA-Z][a-zA-Z0-9]*|(\\{\\|([^\\|]|(\\|[^\\}]))*\\|*\\|\\})"
         },
         "qid": {
             "type": "string",
-            "pattern": "^([_a-zA-Z][a-zA-Z0-9]*\.)*[_a-zA-Z][a-zA-Z0-9]*"
+            "pattern": "^([_a-zA-Z][a-zA-Z0-9]*\\.)*[_a-zA-Z][a-zA-Z0-9]*"
         }
     }
 }
