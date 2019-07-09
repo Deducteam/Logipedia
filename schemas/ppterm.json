@@ -29,14 +29,14 @@
         "Var": {
             "type": "object",
             "required": [
-                "vsymb",
-                "vapp"
+                "v_symb",
+                "v_app"
             ],
             "properties": {
-                "vsymb": {
+                "v_symb": {
                     "$ref": "basics.json#/definitions/id"
                 },
-                "vapp": {
+                "v_app": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/term"
@@ -47,14 +47,14 @@
         "Const": {
             "type": "object",
             "required": [
-                "csymb",
-                "capp"
+                "c_symb",
+                "c_args"
             ],
             "properties": {
-                "csymb": {
+                "c_symb": {
                     "$ref": "basics.json#/definitions/qid"
                 },
-                "capp": {
+                "c_args": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/term"
@@ -70,7 +70,7 @@
                 "body"
             ],
             "properties": {
-                "bsymb": {
+                "b_symb": {
                     "type": "string"
                 },
                 "bound": {
