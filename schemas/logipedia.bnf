@@ -7,7 +7,9 @@
 ;; [ x ] is the option
 
 <id>     = ("_" / ALPHA) *(ALPHA / DIGIT)
-;; An identifer
+;; An identifier
+<id>     =/ "{|" *([^|] / ("|" [^}])) *"|" "|}"
+;; An escaped identifier surrounded by {| |}
 
 <qid> = *(<id> ".") <id>
 ;; Fully qualified name of the object, must be unique

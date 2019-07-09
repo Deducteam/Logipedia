@@ -7,11 +7,7 @@
 ;; quantification is prefix i.e. *ALPHA for any number of characters
 ;; [ x ] is the option
 
-<id>     = ("_" / ALPHA) *(ALPHA / DIGIT)
-;; An identifer
-
-<qid>    = *(<id> ".") <id>
-;; A qualified identifier
+;; <id> and <qid> are defined in 'logipedia.bnf'
 
 <var>    = <id> SP *<ppterm>
 ;; [x t1 t2 ...] bound variable [x] applied to terms [ti].
