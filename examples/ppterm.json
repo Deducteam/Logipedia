@@ -4,19 +4,11 @@
     "description": "",
     "examples": [],
     "definitions": {
-        "id": {
-            "type": "string",
-            "pattern": "^[_a-zA-Z][a-zA-Z0-9]*"
-        },
-        "qid": {
-            "type": "string",
-            "pattern": "^([_a-zA-Z][a-zA-Z0-9]*.)*[_a-zA-Z][a-zA-Z0-9]*"
-        },
         "Var": {
             "type": "object",
             "properties": {
                 "vsymb": {
-                    "$ref": "#/definitions/id"
+                    "$ref": "basics.json#/definitions/id"
                 },
                 "vapp": {
                     "type": "array",
@@ -30,7 +22,7 @@
             "type": "object",
             "properties": {
                 "csymb": {
-                    "$ref": "#/definitions/qid"
+                    "$ref": "basics.json#/definitions/qid"
                 },
                 "capp": {
                     "type": "array",
@@ -47,7 +39,7 @@
                     "type": "string"
                 },
                 "bound": {
-                    "$ref": "#/definitions/id"
+                    "$ref": "basics.json#/definitions/id"
                 },
                 "annotation": {
                     "type": [
@@ -62,5 +54,16 @@
                 }
             }
         }
-    }
+    },
+    "oneOf": [
+        {
+            "$ref": "#/definitions/Var"
+        },
+        {
+            "$ref": "#/definitions/Binder"
+        },
+        {
+            "$ref": "#/definitions/Const"
+        }
+    ]
 }

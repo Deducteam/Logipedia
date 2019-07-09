@@ -1,0 +1,16 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "title": "Basics",
+    "description": "Basic definitions for logipedia",
+    "examples": [],
+    "definitions": {
+        "id": {
+            "type": "string",
+            "pattern": "^[_a-zA-Z][a-zA-Z0-9]*"
+        },
+        "qid": {
+            "type": "string",
+            "pattern": "^([_a-zA-Z][a-zA-Z0-9]*.)*[_a-zA-Z][a-zA-Z0-9]*"
+        }
+    }
+}
