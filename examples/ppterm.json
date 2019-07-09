@@ -1,0 +1,66 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "title": "Pretty printable terms",
+    "description": "",
+    "examples": [],
+    "definitions": {
+        "id": {
+            "type": "string",
+            "pattern": "^[_a-zA-Z][a-zA-Z0-9]*"
+        },
+        "qid": {
+            "type": "string",
+            "pattern": "^([_a-zA-Z][a-zA-Z0-9]*.)*[_a-zA-Z][a-zA-Z0-9]*"
+        },
+        "Var": {
+            "type": "object",
+            "properties": {
+                "vsymb": {
+                    "$ref": "#/definitions/id"
+                },
+                "vapp": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#"
+                    }
+                }
+            }
+        },
+        "Const": {
+            "type": "object",
+            "properties": {
+                "csymb": {
+                    "$ref": "#/definitions/qid"
+                },
+                "capp": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#"
+                    }
+                }
+            }
+        },
+        "Binder": {
+            "type": "object",
+            "properties": {
+                "bsymb": {
+                    "type": "string"
+                },
+                "bound": {
+                    "$ref": "#/definitions/id"
+                },
+                "annotation": {
+                    "type": [
+                        "null",
+                        {
+                            "$ref": "#"
+                        }
+                    ]
+                },
+                "body": {
+                    "$ref": "#"
+                }
+            }
+        }
+    }
+}
