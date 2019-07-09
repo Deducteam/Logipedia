@@ -60,7 +60,9 @@
                 "body": {
                     "$comment": "Proof or definition",
                     "oneOf": [
-                        "null",
+                        {
+                            "type": "null"
+                        },
                         {
                             "$ref": "ppterm.json#"
                         }
@@ -101,7 +103,16 @@
                         "$ref": "#/definitions/logic"
                     }
                 }
-            }
+            },
+            "required": [
+                "name",
+                "taxonomy",
+                "ttype",
+                "body",
+                "dependencies",
+                "theory",
+                "to"
+            ]
         },
         "export": {
             "$comment": "Section concerning a particular export system.",
@@ -130,5 +141,8 @@
                 "$ref": "#/definitions/export"
             }
         }
-    }
+    },
+    "required": [
+        "general"
+    ]
 }
