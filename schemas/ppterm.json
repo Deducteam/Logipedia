@@ -1,9 +1,31 @@
 {
     "$schema": "http://json-schema.org/schema",
     "title": "Pretty printable terms",
-    "description": "",
+    "description": "Defines the 'term' object",
     "examples": [],
     "definitions": {
+        "term": {
+            "$comment": "Main entity of the file"
+            "$comment": "Ocaml variants as arrays"
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "type": "string",
+                        "pattern": "^(Binder|Const|Var)$"
+                    },
+                    {
+                        "$ref": "#/definitions/Var"
+                    },
+                    {
+                        "$ref": "#/definitions/Binder"
+                    },
+                    {
+                        "$ref": "#/definitions/Const"
+                    }
+                ]
+            }
+        }
         "Var": {
             "type": "object",
             "required": [
@@ -17,7 +39,7 @@
                 "vapp": {
                     "type": "array",
                     "items": {
-                        "$ref": "#"
+                        "$ref": "#/definitions/term"
                     }
                 }
             }
@@ -35,7 +57,7 @@
                 "capp": {
                     "type": "array",
                     "items": {
-                        "$ref": "#"
+                        "$ref": "#/definitions/term"
                     }
                 }
             }
@@ -58,33 +80,14 @@
                     "type": [
                         "null",
                         {
-                            "$ref": "#"
+                            "$ref": "#/definitions/term"
                         }
                     ]
                 },
                 "body": {
-                    "$ref": "#"
+                    "$ref": "#/definitions/term"
                 }
             }
         }
     },
-    "type": "array",
-    "items": {
-        "$comment": "Translation of a variant in ocaml, first argument is label of variant and other items are the arguments.",
-        "oneOf": [
-            {
-                "type": "string",
-                "pattern": "^(Binder|Const|Var)$"
-            },
-            {
-                "$ref": "#/definitions/Var"
-            },
-            {
-                "$ref": "#/definitions/Binder"
-            },
-            {
-                "$ref": "#/definitions/Const"
-            }
-        ]
-    }
 }
