@@ -6,6 +6,7 @@
     "definitions": {
         "Var": {
             "type": "object",
+            "required": [ "vsymb", "vapp" ],
             "properties": {
                 "vsymb": {
                     "$ref": "basics.json#/definitions/id"
@@ -20,6 +21,7 @@
         },
         "Const": {
             "type": "object",
+            "required": [ "csymb", "capp" ],
             "properties": {
                 "csymb": {
                     "$ref": "basics.json#/definitions/qid"
@@ -34,6 +36,7 @@
         },
         "Binder": {
             "type": "object",
+            "required": [ "bsymb", "bound", "body" ],
             "properties": {
                 "bsymb": {
                     "type": "string"
