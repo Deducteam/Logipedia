@@ -6,7 +6,10 @@
     "definitions": {
         "Var": {
             "type": "object",
-            "required": [ "vsymb", "vapp" ],
+            "required": [
+                "vsymb",
+                "vapp"
+            ],
             "properties": {
                 "vsymb": {
                     "$ref": "basics.json#/definitions/id"
@@ -21,7 +24,10 @@
         },
         "Const": {
             "type": "object",
-            "required": [ "csymb", "capp" ],
+            "required": [
+                "csymb",
+                "capp"
+            ],
             "properties": {
                 "csymb": {
                     "$ref": "basics.json#/definitions/qid"
@@ -36,7 +42,11 @@
         },
         "Binder": {
             "type": "object",
-            "required": [ "bsymb", "bound", "body" ],
+            "required": [
+                "bsymb",
+                "bound",
+                "body"
+            ],
             "properties": {
                 "bsymb": {
                     "type": "string"
@@ -58,15 +68,24 @@
             }
         }
     },
-    "oneOf": [
-        {
-            "$ref": "#/definitions/Var"
-        },
-        {
-            "$ref": "#/definitions/Binder"
-        },
-        {
-            "$ref": "#/definitions/Const"
-        }
-    ]
+    "type": "array",
+    "items": {
+        "$comment": "Translation of a variant in ocaml, first argument is label
+                 of variant and other items are the arguments.",
+        "oneOf": [
+            {
+                "type": "string",
+                "pattern": "^(Binder|Const|Var)$"
+            },
+            {
+                "$ref": "#/definitions/Var"
+            },
+            {
+                "$ref": "#/definitions/Binder"
+            },
+            {
+                "$ref": "#/definitions/Const"
+            }
+        ]
+    }
 }
