@@ -30,13 +30,13 @@
             "type": "object",
             "required": [
                 "v_symb",
-                "v_app"
+                "v_args"
             ],
             "properties": {
                 "v_symb": {
                     "$ref": "basics.json#/definitions/id"
                 },
-                "v_app": {
+                "v_args": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/term"
