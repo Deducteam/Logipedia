@@ -1,0 +1,30 @@
+{
+    "general": {
+        "name": "nat.le",
+        "taxonomy": "constant",
+        "ttype":
+        [ "Binder",
+          { "b_symb": "Π", "bound": "x",
+            "annotation": [ "Const", { "c_symb": "nat.nat", "c_args": [] } ],
+            "body":
+            [ "Binder",
+              { "b_symb": "Π", "bound": "y",
+                "annotation": [ "Const",
+                                { "c_symb": "nat.nat", "c_args": [] } ],
+                "body":
+                [ "Const", { "c_symb": "Prop", "c_args": []}]}]}],
+        "body": null,
+        "dependencies": [ { "name": "nat.nat", "taxonomy": "constant" } ],
+        "theory": [ { "name": "nat.nat", "taxonomy": "constant" } ],
+        "to": [ "coq", "matita", "opentheory" ]
+    },
+    "exports":
+    [
+        { "system": "coq", "file": "some/relevant/path",
+          "etype": "Parameter le: nat -> nat -> Prop" },
+        { "system": "matita", "file": "some/other/relevant/path",
+          "etype": "axiom le: nat -> nat -> Prop" },
+        { "system": "pvs", "file": "you/understood",
+          "etype": null }
+    ]
+}
