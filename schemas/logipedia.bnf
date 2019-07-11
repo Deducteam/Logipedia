@@ -17,7 +17,7 @@
 <logic> = 1*ALPHA
 ;; The available logic systems
 
-<taxonomy> = "axiom" / "proof" / "definition" / "constant"
+<taxonomy> = "axiom" / "theorem" / "definition" / "constant"
 ;; The category of the object
 
 <dependency> = <name> SP <taxonomy>
@@ -29,7 +29,7 @@
             <ppterm> CR      ; statement
             [ <ppterm> ] CR  ; body
             *<dependency> CR ; dependencies
-            *<theory> CR     ; theory
+            *<dependency> CR ; theory
             *<logic>         ; available exports
 ;; Content of the general section
 
