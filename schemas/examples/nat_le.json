@@ -20,11 +20,11 @@
     },
     "exports":
     [
-        { "system": "coq", "file": "some/relevant/path",
+        { "system": "coq", "file": "some/relevant/path.v",
           "etype": "Parameter le: nat -> nat -> Prop" },
-        { "system": "matita", "file": "some/other/relevant/path",
+        { "system": "matita", "file": "some/other/relevant/path.ma",
           "etype": "axiom le: nat -> nat -> Prop" },
-        { "system": "pvs", "file": "you/understood",
+        { "system": "opentheory", "file": "you/understood.art",
           "etype": null }
     ]
 }

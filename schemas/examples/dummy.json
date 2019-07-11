@@ -2,7 +2,7 @@
     "general": {
         "name": "Example.Pi",
         "taxonomy": "axiom",
-        "ttype": [ "Const", { "c_symb": "Example.pi", "c_app": [] } ],
+        "ttype": [ "Const", { "c_symb": "Example.pi", "c_args": [] } ],
         "body": null,
         "theory": [],
         "dependencies": [],
