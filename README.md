@@ -25,10 +25,16 @@ On the long run, we plan also to support other logics than STTfa, but no concret
 
 # Compiling the project
 
-To compile the project, you need to install the last version of Dedukti [https://github.com/Deducteam/Dedukti](https://github.com/Deducteam/Dedukti). The only dependency needed is `mongo` that you can install with `opam`. Currently, `mongo` is not supported with a version of OCaml >= 4.06. Then you can compile the project with
+To compile the project, you need to install the last version of Dedukti (master branch) [https://github.com/Deducteam/Dedukti](https://github.com/Deducteam/Dedukti). The only dependency needed is `mongo` that you can install with `opam`. Currently, this dependency requires a version of OCaml `< 4.06`. However the `mongo` dependency will be dropped in the future. Then you can compile the project with
 
 ``` bash
 make
+```
+
+To export the proofs to a local Mongo DB and a set of flat files, run
+
+``` bash
+make web
 ```
 
 To export the library you can use the command

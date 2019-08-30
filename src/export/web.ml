@@ -299,7 +299,7 @@ let gen_file item =
   let deps = Hashtbl.find env.item_deps (name_of item) in
   let ldeps = Hashtbl.fold (fun _ v l -> v::l) deps [] in
   let ldeps = List.sort ast_compare ldeps in
-  List.iter (gen_sys_archive item ldeps) [`Pvs]
+  List.iter (gen_sys_archive item ldeps) Systems.systems
 
 let install_files () =
   ignore(Sys.command (Format.sprintf "mv /tmp/logipedia/*.zip export/web"))

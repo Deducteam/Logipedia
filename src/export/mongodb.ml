@@ -1,15 +1,18 @@
 let db_name = "logipedia"
 
-let mongo_theory = Mongo.create_local_default db_name "theory"
-let mongo_dependencies = Mongo.create_local_default db_name "dependencies"
-let mongo_items = Mongo.create_local_default db_name "items"
-let mongo_printing = Mongo.create_local_default db_name "printing"
+let mongo_theory = assert false
+  (* Mongo.create_local_default db_name "theory" *)
+let mongo_dependencies = assert false
+  (* Mongo.create_local_default db_name "dependencies" *)
+let mongo_items = assert false (* Mongo.create_local_default db_name "items" *)
+let mongo_printing = assert false
+  (* Mongo.create_local_default db_name "printing" *)
 
-let of_string = Bson.create_string
+let of_string = assert false (* Bson.create_string *)
 
-let insert collection keyval =
-  let doc = List.fold_left (fun doc (key,value) -> Bson.add_element key value doc) Bson.empty keyval in
-  Mongo.insert collection [doc]
+let insert collection keyval = ()
+  (* let doc = List.fold_left (fun doc (key,value) -> Bson.add_element key value doc) Bson.empty keyval in *)
+  (* Mongo.insert collection [doc] *)
 
 let insert_theory name nameDep =
   let md,id = name in

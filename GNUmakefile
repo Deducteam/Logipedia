@@ -27,6 +27,9 @@ $(LOGIPEDIA):
 doc:
 	@dune build @doc
 
+.PHONY: bin.
+bin:
+	@dune build
 #### Producing the theory file #####################################
 
 theories/sttfa.dko: theories/sttfa.dk

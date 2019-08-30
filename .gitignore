@@ -63,3 +63,10 @@ export/matita/root
 
 # MAC/OSX files
 .DS_Store
+# PHP dependencies (managed by composer)
+website/web/vendor
+composer.phar
+
+# dune
+logipedia.install
+*.merlin
