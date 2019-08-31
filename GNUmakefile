@@ -16,10 +16,6 @@ logipedia: bin
 .PHONY: all
 all: bin
 
-.PHONY: bin
-bin:
-	@dune build
-
 $(LOGIPEDIA):
 	@dune build
 

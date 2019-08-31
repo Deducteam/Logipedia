@@ -15,21 +15,21 @@ type web_item =
     package  : (string, web_item list) Hashtbl.t
   }
 
-let db_insert_web_item wi =
-  Mongodb.insert_item (name_of wi.item) (kind_of wi.item);
-  let systems = Systems.systems in
-  let insert_sys sys =
-    let (module E:Export.E) = Export.of_system sys in
-    let name = name_of wi.item in
-    let str_sys = Systems.string_of_system E.system in
-    let pp_item = E.pretty_print_item wi.item in
-    Mongodb.insert_printing name str_sys pp_item;
-  in
-  List.iter insert_sys systems;
-  Mongodb.insert_printing (name_of wi.item) "dedukti" (Pp.pretty_print_item wi.item);
-  let insert_dep insert dep = insert (name_of wi.item) dep in
-  NameSet.iter (insert_dep Mongodb.insert_theory) wi.theory;
-  NameSet.iter (insert_dep Mongodb.insert_dependency) wi.maindeps
+let db_insert_web_item _ = assert false
+  (* Mongodb.insert_item (name_of wi.item) (kind_of wi.item);
+   * let systems = Systems.systems in
+   * let insert_sys sys =
+   *   let (module E:Export.E) = Export.of_system sys in
+   *   let name = name_of wi.item in
+   *   let str_sys = Systems.string_of_system E.system in
+   *   let pp_item = E.pretty_print_item wi.item in
+   *   Mongodb.insert_printing name str_sys pp_item;
+   * in
+   * List.iter insert_sys systems;
+   * Mongodb.insert_printing (name_of wi.item) "dedukti" (Pp.pretty_print_item wi.item);
+   * let insert_dep insert dep = insert (name_of wi.item) dep in
+   * NameSet.iter (insert_dep Mongodb.insert_theory) wi.theory;
+   * NameSet.iter (insert_dep Mongodb.insert_dependency) wi.maindeps *)
 
 
 let items : (name, item) Hashtbl.t = Hashtbl.create 101
@@ -247,7 +247,7 @@ let mk_item_dep = function
 
 let handle_web_item item =
   Format.eprintf "[WEB] %a@." pp_item item;
-  db_insert_item item;
+  (* db_insert_item item; *)
   let name = name_of item in
   let md = fst name in
   cur_name := name;

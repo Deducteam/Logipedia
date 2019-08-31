@@ -10,9 +10,9 @@ let mongo_printing = assert false
 
 let of_string = assert false (* Bson.create_string *)
 
-let insert collection keyval = ()
-  (* let doc = List.fold_left (fun doc (key,value) -> Bson.add_element key value doc) Bson.empty keyval in *)
-  (* Mongo.insert collection [doc] *)
+let insert _ _ = assert false
+  (* let doc = List.fold_left (fun doc (key,value) -> Bson.add_element key value doc) Bson.empty keyval in
+   * Mongo.insert collection [doc] *)
 
 let insert_theory name nameDep =
   let md,id = name in
