@@ -1,0 +1,131 @@
+#NAME hol.
+
+(;-----------;)
+(; HOL Types ;)
+(;-----------;)
+
+def type : Type.
+
+def bool : type.
+def ind  : type.
+def arr  : type -> type -> type.
+
+(;-----------;)
+(; HOL Terms ;)
+(;-----------;)
+
+def term : type -> Type.
+[a,b] term (arr a b) --> term a -> term b.
+
+def eq : a : type -> term (arr a (arr a bool)).
+def select : a : type -> term (arr (arr a bool) a).
+
+(;------------;)
+(; HOL Proofs ;)
+(;------------;)
+
+def proof : term bool -> Type.
+
+def REFL : a : type -> t : term a ->
+  proof (eq a t t).
+def ABS_THM : a : type -> b : type -> f : (term a -> term b) -> g : (term a -> term b) ->
+  (x : term a -> proof (eq b (f x) (g x))) ->
+  proof (eq (arr a b) f g).
+def APP_THM : a : type -> b : type -> f : term (arr a b) -> g : term (arr a b) -> x : term a -> y : term a ->
+  proof (eq (arr a b) f g) ->
+  proof (eq a x y) ->
+  proof (eq b (f x) (g y)).
+def PROP_EXT : p : term bool -> q : term bool ->
+  (proof q -> proof p) ->
+  (proof p -> proof q) ->
+  proof (eq bool p q).
+def EQ_MP : p : term bool -> q : term bool ->
+  proof (eq bool p q) ->
+  proof p ->
+  proof q.
+def BETA_CONV : a : type -> b : type -> f : (term a -> term b) -> u : term a ->
+  proof (eq b (f u) (f u)).
+
+def SYM : (a : type) -> (t : term a) -> (u : term a) -> (H : proof (eq a t u)) -> proof (eq a u t).
+def TRANS : (a : type) -> (t : term a) -> (u : term a) -> (v : term a) -> (H1 : proof (eq a t u)) -> (H2 : proof (eq a u v)) -> proof (eq a t v).
+def PROVE_HYP : (x : term bool) -> (y : term bool) -> (H1 : proof x) -> (H2 : proof x -> proof y) -> proof y.
+
+
+(;---------------------;)
+(; Derived Connectives ;)
+(;---------------------;)
+
+def true : term bool.
+def forall : a : type -> p : term (arr a bool) -> term bool.
+def false : term bool.
+def and : term (arr bool (arr bool bool)).
+def imp : term (arr bool (arr bool bool)).
+def or : term (arr bool (arr bool bool)).
+def cond : a : type -> term (arr bool (arr a (arr a a))).
+def not : (p : term bool) -> term bool.
+
+def witness : a : type -> term a.
+(; :=  a : type => select a (x : term a => true). ;)
+
+def true_intro : proof true.
+
+def eq_sym : (a : type) -> (x : term a) -> (y : term a) -> (h : proof (eq a x y))-> proof (eq a y x).
+
+def eq_true_intro : (p : term bool) -> (h : proof p) -> proof (eq bool p true).
+
+def eq_true_elim : (p : term bool) -> (h : proof (eq bool p true))-> proof p.
+
+def forall_intro : (a : type) -> (p : term (arr a bool)) ->
+                 (h : (x : term a -> proof (p x))) -> proof (forall a p).
+
+def forall_elim : (a : type) -> (p : term (arr a bool)) ->
+                (h : proof (forall a p)) -> (x : term a) -> proof (p x).
+
+def false_elim : (p : term bool) -> (h : proof false) -> proof p.
+
+def and_intro : (p : term bool) ->
+                (q : term bool) ->
+                (Hp : proof p) ->
+                (Hq : proof q) ->
+                proof (and p q).
+
+def and_elim1 : (p : term bool) ->
+                (q : term bool) ->
+                (Hpq : proof (and p q)) ->
+                proof p.
+
+
+def and_elim2 : (p : term bool) ->
+                (q : term bool) ->
+                (Hpq : proof (and p q)) ->
+                proof q.
+
+def imp_intro : (p : term bool) ->
+                (q : term bool) ->
+                (Hpq : proof p -> proof q) ->
+                proof (imp p q).
+
+
+def imp_elim : (p : term bool) ->
+               (q : term bool) ->
+               (Hpq : proof (imp p q)) ->
+               (Hp : proof p) ->
+               proof q.
+
+def or_intro1 : (p : term bool) ->
+                (q : term bool) ->
+                (Hp : proof p) ->
+                proof (or p q).
+
+def or_intro2 : (p : term bool) ->
+                (q : term bool) ->
+                (Hq : proof q) ->
+                proof (or p q).
+
+def or_elim : (p : term bool) ->
+              (q : term bool) ->
+              (r : term bool) ->
+              (Hpq : proof (or p q)) ->
+              (Hpr : proof p -> proof r) ->
+              (Hqr : proof q -> proof r) ->
+              proof r.

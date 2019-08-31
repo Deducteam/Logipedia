@@ -1,0 +1,86 @@
+
+def type_0 : sttfa.type -> sttfa.type := A:sttfa.type => A.
+
+
+def type_1 : sttfa.type := sttfa.bool.
+
+
+def type_2 :
+  sttfa.type -> sttfa.type
+  :=
+  A:sttfa.type => sttfa.arrow (type_0 A) type_1.
+
+
+Data_2EBool_2E_21 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p (type_0 x))).
+
+
+def term_0 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type =>
+                             sttfa.p (sttfa.arrow (type_2 x) type_1)))
+  :=
+  A:sttfa.type => Data_2EBool_2E_21 (sttfa.arrow (type_2 A) type_1).
+
+
+def type_3 : sttfa.type := sttfa.arrow type_1 type_1.
+
+
+def type_4 : sttfa.type -> sttfa.type := B:sttfa.type => B.
+
+
+def type_5 :
+  sttfa.type -> sttfa.type -> sttfa.type
+  :=
+  A:sttfa.type => B:sttfa.type => sttfa.arrow (type_4 B) (type_0 A).
+
+
+def type_6 : sttfa.type := sttfa.arrow type_1 type_3.
+
+
+sum_2Ddef_2D1_2E67 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p (type_0 x))).
+
+
+def term_1 : sttfa.etap (sttfa.p type_1) := sum_2Ddef_2D1_2E67 type_1.
+
+
+def term_2 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type =>
+                             sttfa.forallK (x0:sttfa.type => sttfa.p type_3)))
+  :=
+  A:sttfa.type => B:sttfa.type => leibniz.eq type_1 term_1.
+
+
+thm thm_0 :
+  sttfa.eps (sttfa.forallP (x:sttfa.type =>
+                            sttfa.forallP (x0:sttfa.type =>
+                                           leibniz.eq type_3 (term_2 x x0) (
+                                             term_2 x x0))))
+  :=
+  A:sttfa.type => B:sttfa.type => leibniz.refl type_3 (term_2 A B).
+
+
+thm thm_1 :
+  sttfa.eps (leibniz.eq type_1 term_1 term_1)
+  :=
+  leibniz.refl type_1 term_1.
+
+
+Data_2ESum_2E_2B : sttfa.type -> sttfa.type -> sttfa.type.
+
+
+__ :
+  sttfa.etap (sttfa.forallK (x:sttfa.type =>
+                             sttfa.forallK (x0:sttfa.type =>
+                                            sttfa.p (sttfa.arrow type_1 (
+                                                       Data_2ESum_2E_2B (
+                                                         type_0 x0) (
+                                                         type_4 x)))))).
+
+
+___ :
+  sttfa.etap (sttfa.forallK (x:sttfa.type =>
+                             sttfa.forallK (x0:sttfa.type =>
+                                            sttfa.p (sttfa.arrow (Data_2ESum_2E_2B (
+                                                                    type_0 x0) (
+                                                                    type_4 x)) type_1)))).

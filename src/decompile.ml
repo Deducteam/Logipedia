@@ -1,4 +1,4 @@
-open Sttforall
+open Sttfadk
 open Ast
 open Basic
 open Term
@@ -99,29 +99,29 @@ let rec decompile_proof ctx prf =
   match prf with
   | Assume(_,var) -> Term.mk_DB dloc (mk_ident var) (find var ctx)
   | Lemma(cst,_) -> Term.mk_Const dloc (to_name cst)
-  | Conv(_,prf,tr) -> decompile_proof ctx prf
-  | ImplE(j,left,right) -> Term.mk_App (decompile_proof ctx left) (decompile_proof ctx right) []
-  | ImplI(j,proof,var) ->
+  | Conv(_,prf,_) -> decompile_proof ctx prf
+  | ImplE(_,left,right) -> Term.mk_App (decompile_proof ctx left) (decompile_proof ctx right) []
+  | ImplI(_,proof,var) ->
     let j' = judgment_of proof in
-    let _,_te = TeSet.choose (TeSet.filter (fun (x,te) -> if x = var then true else false) j'.hyp) in
+    let _,_te = TeSet.choose (TeSet.filter (fun (x,_) -> if x = var then true else false) j'.hyp) in
     let _te' = decompile__term ctx _te in
     let ctx' = add_prf_ctx ctx var _te' in
     let proof' = decompile_proof ctx' proof in
     Term.mk_Lam dloc (mk_ident var) (Some (to_eps _te')) proof'
-  | ForallE(j,left,_te) ->
+  | ForallE(_,left,_te) ->
     let _te' = decompile__term ctx _te in
     Term.mk_App (decompile_proof ctx left) _te' []
-  | ForallI(j,proof,var) ->
+  | ForallI(_,proof,var) ->
     let j' = judgment_of proof in
     let _,_ty = List.find (fun (x,_) -> if x = var then true else false) j'.te in
     let _ty' = decompile__type ctx _ty in
     let ctx' = add_te_var var _ty' ctx in
     let proof' = decompile_proof ctx' proof in
     Term.mk_Lam dloc (mk_ident var) (Some (to__type _ty')) proof'
-  | ForallPE(j,left,_ty) ->
+  | ForallPE(_,left,_ty) ->
     let _ty' = decompile__type ctx _ty in
     Term.mk_App (decompile_proof ctx left) _ty' []
-  | ForallPI(j,proof,var) ->
+  | ForallPI(_,proof,var) ->
     let ctx' = add_ty_var var ctx in
     let proof' = decompile_proof ctx' proof in
     Term.mk_Lam dloc (mk_ident var) (Some (to_const sttfa_type)) proof'

@@ -1,0 +1,209 @@
+
+Number_2ENatural_2Enatural : sttfa.type.
+
+
+def type_0 : sttfa.type := Number_2ENatural_2Enatural.
+
+
+def type_1 : sttfa.type := sttfa.bool.
+
+
+def type_2 : sttfa.type := sttfa.arrow type_0 type_1.
+
+
+Data_2EBool_2E_21 : sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+def term_0 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_2 type_1))
+  :=
+  Data_2EBool_2E_21 (sttfa.arrow type_2 type_1).
+
+
+Data_2EList_2Elist : sttfa.type -> sttfa.type.
+
+
+def type_3 : sttfa.type := Data_2EList_2Elist type_0.
+
+
+def term_1 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_3 (sttfa.arrow type_3 type_1)))
+  :=
+  leibniz.eq type_3.
+
+
+def type_4 : sttfa.type := sttfa.arrow type_0 (sttfa.arrow type_0 type_3).
+
+
+list_2Dinterval_2D1_2E61 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+def Data_2EList_2Einterval :
+  sttfa.etap (sttfa.p type_4)
+  :=
+  list_2Dinterval_2D1_2E61 type_4.
+
+
+def term_2 : sttfa.etap (sttfa.p type_4) := Data_2EList_2Einterval.
+
+
+def term_3 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 type_0))
+  :=
+  m_1:(sttfa.etap (sttfa.p type_0)) => m_1.
+
+
+def term_4 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 (sttfa.arrow type_0 type_3)))
+  :=
+  m_1:(sttfa.etap (sttfa.p type_0)) => term_2 (term_3 m_1).
+
+
+Number_2ENatural_2Ezero :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+Data_2EList_2E_5B_5D :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+def term_5 :
+  sttfa.etap (sttfa.p type_1)
+  :=
+  term_0 (m_1:(sttfa.etap (sttfa.p type_0)) =>
+          term_1 (term_4 m_1 (Number_2ENatural_2Ezero type_0)) (Data_2EList_2E_5B_5D type_3)).
+
+
+thm_0 : sttfa.eps term_5.
+
+
+def type_5 : sttfa.type := sttfa.arrow type_0 type_2.
+
+
+def term_6 : sttfa.etap (sttfa.p type_5) := leibniz.eq type_0.
+
+
+Data_2EList_2Elength :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+def term_7 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 type_0))
+  :=
+  n_1:(sttfa.etap (sttfa.p type_0)) => n_1.
+
+
+def term_8 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 (sttfa.arrow type_0 type_3)))
+  :=
+  n_1:(sttfa.etap (sttfa.p type_0)) =>
+  m_2:(sttfa.etap (sttfa.p type_0)) => term_4 m_2 (term_7 n_1).
+
+
+def term_9 :
+  sttfa.etap (sttfa.p type_1)
+  :=
+  term_0 (m_1:(sttfa.etap (sttfa.p type_0)) =>
+          term_0 (n_2:(sttfa.etap (sttfa.p type_0)) =>
+                  term_6 (Data_2EList_2Elength (sttfa.arrow type_3 type_0) (
+                            term_8 n_2 m_1)) (term_7 n_2))).
+
+
+thm_1 : sttfa.eps term_9.
+
+
+def type_6 : sttfa.type := sttfa.arrow type_0 type_0.
+
+
+Data_2EList_2Emap : sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+Number_2ENatural_2Esuc :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+def term_10 : sttfa.etap (sttfa.p type_6) := Number_2ENatural_2Esuc type_6.
+
+
+def term_11 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 (sttfa.arrow type_0 type_3)))
+  :=
+  n_1:(sttfa.etap (sttfa.p type_0)) =>
+  m_2:(sttfa.etap (sttfa.p type_0)) =>
+  term_2 (term_10 (term_3 m_2)) (term_7 n_1).
+
+
+def term_12 :
+  sttfa.etap (sttfa.p type_1)
+  :=
+  term_0 (m_1:(sttfa.etap (sttfa.p type_0)) =>
+          term_0 (n_2:(sttfa.etap (sttfa.p type_0)) =>
+                  term_1 (Data_2EList_2Emap (sttfa.arrow type_6 (sttfa.arrow type_3 type_3)) term_10 (
+                            term_8 n_2 m_1)) (term_11 n_2 m_1))).
+
+
+thm_2 : sttfa.eps term_12.
+
+
+Data_2EList_2E_3A_3A :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+def term_13 :
+  sttfa.etap (sttfa.p type_1)
+  :=
+  term_0 (m_1:(sttfa.etap (sttfa.p type_0)) =>
+          term_0 (n_2:(sttfa.etap (sttfa.p type_0)) =>
+                  term_1 (term_4 m_1 (term_10 (term_7 n_2))) (Data_2EList_2E_3A_3A (
+                                                                sttfa.arrow type_0 (
+                                                                  sttfa.arrow type_3 type_3)) (
+                                                                term_3 m_1) (
+                                                                term_11 n_2 m_1)))).
+
+
+thm_3 : sttfa.eps term_13.
+
+
+Data_2EBool_2E_3D_3D_3E :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+Number_2ENatural_2E_3C :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+def term_14 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 type_0))
+  :=
+  i_1:(sttfa.etap (sttfa.p type_0)) => i_1.
+
+
+Data_2EList_2Enth : sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+Number_2ENatural_2E_2B :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+def term_15 :
+  sttfa.etap (sttfa.p type_1)
+  :=
+  term_0 (m_1:(sttfa.etap (sttfa.p type_0)) =>
+          term_0 (n_2:(sttfa.etap (sttfa.p type_0)) =>
+                  term_0 (i_3:(sttfa.etap (sttfa.p type_0)) =>
+                          Data_2EBool_2E_3D_3D_3E (sttfa.arrow type_1 (
+                                                     sttfa.arrow type_1 type_1)) (
+                            Number_2ENatural_2E_3C type_5 (term_14 i_3) (
+                              term_7 n_2)) (term_6 (Data_2EList_2Enth (
+                                                      sttfa.arrow type_3 type_6) (
+                                                      term_8 n_2 m_1) (
+                                                      term_14 i_3)) (
+                                              Number_2ENatural_2E_2B (
+                                                sttfa.arrow type_0 type_6) (
+                                                term_3 m_1) (term_14 i_3)))))).
+
+
+thm_4 : sttfa.eps term_15.
+
+

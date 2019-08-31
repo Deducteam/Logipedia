@@ -1,19 +1,18 @@
 open Basic
 open Ast
-open Sttforall
+open Sttfadk
 open Environ
-open Sttfatyping
 
 module CType = Compile_type
 module CTerm = Compile_term
 
 let make_judgment env hyp thm = {ty= env.ty; te= env.te; hyp; thm}
 
-let rec extract_te te = match te with Te _te -> _te | _ -> assert false
+let extract_te te = match te with Te _te -> _te | _ -> assert false
 
 let rec compile_proof env proof =
   match proof with
-  | Term.DB (_, var, n) ->
+  | Term.DB (_, _, n) ->
       let var = get_dk_var env n in
       let te' = List.assoc var env.prf in
       let j = make_judgment env (TeSet.of_list env.prf) (Te te') in
@@ -35,7 +34,7 @@ let rec compile_proof env proof =
       (j, ForallI (j, proof, soi id))
   | Term.Lam (_, id, Some (Term.App (cst, _, _) as _te), prf)
     when is_sttfa_const sttfa_eps cst ->
-    let remove_hyp te = TeSet.filter (fun (id',_) ->
+    let remove_hyp _ = TeSet.filter (fun (id',_) ->
         if string_of_ident id=id' then false else true) in
     let _te' = CTerm.compile_wrapped__term env _te in
     let jp, proof = compile_proof (add_prf_ctx env (string_of_ident id) _te _te') prf in
@@ -45,9 +44,9 @@ let rec compile_proof env proof =
     in
     (j, ImplI (j, proof, string_of_ident id))
   | Term.Const (lc, name) ->
-    let te = Env.get_type lc name in
-    let te' = CTerm.compile_wrapped_term empty_env te in
-    let j = make_judgment env (TeSet.of_list env.prf) te' in
+  let te = Env.get_type lc name in
+  let te' = CTerm.compile_wrapped_term empty_env te in
+  let j = make_judgment env (TeSet.of_list env.prf) te' in
     (j, Lemma (of_name name, j))
   | Term.App (f, a, args) ->
     let j,f' = compile_proof env f in
@@ -56,7 +55,6 @@ let rec compile_proof env proof =
 
 and compile_arg env j f' a =
   let te = Sttfatyping.subst env f' a in
-  assert (Sttfatyping.is_beta_normal env (judgment_of f').thm);
   let j' = {j with thm = te} in
   let j,f' = get_product env j f' in
   match j.thm with
@@ -83,7 +81,7 @@ and compile_arg env j f' a =
         let f' = Conv({j with thm = Te expected}, f', trace) in
         (j', ImplE(j',f',a'))
       end
-  | Te tyfl' -> assert false
+  | Te _ -> assert false
 
 and get_product env j f' =
   match j.thm with

@@ -13,6 +13,8 @@ else {
 }
 // Compute things to print for each system
 $query=$mongo->logipedia->printing->find(['md' => $md, 'id' => $id]);
+$count=$mongo->logipedia->printing->find(['md' => $md, 'id' => $id])->isDead();
+
 $entry=array();
 foreach($query as $line) {
     $entry[$line["sys"]]=["content" => $line["content"]];

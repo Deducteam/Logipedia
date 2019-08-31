@@ -1,0 +1,41 @@
+(;-----------;)
+(; HOL Types ;)
+(;-----------;)
+
+ind : sttfa.type.
+
+(;-----------;)
+(; HOL Terms ;)
+(;-----------;)
+
+select : sttfa.etap (sttfa.forallK (A : sttfa.type => sttfa.p (sttfa.arrow (sttfa.arrow A sttfa.bool) A))).
+
+(;------------;)
+(; HOL Proofs ;)
+(;------------;)
+
+ABS_THM : sttfa.eps (
+	sttfa.forallP (A : sttfa.type =>
+	sttfa.forallP (B : sttfa.type =>
+	sttfa.forall (sttfa.arrow A B) (f : sttfa.etap (sttfa.p (sttfa.arrow A B)) =>
+	sttfa.forall (sttfa.arrow A B) (g : sttfa.etap (sttfa.p (sttfa.arrow A B)) =>
+	sttfa.impl (sttfa.forall A (x : sttfa.etap (sttfa.p A) => leibniz.eq B (f x) (g x)))
+	           (leibniz.eq (sttfa.arrow A B) f g)))))).
+
+PROP_EXT : sttfa.eps (
+	 sttfa.forall sttfa.bool (P : sttfa.etap (sttfa.p sttfa.bool) =>
+	 sttfa.forall sttfa.bool (Q : sttfa.etap (sttfa.p sttfa.bool) =>
+	 sttfa.impl (sttfa.impl Q P)
+	            (sttfa.impl (sttfa.impl P Q) (leibniz.eq sttfa.bool P Q))))).
+
+EQ_MP : sttfa.eps (
+	 sttfa.forall sttfa.bool (P : sttfa.etap (sttfa.p sttfa.bool) =>
+	 sttfa.forall sttfa.bool (Q : sttfa.etap (sttfa.p sttfa.bool) =>
+	 sttfa.impl (leibniz.eq sttfa.bool P Q)
+	 	    (sttfa.impl P Q)))).
+
+(;---------------------;)
+(; Derived Connectives ;)
+(;---------------------;)
+
+witness : sttfa.etap (sttfa.forallK (A : sttfa.type => sttfa.p A)).

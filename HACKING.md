@@ -6,6 +6,9 @@
 - *src/export* contains for each supported system a syntactic translation from an AST of STTforall to the corresponding system
 - *website* contains the HTML/CSS/PHP code for the website implemented using the Bootstrap framework
 - *bdd* contains the mongodb code used by the website
+- *bin* is outdated and contains a script to generate a thm file for OpenTheory
+- *little_theorem* is outdated and contains a single file with the proof of Fermat's little theorem
+- *interoperability* contains a folder to translate proofs expressed in one theory in Dedukti to another
 
 # Adding a new target system
 
@@ -14,6 +17,6 @@
 3) Register your module in `export.ml`
 4) Generate the database with `make library/<generated file> BDD=--export-web`
 
-# Adding a new source system
+# Adding a new source system (other than STTforall)
 
-Wait the Logipedia kick-off meeting
+Open an issue

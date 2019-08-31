@@ -1,70 +1,64 @@
 open Basic
-open Term
-open Entry
 open Parser
-open Rule
 open Ast
 
 let err_msg fmt =
-  Format.eprintf "%s" ("\027[31m" ^ "ERROR" ^ "\027[m");
+  Format.eprintf "%s" ("\027[31m" ^ "[ERROR] " ^ "\027[m");
   Format.eprintf fmt
 
 let system : Systems.system ref = ref (`Coq)
 
 let set_export s =
-  let open Export in
   system := Systems.system_of_string s
 
-let handle_entry md e =
-  match e with
-  | Decl (lc, id, st, ty) ->
-    ( Env.declare lc id st ty;
-      Compile.compile_declaration (mk_name md id) ty )
-  | Def (lc, id, opaque, Some ty, te) ->
-    ( Env.define lc id opaque te (Some ty);
-      Compile.compile_definition (mk_name md id) ty te  )
-  | Def _ -> failwith "Definition without types are not supported"
-  | Rules _ -> failwith "Rules are not part of the sttforall logic"
-  | _ -> failwith "Commands are not supported"
+let input_theory : Theories.theory ref = ref `Sttfa
 
-let export_file file ast system =
-  let basename = try Filename.chop_extension file with _ -> file in
+let set_input_theory s =
+  input_theory := Theories.theory_of_string s
+
+let output_file = ref None
+
+let set_output_file s =
+  output_file := Some s
+
+let export_file ast system =
   let (module M:Export.E) = Export.of_system system in
-  let out_file = basename ^ "." ^ M.extension in
-  let oc = open_out out_file in
-  let fmt = Format.formatter_of_out_channel oc in
-  M.print_ast fmt ast ;
-  close_out oc
+  let fmt =
+    match !output_file with
+    | None -> Format.std_formatter
+    | Some f ->
+      Format.formatter_of_out_channel (open_out f)
+  in
+  (* FIXME: The file is not closed, is this a problem? *)
+  M.print_ast fmt ast
 
+(* Compute an STTforall ast from Dedukti entries *)
 let mk_ast md entries =
-  let items = List.map (handle_entry md) entries in
-  let dep = List.fold_left
-      (fun dep e -> QSet.union dep (Dep.dep_of_entry md e)) QSet.empty entries in
+  let items = List.map (Compile.compile_entry md) entries in
+  let fold_entry_dep dep e = QSet.union dep (Dep.dep_of_entry [Sttfadk.sttfa_module;md] e) in
+  let dep = List.fold_left fold_entry_dep QSet.empty entries in
   {md = string_of_mident md; dep; items}
 
-let run_on_file file =
+(* Export the file for the system choosen. *)
+let export_system file =
   let md = Env.init file in
   let input = open_in file in
   let entries = Parse_channel.parse md input in
-  close_in input ;
+  close_in input;
   begin
     let sttfa_ast = mk_ast md entries in
-    Env.export ();
     let (module M:Export.E) = Export.of_system !system in
-    export_file file sttfa_ast !system;
+    export_file sttfa_ast !system;
   end
 
-let export_web files =
-  let export_file file =
-    let md = Env.init file in
-    let input = open_in file in
-    let entries = Parse_channel.parse md input in
-    close_in input;
-    Web.export_entries (mk_ast md entries);
-    Env.export()
-  in
-  List.iter export_file files
-
+(* Right now export stuff in the database *)
+let export_web file =
+  Environ.set_package file;
+  let md = Env.init file in
+  let input = open_in file in
+  let entries = Parse_channel.parse md input in
+  close_in input;
+  Web.export_entries (mk_ast md entries)
 
 let _ =
   try
@@ -72,8 +66,11 @@ let _ =
     let options =
       Arg.align
         [ ("-I", Arg.String Basic.add_path, " Add folder to Dedukti path") ;
+          ("-o", Arg.String set_output_file, " Set output file") ;
+          ("--fast", Arg.Set Sttfatyping.Tracer.fast, " Set output file") ;
           ("--export", Arg.String set_export, " Set exporting system") ;
-          ("--export-web", Arg.Set to_web, " Generate informations for the website") ]
+          ("--export-web", Arg.Set to_web, " Generate informations for the website") ;
+          ("--from", Arg.String set_input_theory, " Set theory (default: STTFA)") ]
     in
     let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
     let usage = usage ^ "Available options:" in
@@ -83,9 +80,9 @@ let _ =
       List.rev !files
     in
     if !to_web then
-      export_web files
+      List.iter export_web files
     else
-      List.iter run_on_file files
+      List.iter export_system files
  with
   | Env.EnvError (l,e) -> Errors.fail_env_error l e
   | Failure err ->

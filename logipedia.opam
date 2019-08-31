@@ -1,19 +1,20 @@
-synopsis: ""
+synopsis: "An interoperability tool between several proof systems"
 description:
 """
+Logipedia is a tool based upon the logical framework that translates proof from one system to another.
 """
-opam-version: "2.0"
-maintainer: "dedukti-dev@inria.fr"
-bug-reports: "https://github.com/Deducteam/logipedia/issues"
-homepage: "https://github.com/Deducteam/logipedia"
-dev-repo: "git+https://github.com/Deducteam/logipedia.git"
-authors: []
-license: "CeCILL 2.1"
+opam-version: "0.1"
+maintainer: "francois.thire@lsv.fr"
+bug-reports: "https://github.com/francoisthire/logipedia/issues"
+homepage: "https://github.com/francoisthire/logipedia"
+dev-repo: "git+https://github.com/francoisthire/logipedia.git"
+authors: [ "François Thiré <francois.thire@lsv.fr>" ]
+license: "CeCILL"
 
 depends: [
-  "ocaml"        {         >= "4.04.0" }
-  "dune"         { build & >= "1.3.0"  }
-  "menhir"
+  "ocaml"        { >= "4.04.0" }
+  "mongo"
+  "dedukti"
 ]
 
 build: [ [ "dune" "build" "-p" name "-j" jobs ] ]

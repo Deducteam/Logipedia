@@ -1,2 +1,1 @@
-(lang dune 1.10)
-(name logipedia)
+(lang dune 1.2)

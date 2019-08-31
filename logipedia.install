@@ -1,0 +1,11 @@
+lib: [
+  "_build/install/default/lib/logipedia/META"
+  "_build/install/default/lib/logipedia/dune-package"
+  "_build/install/default/lib/logipedia/opam"
+]
+bin: [
+  "_build/install/default/bin/logipedia"
+]
+doc: [
+  "_build/install/default/doc/logipedia/README.md"
+]

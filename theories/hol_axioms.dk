@@ -1,0 +1,34 @@
+(;-----------;)
+(; HOL Types ;)
+(;-----------;)
+
+ind : hol.type.
+
+(;-----------;)
+(; HOL Terms ;)
+(;-----------;)
+
+select : a : hol.type -> hol.term (hol.arr (hol.arr a hol.bool) a).
+
+(;------------;)
+(; HOL Proofs ;)
+(;------------;)
+
+ABS_THM : a : hol.type -> b : hol.type -> f : (hol.term a -> hol.term b) -> g : (hol.term a -> hol.term b) ->
+  (x : hol.term a -> hol.proof (hol.eq b (f x) (g x))) ->
+  hol.proof (hol.eq (hol.arr a b) f g).
+PROP_EXT : p : hol.term hol.bool -> q : hol.term hol.bool ->
+  (hol.proof q -> hol.proof p) ->
+  (hol.proof p -> hol.proof q) ->
+  hol.proof (hol.eq hol.bool p q).
+EQ_MP : p : hol.term hol.bool -> q : hol.term hol.bool ->
+  hol.proof (hol.eq hol.bool p q) ->
+  hol.proof p ->
+  hol.proof q.
+
+
+(;---------------------;)
+(; Derived Connectives ;)
+(;---------------------;)
+
+witness : a : hol.type -> hol.term a.

@@ -5,7 +5,7 @@ open Environ
 
 (* The memoization of Openstt is not efficient and can be highly increased. For that, the memoization of openstt should be turned off and the memoization should be done in this module. One may also want to handle alpha-renaming *)
 
-module ST = Sttfatyping
+module Conv = Sttfatyping.ComputeStrategy
 
 let cur_md = ref ""
 
@@ -28,7 +28,7 @@ let rec mk__ty = function
     ty_of_tyOp (mk_tyOp (mk_id "bool")) []
 
 let rec mk_ty = function
-  | ForallK(var, ty) ->
+  | ForallK(_, ty) ->
     mk_ty ty
   | Ty(_ty) -> mk__ty _ty
 
@@ -85,7 +85,7 @@ let rec mk__te ctx = function
       | x::t -> Term.mk_App (Term.mk_Const dloc name) x t
     in
     let _ty = Env.infer ~ctx:ctx.dk cst' in
-    let _ty' = CType.compile_wrapped__type ctx (Env.unsafe_reduction ~red:ST.Strategy.beta_only _ty) in
+    let _ty' = CType.compile_wrapped__type ctx (Env.unsafe_reduction ~red:Conv.beta_only _ty) in
     term_of_const (const_of_name (mk_qid cst)) (mk__ty _ty')
 
 let rec mk_te ctx = function
@@ -117,7 +117,7 @@ let thm_of_const cst =
   with Failure _ ->
     let name = Environ.name_of cst in
     let term = Term.mk_Const Basic.dloc name in
-    let te = Env.unsafe_reduction ~red:(ST.Strategy.delta name) (term) in
+    let te = Env.unsafe_reduction ~red:(Conv.delta name) (term) in
     let te' = CTerm.compile_term Environ.empty_env te in
     let te' = mk_te empty_env te' in
     let ty = Env.infer term in
@@ -178,7 +178,7 @@ let mk_delta ctx cst _tys =
 let rec mk__ctx env thm ctx left right =
   match ctx,left,right with
   | [], _ , _-> thm
-  | CAbsTy::ctx, AbsTy(var,_te), AbsTy(var',_te') ->
+  | CAbsTy::ctx, AbsTy(_,_te), AbsTy(_,_te') ->
     mk__ctx env thm ctx _te _te'
   | CAbs::ctx, Abs(var,_ty,_te), Abs(var',_ty',_te') ->
     assert (var = var');
@@ -255,15 +255,15 @@ let mk_trace env left right trace =
 let rec mk_proof env =
   let open Basic in
   function
-  | Assume(j,var) -> mk_assume (mk_te env j.thm)
-  | Lemma(cst,j) ->
+  | Assume(j,_) -> mk_assume (mk_te env j.thm)
+  | Lemma(cst,_) ->
     begin
       try thm_of_lemma (mk_qid cst)
       with _ ->
         let te = Env.get_type dloc (name_of cst) in
         mk_axiom (mk_hyp []) (mk_te empty_env (CTerm.compile_wrapped_term empty_env te))
     end
-  | ForallE(j,proof, u) ->
+  | ForallE(_,proof, u) ->
     begin
       match (judgment_of proof).thm with
       | Te(Forall(var,_ty,_te)) ->
@@ -274,7 +274,7 @@ let rec mk_proof env =
         mk_rule_elim_forall proof' f' _ty' u'
       | _ -> assert false
     end
-  | ForallI(j,proof,var) ->
+  | ForallI(_,proof,var) ->
     let j' = judgment_of proof in
     let _,_ty = List.find (fun (x,_ty) -> if x = var then true else false) j'.te in
     let env' = add_te_var env var _ty in
@@ -290,7 +290,7 @@ let rec mk_proof env =
     let prfp' = mk_proof env prfp in
     let prfpq' = mk_proof env prfpq in
     mk_rule_elim_impl prfp' prfpq' p' q'
-  | ImplI(j,proof,var) ->
+  | ImplI(_,proof,var) ->
     let j' = judgment_of proof in
     let _,p = TeSet.choose (TeSet.filter (fun (x,_ty) -> if x = var then true else false) j'.hyp) in
     let q = j'.thm in
@@ -320,7 +320,7 @@ let rec mk_proof env =
 
 let content = ref ""
 
-let pretty_print_item item = "Printing for OpenTheory is not supported right now." (*
+let pretty_print_item _ = "Printing for OpenTheory is not supported right now." (*
   let print_item fmt = function
     | Parameter(name,ty) ->
       let ty' = mk_ty ty in
@@ -362,9 +362,9 @@ let pretty_print_item item = "Printing for OpenTheory is not supported right now
   !content
 *)
 
-let print_item oc =
+let print_item _ =
   function
-  | Parameter(cst,ty) -> ()
+  | Parameter _ -> ()
   | Definition(cst,ty,te) ->
     (*    let te' = mk_te empty_env te in *)
     let cst' = mk_qid cst in
@@ -382,9 +382,10 @@ let print_item oc =
     let hyp' = mk_hyp [] in
     let proof' = mk_proof empty_env proof in
     mk_thm (mk_qid cst) te' hyp' proof'
-  | TyOpDef(tyop,arity) -> ()
+  | TypeDecl _ -> ()
+  | TypeDef _ -> failwith "[OpenTheory] Type definitions not handled right now"
 
-let print_ast oc ast =
+let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
   Buffer.clear Format.stdbuf;
   reset ();
   let oc_tmp = Format.str_formatter in
@@ -393,20 +394,4 @@ let print_ast oc ast =
   List.iter (fun item -> print_item oc_tmp item) ast.items;
   clean ();
   content := Buffer.contents Format.stdbuf;
-  Format.fprintf oc "%s" !content
-(*
-let print_meta_ast fmt meta_ast =
-  let fmt_tmp = Format.str_formatter in
-  set_oc fmt_tmp;
-  version ();
-  let print_ast ast =
-    List.iter (fun item -> print_item fmt_tmp item) ast.items;
-  in
-  List.iter print_ast meta_ast;
-  clean ();
-  content := Buffer.contents Format.stdbuf;
-  Format.fprintf fmt "%s" !content *)
-(*
-let print_bdd ast =
-  Mongodb.insert_openTheory ast.md !content
-*)
+  Format.fprintf fmt "%s" !content

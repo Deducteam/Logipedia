@@ -23,7 +23,7 @@ let sanitize_name_pvs : string -> string =
     else n
 
 let print_name : string -> Format.formatter -> name -> unit =
- fun pvs_md oc (m, n) ->
+ fun _ oc (_, n) ->
   let name = sanitize_name_pvs n in
   Format.fprintf oc "%s" name
 
@@ -56,7 +56,7 @@ let print__ty_pvs : string -> Format.formatter -> _ty -> unit =
       Format.fprintf oc "[%a -> %a]"
         (print true modul) a
         (print false modul) b
-    | TyOp (op, l) -> print_qualified_name modul oc op
+    | TyOp (op, _) -> print_qualified_name modul oc op
     | Prop       -> Format.fprintf oc "bool"
   in
   fun modul oc ty -> print false modul oc ty
@@ -64,7 +64,7 @@ let print__ty_pvs : string -> Format.formatter -> _ty -> unit =
 let rec print_ty_pvs : string -> Format.formatter -> ty -> unit =
  fun pvs_md oc ty ->
   match ty with
-  | ForallK (x, ty') -> print_ty_pvs pvs_md oc ty'
+  | ForallK (_, ty') -> print_ty_pvs pvs_md oc ty'
   | Ty _ty -> print__ty_pvs pvs_md oc _ty
 
 let rec prefix_of_ty : ty -> string list =
@@ -79,7 +79,7 @@ let rec print_type_list_pvs : Format.formatter -> string -> _ty list -> unit =
   | a :: l ->
       print__ty_pvs pvs_md oc a ; Format.fprintf oc "," ; print_type_list_pvs oc pvs_md l
 
-let rec print_type_list_b_pvs : string -> Format.formatter -> _ty list -> unit =
+let print_type_list_b_pvs : string -> Format.formatter -> _ty list -> unit =
  fun pvs_md oc ty ->
   match ty with
   | [] -> ()
@@ -97,8 +97,8 @@ let rec print_string_type_list_pvs : Format.formatter -> string list -> unit =
       print_string_type_list_pvs oc l
 
 
-let rec print_prenex_ty_pvs : string -> Format.formatter -> ty -> unit =
- fun pvs_md oc ty ->
+let print_prenex_ty_pvs : string -> Format.formatter -> ty -> unit =
+ fun _ oc ty ->
   let p = prefix_of_ty ty in
   match p with
   | [] -> ()
@@ -147,7 +147,7 @@ let print__te_pvs : string -> Format.formatter -> _te -> unit =
                        (print [] pvs_md) t
                        (print [] pvs_md) u;
                        print_stack oc pvs_md stack
-    | AbsTy (x, t) -> Format.fprintf oc "%a"
+    | AbsTy (_, t) -> Format.fprintf oc "%a"
                         (print [] pvs_md) t;
       print_stack oc pvs_md stack
     | Cst (name,l) ->
@@ -171,11 +171,11 @@ let print__te_pvs : string -> Format.formatter -> _te -> unit =
 
 let rec prefix_of_te : te -> string list =
  fun te ->
-  match te with ForallP (x, te') -> x :: prefix_of_te te' | Te te' -> []
+  match te with ForallP (x, te') -> x :: prefix_of_te te' | Te _ -> []
 
 
-let rec print_prenex_te_pvs : string -> Format.formatter -> te -> unit =
- fun pvs_md oc te ->
+let print_prenex_te_pvs : string -> Format.formatter -> te -> unit =
+ fun _  oc te ->
   let p = prefix_of_te te in
   match p with
   | [] -> ()
@@ -188,7 +188,7 @@ let rec print_prenex_te_pvs : string -> Format.formatter -> te -> unit =
 let rec print_te_pvs : string -> Format.formatter -> te -> unit =
  fun pvs_md oc te ->
   match te with
-  | ForallP (x, te') -> print_te_pvs pvs_md oc te'
+  | ForallP (_, te') -> print_te_pvs pvs_md oc te'
   | Te te' -> print__te_pvs pvs_md oc te'
 
 
@@ -234,13 +234,13 @@ let conclusion_pvs : proof -> te =
     match prf with
     | Assume(j,_) -> j
     | Lemma (_, j) -> j
-    | Conv (j, p, _) -> j
-    | ImplE (j, p, q) -> j
-    | ImplI (j, p, _) -> j
-    | ForallE (j, p, _te) -> j
-    | ForallI (j, p, _) -> j
-    | ForallPE (j, p, _ty) -> j
-    | ForallPI (j, p, _) -> j
+    | Conv (j, _, _) -> j
+    | ImplE (j, _, _) -> j
+    | ImplI (j, _, _) -> j
+    | ForallE (j, _, _te) -> j
+    | ForallI (j, _, _) -> j
+    | ForallPE (j, _, _ty) -> j
+    | ForallPI (j, _, _) -> j
   in
   j.thm
 
@@ -272,19 +272,19 @@ let print_proof_pvs : string -> Format.formatter -> proof -> unit =
   fun pvs_md oc prf ->
     let rec print acc pvs_md oc prf =
     match prf with
-      | Assume(j,_)         -> Format.fprintf oc "%%|- (propax)"
-      | Lemma(n,j)    ->
+      | Assume(_,_)         -> Format.fprintf oc "%%|- (propax)"
+      | Lemma(n,_)    ->
          Format.fprintf oc "%%|- (sttfa-lemma \"%a%a\")"
           (print_qualified_name pvs_md) n
           (print_type_list_b_pvs pvs_md) acc
-    | Conv(j,p,trace)         ->
+    | Conv(_,p,trace)         ->
       let pc = conclusion_pvs p in
       Format.fprintf oc "%%|- (sttfa-conv \"%a\" (%a) (%a)\n%a)"
         (print_te_pvs pvs_md) pc
         (print_name_list  pvs_md) (listof trace.left)
         (print_name_list  pvs_md) (listof trace.right)
         (print acc pvs_md) p
-    | ImplE(j,p,q)      ->
+    | ImplE(_,p,q)      ->
       let pc = conclusion_pvs p
       in let qc = conclusion_pvs q
       in
@@ -298,18 +298,18 @@ let print_proof_pvs : string -> Format.formatter -> proof -> unit =
       in Format.fprintf oc "%%|- (sttfa-impl-i \"%a\" \"%a\"\n%a)"
         (print__te_pvs pvs_md) a (print__te_pvs pvs_md) b (print acc pvs_md) p
 
-    | ForallE(j,p,_te)  ->
+    | ForallE(_,p,_te)  ->
       let pc = conclusion_pvs p
       in Format.fprintf oc "%%|- (sttfa-forall-e \"%a\" \"%a\"\n%a)"
         (print_te_pvs pvs_md) pc
         (print__te_pvs pvs_md) _te
         (print acc pvs_md) p
-    | ForallI(j,p,n)      ->
+    | ForallI(_,p,n)      ->
       Format.fprintf oc "%%|- (then%@ (sttfa-forall-i \"%s\")\n%a)"
         (sanitize_name_pvs n)
         (print acc pvs_md) p
-    | ForallPE(j,p,_ty)   -> print (_ty::acc) pvs_md oc p
-    | ForallPI(j,p,n)     -> print acc pvs_md oc p
+    | ForallPE(_,p,_ty)   -> print (_ty::acc) pvs_md oc p
+    | ForallPI(_,p,_)     -> print acc pvs_md oc p
   in
   print [] pvs_md oc prf;
   Format.fprintf oc "\n"
@@ -317,11 +317,12 @@ let print_proof_pvs : string -> Format.formatter -> proof -> unit =
 let print_item oc pvs_md it =
   let line fmt = Format.fprintf oc (fmt ^^ "\n") in
   match it with
-  | TyOpDef (op, ar) ->
+  | TypeDecl (op, ar) ->
     assert (ar = 0);
     Format.fprintf oc "%a : TYPE+" (print_name pvs_md) op;
     line "";
     line ""
+  | TypeDef _ -> failwith "[PVS] Type definitions not handled right now"
   | Parameter (n, ty) ->
     line "%a %a: %a"
       (print_name pvs_md) n
@@ -364,39 +365,36 @@ let print_instance oc s deps x =
     List.iter (print_dep2 oc) deps;
     Format.fprintf oc "}}\n"
 
+let line oc fmt = Format.fprintf oc (fmt ^^ "\n")
 
-let remove_transitive_deps deps =
+let remove_transitive_deps mdeps deps =
   let remove_dep dep deps =
     let md = Basic.mk_mident dep in
-    let md_deps = Signature.get_md_deps Basic.dloc md in
-    QSet.diff deps (QSet.of_list (List.map Basic.string_of_mident md_deps))
+    let deps_from_signature md =
+      let deps = Signature.get_md_deps Basic.dloc md in
+      (QSet.of_list (List.map Basic.string_of_mident deps))
+    in
+    let md_deps =
+      match mdeps with
+      | None ->  deps_from_signature md
+      | Some l ->
+        if List.mem_assoc (Basic.string_of_mident md) l then
+          List.assoc (Basic.string_of_mident md) l
+        else
+          deps_from_signature md
+    in
+    QSet.diff deps md_deps
   in
   QSet.fold remove_dep deps deps
 
-let line oc fmt = Format.fprintf oc (fmt ^^ "\n")
-
-(* FIXME: web will compute the correct dependencies but we should get rid off thi boolean *)
-let web = ref false
-
-let print_ast : Format.formatter -> ast -> unit =
- fun oc ast ->
+let print_ast : Format.formatter -> ?mdeps:mdeps -> ast -> unit =
+ fun oc ?mdeps ast ->
    current_module := ast.md;
    let pf = "_sttfa" in
    let postfix s = s^pf in
    line oc "%s : THEORY" (postfix ast.md);
    line oc "BEGIN";
-   let deps = ast.dep in
-   let deps = QSet.remove "sttfa" deps in
-   (* FIXME: buggy with the module web. This code should not rely on Signature *)
-   let remove_transitive_deps deps =
-     let remove_dep dep deps =
-       let md = Basic.mk_mident dep in
-       let md_deps = Signature.get_md_deps Basic.dloc md in
-       QSet.diff deps (QSet.of_list (List.map Basic.string_of_mident md_deps))
-     in
-     QSet.fold remove_dep deps deps
-   in
-   let deps = if !web then deps else remove_transitive_deps deps in
+   let deps = remove_transitive_deps mdeps ast.dep in
    QSet.iter (print_dep oc) deps;
    line oc "";
    List.iter (print_item oc ast.md) ast.items;
@@ -421,11 +419,12 @@ let pretty_print_item = function
       (print_name md) (md,id)
       (print_prenex_te_pvs md) te
       (print_te_pvs md) te
-  | Theorem((md,id),te,proof) ->
+  | Theorem((md,id),te,_) ->
     Format.asprintf "%a %a : LEMMA %a"
       (print_name md) (md,id)
       (print_prenex_te_pvs md) te
       (print_te_pvs md) te
-  | TyOpDef((md,id),arity) ->
+  | TypeDecl((md,id),arity) ->
     assert(arity = 0);
     Format.asprintf "%a : TYPE+" (print_name md) (md,id)
+  | TypeDef _ -> failwith "[PVS] Type definitions not handled right now"

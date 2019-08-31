@@ -1,4 +1,3 @@
-;; Make warnings non fatal
 (env
- (dev
-  (flags (:standard -warn-error -A))))
+        (dev     (flags :standard))
+        (release (flags :standard)))

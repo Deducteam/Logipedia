@@ -1,0 +1,747 @@
+
+Number_2ENatural_2Enatural : sttfa.type.
+
+
+def type_0 : sttfa.type := Number_2ENatural_2Enatural.
+
+
+def type_1 : sttfa.type := sttfa.bool.
+
+
+def type_2 : sttfa.type := sttfa.arrow type_0 type_1.
+
+
+Data_2EBool_2E_21 : sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+def term_0 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_2 type_1))
+  :=
+  Data_2EBool_2E_21 (sttfa.arrow type_2 type_1).
+
+
+def type_3 : sttfa.type := sttfa.arrow type_0 type_2.
+
+
+def term_1 : sttfa.etap (sttfa.p type_3) := leibniz.eq type_0.
+
+
+def type_4 : sttfa.type := sttfa.arrow type_0 (sttfa.arrow type_0 type_0).
+
+
+Data_2EBool_2Econd : sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+def term_2 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_1 type_4))
+  :=
+  Data_2EBool_2Econd (sttfa.arrow type_1 type_4).
+
+
+Number_2ENatural_2E_3C_3D :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+def term_3 : sttfa.etap (sttfa.p type_3) := Number_2ENatural_2E_3C_3D type_3.
+
+
+def term_4 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 type_0))
+  :=
+  __16354_1:(sttfa.etap (sttfa.p type_0)) => __16354_1.
+
+
+def term_5 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 type_0))
+  :=
+  __16355_1:(sttfa.etap (sttfa.p type_0)) => __16355_1.
+
+
+Number_2ENatural_2E_2D :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p x)).
+
+
+def term_6 : sttfa.etap (sttfa.p type_4) := Number_2ENatural_2E_2D type_4.
+
+
+def term_7 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 (sttfa.arrow type_0 type_0)))
+  :=
+  __16355_1:(sttfa.etap (sttfa.p type_0)) =>
+  __16354_2:(sttfa.etap (sttfa.p type_0)) =>
+  term_2 (term_3 (term_4 __16354_2) (term_5 __16355_1)) (term_6 (term_5 __16355_1) (
+                                                           term_4 __16354_2)) (
+    term_6 (term_4 __16354_2) (term_5 __16355_1)).
+
+
+def term_8 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 (sttfa.arrow type_0 type_0)))
+  :=
+  __16354_1:(sttfa.etap (sttfa.p type_0)) =>
+  __16355_2:(sttfa.etap (sttfa.p type_0)) => term_7 __16355_2 __16354_1.
+
+
+def term_9 :
+  sttfa.etap (sttfa.p type_4)
+  :=
+  __16354_1:(sttfa.etap (sttfa.p type_0)) => term_8 __16354_1.
+
+
+def Number_2ENatural_2Edistance : sttfa.etap (sttfa.p type_4) := term_9.
+
+
+thm thm_0 :
+  sttfa.eps (leibniz.eq type_4 Number_2ENatural_2Edistance term_9)
+  :=
+  leibniz.refl type_4 Number_2ENatural_2Edistance.
+
+
+def term_10 : sttfa.etap (sttfa.p type_4) := Number_2ENatural_2Edistance.
+
+
+def term_11 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 type_0))
+  :=
+  m_1:(sttfa.etap (sttfa.p type_0)) => m_1.
+
+
+def term_12 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 type_0))
+  :=
+  n_1:(sttfa.etap (sttfa.p type_0)) => n_1.
+
+
+def term_13 :
+  sttfa.etap (sttfa.p type_2)
+  :=
+  m_1:(sttfa.etap (sttfa.p type_0)) =>
+  term_0 (n_2:(sttfa.etap (sttfa.p type_0)) =>
+          term_1 (term_10 (term_11 m_1) (term_12 n_2)) (term_2 (term_3 (
+                                                                  term_11 m_1) (
+                                                                  term_12 n_2)) (
+                                                          term_6 (term_12 n_2) (
+                                                            term_11 m_1)) (
+                                                          term_6 (term_11 m_1) (
+                                                            term_12 n_2)))).
+
+
+def term_14 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_1 (sttfa.arrow type_1 type_1)))
+  :=
+  leibniz.eq type_1.
+
+
+def type_5 : sttfa.type -> sttfa.type := A:sttfa.type => A.
+
+
+def type_6 :
+  sttfa.type -> sttfa.type
+  :=
+  A:sttfa.type => sttfa.arrow (type_5 A) type_1.
+
+
+def type_7 :
+  sttfa.type -> sttfa.type
+  :=
+  A:sttfa.type => sttfa.arrow (type_6 A) type_1.
+
+
+def term_15 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p (type_7 x)))
+  :=
+  A:sttfa.type => Data_2EBool_2E_21 (type_7 A).
+
+
+def term_16 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type =>
+                             sttfa.p (sttfa.arrow (type_6 x) (type_6 x))))
+  :=
+  A:sttfa.type => P_1:(sttfa.etap (sttfa.p (type_6 A))) => P_1.
+
+
+Data_2EBool_2ET :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p (type_5 x))).
+
+
+def term_17 : sttfa.etap (sttfa.p type_1) := Data_2EBool_2ET type_1.
+
+
+def term_18 :
+  sttfa.etap (sttfa.forallK (x:sttfa.type => sttfa.p (type_7 x)))
+  :=
+  A:sttfa.type =>
+  p_1:(sttfa.etap (sttfa.p (type_6 A))) =>
+  leibniz.eq (type_6 A) p_1 (x_2:(sttfa.etap (sttfa.p (type_5 A))) => term_17).
+
+
+thm_1 :
+  sttfa.eps (sttfa.forallP (x:sttfa.type =>
+                            leibniz.eq (type_7 x) (term_15 x) (term_18 x))).
+
+
+thm thm_2 :
+  sttfa.eps (sttfa.forallP (x:sttfa.type =>
+                            sttfa.forall (type_6 x) (x0:
+                                                     (sttfa.etap (sttfa.p (
+                                                                    type_6 x))) =>
+                                                     term_14 (leibniz.eq (
+                                                                type_6 x) (
+                                                                term_16 x x0) (
+                                                                x_2:
+                                                                (sttfa.etap (
+                                                                   sttfa.p (
+                                                                    type_5 x))) =>
+                                                                term_17)) (
+                                                       term_15 x (term_16 x x0)))))
+  :=
+  A:sttfa.type =>
+  P_1:(sttfa.etap (sttfa.p (type_6 A))) =>
+  sttfa_hol_axioms.EQ_MP (leibniz.eq type_1 (term_15 A (term_16 A P_1)) (
+                            term_15 A (term_16 A P_1))) (leibniz.eq type_1 (
+                                                           leibniz.eq (
+                                                             type_6 A) (
+                                                             term_16 A P_1) (
+                                                             x_2:
+                                                             (sttfa.etap (
+                                                                sttfa.p (
+                                                                  type_5 A))) =>
+                                                             term_17)) (
+                                                           term_15 A (
+                                                             term_16 A P_1))) (
+    leibniz.trans sttfa.bool (leibniz.eq type_1 (term_15 A (term_16 A P_1)) (
+                                term_15 A (term_16 A P_1))) (leibniz.eq type_1 (
+                                                               term_15 A (
+                                                                 term_16 A P_1)) (
+                                                               term_15 A (
+                                                                 term_16 A P_1))) (
+      leibniz.eq type_1 (leibniz.eq (type_6 A) (term_16 A P_1) (x_2:
+                                                                (sttfa.etap (
+                                                                   sttfa.p (
+                                                                    type_5 A))) =>
+                                                                term_17)) (
+        term_15 A (term_16 A P_1))) (P:
+                                     (sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool))) =>
+                                     leibniz.refl type_1 (term_15 A (
+                                                            term_16 A P_1)) (
+                                       z:(sttfa.etap (sttfa.p type_1)) =>
+                                       P (leibniz.eq type_1 (term_15 A (
+                                                               term_16 A P_1)) z))) (
+      P:(sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool))) =>
+      leibniz.trans (sttfa.arrow type_1 sttfa.bool) (leibniz.eq type_1 (
+                                                       term_15 A (term_16 A P_1))) (
+        leibniz.eq type_1 (leibniz.eq (type_6 A) (term_16 A P_1) (x_2:
+                                                                  (sttfa.etap (
+                                                                    sttfa.p (
+                                                                    type_5 A))) =>
+                                                                  term_17))) (
+        leibniz.eq type_1 (leibniz.eq (type_6 A) (term_16 A P_1) (x_2:
+                                                                  (sttfa.etap (
+                                                                    sttfa.p (
+                                                                    type_5 A))) =>
+                                                                  term_17))) (
+        P0:
+        (sttfa.etap (sttfa.p (sttfa.arrow (sttfa.arrow type_1 sttfa.bool) sttfa.bool))) =>
+        sttfa_hol_axioms.EQ_MP (term_14 (term_15 A (term_16 A P_1)) (
+                                  term_18 A (term_16 A P_1))) (term_14 (
+                                                                 term_15 A (
+                                                                   term_16 A P_1)) (
+                                                                 leibniz.eq (
+                                                                   type_6 A) (
+                                                                   term_16 A P_1) (
+                                                                   x_2:
+                                                                   (sttfa.etap (
+                                                                    sttfa.p (
+                                                                    type_5 A))) =>
+                                                                   term_17))) (
+          leibniz.trans type_1 (term_14 (term_15 A (term_16 A P_1)) (
+                                  term_18 A (term_16 A P_1))) (term_14 (
+                                                                 term_15 A (
+                                                                   term_16 A P_1)) (
+                                                                 leibniz.eq (
+                                                                   type_6 A) (
+                                                                   term_16 A P_1) (
+                                                                   x_2:
+                                                                   (sttfa.etap (
+                                                                    sttfa.p (
+                                                                    type_5 A))) =>
+                                                                   term_17))) (
+            term_14 (term_15 A (term_16 A P_1)) (leibniz.eq (type_6 A) (
+                                                   term_16 A P_1) (x_2:
+                                                                   (sttfa.etap (
+                                                                    sttfa.p (
+                                                                    type_5 A))) =>
+                                                                   term_17))) (
+            P1:(sttfa.etap (sttfa.p (sttfa.arrow type_1 sttfa.bool))) =>
+            leibniz.refl type_1 (leibniz.eq (type_6 A) (term_16 A P_1) (
+                                   x_3:(sttfa.etap (sttfa.p (type_5 A))) =>
+                                   term_17)) (z:
+                                              (sttfa.etap (sttfa.p type_1)) =>
+                                              P1 (term_14 (term_15 A (
+                                                             term_16 A P_1)) z))) (
+            P1:(sttfa.etap (sttfa.p (sttfa.arrow type_1 sttfa.bool))) =>
+            leibniz.refl (sttfa.arrow type_1 type_1) (term_14 (term_15 A (
+                                                                 term_16 A P_1))) (
+              h:(sttfa.etap (sttfa.p (sttfa.arrow type_1 type_1))) =>
+              P1 (h (leibniz.eq (type_6 A) (term_16 A P_1) (x_2:
+                                                            (sttfa.etap (
+                                                               sttfa.p (
+                                                                 type_5 A))) =>
+                                                            term_17)))))) (
+          leibniz.trans type_1 (term_15 A (term_16 A P_1)) (term_15 A (
+                                                              term_16 A P_1)) (
+            term_18 A (term_16 A P_1)) (P1:
+                                        (sttfa.etap (sttfa.p (sttfa.arrow type_1 sttfa.bool))) =>
+                                        leibniz.refl (type_6 A) (term_16 A P_1) (
+                                          z:
+                                          (sttfa.etap (sttfa.p (type_6 A))) =>
+                                          P1 (term_15 A z))) (P1:
+                                                              (sttfa.etap (
+                                                                 sttfa.p (
+                                                                   sttfa.arrow type_1 sttfa.bool))) =>
+                                                              thm_1 A (
+                                                                h:
+                                                                (sttfa.etap (
+                                                                   sttfa.p (
+                                                                    sttfa.arrow (
+                                                                    type_6 A) type_1))) =>
+                                                                P1 (h (
+                                                                    term_16 A P_1))))) (
+          z:(sttfa.etap (sttfa.p type_1)) => P0 (leibniz.eq type_1 z))) (
+        P0:
+        (sttfa.etap (sttfa.p (sttfa.arrow (sttfa.arrow type_1 sttfa.bool) sttfa.bool))) =>
+        leibniz.refl (sttfa.arrow type_1 (sttfa.arrow type_1 sttfa.bool)) (
+          leibniz.eq type_1) (h:
+                              (sttfa.etap (sttfa.p (sttfa.arrow type_1 (
+                                                      sttfa.arrow type_1 sttfa.bool)))) =>
+                              P0 (h (leibniz.eq (type_6 A) (term_16 A P_1) (
+                                       x_2:
+                                       (sttfa.etap (sttfa.p (type_5 A))) =>
+                                       term_17))))) (h:
+                                                     (sttfa.etap (sttfa.p (
+                                                                    sttfa.arrow type_1 sttfa.bool))) =>
+                                                     P (h (term_15 A (
+                                                             term_16 A P_1)))))) (
+    leibniz.refl type_1 (term_15 A (term_16 A P_1))).
+
+
+thm thm_3 :
+  sttfa.eps (sttfa.forall type_2 (x:(sttfa.etap (sttfa.p type_2)) =>
+                                  term_14 (leibniz.eq type_2 x (x_2:
+                                                                (sttfa.etap (
+                                                                   sttfa.p type_0)) =>
+                                                                term_17)) (
+                                    term_0 x)))
+  :=
+  P_1:(sttfa.etap (sttfa.p type_2)) => thm_2 type_0 P_1.
+
+
+def term_19 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 (sttfa.arrow type_0 type_1)))
+  :=
+  __16355_1:(sttfa.etap (sttfa.p type_0)) =>
+  __16354_2:(sttfa.etap (sttfa.p type_0)) =>
+  term_1 (term_10 (term_4 __16354_2) (term_5 __16355_1)) (term_7 __16355_1 __16354_2).
+
+
+def term_20 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_0 type_2))
+  :=
+  __16354_1:(sttfa.etap (sttfa.p type_0)) =>
+  __16355_2:(sttfa.etap (sttfa.p type_0)) => term_19 __16355_2 __16354_1.
+
+
+def term_21 :
+  sttfa.etap (sttfa.p (sttfa.arrow type_1 type_1))
+  :=
+  t_1:(sttfa.etap (sttfa.p type_1)) => t_1.
+
+
+thm thm_4 :
+  sttfa.eps (sttfa.forall type_1 (x:(sttfa.etap (sttfa.p type_1)) =>
+                                  sttfa.impl (term_14 (term_21 x) term_17) (
+                                    term_14 term_17 (term_21 x))))
+  :=
+  t_1:(sttfa.etap (sttfa.p type_1)) =>
+  hyp_1:(sttfa.eps (term_14 (term_21 t_1) term_17)) =>
+  sttfa_hol_axioms.EQ_MP (leibniz.eq type_1 (term_21 t_1) (term_21 t_1)) (
+    leibniz.eq type_1 term_17 (term_21 t_1)) (leibniz.trans sttfa.bool (
+                                                leibniz.eq type_1 (term_21 t_1) (
+                                                  term_21 t_1)) (leibniz.eq type_1 (
+                                                                   term_21 t_1) (
+                                                                   term_21 t_1)) (
+                                                leibniz.eq type_1 term_17 (
+                                                  term_21 t_1)) (P:
+                                                                 (sttfa.etap (
+                                                                    sttfa.p (
+                                                                    sttfa.arrow sttfa.bool sttfa.bool))) =>
+                                                                 leibniz.refl type_1 (
+                                                                   term_21 t_1) (
+                                                                   z:
+                                                                   (sttfa.etap (
+                                                                    sttfa.p type_1)) =>
+                                                                   P (
+                                                                    leibniz.eq type_1 (
+                                                                    term_21 t_1) z))) (
+                                                P:
+                                                (sttfa.etap (sttfa.p (
+                                                               sttfa.arrow sttfa.bool sttfa.bool))) =>
+                                                leibniz.trans (sttfa.arrow type_1 sttfa.bool) (
+                                                  leibniz.eq type_1 (
+                                                    term_21 t_1)) (leibniz.eq type_1 term_17) (
+                                                  leibniz.eq type_1 term_17) (
+                                                  P0:
+                                                  (sttfa.etap (sttfa.p (
+                                                                 sttfa.arrow (
+                                                                   sttfa.arrow type_1 sttfa.bool) sttfa.bool))) =>
+                                                  hyp_1 (z:
+                                                         (sttfa.etap (
+                                                            sttfa.p type_1)) =>
+                                                         P0 (leibniz.eq type_1 z))) (
+                                                  P0:
+                                                  (sttfa.etap (sttfa.p (
+                                                                 sttfa.arrow (
+                                                                   sttfa.arrow type_1 sttfa.bool) sttfa.bool))) =>
+                                                  leibniz.refl (sttfa.arrow type_1 (
+                                                                  sttfa.arrow type_1 sttfa.bool)) (
+                                                    leibniz.eq type_1) (
+                                                    h:
+                                                    (sttfa.etap (sttfa.p (
+                                                                   sttfa.arrow type_1 (
+                                                                    sttfa.arrow type_1 sttfa.bool)))) =>
+                                                    P0 (h term_17))) (
+                                                  h:
+                                                  (sttfa.etap (sttfa.p (
+                                                                 sttfa.arrow type_1 sttfa.bool))) =>
+                                                  P (h (term_21 t_1))))) (
+    leibniz.refl type_1 (term_21 t_1)).
+
+
+thm_5 : sttfa.eps term_17.
+
+
+thm thm_6 :
+  sttfa.eps (sttfa.forall type_1 (x:(sttfa.etap (sttfa.p type_1)) =>
+                                  term_14 (term_21 x) (term_14 (term_21 x) term_17)))
+  :=
+  t_1:(sttfa.etap (sttfa.p type_1)) =>
+  sttfa_hol_axioms.PROP_EXT (term_21 t_1) (term_14 (term_21 t_1) term_17) (
+    hyp_1:(sttfa.eps (term_14 (term_21 t_1) term_17)) =>
+    sttfa_hol_axioms.EQ_MP term_17 (term_21 t_1) (thm_4 t_1 hyp_1) thm_5) (
+    hyp_1:(sttfa.eps (term_21 t_1)) =>
+    sttfa_hol_axioms.PROP_EXT (term_21 t_1) term_17 (hyp_2:
+                                                     (sttfa.eps term_17) =>
+                                                     hyp_1) (hyp_2:
+                                                             (sttfa.eps (
+                                                                term_21 t_1)) =>
+                                                             thm_5)).
+
+
+thm thm_7 :
+  sttfa.eps (sttfa.forall type_0 (x:(sttfa.etap (sttfa.p type_0)) =>
+                                  leibniz.eq (sttfa.arrow type_0 type_0) (
+                                    term_10 (term_4 x)) (term_8 x)))
+  :=
+  __16354_1:(sttfa.etap (sttfa.p type_0)) =>
+  sttfa_hol_axioms.EQ_MP (leibniz.eq (sttfa.arrow type_0 type_0) (term_9 (
+                                                                    term_4 __16354_1)) (
+                            term_8 __16354_1)) (leibniz.eq (sttfa.arrow type_0 type_0) (
+                                                  term_10 (term_4 __16354_1)) (
+                                                  term_8 __16354_1)) (
+    leibniz.trans sttfa.bool (leibniz.eq (sttfa.arrow type_0 type_0) (
+                                term_9 (term_4 __16354_1)) (term_8 __16354_1)) (
+      leibniz.eq (sttfa.arrow type_0 type_0) (term_9 (term_4 __16354_1)) (
+        term_8 __16354_1)) (leibniz.eq (sttfa.arrow type_0 type_0) (term_10 (
+                                                                    term_4 __16354_1)) (
+                              term_8 __16354_1)) (P:
+                                                  (sttfa.etap (sttfa.p (
+                                                                 sttfa.arrow sttfa.bool sttfa.bool))) =>
+                                                  leibniz.refl (sttfa.arrow type_0 type_0) (
+                                                    term_8 __16354_1) (
+                                                    z:
+                                                    (sttfa.etap (sttfa.p (
+                                                                   sttfa.arrow type_0 type_0))) =>
+                                                    P (leibniz.eq (sttfa.arrow type_0 type_0) (
+                                                         term_9 (term_4 __16354_1)) z))) (
+      P:(sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool))) =>
+      leibniz.trans (sttfa.arrow (sttfa.arrow type_0 type_0) sttfa.bool) (
+        leibniz.eq (sttfa.arrow type_0 type_0) (term_9 (term_4 __16354_1))) (
+        leibniz.eq (sttfa.arrow type_0 type_0) (term_10 (term_4 __16354_1))) (
+        leibniz.eq (sttfa.arrow type_0 type_0) (term_10 (term_4 __16354_1))) (
+        P0:
+        (sttfa.etap (sttfa.p (sttfa.arrow (sttfa.arrow (sttfa.arrow type_0 type_0) sttfa.bool) sttfa.bool))) =>
+        sttfa_hol_axioms.EQ_MP (leibniz.eq (sttfa.arrow type_0 type_0) (
+                                  term_10 (term_4 __16354_1)) (term_10 (
+                                                                 term_4 __16354_1))) (
+          leibniz.eq (sttfa.arrow type_0 type_0) (term_9 (term_4 __16354_1)) (
+            term_10 (term_4 __16354_1))) (leibniz.trans sttfa.bool (leibniz.eq (
+                                                                    sttfa.arrow type_0 type_0) (
+                                                                    term_10 (
+                                                                    term_4 __16354_1)) (
+                                                                    term_10 (
+                                                                    term_4 __16354_1))) (
+                                            leibniz.eq (sttfa.arrow type_0 type_0) (
+                                              term_10 (term_4 __16354_1)) (
+                                              term_10 (term_4 __16354_1))) (
+                                            leibniz.eq (sttfa.arrow type_0 type_0) (
+                                              term_9 (term_4 __16354_1)) (
+                                              term_10 (term_4 __16354_1))) (
+                                            P1:
+                                            (sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool))) =>
+                                            leibniz.refl (sttfa.arrow type_0 type_0) (
+                                              term_10 (term_4 __16354_1)) (
+                                              z:
+                                              (sttfa.etap (sttfa.p (sttfa.arrow type_0 type_0))) =>
+                                              P1 (leibniz.eq (sttfa.arrow type_0 type_0) (
+                                                    term_10 (term_4 __16354_1)) z))) (
+                                            P1:
+                                            (sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool))) =>
+                                            leibniz.trans (sttfa.arrow (
+                                                             sttfa.arrow type_0 type_0) sttfa.bool) (
+                                              leibniz.eq (sttfa.arrow type_0 type_0) (
+                                                term_10 (term_4 __16354_1))) (
+                                              leibniz.eq (sttfa.arrow type_0 type_0) (
+                                                term_9 (term_4 __16354_1))) (
+                                              leibniz.eq (sttfa.arrow type_0 type_0) (
+                                                term_9 (term_4 __16354_1))) (
+                                              P2:
+                                              (sttfa.etap (sttfa.p (sttfa.arrow (
+                                                                    sttfa.arrow (
+                                                                    sttfa.arrow type_0 type_0) sttfa.bool) sttfa.bool))) =>
+                                              leibniz.trans (sttfa.arrow type_0 type_0) (
+                                                term_10 (term_4 __16354_1)) (
+                                                term_10 (term_4 __16354_1)) (
+                                                term_9 (term_4 __16354_1)) (
+                                                P3:
+                                                (sttfa.etap (sttfa.p (
+                                                               sttfa.arrow (
+                                                                 sttfa.arrow type_0 type_0) sttfa.bool))) =>
+                                                leibniz.refl type_0 (
+                                                  term_4 __16354_1) (
+                                                  z:
+                                                  (sttfa.etap (sttfa.p type_0)) =>
+                                                  P3 (term_10 z))) (P3:
+                                                                    (
+                                                                    sttfa.etap (
+                                                                    sttfa.p (
+                                                                    sttfa.arrow (
+                                                                    sttfa.arrow type_0 type_0) sttfa.bool))) =>
+                                                                    thm_0 (
+                                                                    h:
+                                                                    (
+                                                                    sttfa.etap (
+                                                                    sttfa.p (
+                                                                    sttfa.arrow type_0 (
+                                                                    sttfa.arrow type_0 type_0)))) =>
+                                                                    P3 (
+                                                                    h (
+                                                                    term_4 __16354_1)))) (
+                                                z:
+                                                (sttfa.etap (sttfa.p (
+                                                               sttfa.arrow type_0 type_0))) =>
+                                                P2 (leibniz.eq (sttfa.arrow type_0 type_0) z))) (
+                                              P2:
+                                              (sttfa.etap (sttfa.p (sttfa.arrow (
+                                                                    sttfa.arrow (
+                                                                    sttfa.arrow type_0 type_0) sttfa.bool) sttfa.bool))) =>
+                                              leibniz.refl (sttfa.arrow (
+                                                              sttfa.arrow type_0 type_0) (
+                                                              sttfa.arrow (
+                                                                sttfa.arrow type_0 type_0) sttfa.bool)) (
+                                                leibniz.eq (sttfa.arrow type_0 type_0)) (
+                                                h:
+                                                (sttfa.etap (sttfa.p (
+                                                               sttfa.arrow (
+                                                                 sttfa.arrow type_0 type_0) (
+                                                                 sttfa.arrow (
+                                                                   sttfa.arrow type_0 type_0) sttfa.bool)))) =>
+                                                P2 (h (term_9 (term_4 __16354_1))))) (
+                                              h:
+                                              (sttfa.etap (sttfa.p (sttfa.arrow (
+                                                                    sttfa.arrow type_0 type_0) sttfa.bool))) =>
+                                              P1 (h (term_10 (term_4 __16354_1)))))) (
+          leibniz.refl (sttfa.arrow type_0 type_0) (term_10 (term_4 __16354_1))) (
+          z:(sttfa.etap (sttfa.p (sttfa.arrow type_0 type_0))) =>
+          P0 (leibniz.eq (sttfa.arrow type_0 type_0) z))) (P0:
+                                                           (sttfa.etap (
+                                                              sttfa.p (
+                                                                sttfa.arrow (
+                                                                  sttfa.arrow (
+                                                                    sttfa.arrow type_0 type_0) sttfa.bool) sttfa.bool))) =>
+                                                           leibniz.refl (
+                                                             sttfa.arrow (
+                                                               sttfa.arrow type_0 type_0) (
+                                                               sttfa.arrow (
+                                                                 sttfa.arrow type_0 type_0) sttfa.bool)) (
+                                                             leibniz.eq (
+                                                               sttfa.arrow type_0 type_0)) (
+                                                             h:
+                                                             (sttfa.etap (
+                                                                sttfa.p (
+                                                                  sttfa.arrow (
+                                                                    sttfa.arrow type_0 type_0) (
+                                                                    sttfa.arrow (
+                                                                    sttfa.arrow type_0 type_0) sttfa.bool)))) =>
+                                                             P0 (h (term_10 (
+                                                                    term_4 __16354_1))))) (
+        h:
+        (sttfa.etap (sttfa.p (sttfa.arrow (sttfa.arrow type_0 type_0) sttfa.bool))) =>
+        P (h (term_8 __16354_1))))) (leibniz.refl (sttfa.arrow type_0 type_0) (
+                                       term_8 (term_4 __16354_1))).
+
+
+thm thm_8 :
+  sttfa.eps (sttfa.forall type_0 (x:(sttfa.etap (sttfa.p type_0)) =>
+                                  sttfa.forall type_0 (x0:
+                                                       (sttfa.etap (sttfa.p type_0)) =>
+                                                       term_19 x x0)))
+  :=
+  __16355_1:(sttfa.etap (sttfa.p type_0)) =>
+  __16354_2:(sttfa.etap (sttfa.p type_0)) =>
+  sttfa_hol_axioms.EQ_MP (leibniz.eq type_0 (term_8 __16354_2 (term_5 __16355_1)) (
+                            term_7 __16355_1 __16354_2)) (leibniz.eq type_0 (
+                                                            term_10 (
+                                                              term_4 __16354_2) (
+                                                              term_5 __16355_1)) (
+                                                            term_7 __16355_1 __16354_2)) (
+    leibniz.trans sttfa.bool (leibniz.eq type_0 (term_8 __16354_2 (term_5 __16355_1)) (
+                                term_7 __16355_1 __16354_2)) (leibniz.eq type_0 (
+                                                                term_8 __16354_2 (
+                                                                  term_5 __16355_1)) (
+                                                                term_7 __16355_1 __16354_2)) (
+      leibniz.eq type_0 (term_10 (term_4 __16354_2) (term_5 __16355_1)) (
+        term_7 __16355_1 __16354_2)) (P:
+                                      (sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool))) =>
+                                      leibniz.refl type_0 (term_7 __16355_1 __16354_2) (
+                                        z:(sttfa.etap (sttfa.p type_0)) =>
+                                        P (leibniz.eq type_0 (term_8 __16354_2 (
+                                                                term_5 __16355_1)) z))) (
+      P:(sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool))) =>
+      leibniz.trans (sttfa.arrow type_0 sttfa.bool) (leibniz.eq type_0 (
+                                                       term_8 __16354_2 (
+                                                         term_5 __16355_1))) (
+        leibniz.eq type_0 (term_10 (term_4 __16354_2) (term_5 __16355_1))) (
+        leibniz.eq type_0 (term_10 (term_4 __16354_2) (term_5 __16355_1))) (
+        P0:
+        (sttfa.etap (sttfa.p (sttfa.arrow (sttfa.arrow type_0 sttfa.bool) sttfa.bool))) =>
+        sttfa_hol_axioms.EQ_MP (leibniz.eq type_0 (term_10 (term_4 __16354_2) (
+                                                     term_5 __16355_1)) (
+                                  term_10 (term_4 __16354_2) (term_5 __16355_1))) (
+          leibniz.eq type_0 (term_8 __16354_2 (term_5 __16355_1)) (term_10 (
+                                                                    term_4 __16354_2) (
+                                                                    term_5 __16355_1))) (
+          leibniz.trans sttfa.bool (leibniz.eq type_0 (term_10 (term_4 __16354_2) (
+                                                         term_5 __16355_1)) (
+                                      term_10 (term_4 __16354_2) (term_5 __16355_1))) (
+            leibniz.eq type_0 (term_10 (term_4 __16354_2) (term_5 __16355_1)) (
+              term_10 (term_4 __16354_2) (term_5 __16355_1))) (leibniz.eq type_0 (
+                                                                 term_8 __16354_2 (
+                                                                   term_5 __16355_1)) (
+                                                                 term_10 (
+                                                                   term_4 __16354_2) (
+                                                                   term_5 __16355_1))) (
+            P1:(sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool))) =>
+            leibniz.refl type_0 (term_10 (term_4 __16354_2) (term_5 __16355_1)) (
+              z:(sttfa.etap (sttfa.p type_0)) =>
+              P1 (leibniz.eq type_0 (term_10 (term_4 __16354_2) (term_5 __16355_1)) z))) (
+            P1:(sttfa.etap (sttfa.p (sttfa.arrow sttfa.bool sttfa.bool))) =>
+            leibniz.trans (sttfa.arrow type_0 sttfa.bool) (leibniz.eq type_0 (
+                                                             term_10 (
+                                                               term_4 __16354_2) (
+                                                               term_5 __16355_1))) (
+              leibniz.eq type_0 (term_8 __16354_2 (term_5 __16355_1))) (
+              leibniz.eq type_0 (term_8 __16354_2 (term_5 __16355_1))) (
+              P2:
+              (sttfa.etap (sttfa.p (sttfa.arrow (sttfa.arrow type_0 sttfa.bool) sttfa.bool))) =>
+              leibniz.trans type_0 (term_10 (term_4 __16354_2) (term_5 __16355_1)) (
+                term_10 (term_4 __16354_2) (term_5 __16355_1)) (term_8 __16354_2 (
+                                                                  term_5 __16355_1)) (
+                P3:(sttfa.etap (sttfa.p (sttfa.arrow type_0 sttfa.bool))) =>
+                leibniz.refl type_0 (term_5 __16355_1) (z:
+                                                        (sttfa.etap (
+                                                           sttfa.p type_0)) =>
+                                                        P3 (term_10 (
+                                                              term_4 __16354_2) z))) (
+                P3:(sttfa.etap (sttfa.p (sttfa.arrow type_0 sttfa.bool))) =>
+                thm_7 __16354_2 (h:
+                                 (sttfa.etap (sttfa.p (sttfa.arrow type_0 type_0))) =>
+                                 P3 (h (term_5 __16355_1)))) (z:
+                                                              (sttfa.etap (
+                                                                 sttfa.p type_0)) =>
+                                                              P2 (leibniz.eq type_0 z))) (
+              P2:
+              (sttfa.etap (sttfa.p (sttfa.arrow (sttfa.arrow type_0 sttfa.bool) sttfa.bool))) =>
+              leibniz.refl (sttfa.arrow type_0 (sttfa.arrow type_0 sttfa.bool)) (
+                leibniz.eq type_0) (h:
+                                    (sttfa.etap (sttfa.p (sttfa.arrow type_0 (
+                                                            sttfa.arrow type_0 sttfa.bool)))) =>
+                                    P2 (h (term_8 __16354_2 (term_5 __16355_1))))) (
+              h:(sttfa.etap (sttfa.p (sttfa.arrow type_0 sttfa.bool))) =>
+              P1 (h (term_10 (term_4 __16354_2) (term_5 __16355_1)))))) (
+          leibniz.refl type_0 (term_10 (term_4 __16354_2) (term_5 __16355_1))) (
+          z:(sttfa.etap (sttfa.p type_0)) => P0 (leibniz.eq type_0 z))) (
+        P0:
+        (sttfa.etap (sttfa.p (sttfa.arrow (sttfa.arrow type_0 sttfa.bool) sttfa.bool))) =>
+        leibniz.refl (sttfa.arrow type_0 (sttfa.arrow type_0 sttfa.bool)) (
+          leibniz.eq type_0) (h:
+                              (sttfa.etap (sttfa.p (sttfa.arrow type_0 (
+                                                      sttfa.arrow type_0 sttfa.bool)))) =>
+                              P0 (h (term_10 (term_4 __16354_2) (term_5 __16355_1))))) (
+        h:(sttfa.etap (sttfa.p (sttfa.arrow type_0 sttfa.bool))) =>
+        P (h (term_7 __16355_1 __16354_2))))) (leibniz.refl type_0 (term_7 (
+                                                                    term_5 __16355_1) __16354_2)).
+
+
+thm thm_9 :
+  sttfa.eps (term_0 term_13)
+  :=
+  sttfa_hol_axioms.EQ_MP (leibniz.eq type_2 (__16354_1:
+                                             (sttfa.etap (sttfa.p type_0)) =>
+                                             term_0 (term_20 __16354_1)) (
+                            __16354_1:(sttfa.etap (sttfa.p type_0)) =>
+                            term_17)) (term_0 term_13) (thm_3 term_13) (
+    sttfa_hol_axioms.ABS_THM type_0 type_1 (__16354_1:
+                                            (sttfa.etap (sttfa.p type_0)) =>
+                                            term_0 (term_20 __16354_1)) (
+      __16354_1:(sttfa.etap (sttfa.p type_0)) => term_17) (__16354_1:
+                                                           (sttfa.etap (
+                                                              sttfa.p type_0)) =>
+                                                           sttfa_hol_axioms.EQ_MP (
+                                                             term_0 (
+                                                               term_20 __16354_1)) (
+                                                             term_14 (
+                                                               term_0 (
+                                                                 term_20 __16354_1)) term_17) (
+                                                             thm_6 (term_0 (
+                                                                    term_20 __16354_1))) (
+                                                             sttfa_hol_axioms.EQ_MP (
+                                                               leibniz.eq type_2 (
+                                                                 term_20 __16354_1) (
+                                                                 __16355_2:
+                                                                 (sttfa.etap (
+                                                                    sttfa.p type_0)) =>
+                                                                 term_17)) (
+                                                               term_0 (
+                                                                 term_20 __16354_1)) (
+                                                               thm_3 (
+                                                                 term_20 __16354_1)) (
+                                                               sttfa_hol_axioms.ABS_THM type_0 type_1 (
+                                                                 __16355_2:
+                                                                 (sttfa.etap (
+                                                                    sttfa.p type_0)) =>
+                                                                 term_19 __16355_2 __16354_1) (
+                                                                 __16355_2:
+                                                                 (sttfa.etap (
+                                                                    sttfa.p type_0)) =>
+                                                                 term_17) (
+                                                                 __16355_2:
+                                                                 (sttfa.etap (
+                                                                    sttfa.p type_0)) =>
+                                                                 sttfa_hol_axioms.EQ_MP (
+                                                                   term_19 __16355_2 __16354_1) (
+                                                                   term_14 (
+                                                                    term_19 __16355_2 __16354_1) term_17) (
+                                                                   thm_6 (
+                                                                    term_19 __16355_2 __16354_1)) (
+                                                                   thm_8 __16355_2 __16354_1)))))).
+
+

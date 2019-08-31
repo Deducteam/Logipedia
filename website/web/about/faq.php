@@ -121,7 +121,7 @@
                      <h5><span class="label label-primary">Answer</span></h5>
 
                     <p>
-      If you want to add your system on Logipedia, we invite you to Gilles Dowek and François Thiré.</a>
+      If you want to add your system on Logipedia, we invite you to contact Gilles Dowek and François Thiré.</a>
                     </p>
                 </div>
             </div>

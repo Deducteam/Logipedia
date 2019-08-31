@@ -1,11 +1,14 @@
 open Ast
-open Printf
 
 let sys = "coq"
 
 let cur_md = ref ""
 
 let sanitize id =
+  let id =
+    let regexp = Str.regexp "\\.\\|-" in
+    Str.global_replace regexp "_" id
+  in
   if id = "return" then id ^ "_" else id
 
 let print_var oc id =
@@ -17,12 +20,11 @@ let rec print_list sep pp oc = function
   | x::t -> Format.fprintf oc "(%a)%s%a" pp x sep (print_list sep pp) t
 
 let print_dep oc dep =
-  if dep = "sttfa" then ()
-  else
-    Format.fprintf oc "Require Import %s.\n" dep
+  Format.fprintf oc "Require Import %s.\n" dep
 
 let print_name oc (md,id) =
   let id = sanitize id in
+  let md = sanitize md in
   if !cur_md = md then
     Format.fprintf oc "%s" id
   else
@@ -89,16 +91,16 @@ let rec print_te oc = function
   | Te(_te) -> print__te oc _te
 
 let rec print_proof oc = function
-  | Assume(j,var) -> Format.fprintf oc "%a" print_var var
-  | Lemma(name,j) -> Format.fprintf oc "%a" print_name name
+  | Assume(_,var) -> Format.fprintf oc "%a" print_var var
+  | Lemma(name,_) -> Format.fprintf oc "%a" print_name name
   | Conv(_,proof,_) -> Format.fprintf oc "%a" print_proof proof
   | ImplE(_,left,right) -> Format.fprintf oc "(%a) (%a)" print_proof left print_proof right
-  | ImplI(j,proof,var) ->
+  | ImplI(_,proof,var) ->
     let j' = judgment_of proof in
-    let _,_te = TeSet.choose (TeSet.filter (fun (x,te) -> if x = var then true else false) j'.hyp) in
+    let _,_te = TeSet.choose (TeSet.filter (fun (x,_) -> if x = var then true else false) j'.hyp) in
     Format.fprintf oc "fun (%a:%a) => (%a)" print_var var print__te _te print_proof proof
   | ForallE(_,proof,_te) -> Format.fprintf oc "(%a) (%a)" print_proof proof print__te _te
-  | ForallI(j,proof,var) ->
+  | ForallI(_,proof,var) ->
     let j' = judgment_of proof in
     let _,_ty = List.find (fun (x,_ty) -> if x = var then true else false) j'.te in
     Format.fprintf oc "fun (%a:%a) => %a" print_var var print__ty _ty print_proof proof
@@ -115,13 +117,14 @@ let print_item oc = function
     Format.fprintf oc "Axiom %a : %a.@." print_name name print_te te
   | Theorem(name,te,proof) ->
     Format.fprintf oc "Definition %a : %a := %a.@." print_name name print_te te print_proof proof
-  | TyOpDef(tyop,arity) ->
+  | TypeDecl(tyop,arity) ->
     Format.fprintf oc "Parameter %a : %a.@." print_name tyop print_arity arity
+  | TypeDef _ -> ()
 
-let print_ast oc ast =
-  cur_md := ast.md;
-  QSet.iter (print_dep oc) ast.dep;
-  List.iter (print_item oc) ast.items
+let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
+  cur_md := sanitize ast.md;
+  QSet.iter (print_dep fmt) ast.dep;
+  List.iter (print_item fmt) ast.items
 
 let print_meta_ast fmt meta_ast =
   let print_ast fmt ast =
@@ -134,31 +137,14 @@ let print_meta_ast fmt meta_ast =
 let to_string fmt = Format.asprintf "%a" fmt
 
 let pretty_print_item = function
-  | Parameter((md,id),ty) ->
+  | Parameter((_,id),ty) ->
     Format.asprintf "Parameter %s : %a" id print_ty ty
-  | Definition((md,id),ty,te) ->
+  | Definition((_,id),ty,te) ->
     Format.asprintf "Definition %s : %a := %a" id print_ty ty print_te te
-  | Axiom((md,id),te) ->
+  | Axiom((_,id),te) ->
     Format.asprintf "Axiom %s : %a" id print_te te
-  | Theorem((md,id),te,proof) ->
+  | Theorem((_,id),te,_) ->
     Format.asprintf "Theorem %s : %a." id print_te te
-  | TyOpDef((md,id),arity) ->
+  | TypeDecl((_,id),arity) ->
     Format.asprintf "Parameter %s : %a" id print_arity arity
-(*
-let print_bdd_item = function
-  | Parameter((md,id),ty) ->
-    Mongodb.insert_constant sys "Parameter" md id (to_string print_ty ty)
-  | Definition((md,id),ty,te) ->
-    Mongodb.insert_definition sys "Definition" md id (to_string print_ty ty) (to_string print_te te)
-  | Axiom((md,id),te) ->
-    Mongodb.insert_axiom sys "Axiom" md id (to_string print_te te)
-  | Theorem((md,id),te,proof) ->
-    Mongodb.insert_theorem sys "Definition" md id
-      (to_string print_te te) (to_string print_proof proof)
-  | TyOpDef((md,id),arity) ->
-    Mongodb.insert_constant sys "Parameter" md id (to_string print_arity arity)
-
-let print_bdd ast =
-  cur_md := ast.md;
-  List.iter print_bdd_item ast.items;
-*)
+  | TypeDef _ -> failwith "[COQ] Type definitions not handled right now"

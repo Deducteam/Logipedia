@@ -1,3 +1,7 @@
+# Dune generated files
+.merlin
+logipedia
+
 # OCamlbuild files.
 _build/
 *.native
@@ -6,6 +10,10 @@ _build/
 # Dedukti files.
 *.dko
 *.stt
+interoperability/**/*.dk
+*.dep
+import/**/*.dk
+
 # LaTeX files.
 *.aux
 *.log
@@ -29,9 +37,14 @@ pvs-strategies
 *.v
 *.vo
 *.glob
+_CoqProject
+export/coq/Makefile
+export/coq/Makefile.conf
+export/coq/*.d
 
 # MATITA files
 *.ma
+export/matita/root
 
 # OPENTHEORY files
 *.thy
@@ -57,4 +70,3 @@ composer.phar
 # dune
 logipedia.install
 *.merlin
-

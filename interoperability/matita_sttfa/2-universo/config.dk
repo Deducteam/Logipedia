@@ -1,0 +1,50 @@
+def elaboration : Type.
+    []  cic.prop   --> cic.enum cic.uzero.
+    [s] cic.type s --> cic.var.
+    [s] cic.succ s --> cic.var.
+(;
+    [s1, s2, a, b] cic.Term _ (cic.prod s1 s2 _ _ a b) --> x : cic.Term s1 a -> cic.Term s2 (b x).
+    [s] cic.Term _ (cic.univ s _ _) --> cic.Univ s.
+    [s, a] cic.Term _ (cic.cast _ _ (cic.univ s _ _) _ _ a) --> cic.Term s a. ;)
+
+def output : Type.
+    []  cic.enum cic.uzero                                     --> cic.prop.
+    []  cic.enum (cic.usucc cic.uzero)                         --> cic.type.
+    []  cic.enum (cic.usucc (cic.usucc cic.uzero))             --> cic.kind.
+
+def constraints : Type.
+    [] matita_arithmetics_nat.nat     --> cic.Cumul (cic.enum (cic.usucc cic.uzero)) cic.var.
+    [] matita_basics_bool.bool        --> cic.Cumul (cic.enum (cic.usucc cic.uzero)) cic.var.
+    [] matita_basics_lists_list.list  --> cic.Cumul (cic.enum (cic.usucc cic.uzero)) cic.var.
+
+def solver : Type.
+    [] solver  --> z3.
+    [] logic   --> qfuf.
+    [] opt     --> uf.
+    [] minimum --> 3.
+    [] maximum --> 3.
+    [] print   --> true.
+
+def lra_specification : Type.
+    [a,b]   axiom a b   --> eq (succ a) b.
+    [a,b,c] rule  a b c --> eq (imax a b) c.
+    [a,b]   cumul a b   --> eq a b.
+
+def qfuf_specification : Type.
+    []  cic.Axiom cic.prop cic.type                --> cic.true.
+    []  cic.Axiom cic.type cic.kind                --> cic.true.
+
+
+    []  cic.Rule cic.prop cic.prop cic.prop        --> cic.true.
+    []  cic.Rule cic.prop cic.type cic.type        --> cic.true.
+
+    []  cic.Rule cic.type cic.prop cic.prop        --> cic.true.
+    []  cic.Rule cic.type cic.type cic.type        --> cic.true.
+
+    []  cic.Rule cic.kind cic.prop cic.prop        --> cic.true.
+    []  cic.Rule cic.kind cic.type cic.type        --> cic.true.
+    []  cic.Rule cic.kind cic.kind cic.kind        --> cic.true.
+
+    [a] cic.Cumul a a                              --> cic.true.
+
+def end : Type.

@@ -40,7 +40,7 @@ let print_te env fmt te =
   let tedk = Decompile.decompile_term env.dk te in
   Format.fprintf fmt "%a@." Pp.print_term tedk
 
-module Strategy =
+module ComputeStrategy =
 struct
   open Reduction
 
@@ -48,7 +48,6 @@ struct
 
   let beta_snf = { default_cfg with select = Some (fun _ -> false) }
   let beta_steps n = { beta_snf with nb_steps = Some n}
-  let beta_one     = { beta_snf with nb_steps = Some 1; target = Whnf }
 
   let delta (cst:Basic.name) =
     let open Rule in
@@ -73,45 +72,49 @@ end
 
 let _is_beta_normal env _te =
   let _tedk = Decompile.decompile__term env.dk _te in
-  let _tedk' = Env.unsafe_reduction ~red:Strategy.beta_snf _tedk in
+  let _tedk' = Env.unsafe_reduction ~red:ComputeStrategy.beta_snf _tedk in
   Term.term_eq _tedk _tedk'
 
 let is_beta_normal env te =
   let tedk = Decompile.decompile_term env.dk te in
-  let tedk' = Env.unsafe_reduction ~red:Strategy.beta_snf tedk in
+  let tedk' = Env.unsafe_reduction ~red:ComputeStrategy.beta_snf tedk in
   Term.term_eq tedk tedk'
 
 let _beta_reduce env _te =
   let _tedk = Decompile.decompile__term env.dk _te in
-  let _tedk' = Env.unsafe_reduction ~red:(Strategy.beta_steps 1) _tedk in
+  let _tedk' = Env.unsafe_reduction ~red:(ComputeStrategy.beta_steps 1) _tedk in
   CTerm.compile__term env _tedk'
 
 let beta_reduce env te =
   let tedk = Decompile.decompile_term env.dk te in
-  let tedk' = Env.unsafe_reduction ~red:(Strategy.beta_steps 1) tedk in
+  let tedk' = Env.unsafe_reduction ~red:(ComputeStrategy.beta_steps 1) tedk in
   CTerm.compile_term env tedk'
 
 let beta_normal env te =
   let tedk = Decompile.decompile_term env.dk te in
-  let tedk' = Env.unsafe_reduction ~red:(Strategy.beta_snf) tedk in
+  let tedk' = Env.unsafe_reduction ~red:(ComputeStrategy.beta_snf) tedk in
   CTerm.compile_term env tedk'
 
 let subst env f a =
   let thm = (judgment_of f).thm in
   let te = Decompile.to_eps (Decompile.decompile_term env.dk thm) in
-  let te = Env.unsafe_reduction ~red:(Strategy.one_whnf) te in
-  let _,b = match te with | Term.Pi(_,var,tya,tyb) -> tya,tyb | _ -> assert false in
+  let te = Env.unsafe_reduction ~red:(ComputeStrategy.one_whnf) te in
+  let _,b = match te with | Term.Pi(_,_,tya,tyb) -> tya,tyb | _ -> assert false in
   let b' = Subst.subst b a in
   let b' =
     match b' with
     | Term.App(_, a, []) -> a
     | _ -> assert false
   in
-  let b' = Env.unsafe_reduction ~red:(Strategy.beta_one) b' in
+  let b' = Env.unsafe_reduction ~red:(ComputeStrategy.beta_one) b' in
   CTerm.compile_term env b'
 
+(** This module aims to implement functions that trace reduction steps checking if two terms are convertible. *)
 module Tracer =
 struct
+
+  let fast = ref false
+
   let is_defined cst =
     let name = name_of cst in
     not (Env.is_static dloc name)
@@ -127,7 +130,7 @@ struct
   let rec get_app_redex side ctx tyf' =
     match tyf' with
     | App(Abs _, _te) -> side, ctx, Beta(tyf')
-    | App (f, a)      -> get_app_redex side (CAppL::ctx) f
+    | App (f, _)      -> get_app_redex side (CAppL::ctx) f
     | Cst(cst, _tys)  ->
       assert (is_defined cst);
       side, ctx, Delta (cst, _tys)
@@ -139,7 +142,7 @@ struct
   let rec _get_beta_redex env ctx term =
     match term with
     | TeVar _ -> raise Not_found
-    | Cst(cst,_tys) -> raise Not_found
+    | Cst(_,_tys) -> raise Not_found
     | Abs(var,_ty,_te) ->
       let env' = add_te_var env var _ty in
       _get_beta_redex env' (CAbs::ctx) _te
@@ -182,8 +185,7 @@ struct
     List.rev ctx, redex
 
   let rec _get_redex (envl,envr) ctx (left,right) =
-    (*
-    Format.eprintf "left:%a@." (print__te envl) left;
+    (* Format.eprintf "left:%a@." (print__te envl) left;
     Format.eprintf "right:%a@." (print__te envr) right; *)
     match (left,right) with
     | TeVar _, TeVar _ -> raise Equal
@@ -200,6 +202,10 @@ struct
         (false, ctx, Delta(cst',_tys'))
       else
         raise Equal
+    | Cst (cst,_tys) , _ when is_defined cst ->
+      (true, ctx, Delta(cst, _tys))
+    | _ , Cst(cst,_tys) when is_defined cst ->
+      (false, ctx, Delta(cst, _tys))
     | Abs (var, _ty, _tel), Abs (var', _ty', _ter) ->
       let envl' = add_te_var envl var _ty in
       let envr' = add_te_var envr var' _ty' in
@@ -300,17 +306,17 @@ struct
     | _, Te _te -> Te(_apply ctx newterm _te)
     | _ -> assert false
 
-  let newterm env ctx redex =
+  let newterm env _ redex =
       match redex with
       | Beta(_te) ->
         let _tedk = Decompile.decompile__term env.dk _te in
-        CTerm.compile__term env (Env.unsafe_reduction ~red:Strategy.beta_one _tedk)
+        CTerm.compile__term env (Env.unsafe_reduction ~red:ComputeStrategy.beta_one _tedk)
       | Delta(cst,_tys) ->
         let name = name_of cst in
         let _tedk = Decompile.decompile__term env.dk (Cst(cst,_tys)) in
         (* These two steps might be buggy in the future since we use SNF instead of WHNF because of the coercion eps *)
-        let _tedk' = Env.unsafe_reduction ~red:(Strategy.delta name) _tedk in
-        let _tedk' = Env.unsafe_reduction ~red:(Strategy.beta_steps (List.length _tys)) _tedk' in
+        let _tedk' = Env.unsafe_reduction ~red:(ComputeStrategy.delta name) _tedk in
+        let _tedk' = Env.unsafe_reduction ~red:(ComputeStrategy.beta_steps (List.length _tys)) _tedk' in
         CTerm.compile__term env _tedk'
 
   let _reduce env ctx redex _te =
@@ -379,9 +385,13 @@ struct
       let trace, tenf = annotate_beta env te' in
       (redex, ctx)::trace, tenf
 
+  let annotate_beta env te =
+    if !fast then
+      [], te
+    else
+      annotate_beta env te
+
   let rec _annotate env left right =
-(*    Format.eprintf "left:%a@." (print__te env) left;
-      Format.eprintf "right:%a@." (print__te env) right; *)
     if _eq env left right then
       empty_trace
     else
@@ -402,9 +412,13 @@ struct
         {left = trace_beta.left@trace''.left;
          right= trace_beta.right@trace''.right}
 
+  let _annotate env left right =
+    if !fast then
+      empty_trace
+    else
+      _annotate env left right
+
   let rec annotate env left right =
-(*    Format.eprintf "left:%a@." (print_te env) left;
-      Format.eprintf "right:%a@." (print_te env) right; *)
     if eq env left right then
       empty_trace
     else
@@ -424,4 +438,10 @@ struct
         in
         {left = trace_beta.left@trace''.left;
          right= trace_beta.right@trace''.right}
+
+  let annotate env left right =
+    if !fast then
+      empty_trace
+    else
+      annotate env left right
 end

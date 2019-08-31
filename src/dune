@@ -1,6 +1,6 @@
 (include_subdirs unqualified)
 (executable
- (name main)
- (public_name logipedia)
- (libraries dedukti ppx_deriving_yojson.runtime)
- (preprocess (pps ppx_deriving_yojson)))
+        (name main)
+        (public_name logipedia)
+        (package logipedia)
+        (libraries unix str dedukti))

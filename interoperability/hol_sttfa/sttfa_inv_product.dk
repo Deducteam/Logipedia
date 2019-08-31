@@ -1,0 +1,11 @@
+[A] sttfa.eta A --> sttfa.etap (sttfa.p A).
+
+[A,B] prod.prod (sttfa.etap (sttfa.p A)) (x => sttfa.etap (sttfa.p B)) --> sttfa.etap (sttfa.p (sttfa.arrow A B)).
+
+[B] prod.prod sttfa.type (x => sttfa.etap (B x)) --> sttfa.etap (sttfa.forallK (x : sttfa.type => B x)).
+
+[B] prod.prod sttfa.type (x => sttfa.eps (B x)) --> sttfa.eps (sttfa.forallP (x : sttfa.type => B x)).
+
+[A,B] prod.prod (sttfa.etap (sttfa.p A)) (x => sttfa.eps (B x)) --> sttfa.eps (sttfa.forall A (x : sttfa.etap (sttfa.p A)  => B x)).
+
+[A,B] prod.prod (sttfa.eps A) (x => sttfa.eps B) --> sttfa.eps (sttfa.impl A B).

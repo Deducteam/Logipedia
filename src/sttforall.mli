@@ -1,33 +1,24 @@
-val sttfa_module : Basic.mident
 
-val sttfa_type : Basic.ident
 
-val sttfa_ptype : Basic.ident
+module type DK =
+sig
 
-val sttfa_etap : Basic.ident
+end
 
-val sttfa_p : Basic.ident
+module Dk : DK
 
-val sttfa_eta : Basic.ident
+module type TYPING =
+sig
 
-val sttfa_arrow : Basic.ident
+end
 
-val sttfa_forall : Basic.ident
+module Typing : TYPING
 
-val sttfa_leibniz : Basic.ident
+module type SIGNATURE =
+sig
 
-val sttfa_impl : Basic.ident
+  val item_of_name : Ast.name -> Ast.item
 
-val sttfa_prop : Basic.ident
+end
 
-val sttfa_eps : Basic.ident
-
-val sttfa_forall_kind_type : Basic.ident
-
-val sttfa_forall_kind_prop : Basic.ident
-
-val is_sttfa_const : Basic.ident  -> Term.term -> bool
-
-val is_type : Term.term -> bool
-
-val is_term : Term.term -> bool
+module Signature : SIGNATURE
