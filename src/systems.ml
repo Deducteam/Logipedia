@@ -1,6 +1,6 @@
-type system = [`Coq | `Matita | `Pvs | `OpenTheory | `Lean]
+type system = [`Coq | `Matita | `Pvs | `OpenTheory | `Lean | `Json ]
 
-let systems = [`Coq ; `Matita ; `Pvs ; `OpenTheory ; `Lean]
+let systems = [`Coq ; `Matita ; `Pvs ; `OpenTheory ; `Lean ; `Json ]
 
 let system_of_string : string -> system = fun s ->
   if s = "coq" then
@@ -13,6 +13,8 @@ let system_of_string : string -> system = fun s ->
     `Pvs
   else if s = "lean" then
     `Lean
+  else if s = "json" then
+    `Json
   else
     failwith (Format.sprintf "%s is not among the supported systems@." s)
 
@@ -22,3 +24,4 @@ let string_of_system : system -> string = function
   | `OpenTheory -> "opentheory"
   | `Pvs -> "pvs"
   | `Lean -> "lean"
+  | `Json -> "json"

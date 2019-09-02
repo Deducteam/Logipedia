@@ -43,6 +43,13 @@ struct
   let extension = "lean"
 end
 
+module JSON : E =
+struct
+  include Json
+  let system = `Json
+  let extension = "json"
+end
+
 let of_system : system -> (module E) = fun sys ->
   match sys with
   | `Pvs        -> (module PVS)
@@ -50,3 +57,4 @@ let of_system : system -> (module E) = fun sys ->
   | `Matita     -> (module MATITA)
   | `OpenTheory -> (module OPENTHEORY)
   | `Lean       -> (module LEAN)
+  | `Json       -> (module JSON)
