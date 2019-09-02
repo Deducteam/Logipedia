@@ -2,16 +2,24 @@
  jobs:
    ddk_type_check:
      docker:
-       - image: ocaml/opam2:ubuntu-18.04-ocaml-4.05
+       - image: ocaml/opam2:alpine
      steps:
+       - run: sudo apk add m4
+       - run:
+           name: opam_deps
+           command: |
+             opam update
+             opam install --deps-only dedukti
+       - run:
+           name: dk_install
+           command: |
+             eval $(opam env)
+             git clone https://github.com/Deducteam/Dedukti.git
+             cd Dedukti
+             make
+             make install
        - checkout
-       - run: sudo apt-get install -qy build-essential m4 unzip git time zip
-       - run: opam update
-       - run: opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
-       - run: git clone https://github.com/Deducteam/Dedukti.git && cd Dedukti && make && make install
-       - run: opam install coq
-       - run: eval $(opam env)
-       - run: make coq
+       - run: make
 
  workflows:
   version: 2.1
