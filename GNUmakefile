@@ -64,6 +64,7 @@ $(IPATH)/%.dko: $(IPATH)/%.dk theories/$(THEORY).dko
 #### Coq ###########################################################
 
 COQPATH = export/coq
+_ = $(shell mkdir -p export/coq)
 VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
 
 $(COQPATH)/%.v: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_v $(LOGIPEDIA)
@@ -86,6 +87,7 @@ coq: $(COQPATH)/Makefile $(VFILES)
 #### Matita ########################################################
 
 MATITAPATH = export/matita
+_ := $(shell mkdir -p export/matita)
 MAFILES=$(addprefix $(MATITAPATH)/, $(addsuffix .ma, $(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
 
 $(MATITAPATH)/%.ma: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_ma $(LOGIPEDIA)

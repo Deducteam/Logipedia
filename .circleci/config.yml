@@ -8,8 +8,10 @@
        - run: sudo apt-get install -qy build-essential m4 unzip git time zip
        - run: opam update
        - run: opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
-       - run: opam install mongo -qy
-       - run: eval $(opam env) && make dedukti
+       - run: git clone https://github.com/Deducteam/Dedukti.git && cd Dedukti && make && make install
+       - run: opam install coq
+       - run: eval $(opam env)
+       - run: make coq
 
  workflows:
   version: 2.1
