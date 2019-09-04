@@ -1,6 +1,6 @@
  version: 2.1
  jobs:
-   ddk_type_check:
+   logipedia_build:
      docker:
        - image: ocaml/opam2:alpine
      steps:
@@ -10,15 +10,7 @@
            command: |
              opam switch 4.07
              opam update
-             opam install dedukti
-       # - run:
-       #     name: dk_install
-       #     command: |
-       #       eval $(opam env)
-       #       git clone https://github.com/Deducteam/Dedukti.git
-       #       cd Dedukti
-       #       make
-       #       make install
+             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
        - checkout
        - run: make
 
@@ -26,4 +18,4 @@
   version: 2.1
   build:
     jobs:
-      - ddk_type_check
+      - logipedia_build
