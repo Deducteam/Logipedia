@@ -10,15 +10,15 @@
            command: |
              opam switch 4.07.1
              opam update
-             opam install --deps-only dedukti
-       - run:
-           name: dk_install
-           command: |
-             eval $(opam env)
-             git clone https://github.com/Deducteam/Dedukti.git
-             cd Dedukti
-             make
-             make install
+             opam install dedukti
+       # - run:
+       #     name: dk_install
+       #     command: |
+       #       eval $(opam env)
+       #       git clone https://github.com/Deducteam/Dedukti.git
+       #       cd Dedukti
+       #       make
+       #       make install
        - checkout
        - run: make
 
