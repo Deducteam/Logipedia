@@ -27,6 +27,7 @@ jobs:
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
             opam install coq
             eval $(opam env)
+          no_output_timeout: 30m
       - checkout
       - run: make coq
 workflows:
