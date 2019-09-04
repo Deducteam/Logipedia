@@ -13,9 +13,24 @@
              opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
        - checkout
        - run: make
-
+   coq_exp:
+     docker:
+       - image: ocaml/opam2:alpine
+      steps:
+        - run: sudo apk add m4
+        - run:
+            name: opam_deps
+            command: |
+              opam switch 4.07
+              opam update
+              opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
+              opam install coq
+              eval $(opam env)
+        - checkout
+        - run: make coq
  workflows:
   version: 2.1
   build:
     jobs:
       - logipedia_build
+      - coq_exp
