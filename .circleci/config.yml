@@ -8,7 +8,7 @@
        - run:
            name: opam_deps
            command: |
-             opam switch 4.07.1
+             opam switch 4.07
              opam update
              opam install dedukti
        # - run:
