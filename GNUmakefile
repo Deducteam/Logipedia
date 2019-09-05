@@ -11,7 +11,7 @@ LOGIPEDIA = _build/default/src/main.exe
 logipedia: bin
 	@echo "[BUILD EXECUTABLE] logipedia"
 	@rm logipedia 2>/dev/null || true
-	@ln -s _build/default/src/main.exe logipedia
+	@ln -s _build/install/default/bin/logipedia logipedia
 
 .PHONY: all
 all: bin
