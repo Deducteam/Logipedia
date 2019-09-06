@@ -3,4 +3,5 @@
         (name main)
         (public_name logipedia)
         (package logipedia)
-        (libraries unix str dedukti))
+        (preprocess (pps ppx_deriving_yojson))
+        (libraries unix str dedukti ppx_deriving_yojson.runtime))

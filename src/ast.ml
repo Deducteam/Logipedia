@@ -1,6 +1,8 @@
 (** This file defines a full AST of STTforall.
     Informations are redundant to facilitate exportation. *)
 
+(** {b NOTE} underscored types are monomorphic, not underscored are. *)
+
 type ty_var  = string
 
 type te_var  = string
