@@ -1,7 +1,8 @@
 (** This file defines a full AST of STTforall.
     Informations are redundant to facilitate exportation. *)
 
-(** {b NOTE} underscored types are monomorphic, not underscored are. *)
+(** {b NOTE} underscored types are monomorphic, not underscored are
+    polymorphic. *)
 
 type ty_var  = string
 

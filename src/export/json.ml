@@ -55,14 +55,24 @@ let rec ppt_of_te : Ast.te -> Jt.Ppterm.t = function
       ; body = ppt_of_te te }
   | Te(te)           -> ppt_of__te te
 
-let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit =
-  fun _ ?mdeps:_ _ -> failwith "not implemented"
+let string_of_ppt : Jt.Ppterm.t -> string = fun x ->
+  Jt.Ppterm.to_yojson x |> Yojson.Safe.pretty_to_string
 
 let pretty_print_item : Ast.item -> string = function
+  | Parameter(n, ty)      ->
+    let ppty = ppt_of_ty ty |> string_of_ppt in
+    Format.sprintf "Parameter %s: %s" (snd n) ppty
   | Definition(n, ty, te) ->
-    let ppty = ppt_of_ty ty in
-    let ppte = ppt_of_te te in
-    Format.sprintf "Def %s: %s : %s"
-      (snd n) (Yojson.Safe.pretty_to_string (Jt.Ppterm.to_yojson ppte))
-      (Yojson.Safe.pretty_to_string (Jt.Ppterm.to_yojson ppty))
+    let ppty = ppt_of_ty ty |> string_of_ppt in
+    let ppte = ppt_of_te te |> string_of_ppt in
+    Format.sprintf "Def %s: %s : %s" (snd n) ppte ppty
+  | Axiom(n, te)          ->
+    let ppte = ppt_of_te te |> string_of_ppt in
+    Format.sprintf "Axiom %s: %s" (snd n) ppte
   | _ -> failwith "not implemented"
+
+let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit =
+  fun fmt ?mdeps:_ { md = _ ; dep = _ ; items } ->
+  let pp_sep fmt () = Format.fprintf fmt "\n" in
+  let pp_item fmt it = Format.fprintf fmt "%s" (pretty_print_item it) in
+  Format.pp_print_list ~pp_sep pp_item fmt items
