@@ -19,21 +19,22 @@ and ppt_of__ty_args : Ast._ty -> Ast._ty list -> Jt.Ppterm.t = fun t stk ->
 
 and ppt_of__te_args : Ast._te -> Ast._te list -> Jt.Ppterm.t = fun t stk ->
   match t with
-  | TeVar(v)       -> Jt.Ppterm.Var(ppv_of_tev v stk)
-  | Abs(v, ty, te) ->
+  | TeVar(v_symb)         ->
+    Jt.Ppterm.Var { v_symb ; v_args = List.map ppt_of__te stk }
+  | Abs(bound, ty, te)    ->
      Jt.Ppterm.Binder
-       { b_symb = "λ" ; bound = v ; annotation = Some(ppt_of__ty ty)
+       { b_symb = "λ" ; bound ; annotation = Some(ppt_of__ty ty)
        ; body = ppt_of__te te }
   | App(t, u)      -> ppt_of__te_args t (u :: stk)
-  | Forall(v, ty, te) ->
+  | Forall(bound, ty, te) ->
      Jt.Ppterm.Binder
-       { b_symb = "∀" ; bound = v ; annotation = Some(ppt_of__ty ty)
+       { b_symb = "∀" ; bound ; annotation = Some(ppt_of__ty ty)
        ; body = ppt_of__te te }
-  | AbsTy(tyv, te) ->
+  | AbsTy(bound, te)      ->
      Jt.Ppterm.Binder
-       { b_symb = "Λ" ; bound = tyv ; annotation = None ; body = ppt_of__te te }
-  | Impl(_, _)     -> failwith "not implemented"
-  | Cst(_, _)      -> failwith "not implemented"
+       { b_symb = "Λ" ; bound ; annotation = None ; body = ppt_of__te te }
+  | Impl(_, _)            -> failwith "not implemented"
+  | Cst(_, _)             -> failwith "not implemented"
 
 and ppv_of_tyv : Ast.ty_var -> Ast._ty list -> Jt.Ppterm.var =
   fun v_symb args -> { v_symb ; v_args = List.map ppt_of__ty args }
@@ -42,18 +43,16 @@ let ppv_of_tev : Ast.te_var -> Ast._te list -> Jt.Ppterm.var =
   fun v_symb args -> { v_symb ; v_args = List.map ppt_of__te args }
 
 let rec ppt_of_ty : Ast.ty -> Jt.Ppterm.t = function
-  | ForallK(tyv, ty) ->
+  | ForallK(bound, ty) ->
     Jt.Ppterm.Binder
-      { b_symb = "∀" ; bound = tyv ; annotation = None
-      ; body = ppt_of_ty ty}
-  | Ty(ty)           -> ppt_of__ty ty
+      { b_symb = "∀" ; bound ; annotation = None ; body = ppt_of_ty ty}
+  | Ty(ty)             -> ppt_of__ty ty
 
 let rec ppt_of_te : Ast.te -> Jt.Ppterm.t = function
-  | ForallP(tyv, te) ->
+  | ForallP(bound, te) ->
     Jt.Ppterm.Binder
-      { b_symb = "∀" ; bound = tyv ; annotation = None
-      ; body = ppt_of_te te }
-  | Te(te)           -> ppt_of__te te
+      { b_symb = "∀" ; bound ; annotation = None ; body = ppt_of_te te }
+  | Te(te)             -> ppt_of__te te
 
 let string_of_ppt : Jt.Ppterm.t -> string = fun x ->
   Jt.Ppterm.to_yojson x |> Yojson.Safe.pretty_to_string
