@@ -70,20 +70,21 @@ $(IPATH)/%.dko: $(IPATH)/%.dk theories/$(THEORY).dko
 	@echo "[CHECK] $@"
 	$(DKCHECK) -e -I theories -I $(IPATH) $<
 
-DKOS = $(foreach dk,$(wildcard $(IPATH)/*.dk),$(patsubst %.dk,%.dko,$(dk)))
+DKS = $(wildcard $(IPATH)/*.dk)
+DKOS = $(patsubst %.dk,%.dko,$(DKS))
 dedukti: $(DKOS)
 
 #### Coq ###########################################################
 
 COQPATH = export/coq
-_ := $(shell mkdir -p export/coq)
-VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
+VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(basename $(notdir $(DKS)))))
 
 $(COQPATH)/%.v: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_v \
 $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --fast --export coq $(<:.dko=.dk) -o $@
-	@mv $@ $(addsuffix .v, $(subst -,_, $(subst .,_,$(basename $@)))) || true 2>/dev/null # avoid fail if there is no change
+	@mv $@ $(addsuffix .v, $(subst -,_, $(subst .,_,$(basename $@)))) \
+|| true 2>/dev/null # avoid fail if there is no change
 
 $(COQPATH)/_CoqProject: $(VFILES)
 	@cd $(COQPATH) && ls *.v > _CoqProject
@@ -100,7 +101,6 @@ coq: $(COQPATH)/Makefile $(VFILES)
 #### Matita ########################################################
 
 MATITAPATH = export/matita
-_ := $(shell mkdir -p export/matita)
 MAFILES=$(addprefix $(MATITAPATH)/, $(addsuffix .ma, $(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
 
 $(MATITAPATH)/%.ma: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_ma $(LOGIPEDIA)
@@ -256,7 +256,6 @@ distclean: clean
 	@find . -name "*.vo"         -exec rm {} \;
 	@find . -name "*.glob"       -exec rm {} \;
 	@find . -name "*.lean"       -exec rm {} \;
-#	@find . -name "*.json"       -exec rm {} \;
 	@find . -name "*.art"        -exec rm {} \;
 	@find . -name "*.thy"        -exec rm {} \;
 	@find . -name "*.summary"    -exec rm {} \;
