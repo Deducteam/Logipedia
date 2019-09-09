@@ -48,7 +48,8 @@ theories/hol_sttfa.dko: theories/hol_sttfa.dk theories/sttfa.dko theories/hol.dk
 
 PACKAGE = arith_fermat
 THEORY = sttfa
-IPATH = import/dedukti/$(THEORY)/$(PACKAGE)
+DKIMP = import/dedukti
+IPATH = $(DKIMP)/$(THEORY)/$(PACKAGE)
 DKS = $(wildcard $(IPATH)/*.dk)
 SORTEDDKS = $(shell dkdep -s --ignore -I $(IPATH) $(IPATH)/*.dk)
 LOGIPEDIAOPTS = -I $(IPATH) -I theories --from $(THEORY)
@@ -56,6 +57,11 @@ LOGIPEDIAOPTS = -I $(IPATH) -I theories --from $(THEORY)
 #### Export ########################################################
 
 #### Dedukti #######################################################
+
+$(DKIMP)/$(THEORY):
+	@cd $(DKIMP) && tar xjf $(THEORY).tar.bz2
+
+$(IPATH)/%.dk: $(DKIMP)/$(THEORY)
 
 $(IPATH)/%.dko: $(IPATH)/%.dk theories/$(THEORY).dko
 	@echo "[CHECK] $@"
@@ -67,7 +73,8 @@ COQPATH = export/coq
 _ = $(shell mkdir -p export/coq)
 VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
 
-$(COQPATH)/%.v: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_v $(LOGIPEDIA)
+$(COQPATH)/%.v: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_v \
+$(LOGIPEDIA)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --fast --export coq $(<:.dko=.dk) -o $@
 	@mv $@ $(addsuffix .v, $(subst -,_, $(subst .,_,$(basename $@)))) || true 2>/dev/null # avoid fail if there is no change
@@ -243,10 +250,11 @@ distclean: clean
 	@find . -name "*.vo"         -exec rm {} \;
 	@find . -name "*.glob"       -exec rm {} \;
 	@find . -name "*.lean"       -exec rm {} \;
-	@find . -name "*.json"       -exec rm {} \;
+#	@find . -name "*.json"       -exec rm {} \;
 	@find . -name "*.art"        -exec rm {} \;
 	@find . -name "*.thy"        -exec rm {} \;
 	@find . -name "*.summary"    -exec rm {} \;
 	@find . -name "*.beautified" -exec rm {} \;
 	@find . -name ".pvscontext"  -exec rm {} \;
-	@rm -rf /tmp/fermat
+	@-$(RM) -r /tmp/fermat
+	@-$(RM) -r $(DKIMP)/$(THEORY)
