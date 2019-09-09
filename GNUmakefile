@@ -28,11 +28,8 @@ doc:
 
 #### Producing the theory file #####################################
 
-theories/sttfa.dko: theories/sttfa.dk
-	@echo "[CHECK] $^"
-	@$(DKCHECK) -e $^
-
-theories/hol.dko: theories/hol.dk
+theories/hol_sttfa.dko: theories/hol_sttfa.dk theories/sttfa.dko \
+theories/hol.dko theories/hol_axioms.dko
 	@echo "[CHECK] $<"
 	@$(DKCHECK) -I theories -e $<
 
@@ -40,9 +37,10 @@ theories/hol_axioms.dko: theories/hol_axioms.dk theories/hol.dko
 	@echo "[CHECK] $<"
 	@$(DKCHECK) -I theories -e $<
 
-theories/hol_sttfa.dko: theories/hol_sttfa.dk theories/sttfa.dko theories/hol.dko theories/hol_axioms.dko
-	@echo "[CHECK] $<"
-	@$(DKCHECK) -I theories -e $<
+theories/%.dko: theories/%.dk
+	@echo "[CHECK] $^"
+	@$(DKCHECK) -e -I theories/ $^
+
 
 #### Producing the Dedukti library #################################
 
@@ -50,27 +48,35 @@ PACKAGE = arith_fermat
 THEORY = sttfa
 DKIMP = import/dedukti
 IPATH = $(DKIMP)/$(THEORY)/$(PACKAGE)
-DKS = $(wildcard $(IPATH)/*.dk)
+
 SORTEDDKS = $(shell dkdep -s --ignore -I $(IPATH) $(IPATH)/*.dk)
 LOGIPEDIAOPTS = -I $(IPATH) -I theories --from $(THEORY)
+
 
 #### Export ########################################################
 
 #### Dedukti #######################################################
 
+.depend_dkimp: $(DKIMP)/$(THEORY)
+	$(eval _ := $(shell cd $(DKIMP) && [ ! -d $(THEORY) ] && \
+tar xjf $(THEORY).tar.bz2))
+	$(DKDEP) -I theories -I $(IPATH) $(wildcard $(IPATH)/*.dk) -o $@
+-include .depend_dkimp
+
 $(DKIMP)/$(THEORY):
 	@cd $(DKIMP) && tar xjf $(THEORY).tar.bz2
 
-$(IPATH)/%.dk: $(DKIMP)/$(THEORY)
-
 $(IPATH)/%.dko: $(IPATH)/%.dk theories/$(THEORY).dko
 	@echo "[CHECK] $@"
-	@$(DKCHECK) -e -I theories -I $(IPATH) $<
+	$(DKCHECK) -e -I theories -I $(IPATH) $<
+
+DKOS = $(foreach dk,$(wildcard $(IPATH)/*.dk),$(patsubst %.dk,%.dko,$(dk)))
+dedukti: $(DKOS)
 
 #### Coq ###########################################################
 
 COQPATH = export/coq
-_ = $(shell mkdir -p export/coq)
+_ := $(shell mkdir -p export/coq)
 VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
 
 $(COQPATH)/%.v: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_v \
