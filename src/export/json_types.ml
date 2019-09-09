@@ -27,6 +27,7 @@ struct
 end
 
 type dependency = string list
+[@@deriving yojson]
 
 type general =
   { name : string

@@ -58,17 +58,24 @@ let string_of_ppt : Jt.Ppterm.t -> string = fun x ->
   Jt.Ppterm.to_yojson x |> Yojson.Safe.pretty_to_string
 
 let pretty_print_item : Ast.item -> string = function
-  | Parameter(n, ty)      ->
+  | Parameter(n, ty)           ->
     let ppty = ppt_of_ty ty |> string_of_ppt in
     Format.sprintf "Parameter %s: %s" (snd n) ppty
-  | Definition(n, ty, te) ->
+  | Definition((_,id), ty, te) ->
     let ppty = ppt_of_ty ty |> string_of_ppt in
     let ppte = ppt_of_te te |> string_of_ppt in
-    Format.sprintf "Def %s: %s : %s" (snd n) ppte ppty
-  | Axiom(n, te)          ->
+    Format.sprintf "Definition %s: %s : %s" id ppte ppty
+  | Axiom((_,id), te)          ->
     let ppte = ppt_of_te te |> string_of_ppt in
-    Format.sprintf "Axiom %s: %s" (snd n) ppte
-  | _ -> failwith "not implemented"
+    Format.sprintf "Axiom %s: %s" id ppte
+  | Theorem((_,id), te, _)     ->
+    let ppte = ppt_of_te te |> string_of_ppt in
+    Format.sprintf "Theorem %s: %s" id ppte
+  | TypeDecl((_,id), _)        -> Format.sprintf "Type %s" id
+  | TypeDef((_,id), _, ty)     ->
+    (* TODO print type vars *)
+    let ppty = ppt_of__ty ty |> string_of_ppt in
+    Format.sprintf "Type %s: %s" id ppty
 
 let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit =
   fun fmt ?mdeps:_ { md = _ ; dep = _ ; items } ->
