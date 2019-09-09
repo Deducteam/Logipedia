@@ -6,26 +6,26 @@ PYTHON  = python3
 OT      = opentheory
 PROVEIT = proveit
 
-LOGIPEDIA = _build/default/src/main.exe
-
-logipedia: bin
-	@echo "[BUILD EXECUTABLE] logipedia"
-	@rm logipedia 2>/dev/null || true
-	@ln -s _build/install/default/bin/logipedia logipedia
+LOGIPEDIA = _build/install/default/bin/logipedia
 
 .PHONY: all
 all: bin
 
+logipedia: bin
+	@echo "[BUILD EXECUTABLE] logipedia"
+	-$(RM) logipedia
+	@ln -s $(LOGIPEDIA) logipedia
+
+.PHONY: $(LOGIPEDIA)
 $(LOGIPEDIA):
 	@dune build
+
+bin: $(LOGIPEDIA)
 
 .PHONY: doc
 doc:
 	@dune build @doc
 
-.PHONY: bin.
-bin:
-	@dune build
 #### Producing the theory file #####################################
 
 theories/sttfa.dko: theories/sttfa.dk
