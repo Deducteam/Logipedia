@@ -29,7 +29,7 @@ end
 type dependency = string list
 [@@deriving yojson]
 
-type general =
+type item =
   { name : string
   ; taxonomy : string
   ; term : Ppterm.t
@@ -49,7 +49,4 @@ type export =
   (** A textual representation of the element in the foreign system *) }
   [@@deriving yojson]
 
-type page =
-  { gen : general
-  ; exp : export list }
-  [@@deriving yojson]
+type document = item list

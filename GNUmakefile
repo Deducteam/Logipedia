@@ -167,6 +167,18 @@ $(PVSPATH)/%.summary: $(PVSPATH)/%.pvs
 pvs: $(PVSSUM)
 	@echo "[OT] CHECKED"
 
+#### Json ##########################################################
+
+jspath = export/json
+jsfiles = $(addprefix $(jspath)/, $(addsuffix .json, $(IMP)))
+
+export/json/%.json: $(IPATH)/%.dko $(LOGIPEDIA)
+	@mkdir -p $(jspath)
+	$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export json $(<:.dko=.dk) -o $@
+
+.PHONY: json
+json: $(jsfiles)
+
 #### web ###########################################################
 
 export/web/pvs/%.zip : theories/sttfa.dko $(LOGIPEDIA)

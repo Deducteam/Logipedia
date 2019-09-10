@@ -14,8 +14,11 @@ and ppt_of__ty_args : Ast._ty -> Ast._ty list -> Jt.Ppterm.t = fun t stk ->
   match t with
   | TyVar(v) -> Jt.Ppterm.Var(ppv_of_tyv v stk)
   | Arrow(m, n) -> ppt_of__ty_args m (n :: stk)
-  | TyOp(_, _)  -> failwith "not implemented"
-  | Prop        -> failwith "not implemented"
+  | TyOp((p,id), tys) ->
+    Jt.Ppterm.Const { c_symb = [p; id] ; c_args = List.map ppt_of__ty tys }
+  | Prop -> Jt.Ppterm.Const { c_symb = ["Prop"]
+                            (* c_args should probably be empty *)
+                            ; c_args = List.map ppt_of__ty stk }
 
 and ppt_of__te_args : Ast._te -> Ast._te list -> Jt.Ppterm.t = fun t stk ->
   match t with
@@ -33,8 +36,11 @@ and ppt_of__te_args : Ast._te -> Ast._te list -> Jt.Ppterm.t = fun t stk ->
   | AbsTy(bound, te)      ->
      Jt.Ppterm.Binder
        { b_symb = "Λ" ; bound ; annotation = None ; body = ppt_of__te te }
-  | Impl(_, _)            -> failwith "not implemented"
-  | Cst(_, _)             -> failwith "not implemented"
+  | Impl(t, u)            ->
+    Jt.Ppterm.Const { c_symb = ["⇒"]
+                    ; c_args = List.map ppt_of__te (t::u::stk) }
+  | Cst((p,id), _)        ->
+    Jt.Ppterm.Const { c_symb = [p; id] ; c_args = List.map ppt_of__te stk }
 
 and ppv_of_tyv : Ast.ty_var -> Ast._ty list -> Jt.Ppterm.var =
   fun v_symb args -> { v_symb ; v_args = List.map ppt_of__ty args }
@@ -54,28 +60,37 @@ let rec ppt_of_te : Ast.te -> Jt.Ppterm.t = function
       { b_symb = "∀" ; bound ; annotation = None ; body = ppt_of_te te }
   | Te(te)             -> ppt_of__te te
 
-let string_of_ppt : Jt.Ppterm.t -> string = fun x ->
-  Jt.Ppterm.to_yojson x |> Yojson.Safe.pretty_to_string
-
-let pretty_print_item : Ast.item -> string = function
-  | Parameter(n, ty)           ->
-    let ppty = ppt_of_ty ty |> string_of_ppt in
-    Format.sprintf "Parameter %s: %s" (snd n) ppty
+let jsitem_of_item : Ast.item -> Jt.item =
+  (* FIXME many constructions are erroneous. *)
+  function
   | Definition((_,id), ty, te) ->
-    let ppty = ppt_of_ty ty |> string_of_ppt in
-    let ppte = ppt_of_te te |> string_of_ppt in
-    Format.sprintf "Definition %s: %s : %s" id ppte ppty
+    let ppty = ppt_of_ty ty in
+    let ppte = ppt_of_te te in
+    { name = id ; taxonomy = "definition" ; term = ppte ; body = ppty
+    ; deps = [] ; theory = [] ; exp = [] }
   | Axiom((_,id), te)          ->
-    let ppte = ppt_of_te te |> string_of_ppt in
-    Format.sprintf "Axiom %s: %s" id ppte
+    let ppte = ppt_of_te te in
+    { name = id ; taxonomy = "axiom" ; term = ppte ; body = ppte
+    ; deps = [] ; theory = [] ; exp = [] }
   | Theorem((_,id), te, _)     ->
-    let ppte = ppt_of_te te |> string_of_ppt in
-    Format.sprintf "Theorem %s: %s" id ppte
-  | TypeDecl((_,id), _)        -> Format.sprintf "Type %s" id
-  | TypeDef((_,id), _, ty)     ->
-    (* TODO print type vars *)
-    let ppty = ppt_of__ty ty |> string_of_ppt in
-    Format.sprintf "Type %s: %s" id ppty
+    let ppte = ppt_of_te te in
+    { name = id ; taxonomy = "axiom" ; term = ppte ; body = ppte
+    ; deps = [] ; theory = [] ; exp = [] }
+  | TypeDef((_,id), _, _ty)    ->
+    let ppty = ppt_of__ty _ty in
+    { name = id ; taxonomy = "definition" ; term = ppty ; body = ppty
+    ; deps = [] ; theory = [] ; exp = [] }
+  | TypeDecl((_,id), _)        ->
+    let dummy = Jt.Ppterm.Var { v_symb = "dummy" ; v_args = [] } in
+    { name = id ; taxonomy = "definition" ; term = dummy ; body = dummy
+    ; deps = [] ; theory = [] ; exp = [] }
+  | Parameter((_,id), ty)      ->
+    let ppty = ppt_of_ty ty in
+    { name = id ; taxonomy = "parameter" ; term = ppty ; body = ppty
+    ; deps = [] ; theory = [] ; exp = [] }
+
+let pretty_print_item : Ast.item -> string = fun it ->
+  jsitem_of_item it |> Jt.item_to_yojson |> Yojson.Safe.pretty_to_string
 
 let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit =
   fun fmt ?mdeps:_ { md = _ ; dep = _ ; items } ->
