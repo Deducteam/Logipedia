@@ -57,27 +57,29 @@ LOGIPEDIAOPTS = -I $(IPATH) -I theories --from $(THEORY)
 
 #### Dedukti #######################################################
 
+$(DKIMP)/$(THEORY):
+	@cd $(DKIMP) && tar xjf $(THEORY).tar.bz2
+
 .depend_dkimp: $(DKIMP)/$(THEORY)
 	$(eval _ := $(shell cd $(DKIMP) && [ ! -d $(THEORY) ] && \
 tar xjf $(THEORY).tar.bz2))
 	$(DKDEP) -I theories -I $(IPATH) $(wildcard $(IPATH)/*.dk) -o $@
 -include .depend_dkimp
 
-$(DKIMP)/$(THEORY):
-	@cd $(DKIMP) && tar xjf $(THEORY).tar.bz2
+DKS = $(wildcard $(IPATH)/*.dk)
+DKOS = $(patsubst %.dk,%.dko,$(DKS))
+IMP = $(notdir $(basename $(DKS)))
 
 $(IPATH)/%.dko: $(IPATH)/%.dk theories/$(THEORY).dko
 	@echo "[CHECK] $@"
 	$(DKCHECK) -e -I theories -I $(IPATH) $<
 
-DKS = $(wildcard $(IPATH)/*.dk)
-DKOS = $(patsubst %.dk,%.dko,$(DKS))
 dedukti: $(DKOS)
 
 #### Coq ###########################################################
 
 COQPATH = export/coq
-VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(basename $(notdir $(DKS)))))
+VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(IMP)))
 
 $(COQPATH)/%.v: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_v \
 $(LOGIPEDIA)
@@ -101,7 +103,7 @@ coq: $(COQPATH)/Makefile $(VFILES)
 #### Matita ########################################################
 
 MATITAPATH = export/matita
-MAFILES=$(addprefix $(MATITAPATH)/, $(addsuffix .ma, $(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
+MAFILES=$(addprefix $(MATITAPATH)/, $(addsuffix .ma, $(IMP)))
 
 $(MATITAPATH)/%.ma: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_ma $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
@@ -118,7 +120,7 @@ matita: $(MAFILES) $(MATITAPATH)/root
 #### Lean ##########################################################
 
 LEANPATH = export/lean
-LEANFILES=$(addprefix $(LEANPATH)/,$(addsuffix .lean,$(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
+LEANFILES=$(addprefix $(LEANPATH)/,$(addsuffix .lean,$(IMP)))
 
 $(LEANPATH)/%.lean: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_lean $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
@@ -132,7 +134,7 @@ lean: $(LEANFILES)
 #### OpenTheory ####################################################
 
 OTPATH = export/opentheory
-OTFILES=$(addprefix $(OTPATH)/,$(addsuffix .art,$(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
+OTFILES=$(addprefix $(OTPATH)/,$(addsuffix .art,$(IMP)))
 THYFILE=$(OTPATH)/$(PACKAGE).thy
 
 $(OTPATH)/%.art: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_art $(LOGIPEDIA)
@@ -149,8 +151,8 @@ opentheory: $(OTFILES)
 
 
 PVSPATH = export/pvs
-PVSFILES=$(addprefix $(PVSPATH)/,$(addsuffix .pvs,$(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
-PVSSUM=$(addprefix $(PVSPATH)/,$(addsuffix .summary,$(basename $(notdir $(wildcard $(IPATH)/*.dk)))))
+PVSFILES=$(addprefix $(PVSPATH)/,$(addsuffix .pvs,$(IMP)))
+PVSSUM=$(addprefix $(PVSPATH)/,$(addsuffix .summary,$(IMP)))
 # For some weird reason, Make consider .pvs are temporary
 .PRECIOUS: library/%.pvs
 $(PVSPATH)/%.pvs: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_pvs $(LOGIPEDIA)
