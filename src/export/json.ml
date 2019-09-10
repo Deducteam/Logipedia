@@ -15,7 +15,8 @@ and ppt_of__ty_args : Ast._ty -> Ast._ty list -> Jt.Ppterm.t = fun t stk ->
   | TyVar(v) -> Jt.Ppterm.Var(ppv_of_tyv v stk)
   | Arrow(m, n) -> ppt_of__ty_args m (n :: stk)
   | TyOp((p,id), tys) ->
-    Jt.Ppterm.Const { c_symb = [p; id] ; c_args = List.map ppt_of__ty tys }
+    Jt.Ppterm.Const { c_symb = [p; id]
+                    ; c_args = List.map ppt_of__ty (tys @ stk) }
   | Prop -> Jt.Ppterm.Const { c_symb = ["Prop"]
                             (* c_args should probably be empty *)
                             ; c_args = List.map ppt_of__ty stk }
@@ -94,6 +95,5 @@ let pretty_print_item : Ast.item -> string = fun it ->
 
 let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit =
   fun fmt ?mdeps:_ { md = _ ; dep = _ ; items } ->
-  let pp_sep fmt () = Format.fprintf fmt "\n" in
-  let pp_item fmt it = Format.fprintf fmt "%s" (pretty_print_item it) in
-  Format.pp_print_list ~pp_sep pp_item fmt items
+  let js_items = List.map jsitem_of_item items in
+  Yojson.Safe.pretty_print fmt (Jt.document_to_yojson js_items)

@@ -50,3 +50,4 @@ type export =
   [@@deriving yojson]
 
 type document = item list
+[@@deriving yojson]
