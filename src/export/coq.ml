@@ -102,7 +102,7 @@ let rec print_proof oc = function
   | ForallE(_,proof,_te) -> Format.fprintf oc "(%a) (%a)" print_proof proof print__te _te
   | ForallI(_,proof,var) ->
     let j' = judgment_of proof in
-    let _,_ty = List.find (fun (x,_ty) -> if x = var then true else false) j'.te in
+    let _,_ty = List.find (fun (x,_) -> x = var) j'.te in
     Format.fprintf oc "fun (%a:%a) => %a" print_var var print__ty _ty print_proof proof
   | ForallPE(_,proof,_ty) -> Format.fprintf oc "(%a) (%a)" print_proof proof print__ty _ty
   | ForallPI(_,proof,var) ->
