@@ -16,11 +16,12 @@ logipedia: bin
 	-$(RM) logipedia
 	@ln -s $(LOGIPEDIA) logipedia
 
+bin: $(LOGIPEDIA)
+
 .PHONY: $(LOGIPEDIA)
 $(LOGIPEDIA):
 	@dune build
 
-bin: $(LOGIPEDIA)
 
 .PHONY: doc
 doc:
@@ -57,12 +58,9 @@ LOGIPEDIAOPTS = -I $(IPATH) -I theories --from $(THEORY)
 
 #### Dedukti #######################################################
 
+# TODO make it more Make-ish (i.e. no shell shenanigans)
 $(DKIMP)/$(THEORY):
-	@cd $(DKIMP) && tar xjf $(THEORY).tar.bz2
-
-.depend_dklib: $(DKIMP)/$(THEORY)
-	$(DKDEP) -I theories -I $(IPATH) $(wildcard $(IPATH)/*.dk) -o $@
-include .depend_dklib
+	@cd $(DKIMP) && [ -d $(THEORY).tar.bz2 ] && tar xjf $(THEORY).tar.bz2
 
 DKS = $(wildcard $(IPATH)/*.dk)
 DKOS = $(patsubst %.dk,%.dko,$(DKS))
@@ -73,8 +71,9 @@ $(IPATH)/%.dko: $(IPATH)/%.dk theories/$(THEORY).dko
 	@$(DKCHECK) -e -I theories -I $(IPATH) $<
 
 .PHONY: dedukti
-dedukti: theories/$(THEORY).dko $(IPATH)/fermat.dko
-	$(MAKE) -B $(IPATH)/fermat.dko # Force building to test
+dedukti: theories/$(THEORY).dko $(DKOS)
+	@$(DKCHECK) -I theories -I $(IPATH) $(IPATH)/fermat.dk
+	@echo "[DEDUKTI] CHECKED"
 
 #### Coq ###########################################################
 
@@ -227,8 +226,12 @@ export/web/pvs/%.zip : theories/sttfa.dko $(LOGIPEDIA)
 	@sed -i s/dko/pvs/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.pvs:$(PVSPATH)/\1\.pvs:g" $@
 
+.depend_dklib: $(DKIMP)/$(THEORY)
+	$(DKDEP) -I theories -I $(IPATH) $(wildcard $(IPATH)/*.dk) -o $@
+
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
+-include .depend_dklib
 -include .library_depend_dko
 -include .library_depend_v
 -include .library_depend_ma
