@@ -15,7 +15,7 @@ type web_item =
     package  : (string, web_item list) Hashtbl.t
   }
 
-let db_insert_web_item _ = assert false
+let db_insert_web_item _ = ()
   (* Mongodb.insert_item (name_of wi.item) (kind_of wi.item);
    * let systems = Systems.systems in
    * let insert_sys sys =
@@ -36,16 +36,17 @@ let items : (name, item) Hashtbl.t = Hashtbl.create 101
 
 let db_insert_item item =
   Hashtbl.add items (name_of item) item;
-  Mongodb.insert_item (name_of item) (kind_of item)
+  ()
+  (* Mongodb.insert_item (name_of item) (kind_of item) *)
 
-let db_insert_sys_item _ _ =  assert false
+let db_insert_sys_item _ _ = ()
   (* Mongodb.insert_printing md id (Systems.string_of_system E.system) (E.pretty_print_item item) *)
 
-let db_insert_pretty_item _ = assert false
+let db_insert_pretty_item _ = ()
   (*
   Mongodb.insert_printing md id "dedukti" (Pp.pretty_print_item item) *)
 
-let db_insert_dep _ _ _ = assert false (*
+let db_insert_dep _ _ _ = () (*
   let insert = if is_theory then Mongodb.insert_theory else Mongodb.insert_dependency in
   let md,id = name in
   let md',id' = name' in
