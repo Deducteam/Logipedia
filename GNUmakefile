@@ -60,11 +60,9 @@ LOGIPEDIAOPTS = -I $(IPATH) -I theories --from $(THEORY)
 $(DKIMP)/$(THEORY):
 	@cd $(DKIMP) && tar xjf $(THEORY).tar.bz2
 
-.depend_dkimp: $(DKIMP)/$(THEORY)
-	$(eval _ := $(shell cd $(DKIMP) && [ ! -d $(THEORY) ] && \
-tar xjf $(THEORY).tar.bz2))
+.depend_dklib: $(DKIMP)/$(THEORY)
 	$(DKDEP) -I theories -I $(IPATH) $(wildcard $(IPATH)/*.dk) -o $@
--include .depend_dkimp
+include .depend_dklib
 
 DKS = $(wildcard $(IPATH)/*.dk)
 DKOS = $(patsubst %.dk,%.dko,$(DKS))
@@ -72,9 +70,11 @@ IMP = $(notdir $(basename $(DKS)))
 
 $(IPATH)/%.dko: $(IPATH)/%.dk theories/$(THEORY).dko
 	@echo "[CHECK] $@"
-	$(DKCHECK) -e -I theories -I $(IPATH) $<
+	@$(DKCHECK) -e -I theories -I $(IPATH) $<
 
-dedukti: $(DKOS)
+.PHONY: dedukti
+dedukti: theories/$(THEORY).dko $(IPATH)/fermat.dko
+	$(MAKE) -B $(IPATH)/fermat.dko # Force building to test
 
 #### Coq ###########################################################
 
