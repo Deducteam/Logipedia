@@ -59,6 +59,8 @@ LOGIPEDIAOPTS = -I $(IPATH) -I theories --from $(THEORY)
 
 #### Dedukti #######################################################
 
+# We untar the archive here to have the list of files available
+# at first run of Make
 _dks := $(shell cd $(DKIMP) && \
 if [ ! -d $(THEORY) ]; then \
 tar xjf $(THEORY).tar.bz2; fi &&\
@@ -243,13 +245,13 @@ endif
 .PHONY: clean
 clean:
 	@dune clean
-	@rm -f .library_depend_dko
-	@rm -f .library_depend_v
-	@rm -f .library_depend_vo
-	@rm -f .library_depend_ma
-	@rm -f .library_depend_lean
-	@rm -f .library_depend_pvs
-	@rm -f .library_depend_art
+	@$(RM) .library_depend_dko
+	@$(RM) .library_depend_v
+	@$(RM) .library_depend_vo
+	@$(RM) .library_depend_ma
+	@$(RM) .library_depend_lean
+	@$(RM) .library_depend_pvs
+	@$(RM) .library_depend_art
 
 .PHONY: distclean
 distclean: clean
