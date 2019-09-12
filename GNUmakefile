@@ -179,13 +179,6 @@ export/json/%.json: $(IPATH)/%.dko $(LOGIPEDIA)
 .PHONY: json
 json: $(jsfiles)
 
-#### web ###########################################################
-
-export/web/pvs/%.zip : theories/sttfa.dko $(LOGIPEDIA)
-	echo "$@";
-#	mongo < ./bdd/dropLogipedia.js
-#	time ./main.native  -I library -I theories --export-web $(SORTEDDKS)
-
 #### Dependencies ##################################################
 
 .library_depend_dko: $(DKS) $(THDIR)/$(THEORY).dk

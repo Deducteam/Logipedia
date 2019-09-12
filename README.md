@@ -25,7 +25,8 @@ On the long run, we plan also to support other logics than STTfa, but no concret
 
 # Compiling the project
 
-To compile the project, you need to install the last version of Dedukti (master branch) [https://github.com/Deducteam/Dedukti](https://github.com/Deducteam/Dedukti). The only dependency needed is `mongo` that you can install with `opam`. Currently, this dependency requires a version of OCaml `< 4.06`. However the `mongo` dependency will be dropped in the future. Then you can compile the project with
+To compile the project, you need to install the last version of Dedukti (master branch) [https://github.com/Deducteam/Dedukti](https://github.com/Deducteam/Dedukti).
+Then compile with
 
 ``` bash
 make
@@ -50,22 +51,11 @@ make export/<system>/<file>
 ```
 `file` should be in `import/dedukti/<LOGIC>/<PACKAGE>` where `PACKAGE` and `LOGIC` are Makefile variables. By default `PACKAGE=arith_fermat` and `LOGIC=sttfa`.
 
-# Exporting the MongoDB Database
-
-This process requires first to have a MongoDB server. You can install one with the following command:
-`sudo apt install mongodb`
-
-Then you need to run a server with the following command:
-`mongo`
-
-To export the Mongo DB, you just need to invoke the Makefile with the following command:
-`make bdd`
-
-In the `bdd` folder, you will find scripts related to the bdd. In particular, since we are using MongoDB, it is better if you drop the old database before updating it.
-
 # Maintainers
 
-Logipedia: François Thiré <francois.thire@lsv.fr>
+Logipedia:
+- François Thiré <francois.thire@lsv.fr>
+- Gabriel Hondet <gabriel.hondet@lsv.fr>
 
 Export systems:
 - Lean/Coq/Matita/OpenTheory : François Thiré <francois.thire@lsv.fr>
