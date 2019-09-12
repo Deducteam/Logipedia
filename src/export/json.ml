@@ -13,7 +13,10 @@ and ppt_of__ty : Ast._ty -> Jt.Ppterm.t = fun t ->
 and ppt_of__ty_args : Ast._ty -> Ast._ty list -> Jt.Ppterm.t = fun t stk ->
   match t with
   | TyVar(v) -> Jt.Ppterm.Var(ppv_of_tyv v stk)
-  | Arrow(m, n) -> ppt_of__ty_args m (n :: stk)
+  | Arrow(m, n) ->
+    let pptm = ppt_of__ty m in
+    let pptn = ppt_of__ty n in
+    Jt.Ppterm.Const { c_symb = ["→"] ; c_args = [pptm; pptn] }
   | TyOp((p,id), tys) ->
     Jt.Ppterm.Const { c_symb = [p; id]
                     ; c_args = List.map ppt_of__ty (tys @ stk) }
