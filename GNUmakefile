@@ -45,6 +45,7 @@ theories/%.dko: theories/%.dk
 
 #### Producing the Dedukti library #################################
 
+THDIR = theories
 PACKAGE = arith_fermat
 THEORY = sttfa
 DKIMP = import/dedukti
@@ -58,11 +59,11 @@ LOGIPEDIAOPTS = -I $(IPATH) -I theories --from $(THEORY)
 
 #### Dedukti #######################################################
 
-# TODO make it more Make-ish (i.e. no shell shenanigans)
-$(DKIMP)/$(THEORY):
-	@cd $(DKIMP) && [ -d $(THEORY).tar.bz2 ] && tar xjf $(THEORY).tar.bz2
-
-DKS = $(wildcard $(IPATH)/*.dk)
+_dks := $(shell cd $(DKIMP) && \
+if [ ! -d $(THEORY) ]; then \
+tar xjf $(THEORY).tar.bz2; fi &&\
+cd $(THEORY)/$(PACKAGE) && ls *.dk)
+DKS = $(addprefix $(IPATH)/, $(_dks))
 DKOS = $(patsubst %.dk,%.dko,$(DKS))
 IMP = $(notdir $(basename $(DKS)))
 
@@ -187,9 +188,9 @@ export/web/pvs/%.zip : theories/sttfa.dko $(LOGIPEDIA)
 
 #### Dependencies ##################################################
 
-.library_depend_dko: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
+.library_depend_dko: $(DKS) $(THDIR)/$(THEORY).dk
 	@echo "[DKDEP (DK FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
+	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
 
 .library_depend_v: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
 	@echo "[DKDEP (V FILES)] $@"
@@ -226,12 +227,8 @@ export/web/pvs/%.zip : theories/sttfa.dko $(LOGIPEDIA)
 	@sed -i s/dko/pvs/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.pvs:$(PVSPATH)/\1\.pvs:g" $@
 
-.depend_dklib: $(DKIMP)/$(THEORY)
-	$(DKDEP) -I theories -I $(IPATH) $(wildcard $(IPATH)/*.dk) -o $@
-
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
--include .depend_dklib
 -include .library_depend_dko
 -include .library_depend_v
 -include .library_depend_ma
