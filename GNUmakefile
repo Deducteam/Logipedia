@@ -51,7 +51,6 @@ THEORY = sttfa
 DKIMP = import/dedukti
 IPATH = $(DKIMP)/$(THEORY)/$(PACKAGE)
 
-SORTEDDKS = $(shell dkdep -s --ignore -I $(IPATH) $(IPATH)/*.dk)
 LOGIPEDIAOPTS = -I $(IPATH) -I theories --from $(THEORY)
 
 
