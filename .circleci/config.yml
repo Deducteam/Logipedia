@@ -11,8 +11,9 @@ jobs:
             opam switch 4.07
             opam update
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
+            opam install dune
       - checkout
-      - run: make
+      - run: eval $(opam env) && make dedukti
 
   coq_exp:
     docker:
