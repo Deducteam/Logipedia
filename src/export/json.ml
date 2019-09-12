@@ -67,10 +67,10 @@ let rec ppt_of_te : Ast.te -> Jt.Ppterm.t = function
 let jsitem_of_item : Ast.item -> Jt.item =
   (* FIXME many constructions are erroneous. *)
   function
-  | Definition((_,id), ty, te) ->
-    let ppty = ppt_of_ty ty in
-    let ppte = ppt_of_te te in
-    { name = id ; taxonomy = "definition" ; term = ppte ; body = ppty
+  | Definition((p,id), _, te) ->
+    let body = ppt_of_te te in
+    let term = Jt.Ppterm.Const { c_symb = [p; id] ; c_args = [] } in
+    { name = id ; taxonomy = "definition" ; term ; body
     ; deps = [] ; theory = [] ; exp = [] }
   | Axiom((_,id), te)          ->
     let ppte = ppt_of_te te in
@@ -80,13 +80,18 @@ let jsitem_of_item : Ast.item -> Jt.item =
     let ppte = ppt_of_te te in
     { name = id ; taxonomy = "axiom" ; term = ppte ; body = ppte
     ; deps = [] ; theory = [] ; exp = [] }
-  | TypeDef((_,id), _, _ty)    ->
-    let ppty = ppt_of__ty _ty in
-    { name = id ; taxonomy = "definition" ; term = ppty ; body = ppty
+  | TypeDef((p,id), _, _ty)    ->
+    let term = Jt.Ppterm.Const { c_symb = [p; id] ; c_args = [] } in
+    let body = ppt_of__ty _ty in
+    { name = id ; taxonomy = "definition" ; term ; body
     ; deps = [] ; theory = [] ; exp = [] }
-  | TypeDecl((_,id), _)        ->
-    let dummy = Jt.Ppterm.Var { v_symb = "dummy" ; v_args = [] } in
-    { name = id ; taxonomy = "definition" ; term = dummy ; body = dummy
+  | TypeDecl((p,id), ar)       ->
+    let typecst = Jt.Ppterm.Const { c_symb = ["Type"] ; c_args = [] } in
+    let term = Jt.Ppterm.Const { c_symb = [p; id] ; c_args = [] } in
+    let body = Jt.Ppterm.Const
+        { c_symb = ["→"]
+        ; c_args = List.init ar (fun _ -> typecst) } in
+    { name = id ; taxonomy = "definition" ; term ; body
     ; deps = [] ; theory = [] ; exp = [] }
   | Parameter((_,id), ty)      ->
     let ppty = ppt_of_ty ty in
