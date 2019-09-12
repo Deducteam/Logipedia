@@ -155,7 +155,6 @@ PVSPATH = export/pvs
 PVSFILES=$(addprefix $(PVSPATH)/,$(addsuffix .pvs,$(IMP)))
 PVSSUM=$(addprefix $(PVSPATH)/,$(addsuffix .summary,$(IMP)))
 # For some weird reason, Make consider .pvs are temporary
-.PRECIOUS: library/%.pvs
 $(PVSPATH)/%.pvs: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_pvs $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export pvs $(<:.dko=.dk) -o $@

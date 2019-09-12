@@ -1,2 +1,0 @@
-use logipedia
-db.dropDatabase()
