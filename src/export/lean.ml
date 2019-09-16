@@ -1,5 +1,7 @@
 open Ast
 
+module Denv = Env.Default
+
 let sys = "lean"
 
 module CType = Compile_type
@@ -125,10 +127,10 @@ let rec is__computable (_te:_te) =
    | Ast.Cst ((cmd,cid),_) ->
      let open Basic in
      let name = mk_name (mk_mident cmd) (mk_ident cid) in
-     let ty = Env.get_type dloc name in
+     let ty = Denv.get_type dloc name in
      let ty' = CType.compile_wrapped_type Environ.empty_env ty in
      is_prop ty' ||
-       not @@ Signature.is_static (Env.get_signature ()) dloc name
+       not @@ Signature.is_static (Denv.get_signature ()) dloc name
 
 let rec is_computable te =
   match te with

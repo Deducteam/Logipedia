@@ -2,6 +2,9 @@ open Sttfadk
 open Environ
 open Ast
 
+module Denv = Env.Default
+module Dpp = Pp.Default
+
 let compile_tyop tyop =
   match tyop with Term.Const (_, name) -> of_name name | _ -> assert false
 
@@ -23,7 +26,8 @@ let rec compile__type env _ty =
   | _ -> assert false
 
 let compile__type env _ty =
-  let _ty = Env.reduction ~ctx:env.dk ~red:{Reduction.default_cfg with target=Reduction.Snf} _ty  in
+  let _ty = Denv.reduction ~ctx:env.dk
+      ~red:{Reduction.default_cfg with target=Reduction.Snf} _ty  in
   compile__type env _ty
 
 let rec compile_type (env: env) ty =
@@ -45,7 +49,7 @@ let compile_wrapped__type env (ty: Term.term) =
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eta cst ->
       compile__type env a
   | _ ->
-      Format.eprintf "%a@." Pp.print_term ty ;
+      Format.eprintf "%a@." Dpp.print_term ty ;
       assert false
 
 
@@ -56,7 +60,7 @@ let compile_wrapped_type env (ty: Term.term) =
   | Term.App (cst, a, []) when is_sttfa_const sttfa_eta cst ->
       Ty (compile__type env a)
   | _ ->
-      Format.eprintf "%a@." Pp.print_term ty ;
+      Format.eprintf "%a@." Dpp.print_term ty ;
       assert false
 
 let rec compile_type_definition env (ty: Term.term) =

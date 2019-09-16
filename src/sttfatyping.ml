@@ -2,6 +2,10 @@ open Ast
 open Basic
 open Environ
 
+module Denv = Env.Default
+module Derr = Errors.Make(Denv)
+module Dpp = Pp.Default
+
 (* TODO: Enhance error messages *)
 
 module CType = Compile_type
@@ -9,13 +13,16 @@ module CTerm = Compile_term
 
 let infer env _te =
   let tedk = Decompile.decompile__term env.dk _te in
-  CType.compile_type env (Env.infer ~ctx:env.dk tedk)
+  CType.compile_type env (Denv.infer ~ctx:env.dk tedk)
 
 let _infer env _te =
   let tedk = Decompile.decompile__term env.dk _te in
-  let ty = Env.infer ~ctx:env.dk tedk in
+  let ty = Denv.infer ~ctx:env.dk tedk in
   try CType.compile__type env ty
-  with _ -> Errors.fail_exit 1 dloc "Inference failed because type is polymorphic"; exit 1
+  with _ ->
+    Derr.fail_exit 1 "Inference fail" None (Some dloc)
+      "Inference failed because type is polymorphic" ;
+    exit 1
 
 let _eq env left right =
   let leftdk = Decompile.decompile__term env.dk left in
@@ -30,15 +37,15 @@ let eq env left right =
 let are_convertible env left right =
   let leftdk = Decompile.decompile__term env.dk left in
   let rightdk = Decompile.decompile__term env.dk right in
-  Env.are_convertible ~ctx:env.dk leftdk rightdk
+  Denv.are_convertible ~ctx:env.dk leftdk rightdk
 
 let print__te env fmt _te =
   let _tedk = Decompile.decompile__term env.dk _te in
-  Format.fprintf fmt "%a@." Pp.print_term _tedk
+  Format.fprintf fmt "%a@." Dpp.print_term _tedk
 
 let print_te env fmt te =
   let tedk = Decompile.decompile_term env.dk te in
-  Format.fprintf fmt "%a@." Pp.print_term tedk
+  Format.fprintf fmt "%a@." Dpp.print_term tedk
 
 module ComputeStrategy =
 struct
@@ -72,44 +79,49 @@ end
 
 let _is_beta_normal env _te =
   let _tedk = Decompile.decompile__term env.dk _te in
-  let _tedk' = Env.unsafe_reduction ~red:ComputeStrategy.beta_snf _tedk in
+  let _tedk' = Denv.unsafe_reduction ~red:ComputeStrategy.beta_snf _tedk in
   Term.term_eq _tedk _tedk'
 
 let is_beta_normal env te =
   let tedk = Decompile.decompile_term env.dk te in
-  let tedk' = Env.unsafe_reduction ~red:ComputeStrategy.beta_snf tedk in
+  let tedk' = Denv.unsafe_reduction ~red:ComputeStrategy.beta_snf tedk in
   Term.term_eq tedk tedk'
 
 let _beta_reduce env _te =
   let _tedk = Decompile.decompile__term env.dk _te in
-  let _tedk' = Env.unsafe_reduction ~red:(ComputeStrategy.beta_steps 1) _tedk in
+  let _tedk' = Denv.unsafe_reduction ~red:(ComputeStrategy.beta_steps 1) _tedk
+  in
   CTerm.compile__term env _tedk'
 
 let beta_reduce env te =
   let tedk = Decompile.decompile_term env.dk te in
-  let tedk' = Env.unsafe_reduction ~red:(ComputeStrategy.beta_steps 1) tedk in
+  let tedk' = Denv.unsafe_reduction ~red:(ComputeStrategy.beta_steps 1) tedk in
   CTerm.compile_term env tedk'
 
 let beta_normal env te =
   let tedk = Decompile.decompile_term env.dk te in
-  let tedk' = Env.unsafe_reduction ~red:(ComputeStrategy.beta_snf) tedk in
+  let tedk' = Denv.unsafe_reduction ~red:(ComputeStrategy.beta_snf) tedk in
   CTerm.compile_term env tedk'
 
 let subst env f a =
   let thm = (judgment_of f).thm in
   let te = Decompile.to_eps (Decompile.decompile_term env.dk thm) in
-  let te = Env.unsafe_reduction ~red:(ComputeStrategy.one_whnf) te in
-  let _,b = match te with | Term.Pi(_,_,tya,tyb) -> tya,tyb | _ -> assert false in
+  let te = Denv.unsafe_reduction ~red:(ComputeStrategy.one_whnf) te in
+  let _,b = match te with
+    | Term.Pi(_,_,tya,tyb) -> tya,tyb
+    | _ -> assert false
+  in
   let b' = Subst.subst b a in
   let b' =
     match b' with
     | Term.App(_, a, []) -> a
     | _ -> assert false
   in
-  let b' = Env.unsafe_reduction ~red:(ComputeStrategy.beta_one) b' in
+  let b' = Denv.unsafe_reduction ~red:(ComputeStrategy.beta_one) b' in
   CTerm.compile_term env b'
 
-(** This module aims to implement functions that trace reduction steps checking if two terms are convertible. *)
+(** This module aims to implement functions that trace reduction steps
+    checking if two terms are convertible. *)
 module Tracer =
 struct
 
@@ -117,7 +129,7 @@ struct
 
   let is_defined cst =
     let name = name_of cst in
-    not (Env.is_static dloc name)
+    not (Denv.is_static dloc name)
 
 
   let rec is_redexable _te =
@@ -310,13 +322,19 @@ struct
       match redex with
       | Beta(_te) ->
         let _tedk = Decompile.decompile__term env.dk _te in
-        CTerm.compile__term env (Env.unsafe_reduction ~red:ComputeStrategy.beta_one _tedk)
+        CTerm.compile__term env
+          (Denv.unsafe_reduction ~red:ComputeStrategy.beta_one _tedk)
       | Delta(cst,_tys) ->
         let name = name_of cst in
         let _tedk = Decompile.decompile__term env.dk (Cst(cst,_tys)) in
-        (* These two steps might be buggy in the future since we use SNF instead of WHNF because of the coercion eps *)
-        let _tedk' = Env.unsafe_reduction ~red:(ComputeStrategy.delta name) _tedk in
-        let _tedk' = Env.unsafe_reduction ~red:(ComputeStrategy.beta_steps (List.length _tys)) _tedk' in
+        (* These two steps might be buggy in the future since we use
+           SNF instead of WHNF because of the coercion eps *)
+        let _tedk' = Denv.unsafe_reduction ~red:(ComputeStrategy.delta name)
+            _tedk
+        in
+        let _tedk' = Denv.unsafe_reduction
+            ~red:(ComputeStrategy.beta_steps (List.length _tys)) _tedk'
+        in
         CTerm.compile__term env _tedk'
 
   let _reduce env ctx redex _te =

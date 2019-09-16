@@ -4,12 +4,16 @@ open Environ
 
 module CType = Compile_type
 
+module Denv = Env.Default
+module Derr = Errors.Make(Denv)
+module Dpp = Pp.Default
+
 let rec type_arity_of te =
   match te with ForallK (_, te) -> 1 + type_arity_of te | _ -> 0
 
 let get_type_arity env lc name =
-  try type_arity_of (CType.compile_wrapped_type env (Env.get_type lc name))
-  with Env.EnvError (l,e) -> Errors.fail_env_error l e
+  try type_arity_of (CType.compile_wrapped_type env (Denv.get_type lc name))
+  with Env.EnvError (id,l,e) -> Derr.fail_env_error (id, l, e)
 
 
 let rec compile__term env _te =
@@ -53,7 +57,7 @@ let rec compile__term env _te =
   | Term.Lam (_, _, None, _) -> failwith "lambda untyped are not supported"
   | Term.Const (_, cst) -> Cst (of_name cst, [])
   | _ ->
-      Format.eprintf "%a@." Pp.print_term _te ;
+      Format.eprintf "%a@." Dpp.print_term _te ;
       assert false
 
 let rec compile_term env te =
@@ -77,4 +81,4 @@ let compile_wrapped__term env _te =
   match _te with
   | Term.App (cst, te, []) when is_sttfa_const sttfa_eps cst ->
       compile__term env te
-  | _ -> Format.eprintf "%a@." Pp.print_term _te; assert false
+  | _ -> Format.eprintf "%a@." Dpp.print_term _te; assert false

@@ -3,6 +3,8 @@ open Compile
 open Openstt
 open Environ
 
+module Denv = Env.Default
+
 (* The memoization of Openstt is not efficient and can be highly increased. For that, the memoization of openstt should be turned off and the memoization should be done in this module. One may also want to handle alpha-renaming *)
 
 module Conv = Sttfatyping.ComputeStrategy
@@ -84,8 +86,10 @@ let rec mk__te ctx = function
       | [] -> Term.mk_Const dloc name
       | x::t -> Term.mk_App (Term.mk_Const dloc name) x t
     in
-    let _ty = Env.infer ~ctx:ctx.dk cst' in
-    let _ty' = CType.compile_wrapped__type ctx (Env.unsafe_reduction ~red:Conv.beta_only _ty) in
+    let _ty = Denv.infer ~ctx:ctx.dk cst' in
+    let _ty' = CType.compile_wrapped__type ctx
+        (Denv.unsafe_reduction ~red:Conv.beta_only _ty)
+    in
     term_of_const (const_of_name (mk_qid cst)) (mk__ty _ty')
 
 let rec mk_te ctx = function
@@ -117,10 +121,10 @@ let thm_of_const cst =
   with Failure _ ->
     let name = Environ.name_of cst in
     let term = Term.mk_Const Basic.dloc name in
-    let te = Env.unsafe_reduction ~red:(Conv.delta name) (term) in
+    let te = Denv.unsafe_reduction ~red:(Conv.delta name) (term) in
     let te' = CTerm.compile_term Environ.empty_env te in
     let te' = mk_te empty_env te' in
-    let ty = Env.infer term in
+    let ty = Denv.infer term in
     let ty' = CType.compile_wrapped_type Environ.empty_env ty in
     let ty' = mk_ty ty' in
     let const = const_of_name (mk_qid cst) in
@@ -147,7 +151,7 @@ let mk_rewrite ctx r =
     mk_betaConv t'
   | Delta((md,id),_tys) ->
     let cst = mk_name (mk_mident md) (mk_ident id) in
-    let ty = Env.get_type dloc cst in
+    let ty = Denv.get_type dloc cst in
     let ty' = CType.compile_type ctx ty in
     let vars = get_vars ty' in
     assert (List.length vars = List.length _tys);
@@ -166,7 +170,7 @@ let mk_delta ctx cst _tys =
   let term =
     Term.mk_Const dloc (mk_name (mk_mident (fst cst)) (mk_ident (snd cst)))
   in
-  let ty = Env.infer ~ctx:[] term in
+  let ty = Denv.infer ~ctx:[] term in
   let ty' = CType.compile_wrapped_type ctx ty in
   let vars = get_vars ty' in
   let vars' = List.map mk_id vars in
@@ -260,7 +264,7 @@ let rec mk_proof env =
     begin
       try thm_of_lemma (mk_qid cst)
       with _ ->
-        let te = Env.get_type dloc (name_of cst) in
+        let te = Denv.get_type dloc (name_of cst) in
         mk_axiom (mk_hyp []) (mk_te empty_env (CTerm.compile_wrapped_term empty_env te))
     end
   | ForallE(_,proof, u) ->

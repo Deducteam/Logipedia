@@ -2,6 +2,9 @@ open Basic
 open Parser
 open Ast
 
+module Denv = Env.Default
+module Derr = Errors.Make(Denv)
+
 let err_msg fmt =
   Format.eprintf "%s" ("\027[31m" ^ "[ERROR] " ^ "\027[m");
   Format.eprintf fmt
@@ -35,13 +38,14 @@ let export_file ast system =
 (* Compute an STTforall ast from Dedukti entries *)
 let mk_ast md entries =
   let items = List.map (Compile.compile_entry md) entries in
-  let fold_entry_dep dep e = QSet.union dep (Dep.dep_of_entry [Sttfadk.sttfa_module;md] e) in
+  let fold_entry_dep dep e = QSet.union dep
+      (Dep.dep_of_entry [Sttfadk.sttfa_module;md] e) in
   let dep = List.fold_left fold_entry_dep QSet.empty entries in
   {md = string_of_mident md; dep; items}
 
 (* Export the file for the system choosen. *)
 let export_system file =
-  let md = Env.init file in
+  let md = Denv.init file in
   let input = open_in file in
   let entries = Parse_channel.parse md input in
   close_in input;
@@ -54,7 +58,7 @@ let export_system file =
 (* Right now export stuff in the database *)
 let export_web file =
   Environ.set_package file;
-  let md = Env.init file in
+  let md = Denv.init file in
   let input = open_in file in
   let entries = Parse_channel.parse md input in
   close_in input;
@@ -84,7 +88,7 @@ let _ =
     else
       List.iter export_system files
  with
-  | Env.EnvError (l,e) -> Errors.fail_env_error l e
+  | Env.EnvError (id,l,e) -> Derr.fail_env_error (id,l,e)
   | Failure err ->
       err_msg "Failure: %s@." err;
       exit 2

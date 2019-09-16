@@ -6,6 +6,8 @@ open Environ
 module CType = Compile_type
 module CTerm = Compile_term
 
+module Denv = Env.Default
+
 let make_judgment env hyp thm = {ty= env.ty; te= env.te; hyp; thm}
 
 let extract_te te = match te with Te _te -> _te | _ -> assert false
@@ -44,7 +46,7 @@ let rec compile_proof env proof =
     in
     (j, ImplI (j, proof, string_of_ident id))
   | Term.Const (lc, name) ->
-  let te = Env.get_type lc name in
+  let te = Denv.get_type lc name in
   let te' = CTerm.compile_wrapped_term empty_env te in
   let j = make_judgment env (TeSet.of_list env.prf) te' in
     (j, Lemma (of_name name, j))
