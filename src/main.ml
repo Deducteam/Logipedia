@@ -39,7 +39,7 @@ let export_file ast system =
 let mk_ast md entries =
   let items = List.map (Compile.compile_entry md) entries in
   let fold_entry_dep dep e = QSet.union dep
-      (Dep.dep_of_entry [Sttfadk.sttfa_module;md] e) in
+      (Deps.dep_of_entry [Sttfadk.sttfa_module;md] e) in
   let dep = List.fold_left fold_entry_dep QSet.empty entries in
   {md = string_of_mident md; dep; items}
 
