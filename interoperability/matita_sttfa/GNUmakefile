@@ -5,6 +5,7 @@ DKDEP    = dkdep
 DKMETA   = dkmeta
 UNIVERSO = universo
 DKPRUNE  = dkprune
+DKPSULER = dkpsuler
 
 DEBUG = -l
 
@@ -50,16 +51,33 @@ universohack: $(UNIVERSO_IN_FILES)
 universo: prune
 	$(Q)$(MAKE) -C . universohack
 
+DKPSULER_DIR = 3-univ-poly-match
+DKPSULER_IN_FILES = $(UNIVERSO_OUT_FILES:$(UNIVERSO_DIR)/output/%.dk=$(DKPSULER_DIR)/input/%.dk)
+DKPSULER_OUT_FILES = $(UNIVERSO_OUT_FILES:$(UNIVERSO_DIR)/output/%.dk=$(DKPSULER_DIR)/output/%.dk)
+
+$(DKPSULER_IN_FILES): $(UNIVERSO_OUT_FILES)
+	$(Q)cp $(UNIVERSO_OUT_FILES) $(DKPSULER_DIR)/input
+
+.PHONY: dkpsulerhack
+dkpsulerhack: $(DKPSULER_IN_FILES)
+	$(Q)$(MAKE) -C $(DKPSULER_DIR)
+
+.PHONY: dkpsuler
+dkpsuler: $(UNIVERSO_OUT_FILES)
+	$(Q)$(MAKE) -C . dkpsulerhack
+
+.PHONY: debug
+debug:
+	echo $(UNIVERSO_OUT_FILES)
+
 .PHONY: clean
 clean:
 	$(Q)$(MAKE) -C $(PRUNE_DIR) clean
 	$(Q)$(MAKE) -C $(UNIVERSO_DIR) clean
+	$(Q)$(MAKE) -C $(DKPSULER_DIR) clean
 
 .PHONY: distclean
 distclean:
 	$(Q)$(MAKE) -C $(PRUNE_DIR) distclean
 	$(Q)$(MAKE) -C $(UNIVERSO_DIR) distclean
-
-.PHONY: debug
-debug:
-	@echo $(UNIVERSO_IN_FILES)
+	$(Q)$(MAKE) -C $(DKPSULER_DIR) distclean
