@@ -29,9 +29,12 @@ end
 type dependency = string list
 [@@deriving yojson]
 
+type taxon = TxDef | TxThm | TxAxm | TxCst
+[@@deriving yojson]
+
 type item =
   { name : string
-  ; taxonomy : string
+  ; taxonomy : taxon
   ; term : Ppterm.t
   ; body : Ppterm.t
   ; deps : dependency list
