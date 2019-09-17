@@ -6,6 +6,7 @@ type taxon =
   | TxDef (** Definition *)
   | TxCst (** Constant *)
   | TxThm (** Theorem *)
+  [@@deriving yojson]
 
 (** The top level name (without modules nor taxon). *)
 type name = string

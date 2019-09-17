@@ -64,6 +64,13 @@ let export_web file =
   close_in input;
   Web.export_entries (mk_ast md entries)
 
+let export_json file =
+  let md = Denv.init file in
+  let input = open_in file in
+  let entries = Parse_channel.parse md input in
+  close_in input;
+  List.map Json.item_of_entry entries |> Json.export_document
+
 let _ =
   try
     let to_web = ref false in

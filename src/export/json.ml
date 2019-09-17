@@ -1,109 +1,50 @@
 (** Export to json files. *)
 
+open Extras
 module Jt = Json_types
+module B = Basic
+module T = Term
 
-let sys = "json"
+let rec ppt_of_dkterm : T.term -> Jt.Ppterm.t = fun t ->
+  ppt_of_dkterm_args t []
 
-let rec ppt_of__te : Ast._te -> Jt.Ppterm.t = fun t ->
-  ppt_of__te_args t []
-
-and ppt_of__ty : Ast._ty -> Jt.Ppterm.t = fun t ->
-  ppt_of__ty_args t []
-
-and ppt_of__ty_args : Ast._ty -> Ast._ty list -> Jt.Ppterm.t = fun t stk ->
+and ppt_of_dkterm_args : T.term -> T.term list -> Jt.Ppterm.t =
+  fun t stk ->
   match t with
-  | TyVar(v) -> Jt.Ppterm.Var(ppv_of_tyv v stk)
-  | Arrow(m, n) ->
-    let pptm = ppt_of__ty m in
-    let pptn = ppt_of__ty n in
-    Jt.Ppterm.Const { c_symb = ["→"] ; c_args = [pptm; pptn] }
-  | TyOp((p,id), tys) ->
-    Jt.Ppterm.Const { c_symb = [p; id]
-                    ; c_args = List.map ppt_of__ty (tys @ stk) }
-  | Prop -> Jt.Ppterm.Const { c_symb = ["Prop"]
-                            (* c_args should probably be empty *)
-                            ; c_args = List.map ppt_of__ty stk }
+  | T.Kind -> Jt.Ppterm.Const { c_symb = ["Kind"] ; c_args = [] }
+  | T.Type(_) -> Jt.Ppterm.Const { c_symb = ["Type"] ; c_args = [] }
+  | T.DB(_,id,_) ->
+    let v_args = List.map ppt_of_dkterm stk in
+    Jt.Ppterm.Var { v_symb = Basic.string_of_ident id ; v_args}
+  | T.Const(_,name) ->
+    let c_args = List.map ppt_of_dkterm stk in
+    let c_symb = [B.id name |> B.string_of_ident] in
+    Jt.Ppterm.Const { c_symb ; c_args }
+  | T.App(t,u,vs) -> ppt_of_dkterm_args t (u :: vs @ stk)
+  | T.Lam(_,id,annot,t) ->
+    assert (stk = []); (* In β normal form *)
+    let bound = B.string_of_ident id in
+    let annotation = Option.bind ppt_of_dkterm annot in
+    Jt.Ppterm.Binder { b_symb = "λ" ; bound ; annotation
+                     ; body = ppt_of_dkterm t }
+  | T.Pi(_,id,t,u) ->
+    assert (stk = []); (* In β normal form *)
+    let annotation = Some(ppt_of_dkterm t) in
+    let body = ppt_of_dkterm u in
+    let bound = B.string_of_ident id in
+    Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body }
 
-and ppt_of__te_args : Ast._te -> Ast._te list -> Jt.Ppterm.t = fun t stk ->
-  match t with
-  | TeVar(v_symb)         ->
-    Jt.Ppterm.Var { v_symb ; v_args = List.map ppt_of__te stk }
-  | Abs(bound, ty, te)    ->
-     Jt.Ppterm.Binder
-       { b_symb = "λ" ; bound ; annotation = Some(ppt_of__ty ty)
-       ; body = ppt_of__te te }
-  | App(t, u)      -> ppt_of__te_args t (u :: stk)
-  | Forall(bound, ty, te) ->
-     Jt.Ppterm.Binder
-       { b_symb = "∀" ; bound ; annotation = Some(ppt_of__ty ty)
-       ; body = ppt_of__te te }
-  | AbsTy(bound, te)      ->
-     Jt.Ppterm.Binder
-       { b_symb = "Λ" ; bound ; annotation = None ; body = ppt_of__te te }
-  | Impl(t, u)            ->
-    Jt.Ppterm.Const { c_symb = ["⇒"]
-                    ; c_args = List.map ppt_of__te (t::u::stk) }
-  | Cst((p,id), _)        ->
-    Jt.Ppterm.Const { c_symb = [p; id] ; c_args = List.map ppt_of__te stk }
+let item_of_entry : Entry.entry -> Jt.item = function
+  | Entry.Decl(_,id,_,t)  ->
+    let ppt = ppt_of_dkterm t in
+    { name = B.string_of_ident id
+    ; taxonomy = Uri.TxDef (* wrong *)
+    ; term = ppt
+    ; body = ppt
+    ; deps = []
+    ; theory = []
+    ; exp = [] }
+  | Entry.Def(_,_,_,_,_)  -> failwith "not implemented"
+  | _                     -> failwith "not implemented"
 
-and ppv_of_tyv : Ast.ty_var -> Ast._ty list -> Jt.Ppterm.var =
-  fun v_symb args -> { v_symb ; v_args = List.map ppt_of__ty args }
-
-let ppv_of_tev : Ast.te_var -> Ast._te list -> Jt.Ppterm.var =
-  fun v_symb args -> { v_symb ; v_args = List.map ppt_of__te args }
-
-let rec ppt_of_ty : Ast.ty -> Jt.Ppterm.t = function
-  | ForallK(bound, ty) ->
-    Jt.Ppterm.Binder
-      { b_symb = "∀" ; bound ; annotation = None ; body = ppt_of_ty ty}
-  | Ty(ty)             -> ppt_of__ty ty
-
-let rec ppt_of_te : Ast.te -> Jt.Ppterm.t = function
-  | ForallP(bound, te) ->
-    Jt.Ppterm.Binder
-      { b_symb = "∀" ; bound ; annotation = None ; body = ppt_of_te te }
-  | Te(te)             -> ppt_of__te te
-
-let jsitem_of_item : Ast.item -> Jt.item =
-  (* FIXME many constructions are erroneous. *)
-  function
-  | Definition((p,id), ty, te) ->
-    (* In a definition, the term is the type of the defined item. *)
-    let body = ppt_of_te te in
-    let term = ppt_of_ty ty in
-    { name = p ^ "." ^ id ; taxonomy = Jt.TxDef ; term ; body
-    ; deps = [] ; theory = [] ; exp = [] }
-  | Axiom((_,id), te)          ->
-    let ppte = ppt_of_te te in
-    { name = id ; taxonomy = Jt.TxAxm ; term = ppte ; body = ppte
-    ; deps = [] ; theory = [] ; exp = [] }
-  | Theorem((_,id), te, _)     ->
-    let ppte = ppt_of_te te in
-    { name = id ; taxonomy = Jt.TxAxm ; term = ppte ; body = ppte
-    ; deps = [] ; theory = [] ; exp = [] }
-  | TypeDef((p,id), _, _ty)    ->
-    let term = Jt.Ppterm.Const { c_symb = [p; id] ; c_args = [] } in
-    let body = ppt_of__ty _ty in
-    { name = id ; taxonomy = Jt.TxDef ; term ; body
-    ; deps = [] ; theory = [] ; exp = [] }
-  | TypeDecl((p,id), ar)       ->
-    let typecst = Jt.Ppterm.Const { c_symb = ["Type"] ; c_args = [] } in
-    let term = Jt.Ppterm.Const { c_symb = [p; id] ; c_args = [] } in
-    let body = Jt.Ppterm.Const
-        { c_symb = ["→"]
-        ; c_args = List.init ar (fun _ -> typecst) } in
-    { name = id ; taxonomy = Jt.TxDef ; term ; body
-    ; deps = [] ; theory = [] ; exp = [] }
-  | Parameter((_,id), ty)      ->
-    let ppty = ppt_of_ty ty in
-    (* TxCst? Sure? *)
-    { name = id ; taxonomy = Jt.TxCst ; term = ppty ; body = ppty
-    ; deps = [] ; theory = [] ; exp = [] }
-
-let pretty_print_item : Ast.item -> string = fun it ->
-  jsitem_of_item it |> Jt.item_to_yojson |> Yojson.Safe.pretty_to_string
-
-let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit =
-  fun fmt ?mdeps:_ { md = _ ; dep = _ ; items } ->
-  let js_items = List.map jsitem_of_item items in
-  Yojson.Safe.pretty_print fmt (Jt.document_to_yojson js_items)
+let export_document : Jt.document -> unit = fun _ -> assert false
