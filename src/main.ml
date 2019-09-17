@@ -67,6 +67,7 @@ let export_web file =
 let _ =
   try
     let to_web = ref false in
+    let to_json = ref false in
     let options =
       Arg.align
         [ ("-I", Arg.String Basic.add_path, " Add folder to Dedukti path") ;
@@ -74,6 +75,7 @@ let _ =
           ("--fast", Arg.Set Sttfatyping.Tracer.fast, " Set output file") ;
           ("--export", Arg.String set_export, " Set exporting system") ;
           ("--export-web", Arg.Set to_web, " Generate informations for the website") ;
+          ("--export-json", Arg.Set to_json, " Generate json files") ;
           ("--from", Arg.String set_input_theory, " Set theory (default: STTFA)") ]
     in
     let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
@@ -85,6 +87,8 @@ let _ =
     in
     if !to_web then
       List.iter export_web files
+    else if !to_json then
+      List.iter export_json files
     else
       List.iter export_system files
  with
