@@ -32,7 +32,7 @@ type dependency = string list
 type item =
   { name : string
   ; taxonomy : Uri.taxon
-  ; term : Ppterm.t
+  ; term : Ppterm.t option
   ; body : Ppterm.t
   ; deps : dependency list
   ; theory : string list

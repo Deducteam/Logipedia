@@ -1,6 +1,7 @@
 open Basic
 open Parser
 open Ast
+open Extras
 
 module Denv = Env.Default
 module Derr = Errors.Make(Denv)
@@ -69,7 +70,8 @@ let export_json file =
   let input = open_in file in
   let entries = Parse_channel.parse md input in
   close_in input;
-  List.map Json.item_of_entry entries |> Json.export_document
+  List.filter_map Json.item_of_entry entries |>
+  Json.export_document
 
 let _ =
   try

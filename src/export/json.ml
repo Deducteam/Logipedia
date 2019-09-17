@@ -34,17 +34,24 @@ and ppt_of_dkterm_args : T.term -> T.term list -> Jt.Ppterm.t =
     let bound = B.string_of_ident id in
     Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body }
 
-let item_of_entry : Entry.entry -> Jt.item = function
+let item_of_entry : Entry.entry -> Jt.item option = function
   | Entry.Decl(_,id,_,t)  ->
     let ppt = ppt_of_dkterm t in
-    { name = B.string_of_ident id
-    ; taxonomy = Uri.TxDef (* wrong *)
-    ; term = ppt
-    ; body = ppt
-    ; deps = []
-    ; theory = []
-    ; exp = [] }
-  | Entry.Def(_,_,_,_,_)  -> failwith "not implemented"
-  | _                     -> failwith "not implemented"
+    Some { name = B.string_of_ident id
+         ; taxonomy = Uri.TxDef (* wrong *)
+         ; term = Some(ppt)
+         ; body = ppt
+         ; deps = []
+         ; theory = []
+         ; exp = [] }
+  | Entry.Def(_,id,_,teo,te)  ->
+    Some { name = B.string_of_ident id
+         ; taxonomy = Uri.TxDef
+         ; term = Option.bind ppt_of_dkterm teo
+         ; body = ppt_of_dkterm te
+         ; deps = []
+         ; theory = []
+         ; exp = [] }
+  | _                     -> None
 
 let export_document : Jt.document -> unit = fun _ -> assert false
