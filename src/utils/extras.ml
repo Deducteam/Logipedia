@@ -2,9 +2,9 @@ module Option =
 struct
   type 'a t = 'a option
 
-  (** [bind f o] is a monadic bind: computes [f v] if [o] is a value
+  (** [map f o] is a monadic bind: computes [f v] if [o] is a value
       [v] (that is, [Some(v)]), or returns [None]. *)
-  let bind : ('a -> 'b) -> 'a t -> 'b t = fun f op ->
+  let map : ('a -> 'b) -> 'a t -> 'b t = fun f op ->
     match op with
     | None    -> None
     | Some(v) -> Some(f v)
