@@ -6,7 +6,9 @@ module Jt = Json_types
 module B = Basic
 module T = Term
 module S = Signature
+module D = Dep
 
+(* Translate Dedukti term into Json ppt*)
 let rec ppt_of_dkterm : T.term -> Jt.Ppterm.t = fun t ->
   ppt_of_dkterm_args t []
 
@@ -36,9 +38,17 @@ and ppt_of_dkterm_args : T.term -> T.term list -> Jt.Ppterm.t =
     let b_args = List.map ppt_of_dkterm stk in
     Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body ; b_args }
 
+(* Find direct dependencies of a Dedukti entry *)
+
+let empty_mident = B.mk_mident ""
+
+let find_deps : B.name -> Entry.entry -> D.data = fun name e ->
+  D.make (B.md name) [e];
+  D.get_data name
+
 let item_of_entry : Entry.entry -> Jt.item option = function
   | Entry.Decl(_,id,static,t)  ->
-    let ax_or_cst static = if static=S.Static then Uri.TxCst else Uri.TxAxm in
+    let ax_or_cst static = if static = S.Static then Uri.TxCst else Uri.TxAxm in
     let ppt = ppt_of_dkterm t in
     Some { name = B.string_of_ident id
          ; taxonomy = ax_or_cst static
@@ -48,7 +58,7 @@ let item_of_entry : Entry.entry -> Jt.item option = function
          ; theory = []
          ; exp = [] }
   | Entry.Def(_,id,opacity,teo,te)  ->
-    let thm_or_def opacity = if opacity then Uri.TxDef else Uri.TxThm in
+    let  thm_or_def opacity = if opacity then Uri.TxDef else Uri.TxThm in
     Some { name = B.string_of_ident id
          ; taxonomy = thm_or_def opacity
          ; term = Option.bind ppt_of_dkterm teo
