@@ -5,6 +5,7 @@ module F = Format
 module Jt = Json_types
 module B = Basic
 module T = Term
+module S = Signature
 
 let rec ppt_of_dkterm : T.term -> Jt.Ppterm.t = fun t ->
   ppt_of_dkterm_args t []
@@ -36,18 +37,20 @@ and ppt_of_dkterm_args : T.term -> T.term list -> Jt.Ppterm.t =
     Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body ; b_args }
 
 let item_of_entry : Entry.entry -> Jt.item option = function
-  | Entry.Decl(_,id,_,t)  ->
+  | Entry.Decl(_,id,static,t)  ->
+    let ax_or_cst static = if static=S.Static then Uri.TxCst else Uri.TxAxm in
     let ppt = ppt_of_dkterm t in
     Some { name = B.string_of_ident id
-         ; taxonomy = Uri.TxDef (* wrong *)
-         ; term = Some(ppt)
+         ; taxonomy = ax_or_cst static
+         ; term = None
          ; body = ppt
          ; deps = []
          ; theory = []
          ; exp = [] }
-  | Entry.Def(_,id,_,teo,te)  ->
+  | Entry.Def(_,id,opacity,teo,te)  ->
+    let thm_or_def opacity = if opacity then Uri.TxDef else Uri.TxThm in
     Some { name = B.string_of_ident id
-         ; taxonomy = Uri.TxDef
+         ; taxonomy = thm_or_def opacity
          ; term = Option.bind ppt_of_dkterm teo
          ; body = ppt_of_dkterm te
          ; deps = []
