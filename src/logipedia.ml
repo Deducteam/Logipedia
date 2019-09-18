@@ -43,7 +43,7 @@ let mk_ast md entries =
   let dep = List.fold_left fold_entry_dep Ast.QSet.empty entries in
   { Ast.md = string_of_mident md; Ast.dep; items }
 
-(* Export the file for the system choosen. *)
+(* Export the file for the chosen system. *)
 let export_system file =
   let md = Denv.init file in
   let input = open_in file in
@@ -54,15 +54,6 @@ let export_system file =
     let (module M:Export.E) = Export.of_system !system in
     export_file sttfa_ast !system;
   end
-
-(* Right now export stuff in the database *)
-let export_web file =
-  Environ.set_package file;
-  let md = Denv.init file in
-  let input = open_in file in
-  let entries = Parse_channel.parse md input in
-  close_in input;
-  Web.export_entries (mk_ast md entries)
 
 (* Json export is done without using the Sttfa AST. *)
 let export_json file =
@@ -79,7 +70,6 @@ let export_json file =
 
 let _ =
   try
-    let to_web = ref false in
     let to_json = ref false in
     let options =
       Arg.align
@@ -87,7 +77,6 @@ let _ =
           ("-o", Arg.String set_output_file, " Set output file") ;
           ("--fast", Arg.Set Sttfatyping.Tracer.fast, " Set output file") ;
           ("--export", Arg.String set_export, " Set exporting system") ;
-          ("--export-web", Arg.Set to_web, " Generate informations for the website") ;
           ("--export-json", Arg.Set to_json, " Generate json files") ;
           ("--from", Arg.String set_input_theory, " Set theory (default: STTFA)") ]
     in
@@ -98,9 +87,7 @@ let _ =
       Arg.parse options (fun f -> files := f :: !files) usage ;
       List.rev !files
     in
-    if !to_web then
-      List.iter export_web files
-    else if !to_json then
+    if !to_json then
       List.iter export_json files
     else
       List.iter export_system files
