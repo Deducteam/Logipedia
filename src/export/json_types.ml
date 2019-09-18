@@ -37,7 +37,7 @@ type item =
   ; taxonomy : Uri.taxon
   ; term : Ppterm.t option
   ; body : Ppterm.t
-  ; deps : dependency list
+  ; deps : dependency
   ; theory : string list
   ; exp : string list
   (** Available systems. *) }

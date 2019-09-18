@@ -7,7 +7,7 @@ module B = Basic
 module T = Term
 module U = Uri
 module S = Signature
-module D = Dep
+module D = Json_deps
 
 (** The theory (or logic) used. *)
 let _th = (`Sttfa)
@@ -54,34 +54,33 @@ and ppt_of_dkterm_args : B.mident -> U.taxon -> T.term -> T.term list ->
     let b_args = List.map ppt_of_dkterm stk in
     Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body ; b_args }
 
-(* Find direct dependencies of a Dedukti entry *)
-
-let empty_mident = B.mk_mident ""
-
-let find_deps : B.name -> Entry.entry -> D.data = fun name e ->
-  D.make (B.md name) [e];
-  D.get_data name
 
 let item_of_entry : B.mident -> Entry.entry -> Jt.item option = fun md en ->
   match en with
   | Entry.Decl(_,id,static,t) ->
     let tx = if static = S.Static then U.TxCst else U.TxAxm in
     let uri = U.uri_of_dkid md id _th U.TxDef |> U.to_string in
+    let ppt_body =  ppt_of_dkterm md tx t in
     Some { name = uri
          ; taxonomy = tx
          ; term = None
-         ; body = ppt_of_dkterm md tx t
-         ; deps = []
+         ; body = ppt_body
+         ; deps = D.NameSet.elements (D.direct_deps ppt_body)
          ; theory = []
          ; exp = [] }
   | Entry.Def(_,id,opacity,teo,te)  ->
     let tx = if opacity then U.TxDef else U.TxThm in
     let uri = U.uri_of_dkid md id _th U.TxDef |> U.to_string in
+    let ppt_body = ppt_of_dkterm md tx te in
+    let ppt_term_opt = Option.map (ppt_of_dkterm md tx) teo in
     Some { name = uri
          ; taxonomy = tx
-         ; term = Option.map (ppt_of_dkterm md tx) teo
-         ; body = ppt_of_dkterm md tx te
-         ; deps = []
+         ; term = ppt_term_opt
+         ; body = ppt_body
+         ; deps = D.NameSet.elements
+               (D.option_union
+                  (D.direct_deps ppt_body)
+                  (Option.map D.direct_deps ppt_term_opt))
          ; theory = []
          ; exp = [] }
   | _                     -> None
