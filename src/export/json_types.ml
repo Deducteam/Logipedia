@@ -17,7 +17,9 @@ struct
     { b_symb: string
     ; bound: string
     ; annotation: t option
-    ; body: t }
+    ; body: t
+    ; b_args : t list
+    (** Some terms are not in β normal form. *) }
   [@@deriving yojson]
   and t =
     | Var of var

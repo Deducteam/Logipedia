@@ -23,19 +23,17 @@ and ppt_of_dkterm_args : T.term -> T.term list -> Jt.Ppterm.t =
     Jt.Ppterm.Const { c_symb ; c_args }
   | T.App(t,u,vs) -> ppt_of_dkterm_args t (u :: vs @ stk)
   | T.Lam(_,id,annot,t) ->
-    Format.fprintf F.err_formatter "Not in β normal form\n";
-    (* assert (stk = []); *) (* In β normal form *)
     let bound = B.string_of_ident id in
     let annotation = Option.bind ppt_of_dkterm annot in
+    let b_args = List.map ppt_of_dkterm stk in
     Jt.Ppterm.Binder { b_symb = "λ" ; bound ; annotation
-                     ; body = ppt_of_dkterm t }
+                     ; body = ppt_of_dkterm t ; b_args }
   | T.Pi(_,id,t,u) ->
-    Format.fprintf F.err_formatter "Not in β normal form\n";
-    (* assert (stk = []); *) (* In β normal form *)
     let annotation = Some(ppt_of_dkterm t) in
     let body = ppt_of_dkterm u in
     let bound = B.string_of_ident id in
-    Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body }
+    let b_args = List.map ppt_of_dkterm stk in
+    Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body ; b_args }
 
 let item_of_entry : Entry.entry -> Jt.item option = function
   | Entry.Decl(_,id,_,t)  ->
