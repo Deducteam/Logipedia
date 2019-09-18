@@ -69,7 +69,6 @@ website/web/vendor
 composer.phar
 
 # dune
-logipedia.install
 *.merlin
 /.depend_dklib
 logipedia.install

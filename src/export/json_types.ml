@@ -3,6 +3,8 @@
     [t_to_yojson: t -> Yojson.Safe.t] and
     [t_of_yojson : Yojson.Safe.t -> t]. *)
 
+(* Should the names be uris as strings or uris as themselves? *)
+
 module Ppterm =
 struct
   type var =
@@ -10,7 +12,7 @@ struct
     ; v_args: t list }
   [@@deriving yojson]
   and const =
-    { c_symb: string list
+    { c_symb: string
     ; c_args: t list }
   [@@deriving yojson]
   and binder =
@@ -28,8 +30,7 @@ struct
   [@@deriving yojson]
 end
 
-type dependency = string list
-[@@deriving yojson]
+type dependency = string list [@@deriving yojson]
 
 type item =
   { name : string
