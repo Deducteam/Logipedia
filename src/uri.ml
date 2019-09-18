@@ -17,11 +17,6 @@ type modu = string list
 
 type t = T.theory * modu * name * taxon
 
-let pp_modu : Format.formatter -> modu -> unit =
-  fun fmt md ->
-  let pp_sep fmt () = Format.fprintf fmt "/" in
-  Format.pp_print_list ~pp_sep Format.pp_print_string fmt md
-
 let string_of_taxon : ?short:bool -> taxon -> string = fun ?(short=false) tx ->
   match tx with
   | TxAxm -> if short then "axm" else "axiom"
@@ -30,6 +25,11 @@ let string_of_taxon : ?short:bool -> taxon -> string = fun ?(short=false) tx ->
   | TxThm -> if short then "thm" else "theorem"
 
 let pp : Format.formatter -> t -> unit = fun fmt (th, md, nm, tx) ->
+  let pp_modu : Format.formatter -> modu -> unit =
+    fun fmt md ->
+    let pp_sep fmt () = Format.fprintf fmt "/" in
+    Format.pp_print_list ~pp_sep Format.pp_print_string fmt md
+  in
   Format.fprintf fmt "%s:%a/%s.%s" (T.string_of_theory th) pp_modu md nm
     (string_of_taxon tx)
 
