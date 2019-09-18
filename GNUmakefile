@@ -174,7 +174,7 @@ jsfiles = $(addprefix $(jspath)/, $(addsuffix .json, $(IMP)))
 
 export/json/%.json: $(IPATH)/%.dko $(LOGIPEDIA)
 	@mkdir -p $(jspath)
-	$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export json $(<:.dko=.dk) -o $@
+	$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export-json $(<:.dko=.dk) -o $@
 
 .PHONY: json
 json: $(jsfiles)

@@ -1,6 +1,7 @@
 (** Export to json files. *)
 
 open Extras
+module F = Format
 module Jt = Json_types
 module B = Basic
 module T = Term
@@ -22,13 +23,15 @@ and ppt_of_dkterm_args : T.term -> T.term list -> Jt.Ppterm.t =
     Jt.Ppterm.Const { c_symb ; c_args }
   | T.App(t,u,vs) -> ppt_of_dkterm_args t (u :: vs @ stk)
   | T.Lam(_,id,annot,t) ->
-    assert (stk = []); (* In β normal form *)
+    Format.fprintf F.err_formatter "Not in β normal form\n";
+    (* assert (stk = []); *) (* In β normal form *)
     let bound = B.string_of_ident id in
     let annotation = Option.bind ppt_of_dkterm annot in
     Jt.Ppterm.Binder { b_symb = "λ" ; bound ; annotation
                      ; body = ppt_of_dkterm t }
   | T.Pi(_,id,t,u) ->
-    assert (stk = []); (* In β normal form *)
+    Format.fprintf F.err_formatter "Not in β normal form\n";
+    (* assert (stk = []); *) (* In β normal form *)
     let annotation = Some(ppt_of_dkterm t) in
     let body = ppt_of_dkterm u in
     let bound = B.string_of_ident id in
@@ -54,4 +57,5 @@ let item_of_entry : Entry.entry -> Jt.item option = function
          ; exp = [] }
   | _                     -> None
 
-let export_document : Jt.document -> unit = fun _ -> assert false
+let print_document : Format.formatter -> Jt.document -> unit = fun fmt doc ->
+  Jt.document_to_yojson doc |> Yojson.Safe.pretty_print fmt
