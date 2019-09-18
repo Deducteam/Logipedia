@@ -6,6 +6,7 @@ module Jt = Json_types
 module B = Basic
 module T = Term
 module U = Uri
+module S = Signature
 
 (** The theory (or logic) used. *)
 let _th = (`Sttfa)
@@ -47,22 +48,23 @@ and ppt_of_dkterm_args : B.mident -> U.taxon -> T.term -> T.term list ->
 
 let item_of_entry : B.mident -> Entry.entry -> Jt.item option = fun md en ->
   match en with
-  | Entry.Decl(_,id,_,t)  ->
-    let tx = U.TxDef in (* wrong *)
+  | Entry.Decl(_,id,static,t)  ->
+    let ax_or_cst static = if static = S.Static then Uri.TxCst else Uri.TxAxm in
+    let tx = if static = S.Static then U.TxCst else U.TxAxm in
     let uri = U.uri_of_dkid md id _th U.TxDef |> U.to_string in
     let ppt = ppt_of_dkterm md tx t in
     Some { name = uri
          ; taxonomy = tx
-         ; term = Some(ppt)
+         ; term = None
          ; body = ppt
          ; deps = []
          ; theory = []
          ; exp = [] }
-  | Entry.Def(_,id,_,teo,te)  ->
-    let tx = U.TxDef in (* wrong *)
+  | Entry.Def(_,id,opacity,teo,te)  ->
+    let tx = if opacity then U.TxDef else U.TxThm in
     let uri = U.uri_of_dkid md id _th U.TxDef |> U.to_string in
     Some { name = uri
-         ; taxonomy = Uri.TxDef
+         ; taxonomy = tx
          ; term = Option.map (ppt_of_dkterm md tx) teo
          ; body = ppt_of_dkterm md tx te
          ; deps = []
