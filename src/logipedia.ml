@@ -1,6 +1,5 @@
 open Basic
 open Parser
-open Ast
 open Extras
 
 module Denv = Env.Default
@@ -39,10 +38,10 @@ let export_file ast system =
 (* Compute an STTforall ast from Dedukti entries *)
 let mk_ast md entries =
   let items = List.map (Compile.compile_entry md) entries in
-  let fold_entry_dep dep e = QSet.union dep
+  let fold_entry_dep dep e = Ast.QSet.union dep
       (Deps.dep_of_entry [Sttfadk.sttfa_module;md] e) in
-  let dep = List.fold_left fold_entry_dep QSet.empty entries in
-  {md = string_of_mident md; dep; items}
+  let dep = List.fold_left fold_entry_dep Ast.QSet.empty entries in
+  { Ast.md = string_of_mident md; Ast.dep; items }
 
 (* Export the file for the system choosen. *)
 let export_system file =

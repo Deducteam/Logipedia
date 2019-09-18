@@ -1,7 +1,14 @@
 (include_subdirs unqualified)
+(library
+  (name core)
+  (public_name logipedia.core)
+  (wrapped false) ; For subdirs
+  (modules :standard \ logipedia)
+  (preprocess (pps ppx_deriving_yojson))
+  (libraries unix str dedukti yojson ppx_deriving_yojson.runtime))
+
 (executable
-        (name main)
-        (public_name logipedia)
-        (package logipedia)
-        (preprocess (pps ppx_deriving_yojson))
-        (libraries unix str dedukti yojson ppx_deriving_yojson.runtime))
+  (name logipedia)
+  (public_name logipedia)
+  (modules logipedia)
+  (libraries logipedia.core))

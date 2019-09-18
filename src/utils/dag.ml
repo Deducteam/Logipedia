@@ -44,7 +44,7 @@ let add_edge a b dag =
   | Some aNode, None ->
     aNode.children <- b::aNode.children;
     Hashtbl.add dag.nodes b { children = [] }
-  | Some aNode, Some bNode ->
+  | Some aNode, Some _ ->
     if not (is_acc a b dag) then
       aNode.children <- b::aNode.children
 
