@@ -88,9 +88,7 @@ let _ =
       Arg.parse options (fun f -> files := f :: !files) usage ;
       List.rev !files
     in
-    if !to_web then
-      List.iter export_web files
-    else if !to_json then
+    if !to_json then
       List.iter export_json files
     else
       List.iter export_system files
