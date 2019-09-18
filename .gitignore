@@ -59,6 +59,7 @@ export/matita/root
 
 # MAKEFILE temporary files
 .library_depend*
+.install
 
 # MAC/OSX files
 .DS_Store
