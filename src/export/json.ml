@@ -54,10 +54,17 @@ and ppt_of_dkterm_args : B.mident -> U.taxon -> T.term -> T.term list ->
     let b_args = List.map ppt_of_dkterm stk in
     Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body ; b_args }
 
+let compute_ideps : unit = let () = D.compute_ideps := true in ()
+
 let find_deps : B.mident -> B.ident -> Entry.entry -> Jt.dependency list =
   fun mid id e ->
-  D.make mid [e];
-  List.map (fun name -> B.string_of_ident (B.id name)) (D.NameSet.elements (D.get_data (B.mk_name mid id)).down)
+  try
+    compute_ideps;
+    D.make mid [e];
+    List.map (fun name -> B.string_of_ident (B.id name))
+      (D.NameSet.elements (D.get_data (B.mk_name mid id)).down)
+  with
+  | D.Dep_error(NameNotFound(_)) -> []
 
 let item_of_entry : B.mident -> Entry.entry -> Jt.item option = fun md en ->
   match en with
