@@ -7,7 +7,7 @@ module B = Basic
 module T = Term
 module U = Uri
 module S = Signature
-module D = Json_deps
+module D = Dep
 
 (** The theory (or logic) used. *)
 let _th = (`Sttfa)
@@ -54,6 +54,10 @@ and ppt_of_dkterm_args : B.mident -> U.taxon -> T.term -> T.term list ->
     let b_args = List.map ppt_of_dkterm stk in
     Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body ; b_args }
 
+let find_deps : B.mident -> B.ident -> Entry.entry -> Jt.dependency list =
+  fun mid id e ->
+  D.make mid [e];
+  List.map (fun name -> B.string_of_ident (B.id name)) (D.NameSet.elements (D.get_data (B.mk_name mid id)).down)
 
 let item_of_entry : B.mident -> Entry.entry -> Jt.item option = fun md en ->
   match en with
@@ -65,7 +69,7 @@ let item_of_entry : B.mident -> Entry.entry -> Jt.item option = fun md en ->
          ; taxonomy = tx
          ; term = None
          ; body = ppt_body
-         ; deps = D.NameSet.elements (D.direct_deps ppt_body)
+         ; deps = find_deps md id en
          ; theory = []
          ; exp = [] }
   | Entry.Def(_,id,opacity,teo,te)  ->
@@ -77,10 +81,7 @@ let item_of_entry : B.mident -> Entry.entry -> Jt.item option = fun md en ->
          ; taxonomy = tx
          ; term = ppt_term_opt
          ; body = ppt_body
-         ; deps = D.NameSet.elements
-               (D.option_union
-                  (D.direct_deps ppt_body)
-                  (Option.map D.direct_deps ppt_term_opt))
+         ; deps = find_deps md id en
          ; theory = []
          ; exp = [] }
   | _                     -> None

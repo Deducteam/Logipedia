@@ -30,7 +30,7 @@ struct
   [@@deriving yojson]
 end
 
-type dependency = string list [@@deriving yojson]
+type dependency = string [@@deriving yojson]
 
 (** An item is more or less a Dedukti entry, with additional information. *)
 type item =
