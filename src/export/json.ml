@@ -9,6 +9,7 @@ module U = Uri
 module S = Signature
 module D = Dep
 module Th = Theories
+module ST = Sttfa_taxonomy
 
 (** The theory (or logic) used. *)
 let _th = (`Sttfa)
@@ -81,9 +82,9 @@ let find_deps : B.mident -> B.ident -> Entry.entry -> Jt.dependency list =
 
 let item_of_entry : B.mident -> Entry.entry -> Jt.item option = fun md en ->
   match en with
-  | Entry.Decl(_,id,static,t) ->
-    let tx = if static = S.Static then U.TxCst else U.TxAxm in
-    let uri = U.uri_of_dkid md id _th U.TxDef |> U.to_string in
+  | Entry.Decl(_,id,_,t) ->
+    let tx = ST.find_tx_decl t in
+    let uri = U.uri_of_dkid md id _th tx |> U.to_string in
     let ppt_body =  ppt_of_dkterm md tx t in
     Some { name = uri
          ; taxonomy = tx
@@ -92,9 +93,9 @@ let item_of_entry : B.mident -> Entry.entry -> Jt.item option = fun md en ->
          ; deps = find_deps md id en
          ; theory = []
          ; exp = [] }
-  | Entry.Def(_,id,opacity,teo,te)  ->
-    let tx = if opacity then U.TxDef else U.TxThm in
-    let uri = U.uri_of_dkid md id _th U.TxDef |> U.to_string in
+  | Entry.Def(_,id,_,teo,te)  ->
+    let tx = ST.find_tx_def te in
+    let uri = U.uri_of_dkid md id _th tx |> U.to_string in
     let ppt_body = ppt_of_dkterm md tx te in
     let ppt_term_opt = Option.map (ppt_of_dkterm md tx) teo in
     Some { name = uri
