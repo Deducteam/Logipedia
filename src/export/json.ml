@@ -9,7 +9,7 @@ module S = Signature
 module T = Term
 module U = Uri
 module Jt = Json_types
-module ST = Sttfa_taxonomy
+module Tx = Taxonomy
 module Th = Theories
 
 (** The theory (or logic) used. *)
@@ -79,7 +79,7 @@ let find_deps : B.mident -> B.ident -> E.entry -> Jt.dependency list =
 let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
   match en with
   | Entry.Decl(_,id,_,t) ->
-    let tx = ST.find_tx_decl t in
+    let tx = Tx.Sttfa.of_decl t in
     let uri = U.uri_of_dkid md id _th tx |> U.to_string in
     let ppt_body =  ppt_of_dkterm md tx t in
     Some { name = uri
@@ -90,7 +90,7 @@ let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
          ; theory = []
          ; exp = [] }
   | Entry.Def(_,id,_,teo,te)  ->
-    let tx = ST.find_tx_def te in
+    let tx = Tx.Sttfa.of_def te in
     let uri = U.uri_of_dkid md id _th tx |> U.to_string in
     let ppt_body = ppt_of_dkterm md tx te in
     let ppt_term_opt = Option.map (ppt_of_dkterm md tx) teo in

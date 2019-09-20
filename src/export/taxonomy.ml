@@ -9,7 +9,15 @@ module S = Signature
 module D = Dep
 module Th = Theories
 
-let find_tx_def : T.term -> U.taxon = function
+(** Specification of a taxon: conversion from Dedukti term. *)
+module type TaxonSpec = sig
+  val of_def : T.term -> U.taxon
+  val of_decl : T.term -> U.taxon
+end
+
+module Sttfa : TaxonSpec =
+struct
+  let of_def : T.term -> U.taxon = function
   | App (Const(_,name),_,_) when
       (B.id name = B.mk_ident "etap" && B.md name = B.mk_mident "sttfa") ->
     U.TxDef
@@ -18,7 +26,7 @@ let find_tx_def : T.term -> U.taxon = function
     U.TxThm
   | _ -> U.TxDef
 
-let find_tx_decl : T.term -> U.taxon = function
+  let of_decl : T.term -> U.taxon = function
   | App (Const(_,name),_,_) when
       (B.id name = B.mk_ident "etap" && B.md name = B.mk_mident "sttfa") ->
     U.TxCst
@@ -26,3 +34,4 @@ let find_tx_decl : T.term -> U.taxon = function
       (B.id name = B.mk_ident "eps" && B.md name = B.mk_mident "sttfa") ->
     U.TxAxm
   | _ -> U.TxCst
+end
