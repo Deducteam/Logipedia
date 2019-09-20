@@ -8,6 +8,7 @@ module T = Term
 module U = Uri
 module S = Signature
 module D = Dep
+module Th = Theories
 
 (** The theory (or logic) used. *)
 let _th = (`Sttfa)
@@ -54,17 +55,29 @@ and ppt_of_dkterm_args : B.mident -> U.taxon -> T.term -> T.term list ->
     let b_args = List.map ppt_of_dkterm stk in
     Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body ; b_args }
 
+
+(** [compute_deps] sets [compute_ideps] to allow the computation of dependencies *)
 let compute_ideps : unit = let () = D.compute_ideps := true in ()
 
+(** [find_deps] computes the list of all direct down dependencies
+    of a Dedukti entry [e] with name [mid,id] *)
 let find_deps : B.mident -> B.ident -> Entry.entry -> Jt.dependency list =
   fun mid id e ->
   try
     compute_ideps;
+    (** Computing all direct dependencies of [e] *)
     D.make mid [e];
-    List.map (fun name -> B.string_of_ident (B.id name))
-      (D.NameSet.elements (D.get_data (B.mk_name mid id)).down)
+    List.map
+      (fun name -> String.concat "."
+          [B.string_of_mident (B.md name);
+           B.string_of_ident (B.id name)])
+      (** Removing theory defined objects from dependencies *)
+      (List.filter
+         (fun name -> not (B.string_of_mident (B.md name)= Th.string_of_theory _th))
+         (** Get direct down dependencies *)
+         (D.NameSet.elements (D.get_data (B.mk_name mid id)).down))
   with
-  | D.Dep_error(NameNotFound(_)) -> []
+  | D.Dep_error _ -> []
 
 let item_of_entry : B.mident -> Entry.entry -> Jt.item option = fun md en ->
   match en with
