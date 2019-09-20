@@ -17,14 +17,14 @@ let _th = (`Sttfa)
 
 (** [ppt_of_dkterm md tx te] converts Dedukti term [te] from Dedukti
     module [md] into a JSON ppterm of taxonomy [tx]. *)
-let rec ppt_of_dkterm : B.mident -> U.taxon -> T.term -> Jt.Ppterm.t =
+let rec ppt_of_dkterm : B.mident -> Tx.Sttfa.t -> T.term -> Jt.Ppterm.t =
   fun md tx t ->
   ppt_of_dkterm_args md tx t []
 
 (** [ppt_of_dkterm_args md tx te stk] converts Dedukti term [te] from
     module [md] applied to stack of arguments [stk].  [tx] is the taxon of
     [te]. *)
-and ppt_of_dkterm_args : B.mident -> U.taxon -> T.term -> T.term list ->
+and ppt_of_dkterm_args : B.mident -> Tx.Sttfa.t -> T.term -> T.term list ->
   Jt.Ppterm.t =
   fun md tx t stk ->
   let ppt_of_dkterm = ppt_of_dkterm md tx in
@@ -83,7 +83,7 @@ let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
     let uri = U.uri_of_dkid md id _th tx |> U.to_string in
     let ppt_body =  ppt_of_dkterm md tx t in
     Some { name = uri
-         ; taxonomy = tx
+         ; taxonomy = Tx.Sttfa.to_string tx
          ; term = None
          ; body = ppt_body
          ; deps = find_deps md id en
@@ -95,7 +95,7 @@ let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
     let ppt_body = ppt_of_dkterm md tx te in
     let ppt_term_opt = Option.map (ppt_of_dkterm md tx) teo in
     Some { name = uri
-         ; taxonomy = tx
+         ; taxonomy = Tx.Sttfa.to_string tx
          ; term = ppt_term_opt
          ; body = ppt_body
          ; deps = find_deps md id en

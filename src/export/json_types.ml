@@ -36,7 +36,7 @@ type dependency = string [@@deriving yojson]
 type item =
   { name : string
   (** A fully qualified name, the representation of a Uri. *)
-  ; taxonomy : Uri.taxon
+  ; taxonomy : string
   ; term : Ppterm.t option
   (** Depends on the item taxonomy,
       - axiom/constant: [None];
