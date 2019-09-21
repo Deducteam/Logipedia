@@ -11,9 +11,6 @@ module U = Uri
 module Jt = Json_types
 module Tx = Taxonomy
 
-(** The theory (or logic) used. *)
-let _th = (`Sttfa)
-
 (** [ppt_of_dkterm md tx te] converts Dedukti term [te] from Dedukti
     module [md] into a JSON ppterm of taxonomy [tx]. *)
 let rec ppt_of_dkterm : Tx.Sttfa.t Str2Map.t -> B.mident -> T.term
