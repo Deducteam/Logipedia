@@ -84,6 +84,7 @@ VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(IMP)))
 
 $(COQPATH)/%.v: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_v \
 $(LOGIPEDIA)
+	@mkdir -p $(COQPATH)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --fast --export coq $(<:.dko=.dk) -o $@
 	@mv $@ $(addsuffix .v, $(subst -,_, $(subst .,_,$(basename $@)))) \
