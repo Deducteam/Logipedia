@@ -9,6 +9,9 @@ module T = Term
 module type TaxonSpec = sig
   type t
 
+  val theory : string
+  (** Name of the theory. *)
+
   val default : t
   (** A default label if no other is available. *)
   (* Should be removed: all items ought to have a taxon. *)
@@ -36,6 +39,8 @@ struct
     | TxNa  (** Not available *)
 
   let default = TxNa
+
+  let theory = "sttfa"
 
   let of_def : T.term -> t = function
   | App (Const(_,name),_,_) when

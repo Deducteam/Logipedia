@@ -45,7 +45,7 @@ and ppt_of_dkterm_args : Tx.Sttfa.t Str2Map.t -> B.mident -> T.term
       let c_tx = try Str2Map.find key txs
         with Not_found -> Tx.Sttfa.default
       in
-      U.uri_of_dkid mid id _th c_tx |> U.to_string
+      U.uri_of_dkid mid id Tx.Sttfa.theory c_tx |> U.to_string
     in
     Jt.Ppterm.Const { c_symb ; c_args }
   | T.App(t,u,vs) -> ppt_of_dkterm_args t (u :: vs @ stk)
@@ -92,7 +92,7 @@ let item_of_entry : Tx.Sttfa.t Str2Map.t -> B.mident -> E.entry
   match en with
   | Entry.Decl(_,id,_,t) ->
     let tx = Tx.Sttfa.of_decl t in
-    let uri = U.uri_of_dkid md id _th tx |> U.to_string in
+    let uri = U.uri_of_dkid md id Tx.Sttfa.theory tx |> U.to_string in
     let ppt_body =  ppt_of_dkterm txs md t in
     Some { name = uri
          ; taxonomy = Tx.Sttfa.to_string tx
@@ -103,7 +103,7 @@ let item_of_entry : Tx.Sttfa.t Str2Map.t -> B.mident -> E.entry
          ; exp = [] }
   | Entry.Def(_,id,_,teo,te)  ->
     let tx = Tx.Sttfa.of_def te in
-    let uri = U.uri_of_dkid md id _th tx |> U.to_string in
+    let uri = U.uri_of_dkid md id Tx.Sttfa.theory tx |> U.to_string in
     let ppt_body = ppt_of_dkterm txs md te in
     let ppt_term_opt = Option.map (ppt_of_dkterm txs md) teo in
     Some { name = uri

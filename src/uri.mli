@@ -13,7 +13,7 @@ type t
 val to_string : t -> string
 (** [to_string uri] prints uri [uri] as a string [logic:module/name.tx]. *)
 
-val uri_of_dkid : Basic.mident -> Basic.ident -> Theories.theory ->
+val uri_of_dkid : Basic.mident -> Basic.ident -> string ->
   Taxonomy.Sttfa.t -> t
 (** [uri_of_dkid md id th tx] transforms a Dedukti qualified [md.id]
     (where the [.] separates the module from the symbol name) into a
