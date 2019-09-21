@@ -59,8 +59,9 @@ and ppt_of_dkterm_args : Tx.Sttfa.t Str2Map.t -> B.mident -> T.term
     Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body ; b_args }
 
 (** [find_deps m i e] computes the list of all direct down dependencies
-    of a Dedukti entry [e] with name [m.i]. *)
-let find_deps : B.mident -> E.entry -> Jt.dependency list =
+    of a Dedukti entry [e] with name [m.i] as a list of strings which
+    are uris. *)
+let find_deps : B.mident -> E.entry -> string list =
   fun mid e ->
   let id = match e with
     | E.Decl(_,id,_,_)
@@ -76,10 +77,10 @@ let find_deps : B.mident -> E.entry -> Jt.dependency list =
     (* Remove some elements from dependencies and create a part of the uri. *)
     let f n =
       if B.string_of_mident (B.md n) = Tx.Sttfa.theory then None else
-      let locator = String.concat "."
-            [ B.string_of_mident (B.md n) ; B.string_of_ident (B.id n) ]
+      let uri = U.uri_of_dkid (B.md n) (B.id n) Tx.Sttfa.theory
+          Tx.Sttfa.default
       in
-      Some(locator)
+      Some(U.to_string uri)
     in
     List.filter_map f (D.NameSet.elements D.(d.down))
 

@@ -30,8 +30,6 @@ struct
   [@@deriving yojson]
 end
 
-type dependency = string [@@deriving yojson]
-
 (** An item is more or less a Dedukti entry, with additional information. *)
 type item =
   { name : string
@@ -46,7 +44,7 @@ type item =
       - axiom: type;
       - definition/constant: definition of the term;
       - theorem: proof. *)
-  ; deps : dependency list
+  ; deps : string list
   (** Direct dependencies of the item (no transitive closure). *)
   ; theory : string list
   ; exp : string list
