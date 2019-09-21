@@ -17,18 +17,19 @@ let _th = (`Sttfa)
 
 (** [ppt_of_dkterm md tx te] converts Dedukti term [te] from Dedukti
     module [md] into a JSON ppterm of taxonomy [tx]. *)
-let rec ppt_of_dkterm : B.mident -> Tx.Sttfa.t -> T.term -> Jt.Ppterm.t =
-  fun md tx t ->
-  ppt_of_dkterm_args md tx t []
+let rec ppt_of_dkterm : Tx.Sttfa.t Str2Map.t -> B.mident -> T.term
+  -> Jt.Ppterm.t =
+  fun txs md t ->
+  ppt_of_dkterm_args txs md t []
 
 (** [ppt_of_dkterm_args md tx te stk] converts Dedukti term [te] from
     module [md] applied to stack of arguments [stk].  [tx] is the taxon of
     [te]. *)
-and ppt_of_dkterm_args : B.mident -> Tx.Sttfa.t -> T.term -> T.term list ->
-  Jt.Ppterm.t =
-  fun md tx t stk ->
-  let ppt_of_dkterm = ppt_of_dkterm md tx in
-  let ppt_of_dkterm_args = ppt_of_dkterm_args md tx in
+and ppt_of_dkterm_args : Tx.Sttfa.t Str2Map.t -> B.mident -> T.term
+  -> T.term list -> Jt.Ppterm.t =
+  fun txs md t stk ->
+  let ppt_of_dkterm = ppt_of_dkterm txs md in
+  let ppt_of_dkterm_args = ppt_of_dkterm_args txs md in
   match t with
   | T.Kind -> Jt.Ppterm.Const { c_symb = "Kind" ; c_args = [] }
   | T.Type(_) -> Jt.Ppterm.Const { c_symb = "Type" ; c_args = [] }
@@ -40,7 +41,11 @@ and ppt_of_dkterm_args : B.mident -> Tx.Sttfa.t -> T.term -> T.term list ->
     let c_symb =
       let mid = B.md name in
       let id = B.id name in
-      U.uri_of_dkid mid id _th tx |> U.to_string
+      let key = (B.string_of_mident md, B.string_of_ident id) in
+      let c_tx = try Str2Map.find key txs
+        with Not_found -> Tx.Sttfa.default
+      in
+      U.uri_of_dkid mid id _th c_tx |> U.to_string
     in
     Jt.Ppterm.Const { c_symb ; c_args }
   | T.App(t,u,vs) -> ppt_of_dkterm_args t (u :: vs @ stk)
@@ -81,12 +86,13 @@ let find_deps : B.mident -> E.entry -> Jt.dependency list =
     in
     List.filter_map f (D.NameSet.elements D.(d.down))
 
-let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
+let item_of_entry : Tx.Sttfa.t Str2Map.t -> B.mident -> E.entry
+  -> Jt.item option = fun txs md en ->
   match en with
   | Entry.Decl(_,id,_,t) ->
     let tx = Tx.Sttfa.of_decl t in
     let uri = U.uri_of_dkid md id _th tx |> U.to_string in
-    let ppt_body =  ppt_of_dkterm md tx t in
+    let ppt_body =  ppt_of_dkterm txs md t in
     Some { name = uri
          ; taxonomy = Tx.Sttfa.to_string tx
          ; term = None
@@ -97,8 +103,8 @@ let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
   | Entry.Def(_,id,_,teo,te)  ->
     let tx = Tx.Sttfa.of_def te in
     let uri = U.uri_of_dkid md id _th tx |> U.to_string in
-    let ppt_body = ppt_of_dkterm md tx te in
-    let ppt_term_opt = Option.map (ppt_of_dkterm md tx) teo in
+    let ppt_body = ppt_of_dkterm txs md te in
+    let ppt_term_opt = Option.map (ppt_of_dkterm txs md) teo in
     Some { name = uri
          ; taxonomy = Tx.Sttfa.to_string tx
          ; term = ppt_term_opt

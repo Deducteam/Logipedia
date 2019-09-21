@@ -25,3 +25,8 @@ struct
       | Some(v) -> v :: filter_map f tl
       | None    -> filter_map f tl
 end
+
+module StrMap = Map.Make(String)
+module Str2Map = Map.Make(struct
+    type t = string * string
+    let compare = Pervasives.compare end)
