@@ -51,7 +51,7 @@ THEORY = sttfa
 DKIMP = import/dedukti
 IPATH = $(DKIMP)/$(THEORY)/$(PACKAGE)
 
-LOGIPEDIAOPTS = -I $(IPATH) -I theories --from $(THEORY)
+LOGIPEDIAOPTS = -I $(IPATH) -I theories
 
 
 #### Export ########################################################

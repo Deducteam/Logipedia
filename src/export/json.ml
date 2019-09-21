@@ -10,7 +10,6 @@ module T = Term
 module U = Uri
 module Jt = Json_types
 module Tx = Taxonomy
-module Th = Theories
 
 (** The theory (or logic) used. *)
 let _th = (`Sttfa)
@@ -79,7 +78,7 @@ let find_deps : B.mident -> E.entry -> Jt.dependency list =
   | d ->
     (* Remove some elements from dependencies and create a part of the uri. *)
     let f n =
-      if B.string_of_mident (B.md n) = Th.string_of_theory _th then None else
+      if B.string_of_mident (B.md n) = Tx.Sttfa.theory then None else
       let locator = String.concat "."
             [ B.string_of_mident (B.md n) ; B.string_of_ident (B.id n) ]
       in

@@ -14,11 +14,6 @@ let system : Systems.system ref = ref (`Coq)
 let set_export s =
   system := Systems.system_of_string s
 
-let input_theory : Theories.theory ref = ref `Sttfa
-
-let set_input_theory s =
-  input_theory := Theories.theory_of_string s
-
 let output_file = ref None
 
 let set_output_file s =
@@ -74,12 +69,21 @@ let _ =
     let to_json = ref false in
     let options =
       Arg.align
-        [ ("-I", Arg.String Basic.add_path, " Add folder to Dedukti path") ;
-          ("-o", Arg.String set_output_file, " Set output file") ;
-          ("--fast", Arg.Set Sttfatyping.Tracer.fast, " Set output file") ;
-          ("--export", Arg.String set_export, " Set exporting system") ;
-          ("--export-json", Arg.Set to_json, " Generate json files") ;
-          ("--from", Arg.String set_input_theory, " Set theory (default: STTFA)") ]
+        [ ( "-I"
+          , Arg.String Basic.add_path
+          , " Add folder to Dedukti path" )
+        ; ( "-o"
+          , Arg.String set_output_file
+          , " Set output file" )
+        ; ( "--fast"
+          , Arg.Set Sttfatyping.Tracer.fast
+          , " Set output file" )
+        ; ( "--export"
+          , Arg.String set_export
+          , " Set exporting system" )
+        ; ( "--export-json"
+          , Arg.Set to_json
+          , " Generate json files" ) ]
     in
     let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
     let usage = usage ^ "Available options:" in
