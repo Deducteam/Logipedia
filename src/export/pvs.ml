@@ -402,7 +402,7 @@ let print_ast : Format.formatter -> ?mdeps:mdeps -> ast -> unit =
 
 let to_string fmt = Format.asprintf "%a" fmt
 
-let pretty_print_item = function
+let string_of_item = function
   | Parameter((md,id),ty) ->
     Format.asprintf "%a %a : %a"
       (print_name md) (md,id)

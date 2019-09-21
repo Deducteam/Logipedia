@@ -126,7 +126,7 @@ let print_meta_ast fmt meta_ast =
 
 let to_string fmt = Format.asprintf "%a" fmt
 
-let pretty_print_item = function
+let string_of_item = function
   | Parameter((_,id),ty) ->
     Format.asprintf "axiom %s : %a" id print_ty ty
   | Definition((_,id),ty,te) ->

@@ -324,7 +324,7 @@ let rec mk_proof env =
 
 let content = ref ""
 
-let pretty_print_item _ = "Printing for OpenTheory is not supported right now." (*
+let string_of_item _ = "Printing for OpenTheory is not supported right now." (*
   let print_item fmt = function
     | Parameter(name,ty) ->
       let ty' = mk_ty ty in
