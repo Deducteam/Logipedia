@@ -73,7 +73,8 @@ let find_deps : B.mident -> E.entry -> Jt.dependency list =
   in
   D.compute_ideps := true; (* Compute dependencies of items *)
   D.make mid [e];
-  match D.get_data (B.mk_name mid id) with
+  let name = B.mk_name mid id in
+  match D.get_data name with
   | exception D.Dep_error(D.NameNotFound(_)) -> []
   | d ->
     (* Remove some elements from dependencies and create a part of the uri. *)

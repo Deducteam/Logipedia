@@ -14,9 +14,16 @@ module type TaxonSpec = sig
   (* Should be removed: all items ought to have a taxon. *)
 
   val of_def : T.term -> t
+  (** [of_def t] returns a taxon of a term [t] given that [t] comes
+      from a definition. *)
+
   val of_decl : T.term -> t
+  (** [of_def t] returns a taxon of a term [t] given that [t] comes
+      from a declaration. *)
 
   val to_string : ?short:bool -> t -> string
+  (** [to_string ?(short=false) tx] makes a long or [short] string out
+      of taxon [tx]. *)
 end
 
 module Sttfa : TaxonSpec =
