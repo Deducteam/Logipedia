@@ -7,12 +7,6 @@
     - [name] is a top level name;
     - [tx] for the taxon, i.e. which kind of object it is. *)
 
-type name
-(** Simplest name of an element. *)
-
-type modu
-(** Type of module path. *)
-
 type t
 (** The uri type. *)
 

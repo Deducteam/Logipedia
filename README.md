@@ -56,6 +56,7 @@ make export/<system>/<file>
 Logipedia:
 - François Thiré <francois.thire@lsv.fr>
 - Gabriel Hondet <gabriel.hondet@lsv.fr>
+- Émilie Grienenberger <emilie.grienenberger@lsv.fr>
 
 Export systems:
 - Lean/Coq/Matita/OpenTheory : François Thiré <francois.thire@lsv.fr>
@@ -63,7 +64,7 @@ Export systems:
 
 Translations:
 - HOL to STTfa : Chantal Keller <Chantal.Keller@lri.fr>
-# Known issue
+# Known issues
 
 - We don't do any concept alignement: every proofs comme in an axiomatized way. You need then to align the concepts of the library from Logipedia to the ones of your system. But if you are interested to try do something, send us an email.
 - OpenTheory output comsumes a lot of memory (about 4Go). This is due to a memoization problem on our side. We hope to fix this in a future version.
