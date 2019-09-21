@@ -59,8 +59,13 @@ and ppt_of_dkterm_args : B.mident -> Tx.Sttfa.t -> T.term -> T.term list ->
 
 (** [find_deps m i e] computes the list of all direct down dependencies
     of a Dedukti entry [e] with name [m.i]. *)
-let find_deps : B.mident -> B.ident -> E.entry -> Jt.dependency list =
-  fun mid id e ->
+let find_deps : B.mident -> E.entry -> Jt.dependency list =
+  fun mid e ->
+  let id = match e with
+    | E.Decl(_,id,_,_)
+    | E.Def(_,id,_,_,_) -> id
+    | _                 -> assert false
+  in
   D.compute_ideps := true; (* Compute dependencies of items *)
   D.make mid [e];
   match D.get_data (B.mk_name mid id) with
@@ -86,7 +91,7 @@ let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
          ; taxonomy = Tx.Sttfa.to_string tx
          ; term = None
          ; body = ppt_body
-         ; deps = find_deps md id en
+         ; deps = find_deps md en
          ; theory = []
          ; exp = [] }
   | Entry.Def(_,id,_,teo,te)  ->
@@ -98,7 +103,7 @@ let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
          ; taxonomy = Tx.Sttfa.to_string tx
          ; term = ppt_term_opt
          ; body = ppt_body
-         ; deps = find_deps md id en
+         ; deps = find_deps md en
          ; theory = []
          ; exp = [] }
   | _                     -> None
