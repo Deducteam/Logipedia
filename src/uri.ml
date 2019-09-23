@@ -18,22 +18,21 @@ let of_string s =
   let r_ext = Str.regexp "[\\.]+$" in
   let r_path = Str.regexp ":.*/" in
   let r_nm = Str.regexp "/[^\\.]+" in
-  let wrap i = if i <= 0 then raise (IllFormedUri s) in
   let protocol =
-    wrap @@ Str.search_forward r_prot s 0;
+    ignore @@ Str.search_forward r_prot s 0;
     Str.matched_string s
   in
   let extension =
-    wrap @@ Str.search_forward r_ext s 0;
+    ignore @@ Str.search_forward r_ext s 0;
     Str.matched_string s
   in
   let name =
-    wrap @@ Str.search_forward r_nm s 0;
+    ignore @@ Str.search_forward r_nm s 0;
     (* Drop the first element *)
     String.drop (Str.matched_string s) 0
   in
   let path =
-    wrap @@ Str.search_forward r_path s 0;
+    ignore @@ Str.search_forward r_path s 0;
     let r_sep = Str.regexp "/" in
     let nocolon = String.drop (Str.matched_string s) 0 in
     Str.split r_sep nocolon

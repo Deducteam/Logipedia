@@ -32,10 +32,6 @@ module type TaxonSpec = sig
 
   val of_string : string -> t
   (** [of_string s] converts string [s] to a taxon. *)
-
-  val uris_of_doc : Jt.document -> U.t Dep.NameMap.t
-  (** [uris_of_doc d] gets a mapping from Dedukti {!type:Basic.name}
-      to {!type:Uri.t}. *)
 end
 
 module Sttfa : TaxonSpec =
@@ -88,14 +84,6 @@ struct
       TxThm
     else
       TxNa
-
-  let uris_of_doc doc =
-    let f nmap it =
-      let uri = U.of_string it.Jt.name in
-      let n = U.name_of_uri uri in
-      Dep.NameMap.add n uri nmap
-    in
-    List.fold_left f Dep.NameMap.empty doc
 end
 
 let taxonomise : B.mident -> E.entry list -> Sttfa.t Str2Map.t =
