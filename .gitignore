@@ -72,3 +72,4 @@ composer.phar
 *.merlin
 /.depend_dklib
 logipedia.install
+/export
