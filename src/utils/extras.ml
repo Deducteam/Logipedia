@@ -41,6 +41,16 @@ module Str2Map = Map.Make(struct
     type t = string * string
     let compare = Pervasives.compare end)
 
+module Basic =
+struct
+  include Basic
+  module NameHashtbl = Hashtbl.Make(struct
+      type t = Basic.name
+      let equal = Basic.name_eq
+      let hash = Hashtbl.hash
+    end)
+end
+
 module Dep =
 struct
   include Dep

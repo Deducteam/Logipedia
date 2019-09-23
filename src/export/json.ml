@@ -13,19 +13,17 @@ module Tx = Taxonomy
 
 (** [ppt_of_dkterm md tx te] converts Dedukti term [te] from Dedukti
     module [md] into a JSON ppterm of taxonomy [tx]. *)
-let rec ppt_of_dkterm : Tx.Sttfa.t Str2Map.t -> B.mident -> T.term
-  -> Jt.Ppterm.t =
-  fun txs md t ->
-  ppt_of_dkterm_args txs md t []
+let rec ppt_of_dkterm : B.mident -> T.term -> Jt.Ppterm.t =
+  fun md t ->
+  ppt_of_dkterm_args md t []
 
 (** [ppt_of_dkterm_args md tx te stk] converts Dedukti term [te] from
     module [md] applied to stack of arguments [stk].  [tx] is the taxon of
     [te]. *)
-and ppt_of_dkterm_args : Tx.Sttfa.t Str2Map.t -> B.mident -> T.term
-  -> T.term list -> Jt.Ppterm.t =
-  fun txs md t stk ->
-  let ppt_of_dkterm = ppt_of_dkterm txs md in
-  let ppt_of_dkterm_args = ppt_of_dkterm_args txs md in
+and ppt_of_dkterm_args : B.mident -> T.term -> T.term list -> Jt.Ppterm.t =
+  fun md t stk ->
+  let ppt_of_dkterm = ppt_of_dkterm md in
+  let ppt_of_dkterm_args = ppt_of_dkterm_args md in
   match t with
   | T.Kind -> Jt.Ppterm.Const { c_symb = "Kind" ; c_args = [] }
   | T.Type(_) -> Jt.Ppterm.Const { c_symb = "Type" ; c_args = [] }
@@ -37,8 +35,7 @@ and ppt_of_dkterm_args : Tx.Sttfa.t Str2Map.t -> B.mident -> T.term
     let c_symb =
       let cmd = B.md name in
       let cid = B.id name in
-      let key = (B.string_of_mident cmd, B.string_of_ident cid) in
-      let c_tx = Tx.tax_find_or_parse key txs in
+      let c_tx = Tx.tax_find_or_parse name in
       let tx = Tx.Sttfa.to_string ~short:true c_tx in
       U.uri_of_dkid cmd cid Tx.Sttfa.theory tx |> U.to_string
     in
@@ -60,8 +57,7 @@ and ppt_of_dkterm_args : Tx.Sttfa.t Str2Map.t -> B.mident -> T.term
 (** [find_deps m i e] computes the list of all direct down dependencies
     of a Dedukti entry [e] with name [m.i] as a list of strings which
     are uris. *)
-let find_deps : Tx.Sttfa.t Str2Map.t -> B.mident -> E.entry -> string list =
-  fun txs mid e ->
+let find_deps : B.mident -> E.entry -> string list = fun mid e ->
   let id = match e with
     | E.Decl(_,id,_,_)
     | E.Def(_,id,_,_,_) -> id
@@ -76,31 +72,26 @@ let find_deps : Tx.Sttfa.t Str2Map.t -> B.mident -> E.entry -> string list =
     (* Remove some elements from dependencies and create a part of the uri. *)
     let f n =
       if B.string_of_mident (B.md n) = Tx.Sttfa.theory then None else
-      let key = (B.string_of_mident (B.md n), B.string_of_ident (B.id n)) in
-      let tx = match Str2Map.find_opt key txs with
-        | None     -> Tx.Sttfa.default
-        | Some(tx) -> tx
-      in
-      let tx = Tx.Sttfa.to_string ~short:true tx in
+      let tx = B.NameHashtbl.find Tx.Sttfa.taxons n
+               |> Tx.Sttfa.to_string ~short:true in
       let uri = U.uri_of_dkid (B.md n) (B.id n) Tx.Sttfa.theory tx in
       Some(U.to_string uri)
     in
     List.filter_map f (D.NameSet.elements D.(d.down))
 
-let item_of_entry : Tx.Sttfa.t Str2Map.t -> B.mident -> E.entry
-  -> Jt.item option = fun txs md en ->
+let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
   match en with
   | Entry.Decl(_,id,_,t) ->
     let tx = Tx.Sttfa.of_decl t in
     let uri = U.uri_of_dkid md id Tx.Sttfa.theory
         (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
     in
-    let ppt_body =  ppt_of_dkterm txs md t in
+    let ppt_body =  ppt_of_dkterm md t in
     Some { name = uri
          ; taxonomy = Tx.Sttfa.to_string tx
          ; term = None
          ; body = ppt_body
-         ; deps = find_deps txs md en
+         ; deps = find_deps md en
          ; theory = []
          ; exp = [] }
   | Entry.Def(_,id,_,teo,te)  ->
@@ -108,13 +99,13 @@ let item_of_entry : Tx.Sttfa.t Str2Map.t -> B.mident -> E.entry
     let uri = U.uri_of_dkid md id Tx.Sttfa.theory
         (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
     in
-    let ppt_body = ppt_of_dkterm txs md te in
-    let ppt_term_opt = Option.map (ppt_of_dkterm txs md) teo in
+    let ppt_body = ppt_of_dkterm md te in
+    let ppt_term_opt = Option.map (ppt_of_dkterm md) teo in
     Some { name = uri
          ; taxonomy = Tx.Sttfa.to_string tx
          ; term = ppt_term_opt
          ; body = ppt_body
-         ; deps = find_deps txs md en
+         ; deps = find_deps md en
          ; theory = []
          ; exp = [] }
   | _                     -> None
