@@ -35,12 +35,12 @@ and ppt_of_dkterm_args : Tx.Sttfa.t Str2Map.t -> B.mident -> T.term
   | T.Const(_,name) ->
     let c_args = List.map ppt_of_dkterm stk in
     let c_symb =
-      let mid = B.md name in
-      let id = B.id name in
-      let key = (B.string_of_mident md, B.string_of_ident id) in
+      let cmd = B.md name in
+      let cid = B.id name in
+      let key = (B.string_of_mident cmd, B.string_of_ident cid) in
       let c_tx = Tx.tax_find_or_parse key txs in
       let tx = Tx.Sttfa.to_string ~short:true c_tx in
-      U.uri_of_dkid mid id Tx.Sttfa.theory tx |> U.to_string
+      U.uri_of_dkid cmd cid Tx.Sttfa.theory tx |> U.to_string
     in
     Jt.Ppterm.Const { c_symb ; c_args }
   | T.App(t,u,vs) -> ppt_of_dkterm_args t (u :: vs @ stk)
