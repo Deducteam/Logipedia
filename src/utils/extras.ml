@@ -32,8 +32,8 @@ struct
 
   let drop : t -> int -> t = fun s start ->
     let len = length s in
-    if start + 1 >= len then invalid_arg "String.drop" else
-    sub s (start + 1) len
+    if start >= len then invalid_arg "String.drop" else
+    sub s (start + 1) (len - start - 1)
 end
 
 module StrMap = Map.Make(String)

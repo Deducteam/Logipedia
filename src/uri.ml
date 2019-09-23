@@ -15,15 +15,21 @@ let to_string : t -> string = fun {protocol; path; name; extension} ->
 
 let of_string s =
   let r_prot = Str.regexp "^[^:]+:" in
-  let r_ext = Str.regexp "[\\.]+$" in
+  let r_ext = Str.regexp "[^\\.]+$" in
   let r_path = Str.regexp ":.*/" in
   let r_nm = Str.regexp "/[^\\.]+" in
   let protocol =
-    ignore @@ Str.search_forward r_prot s 0;
+    begin try
+      ignore @@ Str.search_forward r_prot s 0
+    with Not_found ->
+      raise (IllFormedUri(Format.sprintf "Protocol in %s" s)) end;
     Str.matched_string s
   in
   let extension =
-    ignore @@ Str.search_forward r_ext s 0;
+    begin try
+      ignore @@ Str.search_forward r_ext s 0
+    with Not_found ->
+      raise (IllFormedUri(Format.sprintf "Extension in %s" s)) end;
     Str.matched_string s
   in
   let name =
