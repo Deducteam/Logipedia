@@ -173,7 +173,11 @@ pvs: $(PVSSUM)
 jspath = export/json
 jsfiles = $(addprefix $(jspath)/, $(addsuffix .json, $(IMP)))
 
-export/json/%.json: $(IPATH)/%.dko $(LOGIPEDIA)
+export/json/$(THEORY).json: $(THDIR)/$(THEORY).dk
+	@mkdir -p $(jspath)
+	$(LOGIPEDIA) -I $(THDIR) --export-json $< -o $@
+
+export/json/%.json: $(IPATH)/%.dko $(LOGIPEDIA) export/json/$(THEORY).json
 	@mkdir -p $(jspath)
 	$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export-json $(<:.dko=.dk) -o $@
 
@@ -221,6 +225,12 @@ json: $(jsfiles)
 	@sed -i s/dko/pvs/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.pvs:$(PVSPATH)/\1\.pvs:g" $@
 
+.library_depend_json: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
+	@echo "[DKDEP (JSON FILES)] $@"
+	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
+	@sed -i s/dko/json/g $@
+	sed  -i "s:$(IPATH)/\([^.]*\)\.json:$(jspath)/\1\.json:g" $@
+
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend_dko
@@ -229,6 +239,7 @@ ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend_lean
 -include .library_depend_art
 -include .library_depend_pvs
+-include .library_depend_json
 endif
 endif
 
