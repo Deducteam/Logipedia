@@ -26,7 +26,27 @@ struct
       | None    -> filter_map f tl
 end
 
+module String =
+struct
+  include String
+
+  let drop : t -> int -> t = fun s start ->
+    let len = length s in
+    if start + 1 >= len then invalid_arg "String.drop" else
+    sub s (start + 1) len
+end
+
 module StrMap = Map.Make(String)
 module Str2Map = Map.Make(struct
     type t = string * string
     let compare = Pervasives.compare end)
+
+module Dep =
+struct
+  include Dep
+
+  module NameMap = Map.Make(struct
+      type t = Dep.NameSet.elt
+      let compare : t -> t -> int = Pervasives.compare
+    end)
+end

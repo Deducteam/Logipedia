@@ -5,6 +5,9 @@
 
 (* Should the names be uris as strings or uris as themselves? *)
 
+let json_dir : string ref = ref ""
+(** Directory containing json files. *)
+
 module Ppterm =
 struct
   type var =

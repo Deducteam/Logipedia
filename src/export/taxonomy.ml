@@ -4,6 +4,8 @@ open Extras
 module B = Basic
 module E = Entry
 module T = Term
+module U = Uri
+module Jt = Json_types
 
 (** Specification of a taxon: conversion from Dedukti term. *)
 module type TaxonSpec = sig
@@ -27,6 +29,13 @@ module type TaxonSpec = sig
   val to_string : ?short:bool -> t -> string
   (** [to_string ?(short=false) tx] makes a long or [short] string out
       of taxon [tx]. *)
+
+  val of_string : string -> t
+  (** [of_string s] converts string [s] to a taxon. *)
+
+  val uris_of_doc : Jt.document -> U.t Dep.NameMap.t
+  (** [uris_of_doc d] gets a mapping from Dedukti {!type:Basic.name}
+      to {!type:Uri.t}. *)
 end
 
 module Sttfa : TaxonSpec =
@@ -67,6 +76,26 @@ struct
     | TxCst -> if short then "cst" else "constant"
     | TxThm -> if short then "thm" else "theorem"
     | TxNa  -> if short then "na"  else "N/A"
+
+  let of_string s =
+    if s = "axiom" || s = "axm" then
+      TxAxm
+    else if s = "definition" || s = "def" then
+      TxDef
+    else if s = "constant" || s = "cst" then
+      TxCst
+    else if s = "theorem" || s = "thm" then
+      TxThm
+    else
+      TxNa
+
+  let uris_of_doc doc =
+    let f nmap it =
+      let uri = U.of_string it.Jt.name in
+      let n = U.name_of_uri uri in
+      Dep.NameMap.add n uri nmap
+    in
+    List.fold_left f Dep.NameMap.empty doc
 end
 
 let taxonomise : B.mident -> E.entry list -> Sttfa.t Str2Map.t =
@@ -84,3 +113,34 @@ let taxonomise : B.mident -> E.entry list -> Sttfa.t Str2Map.t =
       Str2Map.add key tx acc
   in
   List.fold_left f Str2Map.empty es
+
+(** [tax_find_or_imp k txs] tries to find key [k] in taxons map [txs].
+    If it fails, it tries to load the json where [k] is defined.
+    [k] is [(md, id)] where [md] and [id] are strings coming from
+    [mident] and [ident].
+    TODO use mident and ident rather than string string *)
+let tax_find_or_parse : Str2Map.key -> Sttfa.t Str2Map.t
+  -> Sttfa.t =
+  fun key s2map ->
+  try Str2Map.find key s2map
+  with Not_found ->
+    (* Parse the correct json file *)
+    (* Output file must be in the same dir than other jsons *)
+    let fullpath = Filename.concat !(Jt.json_dir) ((fst key) ^ ".json") in
+    let doc = Yojson.Safe.from_file fullpath
+              |> Jt.document_of_yojson
+    in
+    let f acc it =
+      let uri = U.of_string it.Jt.name in
+      let nm = U.name_of_uri uri in
+      let key = (B.string_of_mident @@ B.md nm, B.string_of_ident @@ B.id nm) in
+      let tx = U.ext_of_uri uri |> Sttfa.of_string in
+      Str2Map.add key tx acc
+    in
+    match doc with
+    | Result.Error(s) ->
+      failwith (Format.sprintf
+                  "Error parsing file %s at line %s (as dependency)" fullpath s)
+    | Result.Ok(doc) ->
+      let s2map = List.fold_left f s2map doc in
+      Str2Map.find key s2map

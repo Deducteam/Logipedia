@@ -93,7 +93,12 @@ let _ =
       List.rev !files
     in
     if !to_json then
-      List.iter export_json files
+      ( Json_types.json_dir :=
+          begin match !(output_file) with
+            | None -> failwith "Output must be set with json"
+            | Some(o) -> Filename.dirname o
+          end
+      ; List.iter export_json files )
     else
       List.iter export_system files
  with
