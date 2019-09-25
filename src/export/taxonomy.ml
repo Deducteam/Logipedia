@@ -35,6 +35,8 @@ module type TaxonSpec = sig
   (** [of_string s] converts string [s] to a taxon.
 
       @raise IllTaxon if the string is not a taxon. *)
+
+  val is_axiomatic : t -> bool
 end
 
 module Sttfa : TaxonSpec =
