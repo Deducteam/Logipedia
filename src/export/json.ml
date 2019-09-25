@@ -35,7 +35,7 @@ and ppt_of_dkterm_args : B.mident -> T.term -> T.term list -> Jt.Ppterm.t =
     let c_symb =
       let cmd = B.md name in
       let cid = B.id name in
-      let c_tx = Tx.tax_find_or_parse name in
+      let c_tx = Tx.find_taxon name in
       let tx = Tx.Sttfa.to_string ~short:true c_tx in
       U.uri_of_dkid cmd cid Tx.Sttfa.theory tx |> U.to_string
     in
@@ -72,8 +72,7 @@ let find_deps : B.mident -> E.entry -> string list = fun mid e ->
     (* Remove some elements from dependencies and create a part of the uri. *)
     let f n =
       if B.string_of_mident (B.md n) = Tx.Sttfa.theory then None else
-      let tx = B.NameHashtbl.find Tx.Sttfa.taxons n
-               |> Tx.Sttfa.to_string ~short:true in
+      let tx = Tx.find_taxon n |> Tx.Sttfa.to_string ~short:true in
       let uri = U.uri_of_dkid (B.md n) (B.id n) Tx.Sttfa.theory tx in
       Some(U.to_string uri)
     in

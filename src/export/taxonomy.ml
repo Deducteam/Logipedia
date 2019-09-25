@@ -14,10 +14,6 @@ exception IllTaxon
 module type TaxonSpec = sig
   type t
 
-  val taxons : t B.NameHashtbl.t
-  (** Contains all taxons of file and dependencies.  Kind of
-      memoization. *)
-
   val theory : string
   (** Name of the theory. *)
 
@@ -46,8 +42,6 @@ struct
     | TxDef (** Definition *)
     | TxCst (** Constant *)
     | TxThm (** Theorem *)
-
-  let taxons : t B.NameHashtbl.t = B.NameHashtbl.create 0
 
   let theory = "sttfa"
 
@@ -89,25 +83,13 @@ struct
       raise IllTaxon
 end
 
-let taxonomise : B.mident -> E.entry list -> unit =
-  fun md es ->
-  let f e =
-    (* TODO verify that dependencies have a taxon as well *)
-    let idtx = match e with E.Decl(_,id,_,t) -> Some(id, Sttfa.of_decl t)
-                          | E.Def(_,id,_,_,t) -> Some(id, Sttfa.of_def t)
-                          | _ -> None
-    in
-    match idtx with
-    | None -> ()
-    | Some(id, tx) ->
-      B.NameHashtbl.add Sttfa.taxons (B.mk_name md id) tx
-  in
-  List.iter f es
-
-(** [tax_find_or_imp k txs] tries to find key [k] in taxons map [txs].
-    If it fails, it tries to load the json where [k] is defined. *)
-let tax_find_or_parse : B.NameHashtbl.key -> Sttfa.t = fun key ->
-  try Basic.NameHashtbl.find Sttfa.taxons key
+(** [find_taxon n] finds taxon of Dedukti name [n] across available
+    json files. *)
+let find_taxon : B.name -> Sttfa.t =
+  (* Some memoization *)
+  let taxons = B.NameHashtbl.create 0 in
+  fun key ->
+  try Basic.NameHashtbl.find taxons key
   with Not_found ->
     (* Parse the correct json file *)
     (* Output file must be in the same dir than other jsons *)
@@ -120,7 +102,7 @@ let tax_find_or_parse : B.NameHashtbl.key -> Sttfa.t = fun key ->
       let uri = U.of_string it.Jt.name in
       let nm = U.name_of_uri uri in
       let tx = U.ext_of_uri uri |> Sttfa.of_string in
-      B.NameHashtbl.add Sttfa.taxons nm tx
+      B.NameHashtbl.add taxons nm tx
     in
     match doc with
     | Result.Error(s) ->
@@ -128,4 +110,4 @@ let tax_find_or_parse : B.NameHashtbl.key -> Sttfa.t = fun key ->
                   "Error parsing file %s at line %s (as dependency)" fullpath s)
     | Result.Ok(doc) ->
       List.iter f doc;
-      B.NameHashtbl.find Sttfa.taxons key
+      B.NameHashtbl.find taxons key

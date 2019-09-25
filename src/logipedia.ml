@@ -56,7 +56,6 @@ let export_json file =
   let input = open_in file in
   let entries = Parse_channel.parse md input in
   close_in input;
-  Taxonomy.taxonomise md entries;
   let document = List.filter_map (Json.item_of_entry md) entries in
   let fmt = match !output_file with
     | None    -> Format.std_formatter
