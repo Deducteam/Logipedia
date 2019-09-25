@@ -76,12 +76,13 @@ let find_deps : B.mident -> E.entry -> U.t list = fun mid e ->
       let uri = U.uri_of_dkid (B.md n) (B.id n) Tx.Sttfa.theory tx in
       Some(uri)
     in
-    B.NameHashtbl.add Tx.deps name d;
     List.filter_map f (D.NameSet.elements D.(d.down))
 
 let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
-  let theory = Tx.find_theory md en |> D.NameSet.elements |> List.map B.id
-               |> List.map B.string_of_ident in
+  let id = E.id_of_entry en in
+  let theory = Tx.thax (B.mk_name md id) |> D.NameSet.elements
+               |> List.map B.id |> List.map B.string_of_ident
+  in
   match en with
   | Entry.Decl(_,id,_,t) ->
     let tx = Tx.Sttfa.of_decl t in
