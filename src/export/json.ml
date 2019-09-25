@@ -54,10 +54,10 @@ and ppt_of_dkterm_args : B.mident -> T.term -> T.term list -> Jt.Ppterm.t =
     let b_args = List.map ppt_of_dkterm stk in
     Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body ; b_args }
 
-(** [find_deps m i e] computes the list of all direct down dependencies
-    of a Dedukti entry [e] with name [m.i] as a list of strings which
-    are uris. *)
-let find_deps : B.mident -> E.entry -> string list = fun mid e ->
+(** [find_deps m i e] computes the list of all direct down
+    dependencies of a Dedukti entry [e] with name [m.i] as a list of
+    uris. *)
+let find_deps : B.mident -> E.entry -> U.t list = fun mid e ->
   let id = match e with
     | E.Decl(_,id,_,_)
     | E.Def(_,id,_,_,_) -> id
@@ -74,7 +74,7 @@ let find_deps : B.mident -> E.entry -> string list = fun mid e ->
       if B.string_of_mident (B.md n) = Tx.Sttfa.theory then None else
       let tx = Tx.find_taxon n |> Tx.Sttfa.to_string ~short:true in
       let uri = U.uri_of_dkid (B.md n) (B.id n) Tx.Sttfa.theory tx in
-      Some(U.to_string uri)
+      Some(uri)
     in
     List.filter_map f (D.NameSet.elements D.(d.down))
 
@@ -90,7 +90,7 @@ let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
          ; taxonomy = Tx.Sttfa.to_string tx
          ; term = None
          ; body = ppt_body
-         ; deps = find_deps md en
+         ; deps = List.map U.to_string (find_deps md en)
          ; theory = []
          ; exp = [] }
   | Entry.Def(_,id,_,teo,te)  ->
@@ -104,7 +104,7 @@ let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
          ; taxonomy = Tx.Sttfa.to_string tx
          ; term = ppt_term_opt
          ; body = ppt_body
-         ; deps = find_deps md en
+         ; deps = List.map U.to_string (find_deps md en)
          ; theory = []
          ; exp = [] }
   | _                     -> None

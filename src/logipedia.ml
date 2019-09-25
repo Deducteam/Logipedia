@@ -1,6 +1,6 @@
-open Basic
-open Parser
 open Extras
+module B = Basic
+module P = Parser
 
 module Denv = Env.Default
 module Derr = Errors.Make(Denv)
@@ -36,13 +36,13 @@ let mk_ast md entries =
   let fold_entry_dep dep e = Ast.QSet.union dep
       (Deps.dep_of_entry [Sttfadk.sttfa_module;md] e) in
   let dep = List.fold_left fold_entry_dep Ast.QSet.empty entries in
-  { Ast.md = string_of_mident md; Ast.dep; items }
+  { Ast.md = B.string_of_mident md; Ast.dep; items }
 
 (* Export the file for the chosen system. *)
 let export_system file =
   let md = Denv.init file in
   let input = open_in file in
-  let entries = Parse_channel.parse md input in
+  let entries = P.Parse_channel.parse md input in
   close_in input;
   begin
     let sttfa_ast = mk_ast md entries in
@@ -54,7 +54,7 @@ let export_system file =
 let export_json file =
   let md = Denv.init file in
   let input = open_in file in
-  let entries = Parse_channel.parse md input in
+  let entries = P.Parse_channel.parse md input in
   close_in input;
   let document = List.filter_map (Json.item_of_entry md) entries in
   let fmt = match !output_file with
@@ -69,7 +69,7 @@ let _ =
     let options =
       Arg.align
         [ ( "-I"
-          , Arg.String Basic.add_path
+          , Arg.String B.add_path
           , " Add folder to Dedukti path" )
         ; ( "-o"
           , Arg.String set_output_file
