@@ -60,3 +60,14 @@ struct
       let compare : t -> t -> int = Pervasives.compare
     end)
 end
+
+module Entry =
+struct
+  include Entry
+
+  let id_of_entry : entry -> Basic.ident = fun e ->
+    match e with
+    | Decl(_, id, _, _)
+    | Def(_, id, _, _, _) -> id
+    | _                   -> invalid_arg "Entry.id_of_entry"
+end

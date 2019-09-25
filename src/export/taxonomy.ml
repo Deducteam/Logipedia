@@ -10,6 +10,8 @@ module Jt = Json_types
 exception IllTaxon
 (** Exception raised when reading an ill formed taxon. *)
 
+let deps = B.NameHashtbl.create 0
+
 (** Specification of a taxon: conversion from Dedukti term. *)
 module type TaxonSpec = sig
   type t
@@ -81,6 +83,8 @@ struct
       TxThm
     else
       raise IllTaxon
+
+  let is_axiomatic = (=) TxAxm
 end
 
 (** [find_taxon n] finds taxon of Dedukti name [n] across available
@@ -111,3 +115,24 @@ let find_taxon : B.name -> Sttfa.t =
     | Result.Ok(doc) ->
       List.iter f doc;
       B.NameHashtbl.find taxons key
+
+let find_theory : B.mident -> E.entry -> Dep.NameSet.t = fun mid e ->
+  let id = E.id_of_entry e in
+  Dep.compute_ideps := true;
+  let name = B.mk_name mid id in
+  Dep.ignore := true;
+  begin try Dep.transitive_closure name
+  with Dep.Dep_error(_) -> Format.printf "hatht" end;
+  match Dep.get_data name with
+  | exception Dep.Dep_error(_) -> Dep.NameSet.empty
+  | d                                        ->
+    let empty = { Dep.up = Dep.NameSet.empty
+                ; Dep.down = Dep.NameSet.empty } in
+    if d <> empty then Format.printf "hat";
+    let ddep = d.Dep.down in
+    let is_th n =
+      ( (B.NameHashtbl.find deps n).Dep.up
+        |> Dep.NameSet.filter (fun n -> Sttfa.is_axiomatic (find_taxon n)) )
+      <> Dep.NameSet.empty
+    in
+    Dep.NameSet.filter is_th ddep
