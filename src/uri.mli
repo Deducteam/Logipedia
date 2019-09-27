@@ -22,11 +22,9 @@ val of_string : string -> t
 
     @raise IllFormedUri if [s] is not a valid uri. *)
 
-val uri_of_dkid : Basic.mident -> Basic.ident -> string
-  -> string -> t
-(** [uri_of_dkid md id th tx] transforms a Dedukti qualified [md.id]
-    (where the [.] separates the module from the symbol name) into a
-    uri, with theory [th] and taxon [tx]. *)
+val of_dkname : Basic.name -> string -> string -> t
+(** [uri_of_dkid md id th tx] transforms a Dedukti name into a uri,
+    with theory [th] and taxon [tx]. *)
 
 val name_of_uri : t -> Basic.name
 (** [name_of_uri u] returns the Dedukti name of a uri [u]. *)

@@ -53,4 +53,7 @@ let uri_of_dkid : B.mident -> B.ident -> string -> string -> t =
   { protocol = th ; path = [B.string_of_mident md]
   ; name = B.string_of_ident id ; extension = tx}
 
+let of_dkname : B.name -> string -> string -> t = fun n th tx ->
+  uri_of_dkid (B.md n) (B.id n) th tx
+
 let ext_of_uri : t -> string = fun u -> u.extension

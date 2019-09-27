@@ -56,7 +56,7 @@ let export_json file =
   let input = open_in file in
   let entries = P.Parse_channel.parse md input in
   close_in input;
-  let document = List.filter_map (Json.item_of_entry md) entries in
+  let document = Json.doc_of_entries md entries in
   let fmt = match !output_file with
     | None    -> Format.std_formatter
     | Some(f) -> Format.formatter_of_out_channel (open_out f)

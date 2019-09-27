@@ -11,6 +11,16 @@ module U = Uri
 module Jt = Json_types
 module Tx = Taxonomy
 
+(** Collection of the taxons of the currently built json file. *)
+let taxons : Tx.Sttfa.t B.NameHashtbl.t = B.NameHashtbl.create 0
+
+(** [find_taxon n] first searches for the taxon of Dk identifier [n] into the
+    {!val:taxons} collection, and if not found, it will search among
+    existing json files via the {!val:Tx.find_taxon} function. *)
+let find_taxon : B.name -> Tx.Sttfa.t = fun n ->
+  try B.NameHashtbl.find taxons n
+  with Not_found -> Tx.find_taxon n
+
 (** [ppt_of_dkterm md tx te] converts Dedukti term [te] from Dedukti
     module [md] into a JSON ppterm of taxonomy [tx]. *)
 let rec ppt_of_dkterm : B.mident -> T.term -> Jt.Ppterm.t =
@@ -35,9 +45,9 @@ and ppt_of_dkterm_args : B.mident -> T.term -> T.term list -> Jt.Ppterm.t =
     let c_symb =
       let cmd = B.md name in
       let cid = B.id name in
-      let c_tx = Tx.find_taxon name in
+      let c_tx = find_taxon name in
       let tx = Tx.Sttfa.to_string ~short:true c_tx in
-      U.uri_of_dkid cmd cid Tx.Sttfa.theory tx |> U.to_string
+      U.of_dkname (B.mk_name cmd cid) Tx.Sttfa.theory tx |> U.to_string
     in
     Jt.Ppterm.Const { c_symb ; c_args }
   | T.App(t,u,vs) -> ppt_of_dkterm_args t (u :: vs @ stk)
@@ -56,8 +66,8 @@ and ppt_of_dkterm_args : B.mident -> T.term -> T.term list -> Jt.Ppterm.t =
 
 (** [find_deps m i e] computes the list of all direct down
     dependencies of a Dedukti entry [e] with name [m.i] as a list of
-    uris. *)
-let find_deps : B.mident -> E.entry -> U.t list = fun mid e ->
+    Dedukti names. *)
+let find_deps : B.mident -> E.entry -> B.name list = fun mid e ->
   let id = match e with
     | E.Decl(_,id,_,_)
     | E.Def(_,id,_,_,_) -> id
@@ -70,48 +80,63 @@ let find_deps : B.mident -> E.entry -> U.t list = fun mid e ->
   | exception D.Dep_error(D.NameNotFound(_)) -> []
   | d ->
     (* Remove some elements from dependencies and create a part of the uri. *)
-    let f n =
-      if B.string_of_mident (B.md n) = Tx.Sttfa.theory then None else
-      let tx = Tx.find_taxon n |> Tx.Sttfa.to_string ~short:true in
-      let uri = U.uri_of_dkid (B.md n) (B.id n) Tx.Sttfa.theory tx in
-      Some(uri)
-    in
-    List.filter_map f (D.NameSet.elements D.(d.down))
+    let f n = B.string_of_mident (B.md n) = Tx.Sttfa.theory in
+    List.filter f (D.NameSet.elements D.(d.down))
 
-let item_of_entry : B.mident -> E.entry -> Jt.item option = fun md en ->
-  let id = E.id_of_entry en in
-  let theory = Tx.thax (B.mk_name md id) |> D.NameSet.elements
-               |> List.map B.id |> List.map B.string_of_ident
+let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
+  fun mdl entries ->
+  let rec loop : E.entry list -> Jt.item list = fun ens ->
+    match ens with
+    | []      -> []
+    | e :: tl ->
+      match e with
+      | E.Decl(_,id,_,_)
+      | E.Def(_,id,_,_,_) ->
+        let inm = B.mk_name mdl id in
+        let deps =
+          let d = find_deps mdl e in
+          let fill n =
+            U.of_dkname n Tx.Sttfa.theory
+              (Tx.Sttfa.to_string ~short:true (find_taxon n))
+          in
+          List.map fill d
+        in
+        begin match e with
+          | E.Decl(_,id,_,t) ->
+            let tx = Tx.Sttfa.of_decl t in
+            let uri = U.of_dkname (B.mk_name mdl id) Tx.Sttfa.theory
+                (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
+            in
+            let ppt_body =  ppt_of_dkterm mdl t in
+            B.NameHashtbl.add taxons inm tx;
+            { name = uri
+            ; taxonomy = Tx.Sttfa.to_string tx
+            ; term = None
+            ; body = ppt_body
+            ; deps = List.map U.to_string deps
+            ; theory = []
+            ; exp = [] } :: (loop tl)
+          | E.Def(_,id,_,teo,te)  ->
+            let tx = Tx.Sttfa.of_def te in
+            let inm = B.mk_name mdl id in
+            let uri = U.of_dkname (B.mk_name mdl id) Tx.Sttfa.theory
+                (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
+            in
+            B.NameHashtbl.add taxons inm tx;
+            let ppt_body = ppt_of_dkterm mdl te in
+            let ppt_term_opt = Option.map (ppt_of_dkterm mdl) teo in
+            { name = uri
+            ; taxonomy = Tx.Sttfa.to_string tx
+            ; term = ppt_term_opt
+            ; body = ppt_body
+            ; deps = List.map U.to_string deps
+            ; theory = []
+            ; exp = [] } :: (loop tl)
+          | _                     -> loop tl
+        end
+      | _ -> loop tl
   in
-  match en with
-  | Entry.Decl(_,id,_,t) ->
-    let tx = Tx.Sttfa.of_decl t in
-    let uri = U.uri_of_dkid md id Tx.Sttfa.theory
-        (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
-    in
-    let ppt_body =  ppt_of_dkterm md t in
-    Some { name = uri
-         ; taxonomy = Tx.Sttfa.to_string tx
-         ; term = None
-         ; body = ppt_body
-         ; deps = List.map U.to_string (find_deps md en)
-         ; theory
-         ; exp = [] }
-  | Entry.Def(_,id,_,teo,te)  ->
-    let tx = Tx.Sttfa.of_def te in
-    let uri = U.uri_of_dkid md id Tx.Sttfa.theory
-        (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
-    in
-    let ppt_body = ppt_of_dkterm md te in
-    let ppt_term_opt = Option.map (ppt_of_dkterm md) teo in
-    Some { name = uri
-         ; taxonomy = Tx.Sttfa.to_string tx
-         ; term = ppt_term_opt
-         ; body = ppt_body
-         ; deps = List.map U.to_string (find_deps md en)
-         ; theory
-         ; exp = [] }
-  | _                     -> None
+  loop entries
 
 let print_document : Format.formatter -> Jt.document -> unit = fun fmt doc ->
   Jt.document_to_yojson doc |> Yojson.Safe.pretty_print fmt
