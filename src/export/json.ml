@@ -64,25 +64,6 @@ and ppt_of_dkterm_args : B.mident -> T.term -> T.term list -> Jt.Ppterm.t =
     let b_args = List.map ppt_of_dkterm stk in
     Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body ; b_args }
 
-(** [find_deps m i e] computes the list of all direct down
-    dependencies of a Dedukti entry [e] with name [m.i] as a list of
-    Dedukti names. *)
-let find_deps : B.mident -> E.entry -> B.name list = fun mid e ->
-  let id = match e with
-    | E.Decl(_,id,_,_)
-    | E.Def(_,id,_,_,_) -> id
-    | _                 -> assert false
-  in
-  D.compute_ideps := true; (* Compute dependencies of items *)
-  D.make mid [e];
-  let name = B.mk_name mid id in
-  match D.get_data name with
-  | exception D.Dep_error(D.NameNotFound(_)) -> []
-  | d ->
-    (* Remove some elements from dependencies and create a part of the uri. *)
-    let f n = B.string_of_mident (B.md n) = Tx.Sttfa.theory in
-    List.filter f (D.NameSet.elements D.(d.down))
-
 let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
   fun mdl entries ->
   let rec loop : E.entry list -> Jt.item list = fun ens ->
@@ -94,7 +75,7 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
       | E.Def(_,id,_,_,_) ->
         let inm = B.mk_name mdl id in
         let deps =
-          let d = find_deps mdl e in
+          let d = Tx.find_deps mdl (Tx.New e) in
           let fill n =
             U.of_dkname n Tx.Sttfa.theory
               (Tx.Sttfa.to_string ~short:true (find_taxon n))
