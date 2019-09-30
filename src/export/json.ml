@@ -95,13 +95,18 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
           in
           List.map fill deps
         in
+        let tx =
+          match e with
+          | E.Decl(_,_,_,t)  -> Tx.Sttfa.of_decl t
+          | E.Def(_,_,_,_,t) -> Tx.Sttfa.of_def t
+          | _                -> assert false
+        in
+        let acc = { acc with ct_taxo = D.NameMap.add inm tx acc.ct_taxo } in
+        let uri = U.of_dkname (B.mk_name mdl id) Tx.Sttfa.theory
+            (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
+        in
         begin match e with
-          | E.Decl(_,id,_,t) ->
-            let tx = Tx.Sttfa.of_decl t in
-            let acc = { acc with ct_taxo = D.NameMap.add inm tx acc.ct_taxo } in
-            let uri = U.of_dkname (B.mk_name mdl id) Tx.Sttfa.theory
-                (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
-            in
+          | E.Decl(_,_,_,t) ->
             let ppt_body =  ppt_of_dkterm mdl acc t in
             { name = uri
             ; taxonomy = Tx.Sttfa.to_string tx
@@ -110,12 +115,7 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
             ; deps = List.map U.to_string deps
             ; theory = []
             ; exp = [] } :: (loop acc tl)
-          | E.Def(_,id,_,teo,te)  ->
-            let tx = Tx.Sttfa.of_def te in
-            let acc = { acc with ct_taxo = D.NameMap.add inm tx acc.ct_taxo } in
-            let uri = U.of_dkname (B.mk_name mdl id) Tx.Sttfa.theory
-                (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
-            in
+          | E.Def(_,_,_,teo,te)  ->
             let ppt_body = ppt_of_dkterm mdl acc te in
             let ppt_term_opt = Option.map (ppt_of_dkterm mdl acc) teo in
             { name = uri

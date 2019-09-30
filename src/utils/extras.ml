@@ -10,22 +10,6 @@ struct
     | Some(v) -> Some(f v)
 end
 
-module List =
-struct
-  include List
-
-  (** [filter_map f y] like a [List.map], discarding elements for
-      which [f x] is None. *)
-  let rec filter_map : ('a -> 'b option) -> 'a list -> 'b list =
-    fun f xs ->
-    match xs with
-    | [] -> []
-    | h :: tl ->
-      match f h with
-      | Some(v) -> v :: filter_map f tl
-      | None    -> filter_map f tl
-end
-
 module String =
 struct
   include String
@@ -35,11 +19,6 @@ struct
     if start >= len then invalid_arg "String.drop" else
     sub s (start + 1) (len - start - 1)
 end
-
-module StrMap = Map.Make(String)
-module Str2Map = Map.Make(struct
-    type t = string * string
-    let compare = Pervasives.compare end)
 
 module Basic =
 struct
@@ -59,15 +38,4 @@ struct
       type t = Dep.NameSet.elt
       let compare : t -> t -> int = Pervasives.compare
     end)
-end
-
-module Entry =
-struct
-  include Entry
-
-  let id_of_entry : entry -> Basic.ident = fun e ->
-    match e with
-    | Decl(_, id, _, _)
-    | Def(_, id, _, _, _) -> id
-    | _                   -> invalid_arg "Entry.id_of_entry"
 end
