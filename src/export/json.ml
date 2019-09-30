@@ -20,11 +20,63 @@ type content =
   ; ct_thax : (B.name list) D.NameMap.t
   (** Axiomatic theories *)}
 
+(** {2 Loading from other json files} *)
+
+(** [find_taxon n] finds taxon of Dedukti name [n] across available
+    json files. *)
+let find_taxon : B.name -> Tx.Sttfa.t =
+  (* Some memoization *)
+  let taxons = B.NameHashtbl.create 0 in
+  fun key ->
+  try Basic.NameHashtbl.find taxons key
+  with Not_found ->
+    (* Parse the correct json file *)
+    (* Output file must be in the same dir than other jsons *)
+    let fname = B.md key |> B.string_of_mident in
+    let fullpath = Filename.concat !(Jt.json_dir) (fname ^ ".json") in
+    let doc = Yojson.Safe.from_file fullpath
+              |> Jt.document_of_yojson
+    in
+    let f it =
+      let uri = U.of_string it.Jt.name in
+      let nm = U.name_of_uri uri in
+      let tx = U.ext_of_uri uri |> Tx.Sttfa.of_string in
+      B.NameHashtbl.add taxons nm tx
+    in
+    match doc with
+    | Result.Error(s) ->
+      failwith (Format.sprintf
+                  "Error parsing file %s at line %s (as dependency)" fullpath s)
+    | Result.Ok(doc) ->
+      List.iter f doc;
+      B.NameHashtbl.find taxons key
+
+(** [find_deps m i e] computes the list of all direct down
+    dependencies of a Dedukti entry [e] with name [m.i] as a list of
+    Dedukti names. *)
+let find_deps : B.mident -> E.entry -> B.name list = fun mid e ->
+  let id = match e with
+    | E.Decl(_,id,_,_)
+    | E.Def(_,id,_,_,_) -> id
+    | _                 -> assert false
+  in
+  D.compute_ideps := true; (* Compute dependencies of items *)
+  D.make mid [e];
+  let name = B.mk_name mid id in
+  match D.get_data name with
+  | exception D.Dep_error(D.NameNotFound(_)) -> []
+  | d ->
+    (* Remove some elements from dependencies and create a part of the uri. *)
+    let f n = B.string_of_mident (B.md n) = Tx.Sttfa.theory in
+    List.filter f (D.NameSet.elements D.(d.down))
+
+(** {2 Loading from currently parsed file} *)
+
 (** [find_taxon ct n] searches for taxon of [n] in the current content [ct] and
-    hands over {!val:Tx.find_taxon} if it is not found. *)
+    hands over {!val:find_taxon} if it is not found. *)
 let find_taxon : content -> B.name -> Tx.Sttfa.t = fun ct nm ->
   try D.NameMap.find nm ct.ct_taxo
-  with Not_found -> Tx.find_taxon nm
+  with Not_found -> find_taxon nm
 
 (** [ppt_of_dkterm md tx te] converts Dedukti term [te] from Dedukti
     module [md] into a JSON ppterm of taxonomy [tx]. *)
@@ -69,6 +121,8 @@ and ppt_of_dkterm_args : B.mident -> content -> T.term -> T.term list -> Jt.Ppte
     let b_args = List.map ppt_of_dkterm stk in
     Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body ; b_args }
 
+(** {2 Exposed functions} *)
+
 let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
   fun mdl entries ->
   let init = { ct_taxo = D.NameMap.empty
@@ -83,7 +137,7 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
       | E.Decl(_,id,_,_)
       | E.Def(_,id,_,_,_) ->
         let inm = B.mk_name mdl id in
-        let deps = Tx.find_deps mdl (Tx.New e) in
+        let deps = find_deps mdl e in
         let acc =
           let ct_deps = D.NameMap.add inm deps acc.ct_deps in
           { acc with ct_deps }
