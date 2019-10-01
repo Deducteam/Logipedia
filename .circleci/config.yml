@@ -4,7 +4,7 @@ jobs:
     docker:
       - image: ocaml/opam2:alpine
     steps:
-      - run: sudo apk add m4 git-lfs
+      - run: sudo apk add m4 git git-lfs ssh
       - run:
           name: opam_deps
           command: |
@@ -20,15 +20,15 @@ jobs:
     docker:
       - image: ocaml/opam2:alpine
     steps:
-      - run: sudo apk add m4 git-lfs
+      - run: sudo apk add m4 git git-lfs ssh
       - run:
           name: opam_deps
           command: |
             opam switch 4.07
             opam update
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
-            eval $(opam env)
             opam install dune yojson ppx_deriving_yojson
+            eval $(opam env)
       - checkout
       - run: make json
 
