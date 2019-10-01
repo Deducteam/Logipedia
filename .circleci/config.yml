@@ -4,7 +4,7 @@ jobs:
     docker:
       - image: ocaml/opam2:alpine
     steps:
-      - run: sudo apk add m4 git git-lfs
+      - run: sudo apk add m4 git git-lfs openssh
       - run:
           name: opam_deps
           command: |
@@ -20,7 +20,7 @@ jobs:
     docker:
       - image: ocaml/opam2:alpine
     steps:
-      - run: sudo apk add m4 git git-lfs
+      - run: sudo apk add m4 git git-lfs openssh
       - run:
           name: opam_deps
           command: |
