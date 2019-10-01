@@ -11,11 +11,11 @@ jobs:
             opam switch 4.07
             opam update
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
-            opam install dune
+            opam install dune yojson ppx_deriving_yojson
       - checkout
       - run: eval $(opam env) && make dedukti
 
-  coq_exp:
+  json_exp:
     docker:
       - image: ocaml/opam2:alpine
     steps:
@@ -26,14 +26,14 @@ jobs:
             opam switch 4.07
             opam update
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
-            opam install coq
-            eval $(opam env)
-          no_output_timeout: 30m
+            eval $(opam config env)
+            opam install dune yojson ppx_deriving_yojson
       - checkout
-      - run: make coq
+      - run: make json
+
 workflows:
   version: 2.1
   build:
     jobs:
       - logipedia_build
-      - coq_exp
+      - json_exp
