@@ -31,7 +31,6 @@ jobs:
       - checkout
       - run: git lfs pull
       - run: eval $(opam env) && make json
-      - run: [[ $(ls -l export/json/ | wc -l) -ne 0 ]]
 
 workflows:
   version: 2.1
