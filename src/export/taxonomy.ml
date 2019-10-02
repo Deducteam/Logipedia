@@ -38,6 +38,10 @@ module type TaxonSpec = sig
   val is_axiomatic : t -> bool
   (** [is_axiomatic t] is true if taxon [t] should be considered as an
       axiom. *)
+
+  val label : t -> string * string option
+  (** [label tx] returns labels for the fields {!Json_types.item.term} and
+      {!Json_types.item.term_opt}. *)
 end
 
 module Sttfa : TaxonSpec =
@@ -88,5 +92,11 @@ struct
       raise IllTaxon
 
   let is_axiomatic : t -> bool = (=) TxAxm
+
+  let label = function
+    | TxCst -> ("type", None)
+    | TxAxm -> ("statement", None)
+    | TxDef -> ("body", Some("type_annotation"))
+    | TxThm -> ("proof", Some("statement"))
 end
 

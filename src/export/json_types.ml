@@ -38,15 +38,12 @@ type item =
   { name : string
   (** A fully qualified name, the representation of a Uri. *)
   ; taxonomy : string
-  ; term : Ppterm.t option
-  (** Depends on the item taxonomy,
-      - axiom/constant: [None];
-      - definition: type annotation;
-      - theorem: type. *)
-  ; body : Ppterm.t  (** Depends on the item taxonomy,
-      - axiom: type;
-      - definition/constant: definition of the term;
-      - theorem: proof. *)
+  ; term : Ppterm.t
+  (** Meaning is given by the taxonomy. *)
+  ; term_opt : Ppterm.t option
+  (** Depends on the item taxonomy. *)
+  ; label : string * string option
+  (** Meaning of {!field:term} and {!field:term_opt}. *)
   ; deps : string list
   (** Direct dependencies of the item (no transitive closure). *)
   ; theory : string list
