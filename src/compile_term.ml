@@ -13,7 +13,7 @@ let rec type_arity_of te =
 
 let get_type_arity env lc name =
   try type_arity_of (CType.compile_wrapped_type env (Denv.get_type lc name))
-  with Env.EnvError (id,l,e) -> Derr.fail_env_error (id, l, e)
+  with e -> Derr.graceful_fail None e
 
 
 let rec compile__term env _te =

@@ -5,7 +5,7 @@
   (wrapped false) ; For subdirs
   (modules :standard \ logipedia)
   (preprocess (pps ppx_deriving_yojson))
-  (libraries unix str dedukti yojson ppx_deriving_yojson.runtime))
+  (libraries unix str dedukti.kernel dedukti.api yojson ppx_deriving_yojson.runtime))
 
 (executable
   (name logipedia)

@@ -19,10 +19,10 @@ let _infer env _te =
   let tedk = Decompile.decompile__term env.dk _te in
   let ty = Denv.infer ~ctx:env.dk tedk in
   try CType.compile__type env ty
-  with _ ->
-    Derr.fail_exit 1 "Inference fail" None (Some dloc)
-      "Inference failed because type is polymorphic" ;
-    exit 1
+  with e ->
+    Derr.graceful_fail None e
+    (* Derr.fail_exit 1 "Inference fail" None (Some dloc)
+     *   "Inference failed because type is polymorphic" ; *)
 
 let _eq env left right =
   let leftdk = Decompile.decompile__term env.dk left in

@@ -100,12 +100,4 @@ let _ =
       ; List.iter export_json files )
     else
       List.iter export_system files
- with
-  | Env.EnvError (id,l,e) -> Derr.fail_env_error (id,l,e)
-  | Failure err ->
-      err_msg "Failure: %s@." err;
-      exit 2
-  | Sys_error err ->
-      err_msg "System error: %s@." err;
-      exit 3
-  | Exit -> exit 4
+  with e -> Derr.graceful_fail None e
