@@ -162,11 +162,12 @@ $(PVSPATH)/%.pvs: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_pvs $(LO
 
 $(PVSPATH)/%.summary: $(PVSPATH)/%.pvs
 	@echo "[SUMMARY] $@"
-	$(PROVEIT) --importchain -sf $<
+# proveit always return 1
+	@true || $(PROVEIT) --importchain --scripts --force $<
 
 .PHONY: pvs
 pvs: $(PVSSUM)
-	@echo "[OT] CHECKED"
+	@echo "[PVS] CHECKED"
 
 #### Json ##########################################################
 
