@@ -68,7 +68,7 @@ let print_ctx fmt = function
   | CForallP -> Format.fprintf fmt "CForallP"
 
 let print_ctxs fmt ctxs =
-  Basic.pp_list "," print_ctx fmt ctxs
+  Kernel.Basic.pp_list "," print_ctx fmt ctxs
 
 type redex = Delta of name * _ty list | Beta of _te
 

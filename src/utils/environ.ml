@@ -1,5 +1,7 @@
 open Ast
-open Basic
+
+module B = Kernel.Basic
+module T = Kernel.Term
 
 let package = ref ""
 
@@ -19,38 +21,38 @@ type proof_ctx = (string * _te) list
 
 (* k counts lambas, used for renaming *)
 type env =
-  {k: int; dk: Term.typed_context; ty: ty_ctx; te: te_ctx; prf: proof_ctx}
+  {k: int; dk: T.typed_context; ty: ty_ctx; te: te_ctx; prf: proof_ctx}
 
 let empty_env = {k= 0; dk= []; ty= []; te= []; prf= []}
 
-let soi = string_of_ident
+let soi = B.string_of_ident
 
 let rec gen_fresh ctx x c =
   let x' = if c < 0 then x else x ^ string_of_int c in
   if List.exists (fun (_, v, _) -> soi v = x') ctx then gen_fresh ctx x (c + 1)
-  else mk_ident x'
+  else B.mk_ident x'
 
 let gen_fresh env x = gen_fresh env.dk (soi x) (-1)
 
-let of_name name = (string_of_mident (md name), string_of_ident (id name))
+let of_name name = (B.string_of_mident (B.md name), B.string_of_ident (B.id name))
 
-let name_of cst  = Basic.mk_name (Basic.mk_mident (fst cst)) (Basic.mk_ident (snd cst))
+let name_of cst  = B.mk_name (B.mk_mident (fst cst)) (B.mk_ident (snd cst))
 
 let add_ty_var env var =
-  let open Basic in
+  let open B in
   let open Sttfadk in
   { env with
     k= env.k + 1
   ; ty= var :: env.ty
   ; dk=
-      (dloc, mk_ident var, Term.mk_Const dloc (mk_name sttfa_module sttfa_type))
+      (dloc, mk_ident var, T.mk_Const dloc (mk_name sttfa_module sttfa_type))
       :: env.dk }
 
 let add_ty_var_dk env var =
   add_ty_var env (soi var)
 
 let add_te_var env var ty' =
-  let open Basic in
+  let open B in
   let ty = Decompile.decompile__type env.dk ty' in
   let ty = Decompile.to__type ty in
   { env with
@@ -64,7 +66,7 @@ let add_prf_ctx env id _te _te' =
   { env with
     k= env.k + 1
   ; prf= (id, _te') :: env.prf
-  ; dk= (Basic.dloc, mk_ident id, _te) :: env.dk }
+  ; dk= (B.dloc, B.mk_ident id, _te) :: env.dk }
 
 let get_dk_var env n =
   let _, x, _ = List.nth env.dk n in

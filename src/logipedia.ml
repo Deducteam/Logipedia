@@ -1,6 +1,6 @@
 open Extras
-module B = Basic
-module P = Parser
+module B = Kernel.Basic
+module P = Parsers
 
 module Denv = Env.Default
 module Derr = Errors.Make(Denv)

@@ -2,6 +2,8 @@ open Ast
 open Sttfadk
 open Environ
 
+module E = Parsers.Entry
+
 module CType  = Compile_type
 module CTerm  = Compile_term
 module CProof = Compile_proof
@@ -63,12 +65,12 @@ let compile_definition name ty term =
 
 let compile_entry md e =
     match e with
-    | Entry.Decl (lc, id, st, ty) ->
+    | E.Decl (lc, id, st, ty) ->
       ( Denv.declare lc id st ty;
         compile_declaration (Basic.mk_name md id) ty )
-    | Entry.Def (lc, id, opaque, Some ty, te) ->
+    | E.Def (lc, id, opaque, Some ty, te) ->
       ( Denv.define lc id opaque te (Some ty);
         compile_definition (Basic.mk_name md id) ty te  )
-    | Entry.Def _ -> failwith "Definition without types are not supported"
-    | Entry.Rules _ -> failwith "Rules are not part of the sttforall logic"
+    | E.Def _ -> failwith "Definition without types are not supported"
+    | E.Rules _ -> failwith "Rules are not part of the sttforall logic"
     | _ -> failwith "Dedukti Commands are not supported"

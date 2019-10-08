@@ -1,4 +1,6 @@
 open Ast
+module B = Kernel.Basic
+module S = Kernel.Signature
 
 let sys = "pvs"
 
@@ -369,17 +371,17 @@ let line oc fmt = Format.fprintf oc (fmt ^^ "\n")
 
 let remove_transitive_deps mdeps deps =
   let remove_dep dep deps =
-    let md = Basic.mk_mident dep in
+    let md = B.mk_mident dep in
     let deps_from_signature md =
-      let deps = Signature.get_md_deps Basic.dloc md in
-      (QSet.of_list (List.map Basic.string_of_mident deps))
+      let deps = S.get_md_deps B.dloc md in
+      (QSet.of_list (List.map B.string_of_mident deps))
     in
     let md_deps =
       match mdeps with
       | None ->  deps_from_signature md
       | Some l ->
-        if List.mem_assoc (Basic.string_of_mident md) l then
-          List.assoc (Basic.string_of_mident md) l
+        if List.mem_assoc (B.string_of_mident md) l then
+          List.assoc (B.string_of_mident md) l
         else
           deps_from_signature md
     in

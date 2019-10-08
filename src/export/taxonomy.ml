@@ -1,10 +1,9 @@
 (** Compute taxonomy of Dedukti terms defined in sttfa theory *)
 
-open Extras
-module B = Basic
-module D = Dep
-module E = Entry
-module T = Term
+module B = Kernel.Basic
+module D = Api.Dep
+module E = Parsers.Entry
+module T = Kernel.Term
 module U = Uri
 module Jt = Json_types
 
