@@ -19,7 +19,7 @@ def constraints : Type.
 
 def solver : Type.
     [] solver  --> z3.
-    [] logic   --> qfuf.
+    [] logic   --> lra.
     [] opt     --> uf.
     [] minimum --> 3.
     [] maximum --> 3.

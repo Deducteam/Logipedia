@@ -20,7 +20,10 @@ SHELL := /bin/bash
 .PHONY: default
 default: $(DKPSULER_O_OUTPUT_FILES)
 
-$(DKPSULER_OUTPUT_FILES): $(OUTPUT)/%.dk: $(INPUT)/%.dk $(OUTPUT)/%.dep $(CONFIG) cic.dko
+$(OUTPUT):
+	mkdir -p $(OUTPUT)
+
+$(DKPSULER_OUTPUT_FILES): $(OUTPUT)/%.dk: $(INPUT)/%.dk $(OUTPUT)/%.dep $(CONFIG) cic.dko $(OUTPUT)
 	$(Q)$(DKPSULER) $(DEBUG) --config $(CONFIG) -o $(OUTPUT) -I $(OUTPUT) $<
 
 $(DKPSULER_O_OUTPUT_FILES): $(OUTPUT)/%.dko: $(OUTPUT)/%.dk
@@ -34,7 +37,7 @@ $(OUT_DEP_FILES): $(OUTPUT)/%.dep: $(INPUT)/%.dep
 				  | sed "s/\(\ \)/: /" \
 				  | sed 's:$(INPUT)/:$(OUTPUT)/:g' > $@
 
-cic.dko:
+cic.dko: cic.dk
 	dkcheck -e cic.dk
 
 ifneq ($(MAKECMDGOALS), clean distclean)

@@ -32,6 +32,9 @@ UNIVERSO_OPTIONS=\
 .PHONY: default
 default: $(OUT_NF_FILES)
 
+$(OUTPUTRAW):
+	mkdir -p $(OUTPUTRAW)
+
 $(UNIV_FILES): $(OUTPUTRAW)/%_univ.dk: $(OUTPUTRAW)/%.dk
 
 $(UNIV_O_FILES): $(OUTPUTRAW)/%_univ.dko: $(OUTPUTRAW)/%_univ.dk
