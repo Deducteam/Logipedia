@@ -1,9 +1,9 @@
 open Extras
 module B = Kernel.Basic
-module P = Parsers
+module P = Parsers.Parser
 
-module Denv = Env.Default
-module Derr = Errors.Make(Denv)
+module Env = Api.Env
+module Err = Api.Errors
 
 let err_msg fmt =
   Format.eprintf "%s" ("\027[31m" ^ "[ERROR] " ^ "\027[m");
@@ -31,32 +31,23 @@ let export_file ast system =
   M.print_ast fmt ast
 
 (* Compute an STTforall ast from Dedukti entries *)
-let mk_ast md entries =
-  let items = List.map (Compile.compile_entry md) entries in
-  let fold_entry_dep dep e = Ast.QSet.union dep
-      (Deps.dep_of_entry [Sttfadk.sttfa_module;md] e) in
-  let dep = List.fold_left fold_entry_dep Ast.QSet.empty entries in
-  { Ast.md = B.string_of_mident md; Ast.dep; items }
+let mk_ast input =
+  let items = Api.Processor.handle_input input (module Compile.ItemsBuilder) in
+  let dep = Api.Processor.handle_input input (module Compile.DepBuilder) in
+  let md = P.md_of_input input in
+  { Ast.md = B.string_of_mident md; Ast.dep = dep; items }
 
 (* Export the file for the chosen system. *)
 let export_system file =
-  let md = Denv.init file in
-  let input = open_in file in
-  let entries = P.Parse_channel.parse md input in
-  close_in input;
-  begin
-    let sttfa_ast = mk_ast md entries in
-    let (module M:Export.E) = Export.of_system !system in
-    export_file sttfa_ast !system;
-  end
+  let input = P.input_from_file file in
+  let sttfa_ast = mk_ast input in
+  let (module M:Export.E) = Export.of_system !system in
+  export_file sttfa_ast !system;;
 
 (* Json export is done without using the Sttfa AST. *)
 let export_json file =
-  let md = Denv.init file in
-  let input = open_in file in
-  let entries = P.Parse_channel.parse md input in
-  close_in input;
-  let document = Json.doc_of_entries md entries in
+  let input = P.input_from_file file in
+  let document = Api.Processor.handle_input input (module Json.DocumentBuilder) in
   let fmt = match !output_file with
     | None    -> Format.std_formatter
     | Some(f) -> Format.formatter_of_out_channel (open_out f)
@@ -69,14 +60,14 @@ let _ =
     let options =
       Arg.align
         [ ( "-I"
-          , Arg.String B.add_path
+          , Arg.String Api.Files.add_path
           , " Add folder to Dedukti path" )
         ; ( "-o"
           , Arg.String set_output_file
           , " Set output file" )
-        ; ( "--fast"
-          , Arg.Set Sttfatyping.Tracer.fast
-          , " Set output file" )
+        (* ; ( "--fast"
+         *   , Arg.Set Sttfatyping.Tracer.fast
+         *   , " Set output file" ) *)
         ; ( "--export"
           , Arg.String set_export
           , " Set exporting system" )
@@ -100,4 +91,4 @@ let _ =
       ; List.iter export_json files )
     else
       List.iter export_system files
-  with e -> Derr.graceful_fail None e
+  with e -> ignore e; ()

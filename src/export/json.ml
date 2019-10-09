@@ -3,7 +3,8 @@
 open Extras
 module B = Kernel.Basic
 module D = Api.Dep
-module E = Parsers.Entry
+module Ent = Parsers.Entry
+module Env = Api.Env
 module F = Format
 module S = Kernel.Signature
 module T = Kernel.Term
@@ -18,7 +19,7 @@ type content =
   ; ct_deps : (B.name list) NameMap.t
   (** Dependencies *)
   ; ct_thax : (B.name list) NameMap.t
-  (** Axiomatic theories *)}
+  (** Axiomatic theories *) }
 
 (** {2 Loading from other json files} *)
 
@@ -54,10 +55,10 @@ let find_taxon : B.name -> Tx.Sttfa.t =
 (** [find_deps m i e] computes the list of all direct down
     dependencies of a Dedukti entry [e] with name [m.i] as a list of
     Dedukti names. *)
-let find_deps : B.mident -> E.entry -> B.name list = fun mid e ->
+let find_deps : B.mident -> Ent.entry -> B.name list = fun mid e ->
   let id = match e with
-    | E.Decl(_,id,_,_)
-    | E.Def(_,id,_,_,_) -> id
+    | Ent.Decl(_,id,_,_)
+    | Ent.Def(_,id,_,_,_) -> id
     | _                 -> assert false
   in
   D.compute_all_deps := true;
@@ -121,72 +122,71 @@ and ppt_of_dkterm_args : B.mident -> content -> T.term -> T.term list -> Jt.Ppte
     let b_args = List.map ppt_of_dkterm stk in
     Jt.Ppterm.Binder { b_symb = "Π" ; bound ; annotation ; body ; b_args }
 
-(** {2 Exposed functions} *)
+(** {2 Processor} *)
 
-let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
-  fun mdl entries ->
-  let init = { ct_taxo = NameMap.empty
-             ; ct_deps = NameMap.empty
-             ; ct_thax = NameMap.empty }
-  in
-  let rec loop : content -> E.entry list -> Jt.item list = fun acc ens ->
-    match ens with
-    | []      -> []
-    | e :: tl ->
-      match e with
-      | E.Decl(_,id,_,_)
-      | E.Def(_,id,_,_,_) ->
-        let inm = B.mk_name mdl id in
-        let deps = find_deps mdl e in
-        let acc =
-          let ct_deps = NameMap.add inm deps acc.ct_deps in
-          { acc with ct_deps }
+module DocumentBuilder = struct
+  type t = Jt.document
+
+  let _acc : Jt.document ref = ref []
+
+  let _ct = ref { ct_taxo = NameMap.empty
+                ; ct_deps = NameMap.empty
+                ; ct_thax = NameMap.empty }
+
+  let get_data () = !_acc
+
+  let handle_entry: Env.t -> Ent.entry -> unit = fun env ent ->
+    let mdl = Env.get_name env in
+    match ent with
+    | Ent.Decl(_,id,_,_)
+    | Ent.Def(_,id,_,_,_) ->
+      let inm = B.mk_name mdl id in
+      let deps = find_deps mdl ent in
+      _ct := {!_ct with ct_deps = NameMap.add inm deps !_ct.ct_deps};
+      let deps =
+        let fill n =
+          U.of_dkname n Tx.Sttfa.theory
+            (Tx.Sttfa.to_string ~short:true (find_taxon !_ct n))
         in
-        let deps =
-          let fill n =
-            U.of_dkname n Tx.Sttfa.theory
-              (Tx.Sttfa.to_string ~short:true (find_taxon acc n))
-          in
-          List.map fill deps
-        in
-        let tx =
-          match e with
-          | E.Decl(_,_,_,t)  -> Tx.Sttfa.of_decl t
-          | E.Def(_,_,_,_,t) -> Tx.Sttfa.of_def t
-          | _                -> assert false
-        in
-        let label = Tx.Sttfa.label tx in
-        let acc = { acc with ct_taxo = NameMap.add inm tx acc.ct_taxo } in
-        let uri = U.of_dkname (B.mk_name mdl id) Tx.Sttfa.theory
-            (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
-        in
-        begin match e with
-          | E.Decl(_,_,_,t) ->
-            let ppt_term =  ppt_of_dkterm mdl acc t in
-            { name = uri
-            ; taxonomy = Tx.Sttfa.to_string tx
-            ; term = ppt_term
-            ; term_opt = None
-            ; label
-            ; deps = List.map U.to_string deps
-            ; theory = []
-            ; exp = [] } :: (loop acc tl)
-          | E.Def(_,_,_,teo,te)  ->
-            let ppt_term = ppt_of_dkterm mdl acc te in
-            let ppt_term_opt = Option.map (ppt_of_dkterm mdl acc) teo in
-            { name = uri
-            ; taxonomy = Tx.Sttfa.to_string tx
-            ; term = ppt_term
-            ; term_opt = ppt_term_opt
-            ; label
-            ; deps = List.map U.to_string deps
-            ; theory = []
-            ; exp = [] } :: (loop acc tl)
-          | _                     -> loop acc tl
-        end
-      | _ -> loop acc tl
-  in
-  loop init entries
+        List.map fill deps
+      in
+      let tx =
+        match ent with
+        | Ent.Decl(_,_,_,t)  -> Tx.Sttfa.of_decl t
+        | Ent.Def(_,_,_,_,t) -> Tx.Sttfa.of_def t
+        | _                -> assert false
+      in
+      let label = Tx.Sttfa.label tx in
+      _ct := {!_ct with ct_taxo = NameMap.add inm tx !_ct.ct_taxo };
+      let uri = U.of_dkname (B.mk_name mdl id) Tx.Sttfa.theory
+          (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
+      in
+      begin match ent with
+        | Ent.Decl(_,_,_,t) ->
+          let ppt_term =  ppt_of_dkterm mdl !_ct t in
+          _acc := { Jt.name = uri
+                  ; taxonomy = Tx.Sttfa.to_string tx
+                  ; term = ppt_term
+                  ; term_opt = None
+                  ; label
+                  ; deps = List.map U.to_string deps
+                  ; theory = []
+                  ; exp = [] } :: !_acc
+        | Ent.Def(_,_,_,teo,te)  ->
+          let ppt_term = ppt_of_dkterm mdl !_ct te in
+          let ppt_term_opt = Option.map (ppt_of_dkterm mdl !_ct) teo in
+          _acc := { name = uri
+                  ; taxonomy = Tx.Sttfa.to_string tx
+                  ; term = ppt_term
+                  ; term_opt = ppt_term_opt
+                  ; label
+                  ; deps = List.map U.to_string deps
+                  ; theory = []
+                  ; exp = [] } :: !_acc
+        | _               -> ()
+      end
+    | _ -> assert false
+end
 
 let print_document : Format.formatter -> Jt.document -> unit = fun fmt doc ->
   Jt.document_to_yojson doc |> Yojson.Safe.pretty_print fmt
