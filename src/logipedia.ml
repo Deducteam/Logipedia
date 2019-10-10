@@ -65,9 +65,9 @@ let _ =
         ; ( "-o"
           , Arg.String set_output_file
           , " Set output file" )
-        (* ; ( "--fast"
-         *   , Arg.Set Sttfatyping.Tracer.fast
-         *   , " Set output file" ) *)
+        ; ( "--fast"
+          , Arg.Set Sttfatyping.fast
+          , " Set output file" )
         ; ( "--export"
           , Arg.String set_export
           , " Set exporting system" )

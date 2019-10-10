@@ -12,6 +12,8 @@ module Pp = Api.Pp.Default
 module CType = Compile_type
 module CTerm = Compile_term
 
+let fast : bool ref = ref false
+
 let infer dkenv env _te =
   let tedk = Decompile.decompile__term env.dk _te in
   CType.compile_type dkenv env (Env.infer dkenv ~ctx:env.dk tedk)
@@ -136,8 +138,6 @@ let mk_tracer : Env.t -> (module Tr) = fun dkenv ->
 (module struct
 
   let dkenv = dkenv
-
-  let fast = ref false
 
   let is_defined cst =
     let name = name_of cst in
