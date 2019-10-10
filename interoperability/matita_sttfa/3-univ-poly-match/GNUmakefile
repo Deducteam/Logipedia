@@ -44,7 +44,7 @@ ifneq ($(MAKECMDGOALS), clean distclean)
 -include $(OUT_DEP_FILES)
 endif
 
-$(CONFIG): $(DKPSULER_INPUT_FILES)
+$(CONFIG): $(DKPSULER_INPUT_FILES) $(INDUCTIVESH)
 	$(shell $(INDUCTIVESH) $(DKPSULER_INPUT_FILES) > $(CONFIG))
 
 .PHONY: debug

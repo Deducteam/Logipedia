@@ -25,7 +25,6 @@ export
 .PHONY: default
 default: prune universo dkpsuler
 
-
 $(FROM):
 	cd $(realpath $(ROOT)/$(IMPORT)) && tar xvjf $(THEORY).tar.bz2
 
