@@ -41,7 +41,6 @@ let export_system file =
   let input = P.input_from_file file in
   let dkenv = Env.init input in
   let sttfa_ast = mk_ast input in
-  let (module M:Export.Eo) = Export.mk_exporter dkenv !system in
   export_file dkenv sttfa_ast !system
 
 (* Json export is done without using the Sttfa AST. *)

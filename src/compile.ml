@@ -92,17 +92,6 @@ struct
   let get_data () = !_acc
 end
 
-
-module AstBuilder = struct
-  type t = Ast.ast
-
-  let _ast = ref { Ast.md = "" ; dep = Ast.QSet.empty ; items = [] }
-
-  let handle_entry : Env.t -> Ent.entry -> unit = fun _ _ -> ()
-
-  let get_data () = !_ast
-end
-
 module DepBuilder =
 struct
   type t = Ast.QSet.t
