@@ -126,6 +126,8 @@ sig
   val annotate_beta : Environ.env -> te -> (redex * ctx list) list * te
   val annotate : Environ.env -> te -> te -> trace
   val get_app_redex : 'a -> ctx list -> Ast._te -> 'a * ctx list * redex
+  val env_of_redex : env -> ctx list -> te -> env
+  val reduce : Environ.env -> ctx list -> redex -> Ast.te -> Ast.te
   val _reduce : Environ.env -> ctx list -> redex -> Ast._te -> Ast._te
   val _annotate : Environ.env -> Ast._te -> Ast._te -> trace
 end
