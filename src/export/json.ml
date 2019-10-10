@@ -185,7 +185,7 @@ module DocumentBuilder = struct
                   ; exp = [] } :: !_acc
         | _               -> ()
       end
-    | _ -> assert false
+    | _ -> ()
 end
 
 let print_document : Format.formatter -> Jt.document -> unit = fun fmt doc ->

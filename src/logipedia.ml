@@ -91,4 +91,4 @@ let _ =
       ; List.iter export_json files )
     else
       List.iter export_system files
-  with e -> ignore e; ()
+  with e -> raise e
