@@ -110,7 +110,8 @@ let print_item oc = function
     Format.fprintf oc "axiom %a : %a.@." print_name tyop print_arity arity
   | TypeDef _ -> failwith "[Matita] Type definitions not handled right now"
 
-let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
+let print_ast : Api.Env.t -> Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast
+  -> unit = fun _ fmt ?mdeps:_ ast ->
   print_dep fmt "basics/pts";
   QSet.iter (print_dep fmt) ast.dep;
   List.iter (print_item fmt) ast.items
@@ -126,7 +127,7 @@ let print_meta_ast fmt meta_ast =
 
 let to_string fmt = Format.asprintf "%a" fmt
 
-let string_of_item = function
+let string_of_item = fun _ -> function
   | Parameter((_,id),ty) ->
     Format.asprintf "axiom %s : %a" id print_ty ty
   | Definition((_,id),ty,te) ->

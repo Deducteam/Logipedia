@@ -1,4 +1,3 @@
-open Extras
 module B = Kernel.Basic
 module P = Parsers.Parser
 
@@ -19,8 +18,8 @@ let output_file = ref None
 let set_output_file s =
   output_file := Some s
 
-let export_file ast system =
-  let (module M:Export.E) = Export.of_system system in
+let export_file dkenv ast system =
+  let (module M:Export.Eo) = Export.mk_exporter dkenv system in
   let fmt =
     match !output_file with
     | None -> Format.std_formatter
@@ -40,9 +39,10 @@ let mk_ast input =
 (* Export the file for the chosen system. *)
 let export_system file =
   let input = P.input_from_file file in
+  let dkenv = Env.init input in
   let sttfa_ast = mk_ast input in
-  let (module M:Export.E) = Export.of_system !system in
-  export_file sttfa_ast !system;;
+  let (module M:Export.Eo) = Export.mk_exporter dkenv !system in
+  export_file dkenv sttfa_ast !system
 
 (* Json export is done without using the Sttfa AST. *)
 let export_json file =

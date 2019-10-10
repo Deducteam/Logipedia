@@ -373,7 +373,8 @@ let remove_transitive_deps mdeps deps =
   let remove_dep dep deps =
     let md = B.mk_mident dep in
     let deps_from_signature md =
-      let deps = S.get_md_deps B.dloc md in
+      let _ = md in
+      let deps = assert false (* S.get_md_deps B.dloc md *) in
       (QSet.of_list (List.map B.string_of_mident deps))
     in
     let md_deps =
@@ -389,8 +390,8 @@ let remove_transitive_deps mdeps deps =
   in
   QSet.fold remove_dep deps deps
 
-let print_ast : Format.formatter -> ?mdeps:mdeps -> ast -> unit =
- fun oc ?mdeps ast ->
+let print_ast : Api.Env.t -> Format.formatter -> ?mdeps:mdeps -> ast -> unit =
+ fun _ oc ?mdeps ast ->
    current_module := ast.md;
    let pf = "_sttfa" in
    let postfix s = s^pf in
@@ -404,7 +405,7 @@ let print_ast : Format.formatter -> ?mdeps:mdeps -> ast -> unit =
 
 let to_string fmt = Format.asprintf "%a" fmt
 
-let string_of_item = function
+let string_of_item = fun _ -> function
   | Parameter((md,id),ty) ->
     Format.asprintf "%a %a : %a"
       (print_name md) (md,id)

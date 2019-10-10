@@ -1,6 +1,6 @@
 open Ast
 
-module Denv = Env.Default
+module Env = Api.Env
 
 let sys = "lean"
 
@@ -116,7 +116,8 @@ let rec is_prop ty =
   | Ty(_ty) -> is__prop _ty
   | ForallK(_,ty) -> is_prop ty
 
-let rec is__computable (_te:_te) =
+let is__computable env (_te:_te) =
+  let rec is__computable _te =
   match _te with
    | Ast.TeVar _ -> true
    | Ast.Abs (_,_,_te) -> is__computable _te
@@ -125,23 +126,25 @@ let rec is__computable (_te:_te) =
    | Ast.Impl (_tel,_ter) -> is__computable _tel && is__computable _ter
    | Ast.AbsTy (_,_te) -> is__computable _te
    | Ast.Cst ((cmd,cid),_) ->
-     let open Basic in
+     let open Kernel.Basic in
      let name = mk_name (mk_mident cmd) (mk_ident cid) in
-     let ty = Denv.get_type dloc name in
-     let ty' = CType.compile_wrapped_type Environ.empty_env ty in
+     let ty = Env.get_type env dloc name in
+     let ty' = CType.compile_wrapped_type env Environ.empty_env ty in
      is_prop ty' ||
-       not @@ Signature.is_static (Denv.get_signature ()) dloc name
+       not @@ Kernel.Signature.is_static (Env.get_signature env) dloc name
+  in
+  is__computable _te
 
-let rec is_computable te =
+let rec is_computable env te =
   match te with
-  | Te(_te) -> is__computable _te
-  | ForallP(_,te) -> is_computable te
+  | Te(_te) -> is__computable env _te
+  | ForallP(_,te) -> is_computable env te
 
-let print_item oc = function
+let print_item env oc = function
   | Parameter(name,ty) ->
     Format.fprintf oc "constant %a : %a.\n" print_name name print_ty ty
   | Definition(name,ty,te) ->
-    if is_prop ty || is_computable te then
+    if is_prop ty || is_computable env te then
       Format.fprintf oc "def %a : %a := %a.\n" print_name name print_ty ty print_te te
     else
       Format.fprintf oc "noncomputable def %a : %a := %a.\n" print_name name print_ty ty print_te te
@@ -153,25 +156,26 @@ let print_item oc = function
     Format.fprintf oc "axiom %a : %a.\n" print_name tyop print_arity arity
   | TypeDef _ -> failwith "[Lean] Type definitions not handled right now"
 
-let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
+let print_ast : Env.t -> Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit =
+  fun env fmt ?mdeps:_ ast ->
   QSet.iter (print_dep fmt) ast.dep;
-  List.iter (print_item fmt) ast.items
+  List.iter (print_item env fmt) ast.items
 
-let print_meta_ast fmt meta_ast =
+let print_meta_ast env fmt meta_ast =
   let print_ast fmt ast =
     Format.fprintf fmt "namespace %s\n" ast.md;
-    print_ast fmt ast;
+    print_ast env fmt ast;
     Format.fprintf fmt "end %s\n\n" ast.md
   in
   List.iter (print_ast fmt) meta_ast
 
 let to_string fmt = Format.asprintf "%a" fmt
 
-let string_of_item = function
+let string_of_item = fun env -> function
   | Parameter((_,id),ty) ->
     Format.asprintf "constant %s : %a" id print_ty ty
   | Definition((_,id),ty,te) ->
-    if is_prop ty || is_computable te then
+    if is_prop ty || is_computable env te then
       Format.asprintf "def %s : %a := %a" id print_ty ty print_te te
     else
       Format.asprintf "noncomputable def %s : %a := %a" id print_ty ty print_te te

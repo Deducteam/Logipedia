@@ -2,7 +2,7 @@
     are the ones described by the type {!type:Systems.system}. *)
 
 (** E is the signature for an exporting system. *)
-module type E =
+module type Eo =
 sig
   val system            : Systems.system
   (** System identifier. *)
@@ -19,4 +19,4 @@ sig
   val string_of_item : Ast.item -> string
 end
 
-val of_system : Systems.system -> (module E)
+val mk_exporter : Api.Env.t -> Systems.system -> (module Eo)

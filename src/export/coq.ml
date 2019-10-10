@@ -121,22 +121,23 @@ let print_item oc = function
     Format.fprintf oc "Parameter %a : %a.@." print_name tyop print_arity arity
   | TypeDef _ -> ()
 
-let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
+let print_ast : Api.Env.t -> Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast ->
+  unit = fun _ fmt ?mdeps:_ ast ->
   cur_md := sanitize ast.md;
   QSet.iter (print_dep fmt) ast.dep;
   List.iter (print_item fmt) ast.items
 
-let print_meta_ast fmt meta_ast =
+let print_meta_ast env fmt meta_ast =
   let print_ast fmt ast =
     Format.fprintf fmt "Module %s.\n" ast.md;
-    print_ast fmt ast;
+    print_ast env fmt ast;
     Format.fprintf fmt "End %s.\n\n" ast.md
   in
   List.iter (print_ast fmt) meta_ast
 
 let to_string fmt = Format.asprintf "%a" fmt
 
-let string_of_item = function
+let string_of_item = fun _ -> function
   | Parameter((_,id),ty) ->
     Format.asprintf "Parameter %s : %a" id print_ty ty
   | Definition((_,id),ty,te) ->

@@ -1,9 +1,15 @@
 open Ast
-open Compile
 open Openstt
 open Environ
 
-module Denv = Env.Default
+module CType = Compile_type
+module CTerm = Compile_term
+
+module B = Kernel.Basic
+module Env = Api.Env
+module T = Kernel.Term
+
+let _dkenv = ref @@ Env.dummy ()
 
 (* The memoization of Openstt is not efficient and can be highly increased. For that, the memoization of openstt should be turned off and the memoization should be done in this module. One may also want to handle alpha-renaming *)
 
@@ -78,17 +84,17 @@ let rec mk__te ctx = function
     let ctx' = add_ty_var ctx var in
     mk__te ctx' _te
   | Cst(cst, _tys) ->
-    let open Basic in
+    let open B in
     let name = name_of cst in
     let _tys' = List.map (Decompile.decompile__type ctx.dk) _tys in
     let cst' =
       match _tys' with
-      | [] -> Term.mk_Const dloc name
-      | x::t -> Term.mk_App (Term.mk_Const dloc name) x t
+      | [] -> T.mk_Const dloc name
+      | x::t -> T.mk_App (T.mk_Const dloc name) x t
     in
-    let _ty = Denv.infer ~ctx:ctx.dk cst' in
-    let _ty' = CType.compile_wrapped__type ctx
-        (Denv.unsafe_reduction ~red:Conv.beta_only _ty)
+    let _ty = Env.infer !_dkenv ~ctx:ctx.dk cst' in
+    let _ty' = CType.compile_wrapped__type !_dkenv ctx
+        (Env.unsafe_reduction !_dkenv ~red:Conv.beta_only _ty)
     in
     term_of_const (const_of_name (mk_qid cst)) (mk__ty _ty')
 
@@ -120,12 +126,12 @@ let thm_of_const cst =
     thm_of_const_name (mk_qid cst)
   with Failure _ ->
     let name = Environ.name_of cst in
-    let term = Term.mk_Const Basic.dloc name in
-    let te = Denv.unsafe_reduction ~red:(Conv.delta name) (term) in
-    let te' = CTerm.compile_term Environ.empty_env te in
+    let term = T.mk_Const B.dloc name in
+    let te = Env.unsafe_reduction !_dkenv ~red:(Conv.delta name) (term) in
+    let te' = CTerm.compile_term !_dkenv Environ.empty_env te in
     let te' = mk_te empty_env te' in
-    let ty = Denv.infer term in
-    let ty' = CType.compile_wrapped_type Environ.empty_env ty in
+    let ty = Env.infer !_dkenv term in
+    let ty' = CType.compile_wrapped_type !_dkenv Environ.empty_env ty in
     let ty' = mk_ty ty' in
     let const = const_of_name (mk_qid cst) in
     let constterm = term_of_const const ty' in
@@ -137,22 +143,22 @@ let add_prf_ctx env id _te _te' =
   { env with
     k= env.k + 1
   ; prf= (id, _te') :: env.prf
-  ; dk= (Basic.dloc, Basic.mk_ident id, _te) :: env.dk }
+  ; dk= (B.dloc, B.mk_ident id, _te) :: env.dk }
 
 let rec get_vars = function
   | Ty _ -> []
   | ForallK(var, ty) -> var::(get_vars ty)
 
 let mk_rewrite ctx r =
-  let open Basic in
+  let open B in
   match r with
   | Beta(t) ->
     let t' = mk__te ctx t in
     mk_betaConv t'
   | Delta((md,id),_tys) ->
     let cst = mk_name (mk_mident md) (mk_ident id) in
-    let ty = Denv.get_type dloc cst in
-    let ty' = CType.compile_type ctx ty in
+    let ty = Env.get_type !_dkenv dloc cst in
+    let ty' = CType.compile_type !_dkenv ctx ty in
     let vars = get_vars ty' in
     assert (List.length vars = List.length _tys);
     let vars' = List.map mk_id vars in
@@ -165,13 +171,13 @@ let mk_beta env _te =
   mk_betaConv _te'
 
 let mk_delta ctx cst _tys =
-  let open Basic in
+  let open B in
   let thm = thm_of_const cst in
   let term =
-    Term.mk_Const dloc (mk_name (mk_mident (fst cst)) (mk_ident (snd cst)))
+    T.mk_Const dloc (mk_name (mk_mident (fst cst)) (mk_ident (snd cst)))
   in
-  let ty = Denv.infer ~ctx:[] term in
-  let ty' = CType.compile_wrapped_type ctx ty in
+  let ty = Env.infer !_dkenv ~ctx:[] term in
+  let ty' = CType.compile_wrapped_type !_dkenv ctx ty in
   let vars = get_vars ty' in
   let vars' = List.map mk_id vars in
   let _tys' = List.map mk__ty _tys in
@@ -231,8 +237,9 @@ let rec mk_ctx env thm ctx left right =
   | _, _,_ -> assert false
 
 let mk_rewrite_step env term (redex,ctx) =
-  let env' = Sttfatyping.Tracer.env_of_redex env ctx term in
-  let term' = Sttfatyping.Tracer.reduce env' ctx redex term in
+  let (module Tr) = Sttfatyping.mk_tracer !_dkenv in
+  let env' = Tr.env_of_redex env ctx term in
+  let term' = Tr.reduce env' ctx redex term in
   let thm = match redex with
     | Delta(name,_tys) -> mk_delta env' name _tys
     | Beta(_te) -> mk_beta env' _te
@@ -257,15 +264,16 @@ let mk_trace env left right trace =
   mk_trans thml thmr'
 
 let rec mk_proof env =
-  let open Basic in
+  let open B in
   function
   | Assume(j,_) -> mk_assume (mk_te env j.thm)
   | Lemma(cst,_) ->
     begin
       try thm_of_lemma (mk_qid cst)
       with _ ->
-        let te = Denv.get_type dloc (name_of cst) in
-        mk_axiom (mk_hyp []) (mk_te empty_env (CTerm.compile_wrapped_term empty_env te))
+        let te = Env.get_type !_dkenv dloc (name_of cst) in
+        mk_axiom (mk_hyp [])
+          (mk_te empty_env (CTerm.compile_wrapped_term !_dkenv empty_env te))
     end
   | ForallE(_,proof, u) ->
     begin
@@ -324,7 +332,7 @@ let rec mk_proof env =
 
 let content = ref ""
 
-let string_of_item _ = "Printing for OpenTheory is not supported right now." (*
+let string_of_item _ _ = "Printing for OpenTheory is not supported right now." (*
   let print_item fmt = function
     | Parameter(name,ty) ->
       let ty' = mk_ty ty in
@@ -389,7 +397,9 @@ let print_item _ =
   | TypeDecl _ -> ()
   | TypeDef _ -> failwith "[OpenTheory] Type definitions not handled right now"
 
-let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
+let print_ast : Env.t -> Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast
+  -> unit = fun dkenv fmt ?mdeps:_ ast ->
+  _dkenv := dkenv;
   Buffer.clear Format.stdbuf;
   reset ();
   let oc_tmp = Format.str_formatter in
