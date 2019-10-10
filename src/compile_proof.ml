@@ -51,7 +51,7 @@ let rec compile_proof dkenv env proof =
     (j, ImplI (j, proof, B.string_of_ident id))
   | T.Const (lc, name) ->
   let te = Env.get_type dkenv lc name in
-  let te' = CT.compile_wrapped_term empty_env dkenv te in
+  let te' = CT.compile_wrapped_term dkenv empty_env te in
   let j = make_judgment env (A.TeSet.of_list env.prf) te' in
     (j, Lemma (of_name name, j))
   | T.App (f, a, args) ->

@@ -77,7 +77,7 @@ let rec compile_term (dkenv:Env.t) env te =
 let compile_wrapped_term dkenv env _te =
   match _te with
   | T.App (cst, te, []) when is_sttfa_const sttfa_eps cst ->
-      compile_term env dkenv te
+      compile_term dkenv env te
   | _ -> assert false
 
 
