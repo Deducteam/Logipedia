@@ -31,10 +31,11 @@ let export_file dkenv ast system =
 
 (* Compute an STTforall ast from Dedukti entries *)
 let mk_ast input =
-  let items = Api.Processor.handle_input input (module Compile.ItemsBuilder) in
-  let dep = Api.Processor.handle_input input (module Compile.DepBuilder) in
+  let items, dep = Api.Processor.handle_input input
+      (module Compile.ItemsDepBuilder)
+  in
   let md = P.md_of_input input in
-  { Ast.md = B.string_of_mident md; Ast.dep = dep; items }
+  { Ast.md = B.string_of_mident md; Ast.dep; items }
 
 (* Export the file for the chosen system. *)
 let export_system file =

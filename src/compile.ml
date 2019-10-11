@@ -11,6 +11,7 @@ module B = Kernel.Basic
 module T = Kernel.Term
 module Env = Api.Env
 module Ent = Parsers.Entry
+module P = Api.Processor
 
 let compile_declaration dkenv name ty =
   match ty with
@@ -80,28 +81,19 @@ let compile_entry dkenv e =
     | Ent.Rules _ -> failwith "Rules are not part of the sttforall logic"
     | _ -> failwith "Dedukti Commands are not supported"
 
-module ItemsBuilder =
+module ItemsDepBuilder =
 struct
-  type t = Ast.item list
+  type t = Ast.item list * Ast.QSet.t
 
-  let _acc = ref []
+  let _acc = ref ([], Ast.QSet.empty)
 
   let handle_entry : Env.t -> Ent.entry -> unit = fun env ent ->
-    _acc := compile_entry env ent :: !_acc
+    let first = compile_entry env ent in
+    let second =
+      let md = Env.get_name env in
+      Deps.dep_of_entry [Sttfadk.sttfa_module; md] ent
+    in
+    _acc := first :: fst (!_acc), Ast.QSet.union (snd !_acc) second
 
-  let get_data () = !_acc
-end
-
-module DepBuilder =
-struct
-  type t = Ast.QSet.t
-
-  let _acc = ref Ast.QSet.empty
-
-  let handle_entry : Env.t -> Ent.entry -> unit = fun env ent ->
-    let md = Env.get_name env in
-    let d = Deps.dep_of_entry [Sttfadk.sttfa_module;md] ent in
-    _acc := Ast.QSet.union !_acc d
-
-  let get_data () = !_acc
+  let get_data () = List.rev (fst (!_acc)), snd !_acc
 end
