@@ -133,7 +133,7 @@ module DocumentBuilder = struct
                 ; ct_deps = NameMap.empty
                 ; ct_thax = NameMap.empty }
 
-  let get_data () = !_acc
+  let get_data () = List.rev !_acc
 
   let handle_entry: Env.t -> Ent.entry -> unit = fun env ent ->
     let mdl = Env.get_name env in
