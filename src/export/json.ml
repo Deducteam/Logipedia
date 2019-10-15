@@ -67,7 +67,7 @@ let find_deps : B.mident -> E.entry -> B.name list = fun mid e ->
   | exception D.Dep_error(D.NameNotFound(_)) -> []
   | d ->
     (* Remove some elements from dependencies and create a part of the uri. *)
-    let f n = B.string_of_mident (B.md n) = Tx.Sttfa.theory in
+    let f n = B.string_of_mident (B.md n) <> Tx.Sttfa.theory in
     List.filter f (D.NameSet.elements D.(d.down))
 
 (** {2 Loading from currently parsed file} *)
