@@ -152,7 +152,7 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
         let tx =
           match e with
           | E.Decl(_,_,_,t)  -> Tx.Sttfa.of_decl t
-          | E.Def(_,_,_,_,t) -> Tx.Sttfa.of_def t
+          | E.Def(_,_,_,t,u) -> Tx.Sttfa.of_def t u
           | _                -> assert false
         in
         let label = Tx.Sttfa.label tx in
