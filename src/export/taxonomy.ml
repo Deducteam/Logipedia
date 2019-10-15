@@ -17,9 +17,9 @@ module type TaxonSpec = sig
   val theory : string
   (** Name of the theory. *)
 
-  val of_def : T.term -> t
-  (** [of_def t] returns a taxon of a term [t] given that [t] comes
-      from a definition. *)
+  val of_def : T.term option -> T.term -> t
+  (** [of_def t u] returns a taxon of a term [t] with annotation [u] given that
+      [t] comes from a definition. *)
 
   val of_decl : T.term -> t
   (** [of_def t] returns a taxon of a term [t] given that [t] comes
@@ -53,11 +53,12 @@ struct
 
   let theory = "sttfa"
 
-  let of_def : T.term -> t = function
-  | App (Const(_,name),_,_) when
+  let of_def : T.term option -> T.term -> t = fun t _ ->
+    match t with
+  | Some(App(Const(_,name),_,_)) when
       (B.id name = B.mk_ident "etap" && B.md name = B.mk_mident "sttfa") ->
     TxDef
-  | App (Const(_,name),_,_) when
+  | Some(App(Const(_,name),_,_)) when
       (B.id name = B.mk_ident "eps" && B.md name = B.mk_mident "sttfa") ->
     TxThm
   | _ -> TxDef

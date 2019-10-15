@@ -153,7 +153,7 @@ module DocumentBuilder = struct
       let tx =
         match ent with
         | Ent.Decl(_,_,_,t)  -> Tx.Sttfa.of_decl t
-        | Ent.Def(_,_,_,_,t) -> Tx.Sttfa.of_def t
+        | Ent.Def(_,_,_,t,u) -> Tx.Sttfa.of_def t u
         | _                -> assert false
       in
       let label = Tx.Sttfa.label tx in
