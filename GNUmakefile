@@ -73,8 +73,10 @@ $(IPATH)/%.dko: $(IPATH)/%.dk theories/$(THEORY).dko
 	@$(DKCHECK) -e -I theories -I $(IPATH) $<
 
 .PHONY: dedukti
-dedukti: theories/$(THEORY).dko $(DKOS)
-	@$(DKCHECK) -I theories -I $(IPATH) $(IPATH)/fermat.dk
+dedukti: $(DKS)
+	for dk in $^; do \
+		$(DKCHECK) -I $(THDIR) -I $(IPATH) $$dk; \
+	done
 	@echo "[DEDUKTI] CHECKED"
 
 #### Coq ###########################################################
