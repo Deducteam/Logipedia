@@ -10,7 +10,7 @@ jobs:
           command: |
             opam switch 4.07
             opam update
-            opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy || true
+            opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
             opam install dune yojson ppx_deriving_yojson
       - checkout
       - run: git lfs pull
@@ -26,7 +26,7 @@ jobs:
           command: |
             opam switch 4.07
             opam update
-            opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy || true
+            opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
             opam install dune yojson ppx_deriving_yojson
       - checkout
       - run: git lfs pull
