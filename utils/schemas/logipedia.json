@@ -1,13 +1,11 @@
 {
     "$schema": "http://json-schema.org/schema",
     "title": "Logipedia object specification",
-    "description": "A single file describing a logipedia object, contains a
-general section and a section dedicated to export systems.",
+    "description": "A single file describing a logipedia object, contains a general section and a section dedicated to export systems.",
     "type": "object",
     "definitions": {
         "taxon": {
             "type": "string",
-            "pattern": "^(axiom|theorem|definition|constant)$"
         },
         "logic": {
             "type": "string"
@@ -17,16 +15,16 @@ general section and a section dedicated to export systems.",
             "properties": {
                 "name": {
                     "$comment": "Unique fully qualified name",
-                    "$ref": "basics.json#/definitions/qid"
+                    "type": "string"
                 },
                 "taxonomy": {
-                    "$ref": "#/definitions/taxon"
+                    "type": "string"
                 },
-                "ttype": {
+                "term": {
                     "$ref": "ppterm.json#/definitions/term"
                 },
-                "body": {
-                    "$comment": "Proof or definition",
+                "term_opt": {
+                    "$comment": "Optional ppterm",
                     "oneOf": [
                         {
                             "type": "null"
@@ -39,32 +37,16 @@ general section and a section dedicated to export systems.",
                 "dependencies": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "$ref": "basics.json#/definitions/qid"
-                            },
-                            "taxonomy": {
-                                "$ref": "#/definitions/taxon"
-                            }
-                        }
+                        "type": "string"
                     }
                 },
                 "theory": {
                     "type": "array",
                     "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "$ref": "basics.json#/definitions/qid"
-                            },
-                            "taxonomy": {
-                                "$ref": "#/definitions/taxon"
-                            }
-                        }
+                        "type": "string"
                     }
                 },
-                "to": {
+                "export": {
                     "$comment": "Available export systems.",
                     "type": "array",
                     "items": {
@@ -75,7 +57,8 @@ general section and a section dedicated to export systems.",
             "required": [
                 "name",
                 "taxonomy",
-                "ttype",
+                "term",
+                "term_opt",
                 "dependencies",
                 "theory"
             ]
@@ -85,7 +68,7 @@ general section and a section dedicated to export systems.",
             "type": "object",
             "properties": {
                 "system": {
-                    "$ref": "#/definitions/logic"
+                    "type": "string"
                 },
                 "file": {
                     "type": "string"
@@ -104,10 +87,25 @@ general section and a section dedicated to export systems.",
         }
     },
     "properties": {
-        "general": {
-            "$ref": "#/definitions/general"
-        },
-        "exports": {
+        "name": {
+            "$ref": "#/definitions/general/name"
+        }
+        "taxonomy": {
+            "$ref": "#/definitions/general/taxonomy"
+        }
+        "term": {
+            "$ref": "#/definitions/general/term"
+        }
+        "term_opt": {
+            "$ref": "#/definitions/general/term_opt"
+        }
+        "deps": {
+            "$ref": "#/definitions/general/dependencies"
+        }
+        "theory": {
+            "$ref": "#/definitions/general/theory"
+        }
+        "exp": {
             "type": "array",
             "items": {
                 "$ref": "#/definitions/export"
@@ -115,6 +113,6 @@ general section and a section dedicated to export systems.",
         }
     },
     "required": [
-        "general"
+        "name", "taxonomy", "term", "deps", "theory"
     ]
 }

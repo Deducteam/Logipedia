@@ -52,7 +52,7 @@
             ],
             "properties": {
                 "c_symb": {
-                    "$ref": "basics.json#/definitions/qid"
+                    "type": "string"
                 },
                 "c_args": {
                     "type": "array",
@@ -74,7 +74,7 @@
                     "type": "string"
                 },
                 "bound": {
-                    "$ref": "basics.json#/definitions/id"
+                    "type": "string"
                 },
                 "annotation": {
                     "type": [
