@@ -31,6 +31,9 @@ jobs:
       - checkout
       - run: git lfs pull
       - run: eval $(opam env) && make json
+      - run: cp -r export/json /tmp
+      - store_artifacts:
+          path: /tmp/json
 
 workflows:
   version: 2.1
