@@ -11,8 +11,10 @@ do
 	    ind=${BASH_REMATCH[1]}
 	    echo "[] ${md}.match_$ind $theory.prop --> ${md}.match_${ind}_prop."
 	    echo "[] ${md}.match_$ind $theory.type --> ${md}.match_${ind}_type."
+	    echo "[] ${md}.match_$ind $theory.kind --> ${md}.match_${ind}_kind."
 	    echo "[] ${md}.filter_$ind $theory.prop --> ${md}.filter_${ind}_prop."
 	    echo "[] ${md}.filter_$ind $theory.type --> ${md}.filter_${ind}_type."
+	    echo "[] ${md}.filter_$ind $theory.kind --> ${md}.filter_${ind}_kind."
 	fi
     done < $f
 done

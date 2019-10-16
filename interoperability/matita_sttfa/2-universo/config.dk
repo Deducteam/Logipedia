@@ -1,4 +1,5 @@
 def elaboration : Type.
+    (; [] cic.prop    --> cic.var. ;)
     []  cic.prop   --> cic.enum cic.uzero.
     [s] cic.type s --> cic.var.
     [s] cic.succ s --> cic.var.
@@ -19,7 +20,7 @@ def constraints : Type.
 
 def solver : Type.
     [] solver  --> z3.
-    [] logic   --> qfuf.
+    [] logic   --> lra.
     [] opt     --> uf.
     [] minimum --> 3.
     [] maximum --> 3.
@@ -45,6 +46,6 @@ def qfuf_specification : Type.
     []  cic.Rule cic.kind cic.type cic.type        --> cic.true.
     []  cic.Rule cic.kind cic.kind cic.kind        --> cic.true.
 
-    [a] cic.Cumul a a                              --> cic.true.
+    (; [a] cic.Cumul cic.type cic.kind                --> cic.true. ;)
 
 def end : Type.

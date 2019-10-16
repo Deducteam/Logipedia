@@ -8,8 +8,11 @@ PRUNE_OUTPUT_FILES = $(LIB_FILES:%=$(OUTPUT)/%.dk)
 endif
 
 # dkprune can erase file, so probably the target might be buggy
-$(PRUNE_OUTPUT_FILES): $(PRUNE_INPUT_FILES)
+$(PRUNE_OUTPUT_FILES): $(OUTPUT) $(PRUNE_INPUT_FILES)
 	$(Q)$(DKPRUNE) $(DEBUG) -o $(OUTPUT) -I $(INPUT) config.dk
+
+$(OUTPUT):
+	mkdir -p $(OUTPUT)
 
 .PHONY: clean
 clean:
