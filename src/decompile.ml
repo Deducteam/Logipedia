@@ -1,7 +1,9 @@
 open Sttfadk
 open Ast
-open Basic
-open Term
+open Kernel.Basic
+open Kernel.Term
+module Term = Kernel.Term
+module Basic = Kernel.Basic
 
 let to_const ident = Term.mk_Const dloc (mk_name sttfa_module ident)
 

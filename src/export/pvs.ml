@@ -1,4 +1,6 @@
 open Ast
+module Basic = Kernel.Basic
+module Signature = Kernel.Signature
 
 let sys = "pvs"
 

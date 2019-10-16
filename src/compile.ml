@@ -6,7 +6,9 @@ module CType  = Compile_type
 module CTerm  = Compile_term
 module CProof = Compile_proof
 
-module Denv = Env.Default
+module Denv = Api.Env.Default
+module Term = Kernel.Term
+module Entry = Parsing.Entry
 
 let compile_declaration name ty =
   match ty with

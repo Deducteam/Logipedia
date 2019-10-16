@@ -1,5 +1,5 @@
 open Extras
-module B = Basic
+module B = Kernel.Basic
 
 exception IllFormedUri of string
 

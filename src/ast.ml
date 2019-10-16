@@ -1,6 +1,8 @@
 (** This file defines a full AST of STTforall.
     Informations are redundant to facilitate exportation. *)
 
+module B = Kernel.Basic
+
 (** {b NOTE} underscored types are monomorphic, not underscored are
     polymorphic. *)
 
@@ -68,7 +70,7 @@ let print_ctx fmt = function
   | CForallP -> Format.fprintf fmt "CForallP"
 
 let print_ctxs fmt ctxs =
-  Basic.pp_list "," print_ctx fmt ctxs
+  B.pp_list "," print_ctx fmt ctxs
 
 type redex = Delta of name * _ty list | Beta of _te
 

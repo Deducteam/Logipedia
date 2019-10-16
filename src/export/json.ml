@@ -1,23 +1,23 @@
 (** Export to json files. *)
 
 open Extras
-module B = Basic
-module D = Dep
-module E = Entry
+module B = Kernel.Basic
+module D = Api.Dep
+module E = Parsing.Entry
 module F = Format
-module S = Signature
-module T = Term
+module S = Kernel.Signature
+module T = Kernel.Term
 module U = Uri
 module Jt = Json_types
 module Tx = Taxonomy
 
 (** Information collected in the current time. *)
 type content =
-  { ct_taxo : Tx.Sttfa.t D.NameMap.t
+  { ct_taxo : Tx.Sttfa.t NameMap.t
   (** Taxons of the file. *)
-  ; ct_deps : (B.name list) D.NameMap.t
+  ; ct_deps : (B.name list) NameMap.t
   (** Dependencies *)
-  ; ct_thax : (B.name list) D.NameMap.t
+  ; ct_thax : (B.name list) NameMap.t
   (** Axiomatic theories *)}
 
 (** {2 Loading from other json files} *)
@@ -26,9 +26,9 @@ type content =
     json files. *)
 let find_taxon : B.name -> Tx.Sttfa.t =
   (* Some memoization *)
-  let taxons = B.NameHashtbl.create 0 in
+  let taxons = NameHashtbl.create 0 in
   fun key ->
-  try Basic.NameHashtbl.find taxons key
+  try NameHashtbl.find taxons key
   with Not_found ->
     (* Parse the correct json file *)
     (* Output file must be in the same dir than other jsons *)
@@ -41,7 +41,7 @@ let find_taxon : B.name -> Tx.Sttfa.t =
       let uri = U.of_string it.Jt.name in
       let nm = U.name_of_uri uri in
       let tx = U.ext_of_uri uri |> Tx.Sttfa.of_string in
-      B.NameHashtbl.add taxons nm tx
+      NameHashtbl.add taxons nm tx
     in
     match doc with
     | Result.Error(s) ->
@@ -49,7 +49,7 @@ let find_taxon : B.name -> Tx.Sttfa.t =
                   "Error parsing file %s at line %s (as dependency)" fullpath s)
     | Result.Ok(doc) ->
       List.iter f doc;
-      B.NameHashtbl.find taxons key
+      NameHashtbl.find taxons key
 
 (** [find_deps m i e] computes the list of all direct down
     dependencies of a Dedukti entry [e] with name [m.i] as a list of
@@ -75,7 +75,7 @@ let find_deps : B.mident -> E.entry -> B.name list = fun mid e ->
 (** [find_taxon ct n] searches for taxon of [n] in the current content [ct] and
     hands over {!val:find_taxon} if it is not found. *)
 let find_taxon : content -> B.name -> Tx.Sttfa.t = fun ct nm ->
-  try D.NameMap.find nm ct.ct_taxo
+  try NameMap.find nm ct.ct_taxo
   with Not_found -> find_taxon nm
 
 (** [ppt_of_dkterm md tx te] converts Dedukti term [te] from Dedukti
@@ -125,9 +125,9 @@ and ppt_of_dkterm_args : B.mident -> content -> T.term -> T.term list -> Jt.Ppte
 
 let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
   fun mdl entries ->
-  let init = { ct_taxo = D.NameMap.empty
-             ; ct_deps = D.NameMap.empty
-             ; ct_thax = D.NameMap.empty }
+  let init = { ct_taxo = NameMap.empty
+             ; ct_deps = NameMap.empty
+             ; ct_thax = NameMap.empty }
   in
   let rec loop : content -> E.entry list -> Jt.item list = fun acc ens ->
     match ens with
@@ -139,7 +139,7 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
         let inm = B.mk_name mdl id in
         let deps = find_deps mdl e in
         let acc =
-          let ct_deps = D.NameMap.add inm deps acc.ct_deps in
+          let ct_deps = NameMap.add inm deps acc.ct_deps in
           { acc with ct_deps }
         in
         let deps =
@@ -156,7 +156,7 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
           | _                -> assert false
         in
         let label = Tx.Sttfa.label tx in
-        let acc = { acc with ct_taxo = D.NameMap.add inm tx acc.ct_taxo } in
+        let acc = { acc with ct_taxo = NameMap.add inm tx acc.ct_taxo } in
         let uri = U.of_dkname (B.mk_name mdl id) Tx.Sttfa.theory
             (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
         in

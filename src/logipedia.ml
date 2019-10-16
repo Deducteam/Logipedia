@@ -1,9 +1,8 @@
-open Extras
-module B = Basic
-module P = Parser
+module B = Kernel.Basic
+module P = Parsing.Parser
 
-module Denv = Env.Default
-module Derr = Errors.Make(Denv)
+module Denv = Api.Env.Default
+module Derr = Api.Errors.Make(Denv)
 
 let err_msg fmt =
   Format.eprintf "%s" ("\027[31m" ^ "[ERROR] " ^ "\027[m");

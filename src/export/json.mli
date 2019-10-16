@@ -1,3 +1,5 @@
+open Kernel
+open Parsing
 val doc_of_entries : Basic.mident -> Entry.entry list -> Json_types.document
 (** [doc_of_entry md e] transforms a list of Dedukti entries [e]
     coming from module [md] into a json document. *)

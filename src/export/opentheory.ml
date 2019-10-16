@@ -3,7 +3,7 @@ open Compile
 open Openstt
 open Environ
 
-module Denv = Env.Default
+module Denv = Api.Env.Default
 
 (* The memoization of Openstt is not efficient and can be highly increased. For that, the memoization of openstt should be turned off and the memoization should be done in this module. One may also want to handle alpha-renaming *)
 

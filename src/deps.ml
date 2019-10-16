@@ -1,8 +1,8 @@
-open Basic
+open Kernel.Basic
 open Ast
-open Term
-open Entry
-open Rule
+open Kernel.Term
+open Parsing.Entry
+open Kernel.Rule
 
 let add_dep : mident -> QSet.t =
  fun md -> QSet.singleton (string_of_mident @@ md)

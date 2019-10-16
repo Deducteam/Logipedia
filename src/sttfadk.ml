@@ -1,4 +1,5 @@
-open Basic
+open Kernel.Basic
+module Term = Kernel.Term
 
 let sttfa_module = mk_mident "sttfa"
 let sttfa_type = mk_ident "type"

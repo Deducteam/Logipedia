@@ -1,4 +1,4 @@
-open Basic
+open Kernel.Basic
 open Ast
 open Sttfadk
 open Environ
@@ -6,7 +6,7 @@ open Environ
 module CType = Compile_type
 module CTerm = Compile_term
 
-module Denv = Env.Default
+module Denv = Api.Env.Default
 
 let make_judgment env hyp thm = {ty= env.ty; te= env.te; hyp; thm}
 
