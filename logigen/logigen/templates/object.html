@@ -1,0 +1,37 @@
+{% macro show_deps(deps) %}
+<ul>
+  {% for item in deps %}
+  <li><a href="{{item.url}}">{{item.name}}</a></li>
+  {% endfor %}
+</ul>
+{% endmacro %}
+
+{% extends "base.html" %}
+{% block title %}{{name}}{% endblock %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<h2>{{taxonomy}}</h2> 
+<p>{{name}}</p>
+<h2>{{term_label}}</h2>
+<code>{{pp}}</code>
+{% if term_opt_label %}
+<h2>{{term_opt_label}}</h2>
+<code>{{pp_opt}}</code>
+{% endif %}
+<h2>Dependencies</h2>
+{{ show_deps(deps) }}
+<h2>Theory</h2>
+{{ show_deps(theory) }}
+<h2>Exports</h2>
+{% for export in exports %}
+<div class="export">
+  <h3>{{export.system}}</h3>
+  <h4>{{term_label}}</h4>
+  <code>{{export.etype or "Pretty-Printing unavailable"}}</code>
+  <h4>Download</h4>
+  <a href="{{export.file}}">Download file</a>
+</div>
+{% endfor %}
+{% endblock %}
