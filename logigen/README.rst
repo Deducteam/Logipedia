@@ -10,6 +10,8 @@ Logigen is a tool that generates a static website from a set of JSON "object" fi
 ***************
 Installing 
 ***************
+``Logigen`` requires python 3.7
+
 From the source directory, run ``pip install .`` to install logigen.
 
 ***************
