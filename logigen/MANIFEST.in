@@ -1,1 +1,2 @@
 recursive-include logigen/static *.css
+recursive-include logigen/templates *.html
