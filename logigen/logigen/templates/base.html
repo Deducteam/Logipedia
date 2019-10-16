@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    {% block head %}
+    <link rel="stylesheet" href="static/style.css" />
+    <title>{% block title %}{% endblock %} - Logipedia</title>
+    {% endblock %}
+  </head>
+  <body>
+    <h1><a href="index.html">Logipedia</a></h1>
+    <div id="content">{% block content %}{% endblock %}</div>
+    <div id="footer">
+      {% block footer %}
+      <hr/>
+      <a href="https://github.com/Deducteam/Logipedia">Source</a>
+      {% endblock %}
+    </div>
+  </body>
+</html>
