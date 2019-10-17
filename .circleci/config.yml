@@ -1,6 +1,6 @@
 version: 2.1
 jobs:
-  logipedia_build:
+  build_logipedia:
     docker:
       - image: ocaml/opam2:alpine
     steps:
@@ -16,7 +16,7 @@ jobs:
       - run: git lfs pull
       - run: eval $(opam env) && make dedukti
 
-  json_exp:
+  json_export:
     docker:
       - image: ocaml/opam2:alpine
     steps:
@@ -34,10 +34,31 @@ jobs:
       - run: cp -r export/json /tmp
       - store_artifacts:
           path: /tmp/json
+      - persist_to_workspace:
+          root: export
+          path: json
+
+  build_website:
+    docker:
+      - image: python:3.7-slim-buster
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: apt update && apt install git
+      - checkout
+      - run: pip install ./logigen
+      - run: logigen -i /tmp/workspace/json
+      - run: cp -r gen_website /tmp/
+      - store_artifacts:
+          path: /tmp/gen_website
+
 
 workflows:
   version: 2.1
   build:
     jobs:
-      - logipedia_build
-      - json_exp
+      - build_logipedia
+      - json_export
+      - build_website:
+          requires:
+            - json_export
