@@ -36,7 +36,8 @@ jobs:
           path: /tmp/json
       - persist_to_workspace:
           root: /tmp
-          path: json
+          paths: 
+            - json
 
   build_website:
     docker:
