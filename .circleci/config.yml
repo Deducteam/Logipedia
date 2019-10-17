@@ -1,4 +1,4 @@
-version: 2.1
+version: 2.0
 jobs:
   build_logipedia:
     docker:
@@ -41,13 +41,12 @@ jobs:
 
   build_website:
     docker:
-      - image: python:3.7-slim-buster
+      - image: circleci/python:3.7-buster
     steps:
       - attach_workspace:
           at: /tmp/workspace
-      - run: apt update && apt install git
       - checkout
-      - run: pip install ./logigen
+      - run: pip install --user ./logigen
       - run: logigen -i /tmp/workspace/json
       - run: cp -r gen_website /tmp/
       - store_artifacts:
