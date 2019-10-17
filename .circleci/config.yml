@@ -35,7 +35,7 @@ jobs:
       - store_artifacts:
           path: /tmp/json
       - persist_to_workspace:
-          root: export
+          root: /tmp
           path: json
 
   build_website:
