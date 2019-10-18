@@ -14,12 +14,12 @@
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 {% endblock %}
 {% block content %}
-<h2>{{taxonomy}}</h2> 
+<h2>{{taxonomy|capitalize}}</h2> 
 <p>{{name}}</p>
-<h2>{{term_label}}</h2>
+<h2>{{term_label|capitalize}}</h2>
 <p>$${{pp}}$$</p>
 {% if term_opt_label %}
-<h2>{{term_opt_label}}</h2>
+<h2>{{term_opt_label|capitalize}}</h2>
 <p>$${{pp_opt}}$$</p>
 {% endif %}
 <h2>Dependencies</h2>
