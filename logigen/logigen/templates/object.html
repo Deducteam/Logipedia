@@ -10,15 +10,17 @@
 {% block title %}{{name}}{% endblock %}
 {% block head %}
 {{ super() }}
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 {% endblock %}
 {% block content %}
 <h2>{{taxonomy}}</h2> 
 <p>{{name}}</p>
 <h2>{{term_label}}</h2>
-<code>{{pp}}</code>
+<p>$${{pp}}$$</p>
 {% if term_opt_label %}
 <h2>{{term_opt_label}}</h2>
-<code>{{pp_opt}}</code>
+<p>$${{pp_opt}}$$</p>
 {% endif %}
 <h2>Dependencies</h2>
 {{ show_deps(deps) }}
