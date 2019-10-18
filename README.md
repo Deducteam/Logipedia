@@ -7,11 +7,11 @@ Logipedia is a project that aims to share formal proofs between several systems.
 - OpenTheory (I/E)
 - PVS (E)
 
-The project is based upon the logical framework [https://github.com/Deducteam/Dedukti](Dedukti). The project has also an interface via the [http;//logipedia.science](Logipedia) website.
+The project is based upon the logical framework [Dedukti](https://github.com/Deducteam/Dedukti). The project has also an interface via the [Logipedia website](https://logipedia.science).
 
 # Importing proofs
 
-Importhing proofs in Logipedia require first to import your proofs in Dedukti. Currently, this is possible only for Matita via [https://github.com/Deducteam/matita](Krajono) and OpenTheory via [https://github.com/Deducteam/Holide](Holide). A lot of efforts is made to support Coq via [https://github.com/Deducteam/CoqInE](CoqInE).
+Importhing proofs in Logipedia require first to import your proofs in Dedukti. Currently, this is possible only for Matita via [Krajono](https://github.com/Deducteam/matita) and OpenTheory via [Holide](https://github.com/Deducteam/Holide). A lot of efforts is made to support Coq via [CoqInE](https://github.com/Deducteam/CoqInE).
 
 # Exporting proofs
 
@@ -25,7 +25,7 @@ On the long run, we plan also to support other logics than STTfa, but no concret
 
 # Compiling the project
 
-To compile the project, you need to install the last version of Dedukti (master branch) [https://github.com/Deducteam/Dedukti](https://github.com/Deducteam/Dedukti).
+To compile the project, you need to install the last version of Dedukti [master branch](https://github.com/Deducteam/Dedukti/tree/master).
 Then compile with
 
 ``` bash
