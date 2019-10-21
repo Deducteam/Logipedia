@@ -38,9 +38,12 @@ module type TaxonSpec = sig
   (** [is_axiomatic t] is true if taxon [t] should be considered as an
       axiom. *)
 
-  val contains_proof : E.entry -> bool
-  (** [contains_proof en] returns whether the Dedukti entry [en] contains a
-      proof. *)
+  val fields_of_def : t -> Jt.Ppterm.t option Lazy.t -> Jt.Ppterm.t Lazy.t
+      -> Jt.Ppterm.t * Jt.Ppterm.t option
+  (** [fields_of_def tx teo te] returns a couple [ppt, ppto] which are the
+      ppterms to be put into {!field:Json_types.item.ppt_term} and
+      {!field:Json_types.item.ppt_term_opt} coming from [teo] and [te] which
+      are from a definition of taxon [tx]. *)
 
   val label : t -> string * string option
   (** [label tx] returns labels for the fields {!Json_types.item.term} and
@@ -97,15 +100,21 @@ struct
 
   let is_axiomatic : t -> bool = (=) TxAxm
 
-  let contains_proof : E.entry -> bool = function
-    | E.Decl(_)           -> false
-    | E.Def(_,_,_,teo,te) -> of_def teo te = TxThm
-    | _                   -> assert false
+  let fields_of_def tx teo te = match tx with
+    | TxThm ->
+      begin match teo with
+        | lazy (Some(t)) -> (t, None)
+        | lazy None    -> assert false
+      end
+    | TxDef ->
+      let (lazy teo, lazy te) = teo, te in
+      (te, teo)
+    | _     -> assert false
 
   let label = function
     | TxCst -> ("type", None)
     | TxAxm -> ("statement", None)
     | TxDef -> ("body", Some("type_annotation"))
-    | TxThm -> ("proof", Some("statement"))
+    | TxThm -> ("statement", None)
 end
 

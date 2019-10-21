@@ -172,15 +172,13 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
             ; theory = []
             ; exp = [] } :: (loop acc tl)
           | E.Def(_,_,_,teo,te)  ->
-            let ppt_term = ppt_of_dkterm mdl acc te in
-            let ppt_term_opt =
-              if Tx.Sttfa.contains_proof e then None else
-              Option.map (ppt_of_dkterm mdl acc) teo
-            in
+            let lppt = lazy (ppt_of_dkterm mdl acc te) in
+            let lppto = lazy (Option.map (ppt_of_dkterm mdl acc) teo) in
+            let term, term_opt = Tx.Sttfa.fields_of_def tx lppto lppt in
             { name = uri
             ; taxonomy = Tx.Sttfa.to_string tx
-            ; term = ppt_term
-            ; term_opt = ppt_term_opt
+            ; term
+            ; term_opt
             ; label
             ; deps = List.map U.to_string deps
             ; theory = []
