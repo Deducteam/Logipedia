@@ -173,7 +173,10 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
             ; exp = [] } :: (loop acc tl)
           | E.Def(_,_,_,teo,te)  ->
             let ppt_term = ppt_of_dkterm mdl acc te in
-            let ppt_term_opt = Option.map (ppt_of_dkterm mdl acc) teo in
+            let ppt_term_opt =
+              if Tx.Sttfa.contains_proof e then None else
+              Option.map (ppt_of_dkterm mdl acc) teo
+            in
             { name = uri
             ; taxonomy = Tx.Sttfa.to_string tx
             ; term = ppt_term

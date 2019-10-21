@@ -38,6 +38,10 @@ module type TaxonSpec = sig
   (** [is_axiomatic t] is true if taxon [t] should be considered as an
       axiom. *)
 
+  val contains_proof : E.entry -> bool
+  (** [contains_proof en] returns whether the Dedukti entry [en] contains a
+      proof. *)
+
   val label : t -> string * string option
   (** [label tx] returns labels for the fields {!Json_types.item.term} and
       {!Json_types.item.term_opt}. *)
@@ -92,6 +96,11 @@ struct
       raise IllTaxon
 
   let is_axiomatic : t -> bool = (=) TxAxm
+
+  let contains_proof : E.entry -> bool = function
+    | E.Decl(_)           -> false
+    | E.Def(_,_,_,teo,te) -> of_def teo te = TxThm
+    | _                   -> assert false
 
   let label = function
     | TxCst -> ("type", None)
