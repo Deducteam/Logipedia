@@ -2,7 +2,6 @@
     "middleware". *)
 
 open Kernel
-open Json_types
 
 (** Specification of a middleware. *)
 module type S = sig
@@ -37,12 +36,12 @@ module type S = sig
   (** [is_axiomatic t] is true if taxon [t] should be considered as an
       axiom. *)
 
-  val fields_of_def : tx -> Ppterm.t option Lazy.t -> Ppterm.t Lazy.t
-    -> Ppterm.t * Ppterm.t option
-  (** [fields_of_def tx teo te] returns a couple [ppt, ppto] which are the
-      ppterms to be put into {!field:Json_types.item.ppt_term} and
-      {!field:Json_types.item.ppt_term_opt} coming from [teo] and [te] which
-      are from a (Dedukti) definition of taxon [tx]. *)
+  val fields_of_def : tx -> 'a option -> 'a -> 'a * 'a option
+  (** [fields_of_def tx teo te] allows to remap the values [teo] and [te] which
+      are the two last arguments of a Dedukti definition with taxon [tx] into
+      a couple [(ppt, ppto)], with
+      - [ppt] used as {!field:Json_types.item.ppt_term} and
+      - [ppto] as {!field:Json_types.item.ppt_term_opt}. *)
 
   val label : tx -> string * string option
   (** [label tx] returns labels for the fields {!Json_types.item.term} and

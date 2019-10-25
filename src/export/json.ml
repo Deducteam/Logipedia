@@ -172,9 +172,14 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
             ; theory = []
             ; exp = [] } :: (loop acc tl)
           | E.Def(_,_,_,teo,te)  ->
+            (* We use lazy to remap the computation, and avoid computing the
+               ppterm then discard it. *)
             let lppt = lazy (ppt_of_dkterm mdl acc te) in
-            let lppto = lazy (Option.map (ppt_of_dkterm mdl acc) teo) in
-            let term, term_opt = M.Sttfa.fields_of_def tx lppto lppt in
+            let lppto = Option.map
+                (fun t -> lazy (ppt_of_dkterm mdl acc t)) teo
+            in
+            let (lazy term, term_opt) = M.Sttfa.fields_of_def tx lppto lppt in
+            let term_opt = Option.map Lazy.force term_opt in
             { name = uri
             ; taxonomy = M.Sttfa.string_of_tx tx
             ; term

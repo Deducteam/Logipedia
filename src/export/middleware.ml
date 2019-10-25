@@ -13,8 +13,7 @@ module type S = sig
   val string_of_tx : ?short:bool -> tx -> string
   val tx_of_string : string -> tx
   val is_axiomatic : tx -> bool
-  val fields_of_def : tx -> Jt.Ppterm.t option Lazy.t -> Jt.Ppterm.t Lazy.t
-    -> Jt.Ppterm.t * Jt.Ppterm.t option
+  val fields_of_def : tx -> 'a option -> 'a -> 'a * 'a option
   val label : tx -> string * string option
 end
 
@@ -43,10 +42,10 @@ struct
   | _ -> TxDef
 
   let tx_of_decl = function
-  | T.App (Const(_,name),_,_) when
+  | T.App(Const(_,name),_,_) when
       (B.id name = B.mk_ident "etap" && B.md name = B.mk_mident "sttfa") ->
     TxCst
-  | App (Const(_,name),_,_) when
+  | App(Const(_,name),_,_) when
       (B.id name = B.mk_ident "eps" && B.md name = B.mk_mident "sttfa") ->
     TxAxm
   | _ -> TxCst
@@ -59,16 +58,11 @@ struct
     | TxThm -> if short then "thm" else "theorem"
 
   let tx_of_string s =
-    if s = "axiom" || s = "axm" then
-      TxAxm
-    else if s = "definition" || s = "def" then
-      TxDef
-    else if s = "constant" || s = "cst" then
-      TxCst
-    else if s = "theorem" || s = "thm" then
-      TxThm
-    else
-      raise IllTaxon
+    if      s = "axiom"      || s = "axm" then TxAxm
+    else if s = "definition" || s = "def" then TxDef
+    else if s = "constant"   || s = "cst" then TxCst
+    else if s = "theorem"    || s = "thm" then TxThm
+    else raise IllTaxon
 
   let is_axiomatic : tx -> bool = (=) TxAxm
 
@@ -76,12 +70,11 @@ struct
     | TxThm ->
       (* Don't export the proof which is in [te] *)
       begin match teo with
-        | lazy (Some(t)) -> (t, None)
-        | lazy None    -> assert false
+        | Some(t) -> (t, None)
+        | None    -> assert false
+        (* A theorem always have a statement and a proof. *)
       end
-    | TxDef ->
-      let (lazy teo, lazy te) = teo, te in
-      (te, teo)
+    | TxDef -> te, teo
     | _     -> assert false
 
   let label = function
