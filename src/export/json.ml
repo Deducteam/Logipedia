@@ -5,15 +5,15 @@ module B = Kernel.Basic
 module D = Api.Dep
 module E = Parsing.Entry
 module F = Format
+module M = Middleware
 module S = Kernel.Signature
 module T = Kernel.Term
 module U = Uri
 module Jt = Json_types
-module Tx = Taxonomy
 
 (** Information collected in the current time. *)
 type content =
-  { ct_taxo : Tx.Sttfa.t NameMap.t
+  { ct_taxo : M.Sttfa.tx NameMap.t
   (** Taxons of the file. *)
   ; ct_deps : (B.name list) NameMap.t
   (** Dependencies *)
@@ -24,7 +24,7 @@ type content =
 
 (** [find_taxon n] finds taxon of Dedukti name [n] across available
     json files. *)
-let find_taxon : B.name -> Tx.Sttfa.t =
+let find_taxon : B.name -> M.Sttfa.tx =
   (* Some memoization *)
   let taxons = NameHashtbl.create 0 in
   fun key ->
@@ -40,7 +40,7 @@ let find_taxon : B.name -> Tx.Sttfa.t =
     let f it =
       let uri = U.of_string it.Jt.name in
       let nm = U.name_of_uri uri in
-      let tx = U.ext_of_uri uri |> Tx.Sttfa.of_string in
+      let tx = U.ext_of_uri uri |> M.Sttfa.tx_of_string in
       NameHashtbl.add taxons nm tx
     in
     match doc with
@@ -67,14 +67,14 @@ let find_deps : B.mident -> E.entry -> B.name list = fun mid e ->
   | exception D.Dep_error(D.NameNotFound(_)) -> []
   | d ->
     (* Remove some elements from dependencies and create a part of the uri. *)
-    let f n = B.string_of_mident (B.md n) <> Tx.Sttfa.theory in
+    let f n = B.string_of_mident (B.md n) <> M.Sttfa.theory in
     List.filter f (D.NameSet.elements D.(d.down))
 
 (** {2 Loading from currently parsed file} *)
 
 (** [find_taxon ct n] searches for taxon of [n] in the current content [ct] and
     hands over {!val:find_taxon} if it is not found. *)
-let find_taxon : content -> B.name -> Tx.Sttfa.t = fun ct nm ->
+let find_taxon : content -> B.name -> M.Sttfa.tx = fun ct nm ->
   try NameMap.find nm ct.ct_taxo
   with Not_found -> find_taxon nm
 
@@ -103,8 +103,8 @@ and ppt_of_dkterm_args : B.mident -> content -> T.term -> T.term list -> Jt.Ppte
       let cmd = B.md name in
       let cid = B.id name in
       let c_tx = find_taxon acc name in
-      let tx = Tx.Sttfa.to_string ~short:true c_tx in
-      U.of_dkname (B.mk_name cmd cid) Tx.Sttfa.theory tx |> U.to_string
+      let tx = M.Sttfa.string_of_tx ~short:true c_tx in
+      U.of_dkname (B.mk_name cmd cid) M.Sttfa.theory tx |> U.to_string
     in
     Jt.Ppterm.Const { c_symb ; c_args }
   | T.App(t,u,vs) -> ppt_of_dkterm_args t (u :: vs @ stk)
@@ -144,27 +144,27 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
         in
         let deps =
           let fill n =
-            U.of_dkname n Tx.Sttfa.theory
-              (Tx.Sttfa.to_string ~short:true (find_taxon acc n))
+            U.of_dkname n M.Sttfa.theory
+              (M.Sttfa.string_of_tx ~short:true (find_taxon acc n))
           in
           List.map fill deps
         in
         let tx =
           match e with
-          | E.Decl(_,_,_,t)  -> Tx.Sttfa.of_decl t
-          | E.Def(_,_,_,t,u) -> Tx.Sttfa.of_def t u
+          | E.Decl(_,_,_,t)  -> M.Sttfa.tx_of_decl t
+          | E.Def(_,_,_,t,u) -> M.Sttfa.tx_of_def t u
           | _                -> assert false
         in
-        let label = Tx.Sttfa.label tx in
+        let label = M.Sttfa.label tx in
         let acc = { acc with ct_taxo = NameMap.add inm tx acc.ct_taxo } in
-        let uri = U.of_dkname (B.mk_name mdl id) Tx.Sttfa.theory
-            (Tx.Sttfa.to_string ~short:true tx) |> U.to_string
+        let uri = U.of_dkname (B.mk_name mdl id) M.Sttfa.theory
+            (M.Sttfa.string_of_tx ~short:true tx) |> U.to_string
         in
         begin match e with
           | E.Decl(_,_,_,t) ->
             let ppt_term =  ppt_of_dkterm mdl acc t in
             { name = uri
-            ; taxonomy = Tx.Sttfa.to_string tx
+            ; taxonomy = M.Sttfa.string_of_tx tx
             ; term = ppt_term
             ; term_opt = None
             ; label
@@ -174,9 +174,9 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
           | E.Def(_,_,_,teo,te)  ->
             let lppt = lazy (ppt_of_dkterm mdl acc te) in
             let lppto = lazy (Option.map (ppt_of_dkterm mdl acc) teo) in
-            let term, term_opt = Tx.Sttfa.fields_of_def tx lppto lppt in
+            let term, term_opt = M.Sttfa.fields_of_def tx lppto lppt in
             { name = uri
-            ; taxonomy = Tx.Sttfa.to_string tx
+            ; taxonomy = M.Sttfa.string_of_tx tx
             ; term
             ; term_opt
             ; label
