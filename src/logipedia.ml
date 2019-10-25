@@ -119,8 +119,9 @@ let _ =
   let available_sys = "json" :: List.map fst S.sys_spec |> String.concat ", " in
   let usage = Format.sprintf
       "Usage: %s EXPORT [OPTIONS]...\n \
-      \twith EXPORT being one of: %s \n \
-      Available options:" Sys.argv.(0) available_sys
+       \twith EXPORT being one of: %s \n \
+       Available options for the selected mode:"
+      Sys.argv.(0) available_sys
   in
   try
     Arg.parse_dynamic options anon usage;
