@@ -2,6 +2,8 @@ type system = [`Coq | `Matita | `Pvs | `OpenTheory | `Lean ]
 
 let systems = [`Coq ; `Matita ; `Pvs ; `OpenTheory ; `Lean ]
 
+exception UnsupportedSystem of string
+
 let system_of_string : string -> system = fun s ->
   if s = "coq" then
     `Coq
@@ -14,7 +16,7 @@ let system_of_string : string -> system = fun s ->
   else if s = "lean" then
     `Lean
   else
-    invalid_arg (Format.sprintf "%s is not among the supported systems@." s)
+    raise (UnsupportedSystem s)
 
 let string_of_system : system -> string = function
   | `Coq -> "coq"

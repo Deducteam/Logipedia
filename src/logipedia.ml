@@ -1,5 +1,6 @@
 module B = Kernel.Basic
 module P = Parsing.Parser
+module S = Systems
 
 module Denv = Api.Env.Default
 module Derr = Api.Errors.Make(Denv)
@@ -11,7 +12,7 @@ let err_msg s =
   Format.eprintf "%s" s
 
 (** System to which we export proofs. *)
-let system : Systems.system ref = ref (`Coq)
+let system : S.system ref = ref (`Coq)
 
 (** File into which exported file are written. *)
 let output_file = ref None
@@ -26,7 +27,7 @@ let options : (string * Arg.spec * string) list ref = ref []
 type mode =
   | ModeJson
   (** Export to JSON *)
-  | ModeSystem of Systems.system
+  | ModeSystem of S.system
   (** Export to a system *)
 
 let export_mode : mode option ref = ref None
@@ -59,7 +60,7 @@ let sys_opts = Arg.align
     supposed to be the export mode. *)
 let anon arg =
   match !export_mode with
-  | Some(_) -> raise (Arg.Bad "Only one anonymous argument allowed")
+  | Some(_) -> raise (Arg.Bad "Too many anonymous arguments provided")
   | None    ->
     (* Export mode is not set: set it. *)
     if arg = "json"
@@ -68,9 +69,11 @@ let anon arg =
       ; options := json_opts @ common_opts )
     else
       try
-        ( export_mode := Some(ModeSystem(Systems.system_of_string arg))
+        ( export_mode := Some(ModeSystem(S.system_of_string arg))
         ; options := sys_opts @ common_opts )
-      with Invalid_argument s -> raise (Arg.Bad s)
+      with S.UnsupportedSystem(s) ->
+        let msg = Format.sprintf "Can't export to %s: system not supported" s in
+        raise (Arg.Bad msg)
 
 
 let export_file ast system =
@@ -120,13 +123,13 @@ let export_json file =
 let _ =
   let usage = Format.sprintf
       "Usage: %s EXPORT [OPTIONS]...\n \
-      \twith export being one of: coq, matita, opentheory, pvs or lean\n \
+      \twith EXPORT being one of: coq, matita, opentheory, pvs or lean\n \
       Available options:" Sys.argv.(0)
   in
   try
     Arg.parse_dynamic options anon usage;
     match !export_mode with
-    | None -> raise @@ Arg.Bad "Export mode not given"
+    | None -> raise @@ Arg.Bad "Missing export"
     | Some(ModeJson) ->
       ( Json_types.json_dir :=
           begin match !(output_file) with
@@ -136,5 +139,5 @@ let _ =
       ; export_json !infile )
     | Some(ModeSystem(s)) -> export_system s !infile
   with
-  | Arg.Bad s -> err_msg s
-  | e         -> raise e
+  | Arg.Bad(s) -> Format.printf "%s" s
+  | e          -> raise e
