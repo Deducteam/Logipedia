@@ -5,8 +5,6 @@ module S = Systems
 module Denv = Api.Env.Default
 module Derr = Api.Errors.Make(Denv)
 
-let jscoqp : string option ref = ref None
-
 (** System to which we export proofs. *)
 let system : S.system ref = ref (`Coq)
 
@@ -29,7 +27,7 @@ type mode =
 let export_mode : mode option ref = ref None
 
 (** Options common to both modes. *)
-let common_opts = Arg.align
+let common_opts =
     [ ( "-I"
       , Arg.String B.add_path
       , " Add folder to Dedukti path" )
@@ -41,13 +39,15 @@ let common_opts = Arg.align
       , " Set output file" ) ]
 
 (** Options for the json export. *)
-let json_opts = Arg.align
-    [ ( "--coq"
-      , Arg.String (fun s -> jscoqp := Some(s))
-      , " Folder with coq files to be referenced" ) ]
+let json_opts =
+  List.map (fun (n, sys) ->
+      ( "--" ^ n
+      , Arg.String (fun s -> S.artefact_path := (sys, s) :: !S.artefact_path)
+      , Format.sprintf " Folder with %s files to be referenced" n ))
+    S.sys_spec
 
 (** Options for any system export. *)
-let sys_opts = Arg.align
+let sys_opts =
     [ ( "--fast"
       , Arg.Set Sttfatyping.Tracer.fast
       , " Fast" ) ]
@@ -62,11 +62,11 @@ let anon arg =
     if arg = "json"
     then
       ( export_mode := Some(ModeJson)
-      ; options := json_opts @ common_opts )
+      ; options := Arg.align (json_opts @ common_opts) )
     else
       try
         ( export_mode := Some(ModeSystem(S.system_of_string arg))
-        ; options := sys_opts @ common_opts )
+        ; options := Arg.align (sys_opts @ common_opts) )
       with S.UnsupportedSystem(s) ->
         let msg = Format.sprintf "Can't export to %s: system not supported" s in
         raise (Arg.Bad msg)

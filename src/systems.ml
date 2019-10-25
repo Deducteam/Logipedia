@@ -9,6 +9,11 @@ exception UnsupportedSystem of string
     - a system *)
 type spec = string * system
 
+(** Association list mapping a system name to its exported files. *)
+let artefact_path : (system * string) list ref = ref []
+
+(** Association list mapping keys that can be used on command line to designate
+    the system. *)
 let sys_spec : spec list =
   [ ( "coq"       , `Coq        )
   ; ( "matita"    , `Matita     )
