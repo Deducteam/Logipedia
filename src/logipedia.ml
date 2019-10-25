@@ -6,9 +6,9 @@ module Derr = Api.Errors.Make(Denv)
 
 let jscoqp : string option ref = ref None
 
-let err_msg fmt =
+let err_msg s =
   Format.eprintf "%s" ("\027[31m" ^ "[ERROR] " ^ "\027[m");
-  Format.eprintf fmt
+  Format.eprintf "%s" s
 
 (** System to which we export proofs. *)
 let system : Systems.system ref = ref (`Coq)
@@ -53,7 +53,7 @@ let json_opts = Arg.align
 let sys_opts = Arg.align
     [ ( "--fast"
       , Arg.Set Sttfatyping.Tracer.fast
-      , " Set output file" ) ]
+      , " Fast" ) ]
 
 (** [anon arg] process anonymous argument [arg]. The first anonymous argument is
     supposed to be the export mode. *)
@@ -118,8 +118,11 @@ let export_json file =
   Json.print_document fmt document
 
 let _ =
-  let usage = "Usage: " ^ Sys.argv.(0) ^ " <json|system> [OPTION]... [FILE]...\n" in
-  let usage = usage ^ "Available options:" in
+  let usage = Format.sprintf
+      "Usage: %s EXPORT [OPTIONS]...\n \
+      \twith export being one of: coq, matita, opentheory, pvs or lean\n \
+      Available options:" Sys.argv.(0)
+  in
   try
     Arg.parse_dynamic options anon usage;
     match !export_mode with
@@ -132,4 +135,6 @@ let _ =
           end
       ; export_json !infile )
     | Some(ModeSystem(s)) -> export_system s !infile
-  with e -> Derr.graceful_fail None e
+  with
+  | Arg.Bad s -> err_msg s
+  | e         -> raise e

@@ -14,7 +14,7 @@ let system_of_string : string -> system = fun s ->
   else if s = "lean" then
     `Lean
   else
-    failwith (Format.sprintf "%s is not among the supported systems@." s)
+    invalid_arg (Format.sprintf "%s is not among the supported systems@." s)
 
 let string_of_system : system -> string = function
   | `Coq -> "coq"
