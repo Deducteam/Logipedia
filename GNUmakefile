@@ -85,7 +85,7 @@ $(COQPATH)/%.v: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_v \
 $(LOGIPEDIA)
 	@mkdir -p $(COQPATH)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --fast --export coq $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) coq $(LOGIPEDIAOPTS) --fast -f $(<:.dko=.dk) -o $@
 	@mv $@ $(addsuffix .v, $(subst -,_, $(subst .,_,$(basename $@)))) \
 || true 2>/dev/null # avoid fail if there is no change
 
@@ -108,7 +108,7 @@ MAFILES=$(addprefix $(MATITAPATH)/, $(addsuffix .ma, $(IMP)))
 
 $(MATITAPATH)/%.ma: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_ma $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export matita $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) matita $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
 
 $(MATITAPATH)/root:
 	@echo "baseuri = cic:/matita" > $@
@@ -125,7 +125,7 @@ LEANFILES=$(addprefix $(LEANPATH)/,$(addsuffix .lean,$(IMP)))
 
 $(LEANPATH)/%.lean: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_lean $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export lean $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) lean $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
 
 .PHONY: lean
 lean: $(LEANFILES)
@@ -140,7 +140,7 @@ THYFILE=$(OTPATH)/$(PACKAGE).thy
 
 $(OTPATH)/%.art: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_art $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export opentheory $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) opentheory $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
 
 .PHONY: opentheory
 opentheory: $(OTFILES)
@@ -157,7 +157,7 @@ PVSSUM=$(addprefix $(PVSPATH)/,$(addsuffix .summary,$(IMP)))
 # For some weird reason, Make consider .pvs are temporary
 $(PVSPATH)/%.pvs: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_pvs $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export pvs $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) pvs $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
 
 $(PVSPATH)/%.summary: $(PVSPATH)/%.pvs
 	@echo "[SUMMARY] $@"
@@ -175,11 +175,11 @@ jsfiles = $(addprefix $(jspath)/, $(addsuffix .json, $(IMP)))
 
 export/json/$(THEORY).json: $(THDIR)/$(THEORY).dk
 	@mkdir -p $(jspath)
-	$(LOGIPEDIA) -I $(THDIR) --export-json $< -o $@
+	$(LOGIPEDIA) json -I $(THDIR) -f $< -o $@
 
 export/json/%.json: $(IPATH)/%.dko $(LOGIPEDIA) export/json/$(THEORY).json
 	@mkdir -p $(jspath)
-	$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export-json $(<:.dko=.dk) -o $@
+	$(LOGIPEDIA) json $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
 json: $(jsfiles)

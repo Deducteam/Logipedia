@@ -4,19 +4,74 @@ module P = Parsing.Parser
 module Denv = Api.Env.Default
 module Derr = Api.Errors.Make(Denv)
 
+let jscoqp : string option ref = ref None
+
 let err_msg fmt =
   Format.eprintf "%s" ("\027[31m" ^ "[ERROR] " ^ "\027[m");
   Format.eprintf fmt
 
+(** System to which we export proofs. *)
 let system : Systems.system ref = ref (`Coq)
 
-let set_export s =
-  system := Systems.system_of_string s
-
+(** File into which exported file are written. *)
 let output_file = ref None
 
-let set_output_file s =
-  output_file := Some s
+(** Input dedukti files. *)
+let infile : string ref = ref ""
+
+(** Options list, redefined according to first argument. *)
+let options : (string * Arg.spec * string) list ref = ref []
+
+(** Operation mode of logipedia. *)
+type mode =
+  | ModeJson
+  (** Export to JSON *)
+  | ModeSystem of Systems.system
+  (** Export to a system *)
+
+let export_mode : mode option ref = ref None
+
+(** Options common to both modes. *)
+let common_opts = Arg.align
+    [ ( "-I"
+      , Arg.String B.add_path
+      , " Add folder to Dedukti path" )
+    ; ( "-f"
+      , Arg.Set_string infile
+      , " Input Dedukti file")
+    ; ( "-o"
+      , Arg.String (fun s -> output_file := Some(s))
+      , " Set output file" ) ]
+
+(** Options for the json export. *)
+let json_opts = Arg.align
+    [ ( "--coq"
+      , Arg.String (fun s -> jscoqp := Some(s))
+      , " Folder with coq files to be referenced" ) ]
+
+(** Options for any system export. *)
+let sys_opts = Arg.align
+    [ ( "--fast"
+      , Arg.Set Sttfatyping.Tracer.fast
+      , " Set output file" ) ]
+
+(** [anon arg] process anonymous argument [arg]. The first anonymous argument is
+    supposed to be the export mode. *)
+let anon arg =
+  match !export_mode with
+  | Some(_) -> raise (Arg.Bad "Only one anonymous argument allowed")
+  | None    ->
+    (* Export mode is not set: set it. *)
+    if arg = "json"
+    then
+      ( export_mode := Some(ModeJson)
+      ; options := json_opts @ common_opts )
+    else
+      try
+        ( export_mode := Some(ModeSystem(Systems.system_of_string arg))
+        ; options := sys_opts @ common_opts )
+      with Invalid_argument s -> raise (Arg.Bad s)
+
 
 let export_file ast system =
   let (module M:Export.E) = Export.of_system system in
@@ -38,15 +93,15 @@ let mk_ast md entries =
   { Ast.md = B.string_of_mident md; Ast.dep; items }
 
 (* Export the file for the chosen system. *)
-let export_system file =
+let export_system syst file =
   let md = Denv.init file in
   let input = open_in file in
   let entries = P.Parse_channel.parse md input in
   close_in input;
   begin
     let sttfa_ast = mk_ast md entries in
-    let (module M:Export.E) = Export.of_system !system in
-    export_file sttfa_ast !system;
+    let (module M:Export.E) = Export.of_system syst in
+    export_file sttfa_ast syst;
   end
 
 (* Json export is done without using the Sttfa AST. *)
@@ -63,40 +118,18 @@ let export_json file =
   Json.print_document fmt document
 
 let _ =
+  let usage = "Usage: " ^ Sys.argv.(0) ^ " <json|system> [OPTION]... [FILE]...\n" in
+  let usage = usage ^ "Available options:" in
   try
-    let to_json = ref false in
-    let options =
-      Arg.align
-        [ ( "-I"
-          , Arg.String B.add_path
-          , " Add folder to Dedukti path" )
-        ; ( "-o"
-          , Arg.String set_output_file
-          , " Set output file" )
-        ; ( "--fast"
-          , Arg.Set Sttfatyping.Tracer.fast
-          , " Set output file" )
-        ; ( "--export"
-          , Arg.String set_export
-          , " Set exporting system" )
-        ; ( "--export-json"
-          , Arg.Set to_json
-          , " Generate json files" ) ]
-    in
-    let usage = "Usage: " ^ Sys.argv.(0) ^ " [OPTION]... [FILE]...\n" in
-    let usage = usage ^ "Available options:" in
-    let files =
-      let files = ref [] in
-      Arg.parse options (fun f -> files := f :: !files) usage ;
-      List.rev !files
-    in
-    if !to_json then
+    Arg.parse_dynamic options anon usage;
+    match !export_mode with
+    | None -> raise @@ Arg.Bad "Export mode not given"
+    | Some(ModeJson) ->
       ( Json_types.json_dir :=
           begin match !(output_file) with
-            | None -> failwith "Output must be set with json"
+            | None -> raise (Arg.Bad "Output must be set for json")
             | Some(o) -> Filename.dirname o
           end
-      ; List.iter export_json files )
-    else
-      List.iter export_system files
+      ; export_json !infile )
+    | Some(ModeSystem(s)) -> export_system s !infile
   with e -> Derr.graceful_fail None e
