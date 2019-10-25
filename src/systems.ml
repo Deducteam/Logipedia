@@ -4,19 +4,24 @@ let systems = [`Coq ; `Matita ; `Pvs ; `OpenTheory ; `Lean ]
 
 exception UnsupportedSystem of string
 
+(** A specification is
+    - an identifier,
+    - a system *)
+type spec = string * system
+
+let sys_spec : spec list =
+  [ ( "coq"       , `Coq        )
+  ; ( "matita"    , `Matita     )
+  ; ( "ot"        , `OpenTheory )
+  ; ( "opentheory", `OpenTheory )
+  ; ( "pvs"       , `Pvs        )
+  ; ( "lean"      , `Lean       ) ] |>
+  List.sort (fun (s,_) (t,_) -> String.compare s t)
+
+(** [system_of_string str] returns the system associated to the string [str]. *)
 let system_of_string : string -> system = fun s ->
-  if s = "coq" then
-    `Coq
-  else if s = "matita" then
-     `Matita
-  else if s = "ot" || s = "opentheory" then
-    `OpenTheory
-  else if s = "pvs" then
-    `Pvs
-  else if s = "lean" then
-    `Lean
-  else
-    raise (UnsupportedSystem s)
+  try List.assoc (String.lowercase_ascii s) sys_spec
+  with Not_found -> raise (UnsupportedSystem s)
 
 let string_of_system : system -> string = function
   | `Coq -> "coq"

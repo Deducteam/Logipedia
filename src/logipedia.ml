@@ -7,10 +7,6 @@ module Derr = Api.Errors.Make(Denv)
 
 let jscoqp : string option ref = ref None
 
-let err_msg s =
-  Format.eprintf "%s" ("\027[31m" ^ "[ERROR] " ^ "\027[m");
-  Format.eprintf "%s" s
-
 (** System to which we export proofs. *)
 let system : S.system ref = ref (`Coq)
 
@@ -75,7 +71,6 @@ let anon arg =
         let msg = Format.sprintf "Can't export to %s: system not supported" s in
         raise (Arg.Bad msg)
 
-
 let export_file ast system =
   let (module M:Export.E) = Export.of_system system in
   let fmt =
@@ -121,10 +116,11 @@ let export_json file =
   Json.print_document fmt document
 
 let _ =
+  let available_sys = "json" :: List.map fst S.sys_spec |> String.concat ", " in
   let usage = Format.sprintf
       "Usage: %s EXPORT [OPTIONS]...\n \
-      \twith EXPORT being one of: coq, matita, opentheory, pvs or lean\n \
-      Available options:" Sys.argv.(0)
+      \twith EXPORT being one of: %s \n \
+      Available options:" Sys.argv.(0) available_sys
   in
   try
     Arg.parse_dynamic options anon usage;
