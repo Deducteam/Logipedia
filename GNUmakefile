@@ -250,6 +250,18 @@ ifneq ($(MAKECMDGOALS), distclean)
 endif
 endif
 
+#### Pretty printer ################################################
+
+# FIXME logipp-latex definitve?
+PP ?= /usr/local/bin/logipp-latex
+
+.PHONY: pp
+pp: $(PP)
+
+.PHONY: $(PP)
+$(PP):
+	$(shell utils/install-pp.sh)
+
 #### Cleaning targets ##############################################
 
 .PHONY: clean
