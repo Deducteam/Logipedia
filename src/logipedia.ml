@@ -33,7 +33,7 @@ let common_opts =
       , " Add folder to Dedukti path" )
     ; ( "-f"
       , Arg.Set_string infile
-      , " Input Dedukti file")
+      , " Input Dedukti file" )
     ; ( "-o"
       , Arg.String (fun s -> output_file := Some(s))
       , " Set output file" ) ]
@@ -118,23 +118,31 @@ let export_json file =
 let _ =
   let available_sys = "json" :: List.map fst S.sys_spec |> String.concat ", " in
   let usage = Format.sprintf
-      "Usage: %s EXPORT [OPTIONS]...\n \
-       \twith EXPORT being one of: %s \n \
-       Available options for the selected mode:"
-      Sys.argv.(0) available_sys
+      "Usage: %s EXPORT [OPTIONS]...\n\
+\twith EXPORT being one of: %s\n\
+Use %s EXPORT --help for help on an export command\n\
+Available options for the selected mode:"
+      Sys.argv.(0) available_sys Sys.argv.(0)
   in
   try
     Arg.parse_dynamic options anon usage;
     match !export_mode with
-    | None -> raise @@ Arg.Bad "Missing export"
-    | Some(ModeJson) ->
-      ( Json_types.json_dir :=
-          begin match !(output_file) with
-            | None -> raise (Arg.Bad "Output must be set for json")
-            | Some(o) -> Filename.dirname o
-          end
-      ; export_json !infile )
-    | Some(ModeSystem(s)) -> export_system s !infile
+    | None    -> raise @@ Arg.Bad "Missing export"
+    | Some(m) ->
+      if !infile = "" then raise (Arg.Bad "Input file required");
+      begin
+        match m with
+        | ModeJson ->
+          ( Json_types.json_dir :=
+              begin match !(output_file) with
+                | None -> raise (Arg.Bad "Output must be set for json")
+                | Some(o) -> Filename.dirname o
+              end
+          ; export_json !infile )
+        | ModeSystem(s) -> export_system s !infile
+      end
   with
-  | Arg.Bad(s) -> Format.printf "%s" s
+  | Arg.Bad(s) ->
+    Format.printf "%s\n" s;
+    Arg.usage common_opts usage
   | e          -> raise e
