@@ -29,32 +29,39 @@ doc:
 
 #### Producing the theory file #####################################
 
-theories/hol_sttfa.dko: theories/hol_sttfa.dk theories/sttfa.dko \
-theories/hol.dko theories/hol_axioms.dko
-	@echo "[CHECK] $<"
-	@$(DKCHECK) -I theories -e $<
+# Path to theory files
+THDIR ?= theories
 
-theories/hol_axioms.dko: theories/hol_axioms.dk theories/hol.dko
+$(THDIR)/hol_sttfa.dko: $(THDIR)/hol_sttfa.dk theories/sttfa.dko \
+$(THDIR)/hol.dko $(THDIR)/hol_axioms.dko
 	@echo "[CHECK] $<"
-	@$(DKCHECK) -I theories -e $<
+	@$(DKCHECK) -I $(THDIR) -e $<
 
-theories/%.dko: theories/%.dk
+$(THDIR)/hol_axioms.dko: $(THDIR)/hol_axioms.dk theories/hol.dko
+	@echo "[CHECK] $<"
+	@$(DKCHECK) -I $(THDIR) -e $<
+
+$(THDIR)/%.dko: $(THDIR)/%.dk
 	@echo "[CHECK] $^"
-	@$(DKCHECK) -e -I theories/ $^
+	@$(DKCHECK) -e -I $(THDIR)/ $^
 
 
 #### Producing the Dedukti library #################################
 
-THDIR = theories
 PACKAGE = arith_fermat
-THEORY = sttfa
-DKIMP = import/dedukti
-IPATH = $(DKIMP)/$(THEORY)/$(PACKAGE)
+THEORY ?= sttfa
+# Path to dedukti source files
+DKIMP ?= import/dedukti
 
-LOGIPEDIAOPTS = -I $(IPATH) -I theories
+IPATH = $(DKIMP)/$(THEORY)/$(PACKAGE)
+LOGIPEDIAOPTS = -I $(IPATH) -I $(THDIR)
+$(info [IMPORT] Using package ${PACKAGE})
 
 
 #### Export ########################################################
+
+EXPDIR ?= export
+$(info [EXPORT] Exporting to ${EXPDIR})
 
 #### Dedukti #######################################################
 
@@ -66,11 +73,11 @@ tar xjf $(THEORY).tar.bz2; fi &&\
 cd $(THEORY)/$(PACKAGE) && ls *.dk)
 DKS = $(addprefix $(IPATH)/, $(_dks))
 DKOS = $(patsubst %.dk,%.dko,$(DKS))
-IMP = $(notdir $(basename $(DKS)))
+SRCBASE = $(notdir $(basename $(DKS)))
 
-$(IPATH)/%.dko: $(IPATH)/%.dk theories/$(THEORY).dko
+$(IPATH)/%.dko: $(IPATH)/%.dk $(THDIR)/$(THEORY).dko
 	@echo "[CHECK] $@"
-	@$(DKCHECK) -e -I theories -I $(IPATH) $<
+	@$(DKCHECK) -e -I $(THDIR) -I $(IPATH) $<
 
 .PHONY: dedukti
 dedukti: $(DKOS)
@@ -78,10 +85,10 @@ dedukti: $(DKOS)
 
 #### Coq ###########################################################
 
-COQPATH = export/coq
-VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(IMP)))
+COQPATH = $(EXPDIR)/coq
+VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(SRCBASE)))
 
-$(COQPATH)/%.v: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_v \
+$(COQPATH)/%.v: $(IPATH)/%.dko $(THDIR)/$(THEORY).dko .library_depend_v \
 $(LOGIPEDIA)
 	@mkdir -p $(COQPATH)
 	@echo "[EXPORT] $@"
@@ -103,10 +110,10 @@ coq: $(COQPATH)/Makefile $(VFILES)
 
 #### Matita ########################################################
 
-MATITAPATH = export/matita
-MAFILES=$(addprefix $(MATITAPATH)/, $(addsuffix .ma, $(IMP)))
+MATITAPATH = $(EXPDIR)/matita
+MAFILES=$(addprefix $(MATITAPATH)/, $(addsuffix .ma, $(SRCBASE)))
 
-$(MATITAPATH)/%.ma: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_ma $(LOGIPEDIA)
+$(MATITAPATH)/%.ma: $(IPATH)/%.dko $(THDIR)/$(THEORY).dko .library_depend_ma $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) matita $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
 
@@ -120,10 +127,10 @@ matita: $(MAFILES) $(MATITAPATH)/root
 
 #### Lean ##########################################################
 
-LEANPATH = export/lean
-LEANFILES=$(addprefix $(LEANPATH)/,$(addsuffix .lean,$(IMP)))
+LEANPATH = $(EXPDIR)/lean
+LEANFILES=$(addprefix $(LEANPATH)/,$(addsuffix .lean,$(SRCBASE)))
 
-$(LEANPATH)/%.lean: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_lean $(LOGIPEDIA)
+$(LEANPATH)/%.lean: $(IPATH)/%.dko $(THDIR)/$(THEORY).dko .library_depend_lean $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) lean $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
 
@@ -134,11 +141,11 @@ lean: $(LEANFILES)
 
 #### OpenTheory ####################################################
 
-OTPATH = export/opentheory
-OTFILES=$(addprefix $(OTPATH)/,$(addsuffix .art,$(IMP)))
+OTPATH = $(EXPDIR)/opentheory
+OTFILES=$(addprefix $(OTPATH)/,$(addsuffix .art,$(SRCBASE)))
 THYFILE=$(OTPATH)/$(PACKAGE).thy
 
-$(OTPATH)/%.art: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_art $(LOGIPEDIA)
+$(OTPATH)/%.art: $(IPATH)/%.dko $(THDIR)/$(THEORY).dko .library_depend_art $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) opentheory $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
 
@@ -151,11 +158,11 @@ opentheory: $(OTFILES)
 ##### PVS ##########################################################
 
 
-PVSPATH = export/pvs
-PVSFILES=$(addprefix $(PVSPATH)/,$(addsuffix .pvs,$(IMP)))
-PVSSUM=$(addprefix $(PVSPATH)/,$(addsuffix .summary,$(IMP)))
+PVSPATH = $(EXPDIR)/pvs
+PVSFILES=$(addprefix $(PVSPATH)/,$(addsuffix .pvs,$(SRCBASE)))
+PVSSUM=$(addprefix $(PVSPATH)/,$(addsuffix .summary,$(SRCBASE)))
 # For some weird reason, Make consider .pvs are temporary
-$(PVSPATH)/%.pvs: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_pvs $(LOGIPEDIA)
+$(PVSPATH)/%.pvs: $(IPATH)/%.dko $(THDIR)/$(THEORY).dko .library_depend_pvs $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) pvs $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
 
@@ -170,14 +177,14 @@ pvs: $(PVSSUM)
 
 #### Json ##########################################################
 
-jspath = export/json
-jsfiles = $(addprefix $(jspath)/, $(addsuffix .json, $(IMP)))
+jspath = $(EXPDIR)/json
+jsfiles = $(addprefix $(jspath)/, $(addsuffix .json, $(SRCBASE)))
 
-export/json/$(THEORY).json: $(THDIR)/$(THEORY).dk
+$(EXPDIR)/json/$(THEORY).json: $(THDIR)/$(THEORY).dk
 	@mkdir -p $(jspath)
 	$(LOGIPEDIA) json -I $(THDIR) -f $< -o $@
 
-export/json/%.json: $(IPATH)/%.dko $(LOGIPEDIA) export/json/$(THEORY).json
+$(EXPDIR)/json/%.json: $(IPATH)/%.dko $(LOGIPEDIA) export/json/$(THEORY).json
 	@mkdir -p $(jspath)
 	$(LOGIPEDIA) json $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
 
@@ -190,44 +197,44 @@ json: $(jsfiles)
 	@echo "[DKDEP (DK FILES)] $@"
 	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
 
-.library_depend_v: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
+.library_depend_v: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
 	@echo "[DKDEP (V FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
-	@sed -i s/theories\\/sttfa.dko//g $@
+	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
+	@sed -i s/$(THDIR)\\/sttfa.dko//g $@
 	@sed -i s/dko/v/g $@
 	sed  -i "s:$(IPATH)/\([^/]\+\)\.v:$(COQPATH)/\1\.v:g" $@
 
-.library_depend_ma: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
+.library_depend_ma: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
 	@echo "[DKDEP (MA FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
-	@sed -i s/theories\\/sttfa.dko//g $@
+	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
+	@sed -i s/$(THDIR)\\/sttfa.dko//g $@
 	@sed -i s/dko/ma/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.ma:$(MATITAPATH)/\1\.ma:g" $@
 
-.library_depend_lean: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
+.library_depend_lean: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
 	@echo "[DKDEP (LEAN FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
-	@sed -i s/theories\\/sttfa.dko//g $@
+	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
+	@sed -i s/$(THDIR)\\/sttfa.dko//g $@
 	@sed -i s/dko/lean/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.lean:$(LEANPATH)/\1\.lean:g" $@
 
-.library_depend_art: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
+.library_depend_art: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
 	@echo "[DKDEP (ART FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
-	@sed -i s/theories\\/sttfa.dko//g $@
+	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
+	@sed -i s/$(THDIR)\\/sttfa.dko//g $@
 	@sed -i s/dko/art/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.art:$(OTPATH)/\1\.art:g" $@
 
-.library_depend_pvs: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
+.library_depend_pvs: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
 	@echo "[DKDEP (PVS FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
-	@sed -i s/theories\\/sttfa.dko//g $@
+	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
+	@sed -i s/$(THDIR)\\/sttfa.dko//g $@
 	@sed -i s/dko/pvs/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.pvs:$(PVSPATH)/\1\.pvs:g" $@
 
 .library_depend_json: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
 	@echo "[DKDEP (JSON FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
+	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
 	@sed -i s/dko/json/g $@
 	sed  -i "s:$(IPATH)/\([^.]*\)\.json:$(jspath)/\1\.json:g" $@
 
