@@ -37,20 +37,21 @@ echo "Installing guile json..."
 tmpd="$(mktemp -d)"
 repo="https://git.savannah.nongnu.org/git/guile-json.git"
 cd "$tmpd"
-git clone "$repo" --branch 3.1.0 --quiet
-
+git clone "$repo" --branch 3.1.0 --quiet .
 autoreconf -if
-./configure --prefix=/usr
+# FIXME get prefix from guile %site-dir?
+./configure --prefix=/usr/share
 make
 sudo make install
 cd -
 rm -rf "$tmpd"
 
 ### Installing the pretty printer
+echo "Installing the pretty printer"
 tmpd="$(mktemp -d)"
 repo="https://github.com/gabrielhdt/logippedia.git"
 cd "$tmpd"
-git clone "$repo" --quiet
+git clone "$repo" --quiet .
 make
 sudo make install
 cd -
