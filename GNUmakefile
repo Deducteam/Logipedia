@@ -32,12 +32,12 @@ doc:
 # Path to theory files
 THDIR ?= theories
 
-$(THDIR)/hol_sttfa.dko: $(THDIR)/hol_sttfa.dk theories/sttfa.dko \
+$(THDIR)/hol_sttfa.dko: $(THDIR)/hol_sttfa.dk $(THDIR)/sttfa.dko \
 $(THDIR)/hol.dko $(THDIR)/hol_axioms.dko
 	@echo "[CHECK] $<"
 	@$(DKCHECK) -I $(THDIR) -e $<
 
-$(THDIR)/hol_axioms.dko: $(THDIR)/hol_axioms.dk theories/hol.dko
+$(THDIR)/hol_axioms.dko: $(THDIR)/hol_axioms.dk $(THDIR)/hol.dko
 	@echo "[CHECK] $<"
 	@$(DKCHECK) -I $(THDIR) -e $<
 
