@@ -10,6 +10,9 @@ module S = Kernel.Signature
 module T = Kernel.Term
 module U = Uri
 module Jt = Json_types
+module Sy = Systems
+
+let basename : string ref = ref ""
 
 (** Information collected in the current time. *)
 type content =
@@ -160,6 +163,14 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
         let uri = U.of_dkname (B.mk_name mdl id) M.Sttfa.theory
             (M.Sttfa.string_of_tx ~short:true tx) |> U.to_string
         in
+        let art2exp (sys, pth) =
+          let ext = List.assoc sys Sy.sys_ext in
+          let file = Filename.concat pth (!basename ^ "." ^ ext) in
+          { Jt.system = Sy.string_of_system sys
+          ; file
+          ; etype = None }
+        in
+        let exp = List.map art2exp !Sy.artefact_path in
         begin match e with
           | E.Decl(_,_,_,t) ->
             let ppt_term =  ppt_of_dkterm mdl acc t in
@@ -170,7 +181,7 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
             ; label
             ; deps = List.map U.to_string deps
             ; theory = []
-            ; exp = [] } :: (loop acc tl)
+            ; exp } :: (loop acc tl)
           | E.Def(_,_,_,teo,te)  ->
             (* We use lazy to remap the computation, and avoid computing the
                ppterm then discard it. *)
@@ -187,7 +198,7 @@ let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
             ; label
             ; deps = List.map U.to_string deps
             ; theory = []
-            ; exp = [] } :: (loop acc tl)
+            ; exp } :: (loop acc tl)
           | _                     -> loop acc tl
         end
       | _ -> loop acc tl

@@ -40,11 +40,12 @@ let common_opts =
 
 (** Options for the json export. *)
 let json_opts =
-  List.map (fun (n, sys) ->
-      ( "--" ^ n
-      , Arg.String (fun s -> S.artefact_path := (sys, s) :: !S.artefact_path)
-      , Format.sprintf " Folder with %s files to be referenced" n ))
-    S.sys_spec
+  let f (name, system) =
+    ( Format.sprintf "--%s" name
+    , Arg.String (fun s -> S.artefact_path := (system, s) :: !S.artefact_path)
+    , Format.sprintf " Output folder of system %s" name )
+  in
+  List.map f S.sys_spec
 
 (** Options for any system export. *)
 let sys_opts =
@@ -133,16 +134,19 @@ Available options for the selected mode:"
       begin
         match m with
         | ModeJson ->
+          (* Some further argument processing for json. *)
           ( Json_types.json_dir :=
               begin match !(output_file) with
-                | None -> raise (Arg.Bad "Output must be set for json")
+                | None    -> raise (Arg.Bad "Output must be set for json")
                 | Some(o) -> Filename.dirname o
               end
+          ; Json.basename := Filename.remove_extension !infile |>
+                             Filename.basename
           ; export_json !infile )
         | ModeSystem(s) -> export_system s !infile
       end
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;
-    Arg.usage common_opts usage
+    Arg.usage (Arg.align common_opts) usage
   | e          -> raise e

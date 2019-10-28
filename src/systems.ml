@@ -9,7 +9,8 @@ exception UnsupportedSystem of string
     - a system *)
 type spec = string * system
 
-(** Association list mapping a system name to its exported files. *)
+(** Association list mapping a system name to the directory where the translated
+   files have been or will be dumped. *)
 let artefact_path : (system * string) list ref = ref []
 
 (** Association list mapping keys that can be used on command line to designate
@@ -22,6 +23,14 @@ let sys_spec : spec list =
   ; ( "pvs"       , `Pvs        )
   ; ( "lean"      , `Lean       ) ] |>
   List.sort (fun (s,_) (t,_) -> String.compare s t)
+
+(** Maps system to their extension. *)
+let sys_ext : (system * string) list =
+  [ ( `Coq       , "v"    )
+  ; ( `Matita    , "ma"   )
+  ; ( `Pvs       , "pvs"  )
+  ; ( `OpenTheory, "ot"   )
+  ; ( `Lean      , "lean" ) ]
 
 (** [system_of_string str] returns the system associated to the string [str]. *)
 let system_of_string : string -> system = fun s ->
