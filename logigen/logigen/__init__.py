@@ -1,9 +1,20 @@
 import click
 import logging
+import os
 from pathlib import Path
+import shlex
 
 from .logigen import create_db, Logigen
+from .pretty_print_ext import make_pp
 
+def _exe_name_unsafe(opt):
+    if opt:
+        return opt
+    else:
+        return os.environ.get('LOGIPEDIA_PP', 'logipp-latex')
+
+def exe_name(opt):
+    return shlex.quote(_exe_name_unsafe(opt))
 
 @click.command()
 @click.option("--input", "-i", type=click.Path(exists=True), help="Input directory")
@@ -22,7 +33,24 @@ from .logigen import create_db, Logigen
     is_flag=True,
     help="Print more diagnostic messages",
 )
-def create_static_website(input, database, output, verbose):
+@click.option(
+    "--pretty-printer",
+    "-p",
+    default=None,
+    help="Pretty-printer executable")
+@click.option(
+    "--pp-extra",
+    default=None,
+    help="Pretty-printer extra options")
+@click.option(
+    "--pp-allow-failure",
+    default=False,
+    is_flag=True,
+    help="Allow pretty-printer to fail")
+def create_static_website(input, database, output, verbose, pretty_printer,
+        pp_extra, pp_allow_failure):
+    pretty_printer = make_pp(exe_name(pretty_printer), pp_extra,
+            pp_allow_failure)
     if input is None and database is None:
         raise click.UsageError("One of 'input' or 'database' options should be defined")
     if input is not None and database is not None:
@@ -34,11 +62,11 @@ def create_static_website(input, database, output, verbose):
     output_path = Path(output)
 
     if database:
-        Logigen.create_static_website_from_db(database, output_path)
+        Logigen.create_static_website_from_db(pretty_printer, database, output_path)
     else:
         if not input_path.is_dir():
             raise NotADirectoryError("{} is not a directory".format(input_path))
-        Logigen.create_static_website(input_path, output_path)
+        Logigen.create_static_website(pretty_printer, input_path, output_path)
 
 
 @click.command()

@@ -8,6 +8,7 @@ from pkg_resources import resource_filename
 import sqlite3
 from sqlite_utils import Database
 from tempfile import NamedTemporaryFile
+from tqdm import tqdm
 
 from .filenames import fqn_to_object_filename
 from .models import init_database, ProofObject
@@ -34,7 +35,7 @@ def create_db(input_path, db_path):
         logging.warn("No JSON files to process")
     conn = sqlite3.connect(db_path)
     db = Database(conn)
-    for p in files_to_process:
+    for p in tqdm(files_to_process):
         with open(p) as json_file:
             logging.info(f"loading file {p} into database")
             objlist = json.load(json_file)
@@ -54,13 +55,18 @@ def _save_page(page, filename):
 class Logigen:
     """
     Generates a static website.
-    """
 
-    def __init__(self, db_path, output_path):
+    Parameters
+    ----------
+    pp: PrettyPrinterExt
+        a pretty-printer instance
+    """
+    def __init__(self, pp, db_path, output_path):
         self.env = Environment(
             loader=PackageLoader("logigen", "templates"),
             autoescape=select_autoescape(["html", "xml"]),
         )
+        self.pp = pp
         self.database = init_database(db_path)
         self.output_path = Path(output_path)
         self.output_path.mkdir(exist_ok=True)
@@ -82,7 +88,7 @@ class Logigen:
         Return the HTML page for an object, as a string.
         """
         template = self.env.get_template("object.html")
-        vobj = make_view_object(obj)
+        vobj = make_view_object(obj, self.pp)
         return template.render(**vobj)
 
     def _save_object_page(self, obj, page):
@@ -108,7 +114,7 @@ class Logigen:
         self._save_object_page(obj, page)
 
     def _ingest_db_objects(self):
-        for proof_object in ProofObject.select():
+        for proof_object in tqdm(ProofObject.select()):
             self._ingest_object(proof_object)
 
     def _create_static_website(self):
@@ -121,7 +127,7 @@ class Logigen:
         self._copy_static_resources()
 
     @classmethod
-    def create_static_website(cls, input_path, output_path):
+    def create_static_website(cls, pp, input_path, output_path):
         """
         Create a static website from a Logipedia JSON export folder.
 
@@ -136,10 +142,10 @@ class Logigen:
         """
         with NamedTemporaryFile(prefix="logigen", suffix=".db") as dbfile:
             create_db(input_path, dbfile.name)
-            Logigen.create_static_website_from_db(dbfile.name, output_path)
+            Logigen.create_static_website_from_db(pp, dbfile.name, output_path)
 
     @classmethod
-    def create_static_website_from_db(cls, db_path, output_path):
+    def create_static_website_from_db(cls, pp, db_path, output_path):
         """
         Create a static website from a SQLite database.
 
@@ -151,4 +157,4 @@ class Logigen:
              Path to an output folder for the generated website.
              Will be created if needed
         """
-        cls(db_path, output_path)._create_static_website()
+        cls(pp, db_path, output_path)._create_static_website()
