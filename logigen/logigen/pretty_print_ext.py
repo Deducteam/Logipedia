@@ -27,7 +27,7 @@ class PrettyPrinterExt:
     ----------
     exe: str
         name of the pretty printer executable (e.g. logipp or /bin/cat)
-    extra_opts: list
+    extra_opts: str
         extra options that will be passed to the pretty-printer
     allow_failure: bool
         whether to allow the pretty-printer to fail (default False)
