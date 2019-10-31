@@ -45,6 +45,21 @@ jobs:
     steps:
       - attach_workspace:
           at: /tmp/workspace
+      - run:
+          command: |
+              echo Installing logipp-latex
+              sudo apt install -y guile-2.2 guile-2.2-dev
+              pushd /tmp
+              wget http://download.savannah.gnu.org/releases/guile-json/guile-json-3.2.0.tar.gz
+              tar xzf guile-json-3.2.0.tar.gz
+              pushd guile-json-3.2.0
+              ./configure --prefix=/usr && make && sudo make install
+              popd
+              git clone https://github.com/gabrielhdt/LogiPPedia.git
+              pushd LogiPPedia/scheme
+              sudo make install
+              popd
+              popd
       - checkout
       - run: pip install --user ./logigen
       - run: logigen -i /tmp/workspace/json
