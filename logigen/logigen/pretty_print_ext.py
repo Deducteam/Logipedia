@@ -46,6 +46,7 @@ class PrettyPrinterExt:
         term_string = dumps(ppterm)
         runc = [self.exe] + [self.extra_opts or ""] 
         try:
+            logging.info(f"pretty_print: running {runc}")
             p = run(
                 runc,
                 shell=True,
