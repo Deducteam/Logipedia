@@ -40,7 +40,7 @@ cd "$tmpd"
 git clone "$repo" --branch 3.1.0 --quiet .
 autoreconf -if
 # FIXME get prefix from guile %site-dir?
-./configure --prefix=/usr/share
+./configure --prefix=/usr
 make
 sudo make install
 cd -
