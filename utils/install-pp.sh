@@ -52,12 +52,12 @@ tmpd="$(mktemp -d)"
 repo="https://github.com/gabrielhdt/logippedia.git"
 cd "$tmpd"
 git clone "$repo" --quiet .
-make
-sudo make install
+make -f scheme/Makefile
+sudo make -f scheme/Makefile install
 cd -
 rm -rf "$tmpd"
 
-if [[ -z "$(wich ${_logipp})" ]]
+if [[ -z "$(which ${_logipp})" ]]
 then
     echo "Installation error"
     echo "You might want to check your paths"
