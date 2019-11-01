@@ -202,41 +202,41 @@ json: $(jsfiles)
 	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
 	@sed -i s/$(THDIR)\\/sttfa.dko//g $@
 	@sed -i s/dko/v/g $@
-	sed  -i "s:$(IPATH)/\([^/]\+\)\.v:$(COQPATH)/\1\.v:g" $@
+	@sed  -i "s:$(IPATH)/\([^/]\+\)\.v:$(COQPATH)/\1\.v:g" $@
 
 .library_depend_ma: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
 	@echo "[DKDEP (MA FILES)] $@"
 	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
 	@sed -i s/$(THDIR)\\/sttfa.dko//g $@
 	@sed -i s/dko/ma/g $@
-	sed  -i "s:$(IPATH)/\([^.]*\)\.ma:$(MATITAPATH)/\1\.ma:g" $@
+	@sed  -i "s:$(IPATH)/\([^.]*\)\.ma:$(MATITAPATH)/\1\.ma:g" $@
 
 .library_depend_lean: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
 	@echo "[DKDEP (LEAN FILES)] $@"
 	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
 	@sed -i s/$(THDIR)\\/sttfa.dko//g $@
 	@sed -i s/dko/lean/g $@
-	sed  -i "s:$(IPATH)/\([^.]*\)\.lean:$(LEANPATH)/\1\.lean:g" $@
+	@sed  -i "s:$(IPATH)/\([^.]*\)\.lean:$(LEANPATH)/\1\.lean:g" $@
 
 .library_depend_art: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
 	@echo "[DKDEP (ART FILES)] $@"
 	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
 	@sed -i s/$(THDIR)\\/sttfa.dko//g $@
 	@sed -i s/dko/art/g $@
-	sed  -i "s:$(IPATH)/\([^.]*\)\.art:$(OTPATH)/\1\.art:g" $@
+	@sed  -i "s:$(IPATH)/\([^.]*\)\.art:$(OTPATH)/\1\.art:g" $@
 
 .library_depend_pvs: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
 	@echo "[DKDEP (PVS FILES)] $@"
 	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
 	@sed -i s/$(THDIR)\\/sttfa.dko//g $@
 	@sed -i s/dko/pvs/g $@
-	sed  -i "s:$(IPATH)/\([^.]*\)\.pvs:$(PVSPATH)/\1\.pvs:g" $@
+	@sed  -i "s:$(IPATH)/\([^.]*\)\.pvs:$(PVSPATH)/\1\.pvs:g" $@
 
 .library_depend_json: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
 	@echo "[DKDEP (JSON FILES)] $@"
 	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
 	@sed -i s/dko/json/g $@
-	sed  -i "s:$(IPATH)/\([^.]*\)\.json:$(jspath)/\1\.json:g" $@
+	@sed  -i "s:$(IPATH)/\([^.]*\)\.json:$(jspath)/\1\.json:g" $@
 
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
@@ -256,7 +256,7 @@ endif
 PP ?= /usr/local/bin/logipp-latex
 
 .PHONY: pp
-pp: $(PP)
+install_pp: $(PP)
 
 .PHONY: $(PP)
 $(PP):
