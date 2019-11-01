@@ -22,7 +22,7 @@ fi
 
 ## guile json
 guile -c '(use-modules (json))'
-if [[ "$?" -ne "1" ]]
+if [[ "$?" -ne 0 ]]
 then
     echo "Guile json required"
     read -p "Install guile-json? [y/N]" answer
@@ -31,6 +31,8 @@ then
         exit 1
     fi
 fi
+
+_wd=$(pwd)
 
 ### Installing guile json
 echo "Installing guile json..."
@@ -52,9 +54,9 @@ tmpd="$(mktemp -d)"
 repo="https://github.com/gabrielhdt/logippedia.git"
 cd "$tmpd"
 git clone "$repo" --quiet .
-make -f scheme/Makefile
-sudo make -f scheme/Makefile install
-cd -
+cd 'scheme'
+sudo make install
+cd "$_wd"
 rm -rf "$tmpd"
 
 if [[ -z "$(which ${_logipp})" ]]
