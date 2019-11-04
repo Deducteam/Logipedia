@@ -28,7 +28,7 @@ jobs:
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
             opam install dune yojson ppx_deriving_yojson
       - checkout
-      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPORT=export json
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export json
       - run: cp -r export/json /tmp
       - store_artifacts:
           path: /tmp/json
