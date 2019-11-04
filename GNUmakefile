@@ -70,11 +70,13 @@ $(info [EXPORT] Exporting to ${EXPDIR})
 
 #### Dedukti #######################################################
 
-# We untar the archive here to have the list of files available
-# at first run of Make
+## We untar the archive here to have the list of files available at first run of
+## Make
+## HACK files are stored on a lsv webpage, something better should be set
 _dks := $(shell cd $(_dkimp) && \
 if [ ! -d $(THEORY) ]; then \
-tar xjf $(THEORY).tar.bz2; fi &&\
+curl http://www.lsv.fr/~hondet/logipedia/$(THEORY).tar.bz2 | \
+tar xj ; fi &&\
 cd $(THEORY)/$(PKG) && ls *.dk)
 _dks := $(addprefix $(_ipath)/, $(_dks))
 _dkos := $(patsubst %.dk,%.dko,$(_dks))
