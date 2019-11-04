@@ -4,7 +4,7 @@ jobs:
     docker:
       - image: ocaml/opam2:alpine
     steps:
-      - run: sudo apk add m4 git git-lfs openssh
+      - run: sudo apk add m4 git
       - run:
           name: opam_deps
           command: |
@@ -13,14 +13,13 @@ jobs:
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
             opam install dune yojson ppx_deriving_yojson
       - checkout
-      - run: git lfs pull
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat dedukti
 
   json_export:
     docker:
       - image: ocaml/opam2:alpine
     steps:
-      - run: sudo apk add m4 git git-lfs openssh
+      - run: sudo apk add m4 git
       - run:
           name: opam_deps
           command: |
@@ -29,8 +28,7 @@ jobs:
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
             opam install dune yojson ppx_deriving_yojson
       - checkout
-      - run: git lfs pull
-      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat json
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPORT=export json
       - run: cp -r export/json /tmp
       - store_artifacts:
           path: /tmp/json

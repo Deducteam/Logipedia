@@ -12,6 +12,8 @@ PROVEIT = proveit
 THEORY ?=
 # Name of the package used
 PKG ?=
+# Directory where files are exported
+EXPDIR ?=
 
 # Directory containing theory files
 _thdir = theories
@@ -61,11 +63,6 @@ $(_thdir)/%.dko: $(_thdir)/%.dk
 
 LOGIPEDIAOPTS = -I $(_ipath) -I $(_thdir)
 $(info [IMPORT] Using package ${PKG})
-
-
-#### Export ########################################################
-
-EXPDIR ?= export
 $(info [EXPORT] Exporting to ${EXPDIR})
 
 #### Dedukti #######################################################
@@ -87,7 +84,7 @@ $(_ipath)/%.dko: $(_ipath)/%.dk $(_thdir)/$(THEORY).dko
 	@$(DKCHECK) -e -I $(_thdir) -I $(_ipath) $<
 
 .PHONY: dedukti
-dedukti: $(DKOS)
+dedukti: $(_dkos)
 	@echo "[DEDUKTI] CHECKED"
 
 #### Coq ###########################################################
