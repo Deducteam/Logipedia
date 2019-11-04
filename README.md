@@ -53,26 +53,24 @@ make
 
 ## Makefile interface
 Since Logipedia deals with many files, calls to the binary are mainly managed
-through the makefile.
+through the makefile and a specific hierarchy of files.
+
+### Static hierarchy
+- `import/dedukti` contains dedukti source files;
+- `theory` contains dedukti encodings of logics used by dedukti source files
 
 ### Exporting to a system
 Exported files are placed in `export/<system>`.  To create all files,
 ``` bash
-make <system>
+make THEORY=<theory> PKG=<pkg> EXPDIR=<expdir> <system>
 ```
-
-where `<system>` can be either *coq*, *matita*. *lean* or *pvs* or *opentheory*.
-
-You can also compile the files one by one:
-``` bash
-make export/<system>/<file>
-```
-
-`file` should be in `import/dedukti/<LOGIC>/<PACKAGE>` where `PACKAGE` and
-`LOGIC` are Makefile variables. By default `PACKAGE=arith_fermat` and
-`LOGIC=sttfa`.
-
-See the Makefile for more information.
+where
+- `<pkg>` is the folder in `import/dedukti/<theory>` containing the dedukti
+  files to export;
+- `<theory>` is the name of the directory in the `theory` directory used by the
+  files in the package (not yet implemented!);
+- `<expdir>` is a directory containing the exported files.
+- `<system>` can be either *coq*, *matita*, *lean*, *pvs* or *opentheory*.
 
 ## Maintainers
 

@@ -13,7 +13,7 @@ THEORY ?=
 # Name of the package used
 PKG ?=
 # Directory where files are exported
-EXPDIR ?=
+EXPDIR ?= export
 
 # Directory containing theory files
 _thdir = theories
