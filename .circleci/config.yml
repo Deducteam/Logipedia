@@ -14,7 +14,7 @@ jobs:
             opam install dune yojson ppx_deriving_yojson
       - checkout
       - run: git lfs pull
-      - run: eval $(opam env) && make dedukti
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat dedukti
 
   json_export:
     docker:
@@ -30,7 +30,7 @@ jobs:
             opam install dune yojson ppx_deriving_yojson
       - checkout
       - run: git lfs pull
-      - run: eval $(opam env) && make json
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat json
       - run: cp -r export/json /tmp
       - store_artifacts:
           path: /tmp/json
