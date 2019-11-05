@@ -68,7 +68,7 @@ where
 - `<pkg>` is the folder in `import/dedukti/<theory>` containing the dedukti
   files to export;
 - `<theory>` is the name of the directory in the `theory` directory used by the
-  files in the package (not yet implemented!);
+  files in the package.
 - `<expdir>` is a directory containing the exported files.
 - `<system>` can be either *coq*, *matita*, *lean*, *pvs* or *opentheory*.
 
