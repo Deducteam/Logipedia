@@ -177,10 +177,6 @@ pvs: $(PVSSUM)
 jspath = $(EXPDIR)/json
 jsfiles = $(addprefix $(jspath)/, $(addsuffix .json, $(_srcbase)))
 
-$(EXPDIR)/json/$(_thfiles).json: $(_thdir)/$(_thfiles).dk
-	@mkdir -p $(jspath)
-	$(LOGIPEDIA) json $(LOGIPEDIAOPTS) -f $(_thdir)/$(@F).dk -o $@
-
 $(EXPDIR)/json/%.json: $(_ipath)/%.dko $(LOGIPEDIA)
 	$(LOGIPEDIA) json $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
 
@@ -197,7 +193,7 @@ _esc_coqpath = $(subst /,\\/,$(COQPATH))
 .library_depend_v: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (V FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-	for f in $(addsuffix .dko, $(_thfiles)) ; do \
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
 		sed -i s/$(subst /,\\/,$(_thdir))\\/$$f/$(_esc_coqpath)\\/$$f/ $@ ; \
 	done
 	@sed -i s/dko/v/g $@
@@ -208,7 +204,7 @@ _esc_matitapath = $(subst /,\\/,$(MATITAPATH))
 .library_depend_ma: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (MA FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-	for f in $(addsuffix .dko, $(_thfiles)) ; do \
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
 		sed -i s/$(subst /,\\/,$(_thdir))\\/$$f/$(_esc_matitapath)\\/$$f/ $@ ; \
 	done
 	@sed -i s/dko/ma/g $@
@@ -219,7 +215,7 @@ _esc_leanpath = $(subst /,\\/,$(LEANPATH))
 .library_depend_lean: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (LEAN FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-	for f in $(addsuffix .dko, $(_thfiles)) ; do \
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
 		sed -i s/$(subst /,\\/,$(_thdir))\\/$$f/$(_esc_leanpath)\\/$$f/ $@ ; \
 	done
 	@sed -i s/dko/lean/g $@
@@ -230,7 +226,7 @@ _esc_otpath = $(subst /,\\/,$(OTPATH))
 .library_depend_art: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (ART FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-	for f in $(addsuffix .dko, $(_thfiles)) ; do \
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
 		sed -i s/$(subst /,\\/,$(_thdir))\\/$$f/$(_esc_otpath)\\/$$f/ $@ ; \
 	done
 	@sed -i s/dko/art/g $@
@@ -241,17 +237,22 @@ _esc_pvspath = $(subst /,\\/,$(PVSPATH))
 .library_depend_pvs: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (PVS FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-	for f in $(addsuffix .dko, $(_thfiles)) ; do \
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
 		sed -i s/$(subst /,\\/,$(_thdir))\\/$$f/$(_esc_leanpath)\\/$$f/ $@ ; \
 	done
 	@sed -i s/dko/pvs/g $@
 	@sed -i s/dk/dko/g $@
 	@sed  -i "s:$(_ipath)/\([^.]*\)\.pvs:$(PVSPATH)/\1\.pvs:g" $@
 
+_esc_jsonpath = $(subst /,\\/,$(jspath))
 .library_depend_json: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (JSON FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
+		sed -i s/$(subst /,\\/,$(_thdir))\\/$$f/$(_esc_jsonpath)\\/$$f/ $@ ; \
+	done
 	@sed -i s/dko/json/g $@
+	@sed -i s/dk/dko/g $@
 	@sed  -i "s:$(_ipath)/\([^.]*\)\.json:$(jspath)/\1\.json:g" $@
 
 ifneq ($(MAKECMDGOALS), clean)
