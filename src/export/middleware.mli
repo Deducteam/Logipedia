@@ -16,8 +16,8 @@ module type S = sig
   (** Name of the theory. *)
 
   val tx_of_def : Term.term option -> Term.term -> tx
-  (** [tx_of_def t u] returns a taxon of a term [t] with annotation [u] given that
-      [t] comes from a definition. *)
+  (** [tx_of_def t u] returns a taxon of a term [t] with annotation [u] given
+      that [t] and [u] come from a definition. *)
 
   val tx_of_decl : Term.term -> tx
   (** [tx_of_def t] returns a taxon of a term [t] given that [t] comes
@@ -25,10 +25,12 @@ module type S = sig
 
   val string_of_tx : ?short:bool -> tx -> string
   (** [string_of_tx ?(short=false) tx] makes a long or [short] string out of
-      taxon [tx]. *)
+      taxon [tx].
+      Ensure that [string_of_tx (tx_of_string t) = t]. *)
 
   val tx_of_string : string -> tx
-  (** [tx_of_string s] converts string [s] to a taxon.
+  (** [tx_of_string s] converts string [s] to a taxon. Ensure that
+      [string_of_tx (tx_of_string t) = t].
 
       @raise IllTaxon if the string is not a taxon. *)
 
@@ -41,7 +43,8 @@ module type S = sig
       are the two last arguments of a Dedukti definition with taxon [tx] into
       a couple [(ppt, ppto)], with
       - [ppt] used as {!field:Json_types.item.ppt_term} and
-      - [ppto] as {!field:Json_types.item.ppt_term_opt}. *)
+      - [ppto] as {!field:Json_types.item.ppt_term_opt}.
+      The meaning of [(ppt, ppto)] is given by {!val:label}. *)
 
   val label : tx -> string * string option
   (** [label tx] returns labels for the fields {!Json_types.item.term} and
