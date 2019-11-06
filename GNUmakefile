@@ -54,7 +54,7 @@ $(_thdir)/%.dko: $(_thdir)/%.dk
 
 #### Producing the Dedukti library #################################
 
-LOGIPEDIAOPTS = -I $(_ipath) -I $(_thdir)
+_logipediaopts = -I $(_ipath) -I $(_thdir)
 $(info [IMPORT] Using package ${PKG})
 $(info [EXPORT] Exporting to ${EXPDIR})
 
@@ -82,178 +82,179 @@ dedukti: $(_dkos)
 
 #### Coq ###########################################################
 
-COQPATH = $(EXPDIR)/coq
-VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(_srcbase)))
+_coqpath = $(EXPDIR)/coq
+_vfiles = $(addprefix $(_coqpath)/, $(addsuffix .v, $(_srcbase)))
 
-$(COQPATH)/%.v: $(_ipath)/%.dko .library_depend_v $(LOGIPEDIA)
-	@mkdir -p $(COQPATH)
+$(_coqpath)/%.v: $(_ipath)/%.dko .library_depend_v $(LOGIPEDIA)
+	@mkdir -p $(_coqpath)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) coq $(LOGIPEDIAOPTS) --fast -f $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) coq $(_logipediaopts) --fast -f $(<:.dko=.dk) -o $@
 	@mv $@ $(addsuffix .v, $(subst -,_, $(subst .,_,$(basename $@)))) \
 || true 2>/dev/null # avoid fail if there is no change
 
-$(COQPATH)/_CoqProject: $(VFILES)
-	@cd $(COQPATH) && ls *.v > _CoqProject
+$(_coqpath)/_CoqProject: $(_vfiles)
+	@cd $(_coqpath) && ls *.v > _CoqProject
 
-$(COQPATH)/Makefile: $(COQPATH)/_CoqProject
-	@cd $(COQPATH) && coq_makefile -f _CoqProject -o Makefile
+$(_coqpath)/Makefile: $(_coqpath)/_CoqProject
+	@cd $(_coqpath) && coq_makefile -f _CoqProject -o Makefile
 
 .PHONY: coq
-coq: $(COQPATH)/Makefile $(VFILES)
-	@cd $(COQPATH) && make
+coq: $(_coqpath)/Makefile $(_vfiles)
+	@cd $(_coqpath) && make
 	@echo "[COQ] CHECKED"
 
 
 #### Matita ########################################################
 
-MATITAPATH = $(EXPDIR)/matita
-MAFILES=$(addprefix $(MATITAPATH)/, $(addsuffix .ma, $(_srcbase)))
+_matitapath = $(EXPDIR)/matita
+_mafiles=$(addprefix $(_matitapath)/, $(addsuffix .ma, $(_srcbase)))
 
-$(MATITAPATH)/%.ma: $(_ipath)/%.dko .library_depend_ma $(LOGIPEDIA)
+$(_matitapath)/%.ma: $(_ipath)/%.dko .library_depend_ma $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) matita $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) matita $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
-$(MATITAPATH)/root:
+$(_matitapath)/root:
 	@echo "baseuri = cic:/matita" > $@
 
 .PHONY: matita
-matita: $(MAFILES) $(MATITAPATH)/root
-	@cd $(MATITAPATH) && $(MATITAC) *.ma
+matita: $(_mafiles) $(_matitapath)/root
+	@cd $(_matitapath) && $(MATITAC) *.ma
 	@echo "[MATITA] CHECKED"
 
 #### Lean ##########################################################
 
-LEANPATH = $(EXPDIR)/lean
-LEANFILES=$(addprefix $(LEANPATH)/,$(addsuffix .lean,$(_srcbase)))
+_leanpath = $(EXPDIR)/lean
+_leanfiles=$(addprefix $(_leanpath)/,$(addsuffix .lean,$(_srcbase)))
 
-$(LEANPATH)/%.lean: $(_ipath)/%.dko .library_depend_lean $(LOGIPEDIA)
+$(_leanpath)/%.lean: $(_ipath)/%.dko .library_depend_lean $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) lean $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 .PHONY: lean
-lean: $(LEANFILES)
-	@cd $(LEANPATH) && $(LEAN) *.lean
+lean: $(_leanfiles)
+	@cd $(_leanpath) && $(LEAN) *.lean
 	@echo "[LEAN] CHECKED"
 
 #### OpenTheory ####################################################
 
-OTPATH = $(EXPDIR)/opentheory
-OTFILES=$(addprefix $(OTPATH)/,$(addsuffix .art,$(_srcbase)))
-THYFILE=$(OTPATH)/$(PKG).thy
+_otpath = $(EXPDIR)/opentheory
+_otfiles=$(addprefix $(_otpath)/,$(addsuffix .art,$(_srcbase)))
+_thyfile=$(_otpath)/$(PKG).thy
 
-$(OTPATH)/%.art: $(_ipath)/%.dko .library_depend_art $(LOGIPEDIA)
+$(_otpath)/%.art: $(_ipath)/%.dko .library_depend_art $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) opentheory $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) opentheory $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 .PHONY: opentheory
-opentheory: $(OTFILES)
-	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(THYFILE)
-	$(OT) info $(THYFILE) 2>/dev/null
+opentheory: $(_otfiles)
+	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
+	$(OT) info $(_thyfile) 2>/dev/null
 	@echo "[OT] CHECKED"
 
 ##### PVS ##########################################################
 
 
-PVSPATH = $(EXPDIR)/pvs
-PVSFILES=$(addprefix $(PVSPATH)/,$(addsuffix .pvs,$(_srcbase)))
-PVSSUM=$(addprefix $(PVSPATH)/,$(addsuffix .summary,$(_srcbase)))
+_pvspath = $(EXPDIR)/pvs
+_pvsfiles=$(addprefix $(_pvspath)/,$(addsuffix .pvs,$(_srcbase)))
+_pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 # For some weird reason, Make consider .pvs are temporary
-$(PVSPATH)/%.pvs: $(_ipath)/%.dko .library_depend_pvs $(LOGIPEDIA)
+$(_pvspath)/%.pvs: $(_ipath)/%.dko .library_depend_pvs $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) pvs $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
-$(PVSPATH)/%.summary: $(PVSPATH)/%.pvs
+$(_pvspath)/%.summary: $(_pvspath)/%.pvs
 	@echo "[SUMMARY] $@"
 # proveit always return 1
 	@true || $(PROVEIT) --importchain --scripts --force $<
 
 .PHONY: pvs
-pvs: $(PVSSUM)
+pvs: $(_pvssum)
 	@echo "[PVS] CHECKED"
 
 #### Json ##########################################################
 ## Needs _thdir, THEORY, _ipath, _srcbase
 
-jspath = $(EXPDIR)/json
-jsfiles = $(addprefix $(jspath)/, $(addsuffix .json, $(_srcbase)))
+_jsonpath = $(EXPDIR)/json
+_jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
 $(EXPDIR)/json/%.json: $(_ipath)/%.dko $(LOGIPEDIA)
-	$(LOGIPEDIA) json $(LOGIPEDIAOPTS) -f $(<:.dko=.dk) -o $@
+	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
-json: $(addprefix $(jspath)/, $(_thfiles:=.json)) $(jsfiles)
+json: $(addprefix $(_jsonpath)/, $(_thfiles:=.json)) $(_jsonfiles)
 
 #### Dependencies ##################################################
 
+_esc_thdir = $(subst /,\\/,$(_thdir))
 .library_depend_dko: $(_dks) $(_thdir)/$(_thfiles).dk
 	@echo "[DKDEP (DK FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
 
-_esc_coqpath = $(subst /,\\/,$(COQPATH))
+_esc_coqpath = $(subst /,\\/,$(_coqpath))
 .library_depend_v: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (V FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
 	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(subst /,\\/,$(_thdir))\\/$$f/$(_esc_coqpath)\\/$$f/ $@ ; \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_coqpath)\\/$$f/ $@ ; \
 	done
 	@sed -i s/dko/v/g $@
 	@sed -i s/dk/dko/g $@
-	@sed -i "s:$(_ipath)/\([^/]\+\)\.v:$(COQPATH)/\1\.v:g" $@
+	@sed -i "s:$(_ipath)/\([^/]\+\)\.v:$(_coqpath)/\1\.v:g" $@
 
-_esc_matitapath = $(subst /,\\/,$(MATITAPATH))
+_esc_matitapath = $(subst /,\\/,$(_matitapath))
 .library_depend_ma: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (MA FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
 	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(subst /,\\/,$(_thdir))\\/$$f/$(_esc_matitapath)\\/$$f/ $@ ; \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_matitapath)\\/$$f/ $@ ; \
 	done
 	@sed -i s/dko/ma/g $@
 	@sed -i s/dk/dko/g $@
-	@sed  -i "s:$(_ipath)/\([^.]*\)\.ma:$(MATITAPATH)/\1\.ma:g" $@
+	@sed  -i "s:$(_ipath)/\([^.]*\)\.ma:$(_matitapath)/\1\.ma:g" $@
 
-_esc_leanpath = $(subst /,\\/,$(LEANPATH))
+_esc_leanpath = $(subst /,\\/,$(_leanpath))
 .library_depend_lean: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (LEAN FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
 	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(subst /,\\/,$(_thdir))\\/$$f/$(_esc_leanpath)\\/$$f/ $@ ; \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_leanpath)\\/$$f/ $@ ; \
 	done
 	@sed -i s/dko/lean/g $@
 	@sed -i s/dk/dko/g $@
-	@sed  -i "s:$(_ipath)/\([^.]*\)\.lean:$(LEANPATH)/\1\.lean:g" $@
+	@sed  -i "s:$(_ipath)/\([^.]*\)\.lean:$(_leanpath)/\1\.lean:g" $@
 
-_esc_otpath = $(subst /,\\/,$(OTPATH))
+_esc_otpath = $(subst /,\\/,$(_otpath))
 .library_depend_art: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (ART FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
 	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(subst /,\\/,$(_thdir))\\/$$f/$(_esc_otpath)\\/$$f/ $@ ; \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_otpath)\\/$$f/ $@ ; \
 	done
 	@sed -i s/dko/art/g $@
 	@sed -i s/dk/dko/g $@
-	@sed  -i "s:$(_ipath)/\([^.]*\)\.art:$(OTPATH)/\1\.art:g" $@
+	@sed  -i "s:$(_ipath)/\([^.]*\)\.art:$(_otpath)/\1\.art:g" $@
 
-_esc_pvspath = $(subst /,\\/,$(PVSPATH))
+_esc_pvspath = $(subst /,\\/,$(_pvspath))
 .library_depend_pvs: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (PVS FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
 	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(subst /,\\/,$(_thdir))\\/$$f/$(_esc_leanpath)\\/$$f/ $@ ; \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_leanpath)\\/$$f/ $@ ; \
 	done
 	@sed -i s/dko/pvs/g $@
 	@sed -i s/dk/dko/g $@
-	@sed  -i "s:$(_ipath)/\([^.]*\)\.pvs:$(PVSPATH)/\1\.pvs:g" $@
+	@sed  -i "s:$(_ipath)/\([^.]*\)\.pvs:$(_pvspath)/\1\.pvs:g" $@
 
-_esc_jsonpath = $(subst /,\\/,$(jspath))
+_esc_jsonpath = $(subst /,\\/,$(_jsonpath))
 .library_depend_json: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (JSON FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
 	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(subst /,\\/,$(_thdir))\\/$$f/$(_esc_jsonpath)\\/$$f/ $@ ; \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_jsonpath)\\/$$f/ $@ ; \
 	done
 	@sed -i s/dko/json/g $@
 	@sed -i s/dk/dko/g $@
-	@sed  -i "s:$(_ipath)/\([^.]*\)\.json:$(jspath)/\1\.json:g" $@
+	@sed  -i "s:$(_ipath)/\([^.]*\)\.json:$(_jsonpath)/\1\.json:g" $@
 
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
@@ -297,6 +298,7 @@ distclean: clean
 	@find . -name "\#*"          -exec rm {} \;
 	@find . -name "*~"           -exec rm {} \;
 	@find . -name "*.dko"        -exec rm {} \;
+	@find . -name "*.json"       -exec rm {} \;
 	@find . -name "*.stt"        -exec rm {} \;
 	@find . -name "*.aux"        -exec rm {} \;
 	@find . -name "*.log"        -exec rm {} \;
@@ -317,4 +319,3 @@ distclean: clean
 	@find . -name "*.beautified" -exec rm {} \;
 	@find . -name ".pvscontext"  -exec rm {} \;
 	@-$(RM) -r /tmp/fermat
-	@-$(RM) -r $(DKIMP)/$(THEORY)
