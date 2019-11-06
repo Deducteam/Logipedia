@@ -60,7 +60,8 @@ through the makefile and a specific hierarchy of files.
 - `theory` contains dedukti encodings of logics used by dedukti source files
 
 ### Exporting to a system
-Exported files are placed in `export/<system>`.  To create all files,
+Exported files are placed in `<expdir>/<system>`. To create all files for a
+given system,
 ``` bash
 make THEORY=<theory> PKG=<pkg> EXPDIR=<expdir> <system>
 ```
