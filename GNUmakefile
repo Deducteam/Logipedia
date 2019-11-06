@@ -302,7 +302,6 @@ distclean: clean
 	@find . -name "\#*"          -exec rm {} \;
 	@find . -name "*~"           -exec rm {} \;
 	@find . -name "*.dko"        -exec rm {} \;
-	@find . -name "*.json"       -exec rm {} \;
 	@find . -name "*.stt"        -exec rm {} \;
 	@find . -name "*.aux"        -exec rm {} \;
 	@find . -name "*.log"        -exec rm {} \;
@@ -322,4 +321,5 @@ distclean: clean
 	@find . -name "*.summary"    -exec rm {} \;
 	@find . -name "*.beautified" -exec rm {} \;
 	@find . -name ".pvscontext"  -exec rm {} \;
+	@-$(RM) -r $(EXPDIR)
 	@-$(RM) -r /tmp/fermat
