@@ -12,6 +12,7 @@ module U = Uri
 module Jt = Json_types
 module Sy = Systems
 
+(** Basename of the processed file, that is, dedukti module. *)
 let basename : string ref = ref ""
 
 (** Information collected in the current time. *)
@@ -41,8 +42,10 @@ let find_taxon : B.name -> M.Sttfa.tx =
         let fullpath = Filename.concat !(Jt.json_dir) (fname ^ ".json") in
         Yojson.Safe.from_file fullpath |> Jt.document_of_yojson
       with Sys_error(_) ->
+        (* If the file has not been found, it is probably a theory file, lying
+           in the [theory] subdirectory. *)
         let fullpath = String.concat Filename.dir_sep
-            [ !Jt.json_dir ; "theory" ; (fname ^ ".json") ] in
+            [ !Jt.json_dir ; Jt.json_thy_dir ; (fname ^ ".json") ] in
         Yojson.Safe.from_file fullpath |> Jt.document_of_yojson
     in
     let f it =

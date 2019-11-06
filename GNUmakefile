@@ -174,17 +174,18 @@ pvs: $(_pvssum)
 #### Json ##########################################################
 
 _jsonpath = $(EXPDIR)/json
+_jsonthpath = $(_jsonpath)/_theory
 _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
-$(_jsonpath)/theory/%.json: $(_thdir)/%.dko $(LOGIPEDIA)
-	@mkdir -p $(_jsonpath)/theory
+$(_jsonthpath)/%.json: $(_thdir)/%.dko $(LOGIPEDIA)
+	@mkdir -p $(_jsonpath)/_theory
 	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 $(_jsonpath)/%.json: $(_ipath)/%.dko $(LOGIPEDIA)
 	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
-json: $(addprefix $(_jsonpath)/theory/, $(_thfiles:=.json)) $(_jsonfiles)
+json: $(addprefix $(_jsonthpath)/, $(_thfiles:=.json)) $(_jsonfiles)
 
 #### Dependencies ##################################################
 

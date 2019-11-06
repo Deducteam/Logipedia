@@ -8,6 +8,9 @@
 let json_dir : string ref = ref ""
 (** Directory containing json files. *)
 
+let json_thy_dir : string = "_theory"
+(** Subdirectory containing the json files of the theory. *)
+
 module Ppterm =
 struct
   type var =
