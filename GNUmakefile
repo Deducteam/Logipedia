@@ -172,16 +172,19 @@ pvs: $(_pvssum)
 	@echo "[PVS] CHECKED"
 
 #### Json ##########################################################
-## Needs _thdir, THEORY, _ipath, _srcbase
 
 _jsonpath = $(EXPDIR)/json
 _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
-$(EXPDIR)/json/%.json: $(_ipath)/%.dko $(LOGIPEDIA)
+$(_jsonpath)/theory/%.json: $(_thdir)/%.dko $(LOGIPEDIA)
+	@mkdir -p $(_jsonpath)/theory
+	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+
+$(_jsonpath)/%.json: $(_ipath)/%.dko $(LOGIPEDIA)
 	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
-json: $(addprefix $(_jsonpath)/, $(_thfiles:=.json)) $(_jsonfiles)
+json: $(addprefix $(_jsonpath)/theory/, $(_thfiles:=.json)) $(_jsonfiles)
 
 #### Dependencies ##################################################
 
@@ -250,7 +253,7 @@ _esc_jsonpath = $(subst /,\\/,$(_jsonpath))
 	@echo "[DKDEP (JSON FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
 	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_jsonpath)\\/$$f/ $@ ; \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_jsonpath)\\/theory\\/$$f/ $@ ; \
 	done
 	@sed -i s/dko/json/g $@
 	@sed -i s/dk/dko/g $@

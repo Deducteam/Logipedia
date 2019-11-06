@@ -36,9 +36,14 @@ let find_taxon : B.name -> M.Sttfa.tx =
     (* Parse the correct json file *)
     (* Output file must be in the same dir than other jsons *)
     let fname = B.md key |> B.string_of_mident in
-    let fullpath = Filename.concat !(Jt.json_dir) (fname ^ ".json") in
-    let doc = Yojson.Safe.from_file fullpath
-              |> Jt.document_of_yojson
+    let doc =
+      try
+        let fullpath = Filename.concat !(Jt.json_dir) (fname ^ ".json") in
+        Yojson.Safe.from_file fullpath |> Jt.document_of_yojson
+      with Sys_error(_) ->
+        let fullpath = String.concat Filename.dir_sep
+            [ !Jt.json_dir ; "theory" ; (fname ^ ".json") ] in
+        Yojson.Safe.from_file fullpath |> Jt.document_of_yojson
     in
     let f it =
       let uri = U.of_string it.Jt.name in
@@ -48,8 +53,8 @@ let find_taxon : B.name -> M.Sttfa.tx =
     in
     match doc with
     | Result.Error(s) ->
-      failwith (Format.sprintf
-                  "Error parsing file %s at line %s (as dependency)" fullpath s)
+      failwith
+        (Format.sprintf "Error parsing file at line %s (as dependency)" s)
     | Result.Ok(doc) ->
       List.iter f doc;
       NameHashtbl.find taxons key
