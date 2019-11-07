@@ -51,6 +51,3 @@ module type S = sig
       {!Json_types.item.term_opt}. *)
 
 end
-
-module Sttfa : S
-(** Simple Type Theory For All. *)

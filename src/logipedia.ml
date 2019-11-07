@@ -109,12 +109,13 @@ let export_json file =
   let input = open_in file in
   let entries = P.Parse_channel.parse md input in
   close_in input;
-  let document = Json.doc_of_entries md entries in
+  let module JsExp = Json.Make(Middleware_sttfa.Sttfa) in
+  let document = JsExp.doc_of_entries md entries in
   let fmt = match !output_file with
     | None    -> Format.std_formatter
     | Some(f) -> Format.formatter_of_out_channel (open_out f)
   in
-  Json.print_document fmt document
+  JsExp.print_document fmt document
 
 let _ =
   let available_sys = "json" :: List.map fst S.sys_spec |> String.concat ", " in
