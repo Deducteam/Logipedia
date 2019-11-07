@@ -1,4 +1,4 @@
-version: 2.1
+version: 2.0
 jobs:
   build_logipedia:
     docker:
@@ -18,17 +18,17 @@ jobs:
   coq_export:
     docker:
       - image: ocaml/opam2:alpine
+    resource_class: large
     steps:
       - run: sudo apk add m4 git
       - run:
           name: opam_deps
           command: |
-            opam switch create 4.07.1
+            opam switch 4.07
             opam update
-            eval $(opam env)
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
             opam install dune yojson ppx_deriving_yojson
-            opam install coq -qy
+            opam install coq=8.9.1 -qy
       - checkout
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export coq
       - run: cp -r export/coq /tmp
