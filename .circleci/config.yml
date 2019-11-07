@@ -18,7 +18,6 @@ jobs:
   coq_export:
     docker:
       - image: ocaml/opam2:alpine
-    resource_class: large
     steps:
       - run: sudo apk add m4 git
       - run:
