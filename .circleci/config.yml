@@ -23,11 +23,11 @@ jobs:
       - run:
           name: opam_deps
           command: |
-            opam switch 4.07
+            opam switch 4.07.1
             opam update
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
             opam install dune yojson ppx_deriving_yojson
-            opam pin add coq 8.9.1 -qy
+            opam install coq -qy
       - checkout
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export coq
       - run: cp -r export/coq /tmp
