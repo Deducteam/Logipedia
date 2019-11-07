@@ -23,6 +23,10 @@ _thfiles = $(notdir $(basename $(wildcard $(_thdir)/*.dk)))
 _dkimp = import/dedukti
 # Full include path
 _ipath = $(_dkimp)/$(THEORY)/$(PKG)
+# Directory to store dependencies
+_depdir = .depends
+# Most used logipedia options
+_logipediaopts = -I $(_ipath) -I $(_thdir)
 
 #### Logipedia binary ##############################################
 
@@ -52,18 +56,23 @@ doc:
 
 #### Producing the theory file #####################################
 
-$(_thdir)/%.dko: $(_thdir)/%.dk
+_thdepdir = $(_depdir)/_$(THEORY)
+$(_thdepdir)/%.d: $(_thdir)/%.dk
+	@mkdir -p $(@D)
+	@$(DKDEP) -o $@ -I $(_thdir) $^
+
+ifneq ($(MAKECMDGOALS), clean)
+ifneq ($(MAKECMDGOALS), distclean)
+include $(addprefix $(_thdepdir)/, $(_thfiles).d)
+endif
+endif
+
+$(_thdir)/%.dko: $(_thdir)/%.dk $(_thdepdir/%.d)
 	@echo "[CHECK] $^"
 	@$(DKCHECK) -e -I $(_thdir)/ $^
 
 
 #### Producing the Dedukti library #################################
-
-_logipediaopts = -I $(_ipath) -I $(_thdir)
-$(info [IMPORT] Using package ${PKG})
-$(info [EXPORT] Exporting to ${EXPDIR})
-
-#### Dedukti #######################################################
 
 ## We untar the archive here to have the list of files available at first run of
 ## Make
@@ -294,6 +303,7 @@ $(PP):
 .PHONY: clean
 clean:
 	@dune clean
+	@$(RM) -r $(_depdir)
 	@$(RM) .library_depend_dko
 	@$(RM) .library_depend_v
 	@$(RM) .library_depend_vo
