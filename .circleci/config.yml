@@ -1,4 +1,4 @@
-version: 2.1
+version: 2.0
 jobs:
   build_logipedia:
     docker:
@@ -23,7 +23,8 @@ jobs:
       - run:
           name: opam_deps
           command: |
-            opam switch create 4.07
+            opam switch create 4.07.1
+            opam update
             eval $(opam env)
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
             opam install dune yojson ppx_deriving_yojson
