@@ -24,6 +24,8 @@ _dkimp = import/dedukti
 # Full include path
 _ipath = $(_dkimp)/$(THEORY)/$(PKG)
 
+#### Logipedia binary ##############################################
+
 LOGIPEDIA = _build/install/default/bin/logipedia
 
 .PHONY: all
@@ -40,6 +42,9 @@ bin: $(LOGIPEDIA)
 $(LOGIPEDIA):
 	@dune build
 
+.PHONY: install
+install:
+	@dune install
 
 .PHONY: doc
 doc:
