@@ -96,7 +96,7 @@ workflows:
   build:
     jobs:
       - build_logipedia
-      - coq_export
+#      - coq_export
       - json_export
       - build_website:
           requires:
