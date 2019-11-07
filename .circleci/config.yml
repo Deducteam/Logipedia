@@ -23,8 +23,8 @@ jobs:
       - run:
           name: opam_deps
           command: |
-            opam switch 4.07
-            opam update
+            opam switch create 4.07
+            eval $(opam env)
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
             opam install dune yojson ppx_deriving_yojson
             opam install coq -qy
