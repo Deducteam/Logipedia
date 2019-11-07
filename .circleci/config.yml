@@ -15,6 +15,29 @@ jobs:
       - checkout
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat dedukti
 
+  coq_export:
+    docker:
+      - image: ocaml/opam2:alpine
+    steps:
+      - run: sudo apk add m4 git
+      - run:
+          name: opam_deps
+          command: |
+            opam switch 4.07
+            opam update
+            opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
+            opam install dune yojson ppx_deriving_yojson
+            opam pin add coq 8.9.1 -qy
+      - checkout
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export coq
+      - run: cp -r export/coq /tmp
+      - store_artifacts:
+          path: /tmp/export/coq
+      - persist_to_workspace:
+          root: /tmp/export
+          paths: 
+            - coq
+
   json_export:
     docker:
       - image: ocaml/opam2:alpine
@@ -61,6 +84,7 @@ jobs:
       - checkout
       - run: pip install --user ./logigen
       - run: logigen -i /tmp/workspace/json
+      - run: cp -r /tmp/workspace/export gen_website
       - run: cp -r gen_website /tmp/
       - store_artifacts:
           path: /tmp/gen_website
@@ -71,6 +95,7 @@ workflows:
   build:
     jobs:
       - build_logipedia
+      - coq_export
       - json_export
       - build_website:
           requires:
