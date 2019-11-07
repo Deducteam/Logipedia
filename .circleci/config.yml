@@ -85,7 +85,7 @@ jobs:
       - checkout
       - run: pip install --user ./logigen
       - run: logigen -i /tmp/workspace/json
-      - run: cp -r /tmp/workspace/export gen_website
+ #     - run: cp -r /tmp/workspace/export gen_website
       - run: cp -r gen_website /tmp/
       - store_artifacts:
           path: /tmp/gen_website
@@ -96,7 +96,7 @@ workflows:
   build:
     jobs:
       - build_logipedia
-#      - coq_export
+      - coq_export
       - json_export
       - build_website:
           requires:
