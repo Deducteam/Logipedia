@@ -1,5 +1,7 @@
 open Ast
-open Basic
+open Kernel.Basic
+module Basic = Kernel.Basic
+module Term = Kernel.Term
 
 let package = ref ""
 

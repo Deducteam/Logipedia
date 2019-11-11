@@ -6,6 +6,30 @@ PYTHON  = python3
 OT      = opentheory
 PROVEIT = proveit
 
+## In uppercase are variables that can be modified by the user, in lowercase
+## with _ are variables that are not supposed to be chosen by the user.
+# Name of the theories used
+THEORY ?= sttfa
+# Name of the package used
+PKG ?= arith_fermat
+# Directory where files are exported
+EXPDIR ?= export
+
+# Directory containing theory files
+_thdir = theories/$(THEORY)
+# All theory files without extension
+_thfiles = $(notdir $(basename $(wildcard $(_thdir)/*.dk)))
+# Path to dedukti source file
+_dkimp = import/dedukti
+# Full include path
+_ipath = $(_dkimp)/$(THEORY)/$(PKG)
+# Directory to store dependencies
+_depdir = .depends
+# Most used logipedia options
+_logipediaopts = -I $(_ipath) -I $(_thdir)
+
+#### Logipedia binary ##############################################
+
 LOGIPEDIA = _build/install/default/bin/logipedia
 
 .PHONY: all
@@ -22,6 +46,9 @@ bin: $(LOGIPEDIA)
 $(LOGIPEDIA):
 	@dune build
 
+.PHONY: install
+install:
+	@dune install
 
 .PHONY: doc
 doc:
@@ -29,208 +56,223 @@ doc:
 
 #### Producing the theory file #####################################
 
-theories/hol_sttfa.dko: theories/hol_sttfa.dk theories/sttfa.dko \
-theories/hol.dko theories/hol_axioms.dko
-	@echo "[CHECK] $<"
-	@$(DKCHECK) -I theories -e $<
+_thdepdir = $(_depdir)/_$(THEORY)
+$(_thdepdir)/%.d: $(_thdir)/%.dk
+	@mkdir -p $(@D)
+	@$(DKDEP) -o $@ -I $(_thdir) $^
 
-theories/hol_axioms.dko: theories/hol_axioms.dk theories/hol.dko
-	@echo "[CHECK] $<"
-	@$(DKCHECK) -I theories -e $<
+ifneq ($(MAKECMDGOALS), clean)
+ifneq ($(MAKECMDGOALS), distclean)
+include $(addprefix $(_thdepdir)/, $(_thfiles).d)
+endif
+endif
 
-theories/%.dko: theories/%.dk
+$(_thdir)/%.dko: $(_thdir)/%.dk $(_thdepdir/%.d)
 	@echo "[CHECK] $^"
-	@$(DKCHECK) -e -I theories/ $^
+	@$(DKCHECK) -e -I $(_thdir)/ $^
 
 
 #### Producing the Dedukti library #################################
 
-THDIR = theories
-PACKAGE = arith_fermat
-THEORY = sttfa
-DKIMP = import/dedukti
-IPATH = $(DKIMP)/$(THEORY)/$(PACKAGE)
-
-LOGIPEDIAOPTS = -I $(IPATH) -I theories
-
-
-#### Export ########################################################
-
-#### Dedukti #######################################################
-
-# We untar the archive here to have the list of files available
-# at first run of Make
-_dks := $(shell cd $(DKIMP) && \
+## We untar the archive here to have the list of files available at first run of
+## Make
+## HACK files are stored on a lsv webpage, something better should be set
+__dks := $(shell cd $(_dkimp) && \
 if [ ! -d $(THEORY) ]; then \
-tar xjf $(THEORY).tar.bz2; fi &&\
-cd $(THEORY)/$(PACKAGE) && ls *.dk)
-DKS = $(addprefix $(IPATH)/, $(_dks))
-DKOS = $(patsubst %.dk,%.dko,$(DKS))
-IMP = $(notdir $(basename $(DKS)))
+curl http://www.lsv.fr/~hondet/logipedia/$(THEORY).tar.bz2 | \
+tar xj ; fi &&\
+cd $(THEORY)/$(PKG) && ls *.dk)
+_dks := $(addprefix $(_ipath)/, $(__dks))
+_dkos := $(patsubst %.dk,%.dko,$(_dks))
+_srcbase := $(notdir $(basename $(_dks)))
 
-$(IPATH)/%.dko: $(IPATH)/%.dk theories/$(THEORY).dko
+$(_ipath)/%.dko: $(_ipath)/%.dk $(_thdir)/$(_thfiles:=.dko)
 	@echo "[CHECK] $@"
-	@$(DKCHECK) -e -I theories -I $(IPATH) $<
+	@$(DKCHECK) -e -I $(_thdir) -I $(_ipath) $<
 
 .PHONY: dedukti
-dedukti: theories/$(THEORY).dko $(DKOS)
-	@$(DKCHECK) -I theories -I $(IPATH) $(IPATH)/fermat.dk
+dedukti: $(_dkos)
 	@echo "[DEDUKTI] CHECKED"
 
 #### Coq ###########################################################
 
-COQPATH = export/coq
-VFILES = $(addprefix $(COQPATH)/, $(addsuffix .v, $(IMP)))
+_coqpath = $(EXPDIR)/coq
+_vfiles = $(addprefix $(_coqpath)/, $(addsuffix .v, $(_srcbase)))
 
-$(COQPATH)/%.v: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_v \
-$(LOGIPEDIA)
-	@mkdir -p $(COQPATH)
+$(_coqpath)/%.v: $(_ipath)/%.dko .library_depend_v $(LOGIPEDIA)
+	@mkdir -p $(_coqpath)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --fast --export coq $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) coq $(_logipediaopts) --fast -f $(<:.dko=.dk) -o $@
 	@mv $@ $(addsuffix .v, $(subst -,_, $(subst .,_,$(basename $@)))) \
 || true 2>/dev/null # avoid fail if there is no change
 
-$(COQPATH)/_CoqProject: $(VFILES)
-	@cd $(COQPATH) && ls *.v > _CoqProject
+$(_coqpath)/_CoqProject: $(_vfiles)
+	@cd $(_coqpath) && ls *.v > _CoqProject
 
-$(COQPATH)/Makefile: $(COQPATH)/_CoqProject
-	@cd $(COQPATH) && coq_makefile -f _CoqProject -o Makefile
+$(_coqpath)/Makefile: $(_coqpath)/_CoqProject
+	@cd $(_coqpath) && coq_makefile -f _CoqProject -o Makefile
 
 .PHONY: coq
-coq: $(COQPATH)/Makefile $(VFILES)
-	@cd $(COQPATH) && make
+coq: $(_coqpath)/Makefile $(_vfiles)
+	@cd $(_coqpath) && make
 	@echo "[COQ] CHECKED"
 
 
 #### Matita ########################################################
 
-MATITAPATH = export/matita
-MAFILES=$(addprefix $(MATITAPATH)/, $(addsuffix .ma, $(IMP)))
+_matitapath = $(EXPDIR)/matita
+_mafiles=$(addprefix $(_matitapath)/, $(addsuffix .ma, $(_srcbase)))
 
-$(MATITAPATH)/%.ma: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_ma $(LOGIPEDIA)
+$(_matitapath)/%.ma: $(_ipath)/%.dko .library_depend_ma $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export matita $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) matita $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
-$(MATITAPATH)/root:
+$(_matitapath)/root:
 	@echo "baseuri = cic:/matita" > $@
 
 .PHONY: matita
-matita: $(MAFILES) $(MATITAPATH)/root
-	@cd $(MATITAPATH) && $(MATITAC) *.ma
+matita: $(_mafiles) $(_matitapath)/root
+	@cd $(_matitapath) && $(MATITAC) *.ma
 	@echo "[MATITA] CHECKED"
 
 #### Lean ##########################################################
 
-LEANPATH = export/lean
-LEANFILES=$(addprefix $(LEANPATH)/,$(addsuffix .lean,$(IMP)))
+_leanpath = $(EXPDIR)/lean
+_leanfiles=$(addprefix $(_leanpath)/,$(addsuffix .lean,$(_srcbase)))
 
-$(LEANPATH)/%.lean: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_lean $(LOGIPEDIA)
+$(_leanpath)/%.lean: $(_ipath)/%.dko .library_depend_lean $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export lean $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 .PHONY: lean
-lean: $(LEANFILES)
-	@cd $(LEANPATH) && $(LEAN) *.lean
+lean: $(_leanfiles)
+	@cd $(_leanpath) && $(LEAN) *.lean
 	@echo "[LEAN] CHECKED"
 
 #### OpenTheory ####################################################
 
-OTPATH = export/opentheory
-OTFILES=$(addprefix $(OTPATH)/,$(addsuffix .art,$(IMP)))
-THYFILE=$(OTPATH)/$(PACKAGE).thy
+_otpath = $(EXPDIR)/opentheory
+_otfiles=$(addprefix $(_otpath)/,$(addsuffix .art,$(_srcbase)))
+_thyfile=$(_otpath)/$(PKG).thy
 
-$(OTPATH)/%.art: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_art $(LOGIPEDIA)
+$(_otpath)/%.art: $(_ipath)/%.dko .library_depend_art $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export opentheory $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) opentheory $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 .PHONY: opentheory
-opentheory: $(OTFILES)
-	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(IPATH) $(PACKAGE) > $(THYFILE)
-	$(OT) info $(THYFILE) 2>/dev/null
+opentheory: $(_otfiles)
+	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
+	$(OT) info $(_thyfile) 2>/dev/null
 	@echo "[OT] CHECKED"
 
 ##### PVS ##########################################################
 
 
-PVSPATH = export/pvs
-PVSFILES=$(addprefix $(PVSPATH)/,$(addsuffix .pvs,$(IMP)))
-PVSSUM=$(addprefix $(PVSPATH)/,$(addsuffix .summary,$(IMP)))
+_pvspath = $(EXPDIR)/pvs
+_pvsfiles=$(addprefix $(_pvspath)/,$(addsuffix .pvs,$(_srcbase)))
+_pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 # For some weird reason, Make consider .pvs are temporary
-$(PVSPATH)/%.pvs: $(IPATH)/%.dko theories/$(THEORY).dko .library_depend_pvs $(LOGIPEDIA)
+$(_pvspath)/%.pvs: $(_ipath)/%.dko .library_depend_pvs $(LOGIPEDIA)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export pvs $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
-$(PVSPATH)/%.summary: $(PVSPATH)/%.pvs
+$(_pvspath)/%.summary: $(_pvspath)/%.pvs
 	@echo "[SUMMARY] $@"
 # proveit always return 1
 	@true || $(PROVEIT) --importchain --scripts --force $<
 
 .PHONY: pvs
-pvs: $(PVSSUM)
+pvs: $(_pvssum)
 	@echo "[PVS] CHECKED"
 
 #### Json ##########################################################
 
-jspath = export/json
-jsfiles = $(addprefix $(jspath)/, $(addsuffix .json, $(IMP)))
+_jsonpath = $(EXPDIR)/json
+_jsonthpath = $(_jsonpath)/_theory
+_jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
-export/json/$(THEORY).json: $(THDIR)/$(THEORY).dk
-	@mkdir -p $(jspath)
-	$(LOGIPEDIA) -I $(THDIR) --export-json $< -o $@
+$(_jsonthpath)/%.json: $(_thdir)/%.dko $(LOGIPEDIA)
+	@mkdir -p $(_jsonpath)/_theory
+	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
-export/json/%.json: $(IPATH)/%.dko $(LOGIPEDIA) export/json/$(THEORY).json
-	@mkdir -p $(jspath)
-	$(LOGIPEDIA) $(LOGIPEDIAOPTS) --export-json $(<:.dko=.dk) -o $@
+$(_jsonpath)/%.json: $(_ipath)/%.dko $(LOGIPEDIA)
+	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
-json: $(jsfiles)
+json: $(addprefix $(_jsonthpath)/, $(_thfiles:=.json)) $(_jsonfiles)
 
 #### Dependencies ##################################################
 
-.library_depend_dko: $(DKS) $(THDIR)/$(THEORY).dk
+_esc_thdir = $(subst /,\\/,$(_thdir))
+.library_depend_dko: $(_dks) $(_thdir)/$(_thfiles).dk
 	@echo "[DKDEP (DK FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I $(THDIR) $^
+	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
 
-.library_depend_v: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
+_esc_coqpath = $(subst /,\\/,$(_coqpath))
+.library_depend_v: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (V FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
-	@sed -i s/theories\\/sttfa.dko//g $@
+	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_coqpath)\\/$$f/ $@ ; \
+	done
 	@sed -i s/dko/v/g $@
-	sed  -i "s:$(IPATH)/\([^/]\+\)\.v:$(COQPATH)/\1\.v:g" $@
+	@sed -i s/dk/dko/g $@
+	@sed -i "s:$(_ipath)/\([^/]\+\)\.v:$(_coqpath)/\1\.v:g" $@
 
-.library_depend_ma: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
+_esc_matitapath = $(subst /,\\/,$(_matitapath))
+.library_depend_ma: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (MA FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
-	@sed -i s/theories\\/sttfa.dko//g $@
+	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_matitapath)\\/$$f/ $@ ; \
+	done
 	@sed -i s/dko/ma/g $@
-	sed  -i "s:$(IPATH)/\([^.]*\)\.ma:$(MATITAPATH)/\1\.ma:g" $@
+	@sed -i s/dk/dko/g $@
+	@sed  -i "s:$(_ipath)/\([^.]*\)\.ma:$(_matitapath)/\1\.ma:g" $@
 
-.library_depend_lean: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
+_esc_leanpath = $(subst /,\\/,$(_leanpath))
+.library_depend_lean: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (LEAN FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
-	@sed -i s/theories\\/sttfa.dko//g $@
+	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_leanpath)\\/$$f/ $@ ; \
+	done
 	@sed -i s/dko/lean/g $@
-	sed  -i "s:$(IPATH)/\([^.]*\)\.lean:$(LEANPATH)/\1\.lean:g" $@
+	@sed -i s/dk/dko/g $@
+	@sed  -i "s:$(_ipath)/\([^.]*\)\.lean:$(_leanpath)/\1\.lean:g" $@
 
-.library_depend_art: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
+_esc_otpath = $(subst /,\\/,$(_otpath))
+.library_depend_art: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (ART FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
-	@sed -i s/theories\\/sttfa.dko//g $@
+	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_otpath)\\/$$f/ $@ ; \
+	done
 	@sed -i s/dko/art/g $@
-	sed  -i "s:$(IPATH)/\([^.]*\)\.art:$(OTPATH)/\1\.art:g" $@
+	@sed -i s/dk/dko/g $@
+	@sed  -i "s:$(_ipath)/\([^.]*\)\.art:$(_otpath)/\1\.art:g" $@
 
-.library_depend_pvs: $(wildcard $(IPATH)/*.dk theories/$(THEORY).dk)
+_esc_pvspath = $(subst /,\\/,$(_pvspath))
+.library_depend_pvs: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (PVS FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
-	@sed -i s/theories\\/sttfa.dko//g $@
+	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_leanpath)\\/$$f/ $@ ; \
+	done
 	@sed -i s/dko/pvs/g $@
-	sed  -i "s:$(IPATH)/\([^.]*\)\.pvs:$(PVSPATH)/\1\.pvs:g" $@
+	@sed -i s/dk/dko/g $@
+	@sed  -i "s:$(_ipath)/\([^.]*\)\.pvs:$(_pvspath)/\1\.pvs:g" $@
 
-.library_depend_json: $(wildcard $(IPATH)/*.dk $(THDIR)/$(THEORY).dk)
+_esc_jsonpath = $(subst /,\\/,$(_jsonpath))
+.library_depend_json: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (JSON FILES)] $@"
-	@$(DKDEP) -o $@ -I $(IPATH) -I theories $^
+	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_jsonpath)\\/theory\\/$$f/ $@ ; \
+	done
 	@sed -i s/dko/json/g $@
-	sed  -i "s:$(IPATH)/\([^.]*\)\.json:$(jspath)/\1\.json:g" $@
+	@sed -i s/dk/dko/g $@
+	@sed  -i "s:$(_ipath)/\([^.]*\)\.json:$(_jsonpath)/\1\.json:g" $@
 
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
@@ -244,11 +286,24 @@ ifneq ($(MAKECMDGOALS), distclean)
 endif
 endif
 
+#### Pretty printer ################################################
+
+# FIXME logipp-latex definitve?
+PP ?= /usr/local/bin/logipp-latex
+
+.PHONY: pp
+install_pp: $(PP)
+
+.PHONY: $(PP)
+$(PP):
+	$(shell utils/install-pp.sh)
+
 #### Cleaning targets ##############################################
 
 .PHONY: clean
 clean:
 	@dune clean
+	@$(RM) -r $(_depdir)
 	@$(RM) .library_depend_dko
 	@$(RM) .library_depend_v
 	@$(RM) .library_depend_vo
@@ -281,5 +336,5 @@ distclean: clean
 	@find . -name "*.summary"    -exec rm {} \;
 	@find . -name "*.beautified" -exec rm {} \;
 	@find . -name ".pvscontext"  -exec rm {} \;
+	@-$(RM) -r $(EXPDIR)
 	@-$(RM) -r /tmp/fermat
-	@-$(RM) -r $(DKIMP)/$(THEORY)

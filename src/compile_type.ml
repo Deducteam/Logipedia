@@ -2,8 +2,10 @@ open Sttfadk
 open Environ
 open Ast
 
-module Denv = Env.Default
-module Dpp = Pp.Default
+module Denv = Api.Env.Default
+module Dpp = Api.Pp.Default
+
+module Reduction = Kernel.Reduction
 
 let compile_tyop tyop =
   match tyop with Term.Const (_, name) -> of_name name | _ -> assert false

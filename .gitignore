@@ -74,3 +74,4 @@ composer.phar
 /.depend_dklib
 logipedia.install
 /export
+/.depends

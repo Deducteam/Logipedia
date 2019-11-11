@@ -1,10 +1,10 @@
 version: 2.1
 jobs:
-  logipedia_build:
+  build_logipedia:
     docker:
       - image: ocaml/opam2:alpine
     steps:
-      - run: sudo apk add m4 git git-lfs openssh
+      - run: sudo apk add m4 git
       - run:
           name: opam_deps
           command: |
@@ -13,14 +13,36 @@ jobs:
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
             opam install dune yojson ppx_deriving_yojson
       - checkout
-      - run: git lfs pull
-      - run: eval $(opam env) && make dedukti
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat dedukti
 
-  json_exp:
+  coq_export:
     docker:
       - image: ocaml/opam2:alpine
     steps:
-      - run: sudo apk add m4 git git-lfs openssh
+      - run: sudo apk add m4 git
+      - run:
+          name: opam_deps
+          command: |
+            opam switch 4.07
+            opam update
+            opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
+            opam install dune yojson ppx_deriving_yojson
+            opam install coq=8.9.1 -qy
+      - checkout
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export coq
+      - run: cp -r export/coq /tmp
+      - store_artifacts:
+          path: /tmp/export/coq
+      - persist_to_workspace:
+          root: /tmp/export
+          paths: 
+            - coq
+
+  json_export:
+    docker:
+      - image: ocaml/opam2:alpine
+    steps:
+      - run: sudo apk add m4 git
       - run:
           name: opam_deps
           command: |
@@ -29,12 +51,52 @@ jobs:
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
             opam install dune yojson ppx_deriving_yojson
       - checkout
-      - run: git lfs pull
-      - run: eval $(opam env) && make json
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export json
+      - run: cp -r export/json /tmp
+      - store_artifacts:
+          path: /tmp/json
+      - persist_to_workspace:
+          root: /tmp
+          paths: 
+            - json
+
+  build_website:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          command: |
+              echo Installing logipp-latex
+              sudo apt install -y guile-2.2 guile-2.2-dev
+              pushd /tmp
+              wget http://download.savannah.gnu.org/releases/guile-json/guile-json-3.2.0.tar.gz
+              tar xzf guile-json-3.2.0.tar.gz
+              pushd guile-json-3.2.0
+              ./configure --prefix=/usr && make && sudo make install
+              popd
+              git clone https://github.com/gabrielhdt/LogiPPedia.git
+              pushd LogiPPedia/scheme
+              sudo make install
+              popd
+              popd
+      - checkout
+      - run: pip install --user ./logigen
+      - run: logigen -i /tmp/workspace/json
+ #     - run: cp -r /tmp/workspace/export gen_website
+      - run: cp -r gen_website /tmp/
+      - store_artifacts:
+          path: /tmp/gen_website
+
 
 workflows:
   version: 2.1
   build:
     jobs:
-      - logipedia_build
-      - json_exp
+      - build_logipedia
+      - coq_export
+      - json_export
+      - build_website:
+          requires:
+            - json_export

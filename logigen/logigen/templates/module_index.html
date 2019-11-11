@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Module Index{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+  {% for row in index %}
+    {% set module_open = loop.previtem.module != row.module if loop.previtem
+    else True %}
+    {% set module_close = loop.nextitem.module != row.module if loop.nextitem
+    else True %}
+    {% set taxonomy_open = (loop.previtem.taxonomy != row.taxonomy or
+    module_open) if loop.previtem else True %}
+    {% set taxonomy_close = (loop.nextitem.taxonomy != row.taxonomy or
+    module_close) if loop.nextitem else True %}
+    {% if module_open %}
+    <h2>{{ row.module }}</h2>
+    <ul>
+    {% endif %}
+      {% if taxonomy_open %}
+      <li>{{ row.taxonomy }}
+        <ul>
+      {% endif %}
+          <li><a href="{{ filename(row.name) }}">{{ row.name }}</a></li>
+      {% if taxonomy_close %}
+        </ul>
+      </li>
+      {% endif %}
+    {% if module_close %}
+    </ul>
+    {% endif %}
+  {% endfor %} 
+{% endblock %}

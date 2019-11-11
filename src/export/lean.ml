@@ -1,6 +1,8 @@
 open Ast
 
-module Denv = Env.Default
+module Denv = Api.Env.Default
+module Basic = Kernel.Basic
+module Signature = Kernel.Signature
 
 let sys = "lean"
 

@@ -1,10 +1,14 @@
 open Ast
-open Basic
+open Kernel.Basic
 open Environ
 
-module Denv = Env.Default
-module Derr = Errors.Make(Denv)
-module Dpp = Pp.Default
+module Denv = Api.Env.Default
+module Derr = Api.Errors.Make(Denv)
+module Dpp = Api.Pp.Default
+
+module Reduction = Kernel.Reduction
+module Rule = Kernel.Rule
+module Subst = Kernel.Subst
 
 (* TODO: Enhance error messages *)
 

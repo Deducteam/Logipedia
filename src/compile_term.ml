@@ -4,9 +4,9 @@ open Environ
 
 module CType = Compile_type
 
-module Denv = Env.Default
-module Derr = Errors.Make(Denv)
-module Dpp = Pp.Default
+module Denv = Api.Env.Default
+module Derr = Api.Errors.Make(Denv)
+module Dpp = Api.Pp.Default
 
 let rec type_arity_of te =
   match te with ForallK (_, te) -> 1 + type_arity_of te | _ -> 0

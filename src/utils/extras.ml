@@ -20,22 +20,12 @@ struct
     sub s (start + 1) (len - start - 1)
 end
 
-module Basic =
-struct
-  include Basic
-  module NameHashtbl = Hashtbl.Make(struct
-      type t = Basic.name
-      let equal = Basic.name_eq
-      let hash = Hashtbl.hash
-    end)
-end
-
-module Dep =
-struct
-  include Dep
-
-  module NameMap = Map.Make(struct
-      type t = Dep.NameSet.elt
-      let compare : t -> t -> int = Pervasives.compare
-    end)
-end
+module NameHashtbl = Hashtbl.Make(struct
+    type t = Kernel.Basic.name
+    let equal = Kernel.Basic.name_eq
+    let hash = Hashtbl.hash
+  end)
+module NameMap = Map.Make(struct
+    type t = Api.Dep.NameSet.elt
+    let compare : t -> t -> int = Pervasives.compare
+  end)

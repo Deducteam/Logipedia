@@ -1,4 +1,6 @@
-module B = Basic
+module B = Kernel.Basic
+module DkSignature = Kernel.Signature
+module Entry = Parsing.Entry
 
 module type DK =
 sig
@@ -27,18 +29,18 @@ end
 module Signature : SIGNATURE =
 struct
 
-  let sg = Signature.make ""
+  let sg = DkSignature.make ""
 
-  let cst_of : Ast.name -> Basic.name = fun name ->
+  let cst_of : Ast.name -> B.name = fun name ->
     B.mk_name (B.mk_mident (fst name)) (B.mk_ident (snd name))
 
   let item_of_name : Ast.name -> Ast.item = fun name ->
  (* Put that somewhere else *)
       let cst = cst_of name in
-      let ty = Signature.get_type sg B.dloc cst in
+      let ty = DkSignature.get_type sg B.dloc cst in
       let _ =
-        match Signature.get_rules sg B.dloc cst with
-        | [] -> Entry.Decl(B.dloc, B.id cst, Signature.Static,ty)
+        match DkSignature.get_rules sg B.dloc cst with
+        | [] -> Entry.Decl(B.dloc, B.id cst, DkSignature.Static,ty)
         | [r] ->
           assert (r.args = []);
           assert (B.name_eq r.cst  cst);

@@ -8,6 +8,9 @@
 let json_dir : string ref = ref ""
 (** Directory containing json files. *)
 
+let json_thy_dir : string = "_theory"
+(** Subdirectory containing the json files of the theory. *)
+
 module Ppterm =
 struct
   type var =
@@ -33,6 +36,15 @@ struct
   [@@deriving yojson]
 end
 
+type export =
+  { system : string
+  (** Name of the foreign proof system. *)
+  ; file : string
+  (** Path of file. *)
+  ; etype : string option
+  (** A textual representation of the element in the foreign system *) }
+[@@deriving yojson]
+
 (** An item is more or less a Dedukti entry, with additional information. *)
 type item =
   { name : string
@@ -47,17 +59,8 @@ type item =
   ; deps : string list
   (** Direct dependencies of the item (no transitive closure). *)
   ; theory : string list
-  ; exp : string list
+  ; exp : export list
   (** Available export systems. *) }
-[@@deriving yojson]
-
-type export =
-  { system : string
-  (** Name of the foreign proof system. *)
-  ; file : string
-  (** Path of file. *)
-  ; etype : string option
-  (** A textual representation of the element in the foreign system *) }
 [@@deriving yojson]
 
 type document = item list

@@ -1,5 +1,7 @@
 (** This module give an interface for Dedukti symbols use to represent the STTforall logic. *)
 
+open Kernel
+
 (** Name of the file implementing the STTforall logic. *)
 val sttfa_module           : Basic.mident
 
