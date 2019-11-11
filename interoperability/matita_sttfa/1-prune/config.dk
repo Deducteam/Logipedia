@@ -2,4 +2,5 @@
 (; #REQUIRE matita_arithmetics_nat. ;)
 
 (; #GDT matita_basics_logic.R2. ;)
-#GDT matita_arithmetics_fermat_little_theorem.congruent_exp_pred_SO.
+(; #GDT matita_arithmetics_fermat_little_theorem.congruent_exp_pred_SO. ;)
+#GDT matita_arithmetics_nat.plus_n_O.

@@ -9,11 +9,11 @@ DKPSULER = dkpsuler
 
 DEBUG = -l
 
-PACKAGE = arith_matita
-THEORY  = cts
+PACKAGE = ./
+THEORY  = ./
 
-ROOT    = ../..
-IMPORT  = import/dedukti
+ROOT    = ./
+IMPORT  = 1-prune/input/
 FROM    = $(realpath $(ROOT)/$(IMPORT))/$(THEORY)/$(PACKAGE)
 TO      = /tmp
 
@@ -25,10 +25,6 @@ export
 .PHONY: default
 default: prune universo dkpsuler
 
-$(FROM):
-	cd $(realpath $(ROOT)/$(IMPORT)) && tar xvjf $(THEORY).tar.bz2
-
-
 PRUNE_DIR  = 1-prune
 PRUNE_IN_FILES = $(LIB_FILES:%=$(PRUNE_DIR)/input/%.dk)
 PRUNE_OUT_FILES = $(wildcard $(PRUNE_DIR)/output/*.dk)
@@ -36,11 +32,8 @@ PRUNE_OUT_FILES = $(wildcard $(PRUNE_DIR)/output/*.dk)
 $(PRUNE_DIR)/input:
 	mkdir -p $(PRUNE_DIR)/input
 
-$(PRUNE_IN_FILES): $(PRUNE_DIR)/input/%.dk: $(PRUNE_DIR)/input $(FROM_FILES)
-	$(Q)cp $(FROM)/$*.dk $(PRUNE_DIR)/input
-
 .PHONY: prune
-prune: $(FROM) $(PRUNE_IN_FILES)
+prune: $(PRUNE_IN_FILES)
 	$(Q)$(MAKE) -C $(PRUNE_DIR)
 
 UNIVERSO_DIR = 2-universo
