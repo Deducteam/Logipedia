@@ -1,4 +1,4 @@
-version: 2.1
+version: 2.0
 jobs:
   build_logipedia:
     docker:
@@ -95,7 +95,7 @@ workflows:
   build:
     jobs:
       - build_logipedia
-      - coq_export
+#      - coq_export
       - json_export
       - build_website:
           requires:
