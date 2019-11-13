@@ -155,7 +155,7 @@ def cast' : s : Sort -> s' : Sort ->
 
 [s1,s2,A,B,a] cast' s1 _ A (cast' _ _ (univ' s2 _) _ B) a --> cast' s1 s2 A B a.
 
-
+(;
 prop : Sort.
 type : Sort.
 kind : Sort.
@@ -177,3 +177,24 @@ kind : Sort.
 []  Rule kind kind kind        --> true.
 
 [a] Cumul a a                              --> true.
+;)
+
+star    : Sort.
+box     : Sort.
+triangle: Sort.
+diamond : Sort.
+
+[] cic.Axiom cic.box cic.triangle      --> cic.true.
+[] cic.Axiom cic.star cic.box          --> cic.true.
+[] cic.Axiom cic.diamond cic.sinf      --> cic.true.
+[] cic.Axiom cic.triangle cic.sinf     --> cic.true.
+
+
+[] cic.Rule cic.star     cic.star     cic.star     --> cic.true.
+[] cic.Rule cic.box      cic.box      cic.box      --> cic.true.
+[] cic.Rule cic.box      cic.star     cic.star     --> cic.true.
+[] cic.Rule cic.triangle cic.star     cic.star     --> cic.true.
+[] cic.Rule cic.triangle cic.diamond  cic.diamond  --> cic.true.
+
+[] cic.Cumul cic.box  cic.diamond  --> cic.true.
+[a] cic.Cumul a a                  --> cic.true.

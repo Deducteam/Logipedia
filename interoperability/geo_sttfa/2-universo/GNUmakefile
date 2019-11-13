@@ -21,7 +21,7 @@ OUT_NF_FILES=$(LIB:%=$(OUTPUT)/%.dk)
 IN_DEP_FILES=$(LIB:%=$(INPUT)/%.dep)
 OUT_DEP_FILES=$(LIB:%=$(OUTPUTRAW)/%.dep)
 
-THEORY=cic.dk
+THEORY=Coq.dk
 CONFIG=config.dk
 
 UNIVERSO_OPTIONS=\
@@ -64,8 +64,8 @@ $(IN_DEP_FILES): $(INPUT)/%.dep: $(INPUT)/%.dk
 $(OUT_DEP_FILES): $(OUTPUTRAW)/%.dep: $(INPUT)/%.dep
 	$(Q)cat $< | sed 's:$(INPUT)/:$(OUTPUTRAW)/:g' > $@
 
-cic.dko:
-	dkcheck -e cic.dk
+Coq.dko:
+	dkcheck -e Coq.dk
 
 ifneq ($(MAKECMDGOALS), clean distclean)
 -include $(OUT_DEP_FILES)

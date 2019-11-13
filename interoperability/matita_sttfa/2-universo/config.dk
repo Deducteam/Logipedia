@@ -9,9 +9,29 @@ def elaboration : Type.
     [s, a] cic.Term _ (cic.cast _ _ (cic.univ s _ _) _ _ a) --> cic.Term s a. ;)
 
 def output : Type.
-    []  cic.enum cic.uzero                                     --> cic.prop.
-    []  cic.enum (cic.usucc cic.uzero)                         --> cic.type.
-    []  cic.enum (cic.usucc (cic.usucc cic.uzero))             --> cic.kind.
+    []  cic.enum cic.uzero                                     --> cic.star.
+    []  cic.enum (cic.usucc cic.uzero)                         --> cic.box.
+    []  cic.enum (cic.usucc (cic.usucc cic.uzero))             --> cic.triangle.
+    []  cic.enum (cic.usucc (cic.usucc (cic.usucc cic.uzero))) --> cic.diamond.
+
+
+    [A,B] cic.prod cic.box cic.box cic.diamond cic.I A (x => B x) -->
+    cic.cast cic.triangle cic.sinf
+    (cic.univ cic.box cic.triangle cic.I)
+    (cic.univ cic.diamond cic.sinf cic.I)
+    cic.I
+    (cic.prod cic.box cic.box cic.box cic.I A (x : cic.Term cic.box A => B x)).
+
+    [A,B] cic.Term cic.diamond (cic.cast cic.triangle cic.sinf
+    (cic.univ cic.box cic.triangle cic.I)
+    (cic.univ cic.diamond cic.sinf cic.I)
+    cic.I
+    (cic.prod cic.box cic.box cic.box cic.I A (x => B x))) -->
+    cic.Term cic.box (cic.prod cic.box cic.box cic.box cic.I A (x : cic.Term cic.box A => B x)).
+
+
+    [s,s',t] matita_arithmetics_nat.filter_nat s' (x => cic.cast _ _ (cic.univ s _ _) _ _ (t x)) -->
+    	       matita_arithmetics_nat.filter_nat s (x : cic.Term cic.box matita_arithmetics_nat.nat => t x).
 
 def constraints : Type.
     [] matita_arithmetics_nat.nat     --> cic.Cumul (cic.enum (cic.usucc cic.uzero)) cic.var.
@@ -20,32 +40,47 @@ def constraints : Type.
 
 def solver : Type.
     [] solver  --> z3.
-    [] logic   --> lra.
-    [] opt     --> uf.
-    [] minimum --> 3.
-    [] maximum --> 3.
+    [] logic   --> qfuf.
+    [] opt     --> normal.
+    [] minimum --> 4.
+    [] maximum --> 4.
     [] print   --> true.
 
 def lra_specification : Type.
-    [a,b]   axiom a b   --> eq (succ a) b.
-    [a,b,c] rule  a b c --> eq (imax a b) c.
-    [a,b]   cumul a b   --> eq a b.
+
+    [a,b]   axiom a b   -->
+    	    ite (eq a (succ (succ zero)))
+	      (eq b (minus (succ zero)))
+	      (eq b (succ a)).
+
+    [a,b,c] rule  a b c -->
+    	    ite (eq b zero)
+	       (eq c zero)
+	       (ite (eq b (succ zero))
+		  (eq c (max a (succ zero)))
+		  (eq c (max a (succ (succ zero))))
+	       ).
+
+
+(;    [a,b,c] rule  a b c --> true. ;)
+    [a,b]   cumul a b   --> ite (eq a (succ zero)) (eq (succ (succ (succ zero))) b) (eq a b).
 
 def qfuf_specification : Type.
-    []  cic.Axiom cic.prop cic.type                --> cic.true.
-    []  cic.Axiom cic.type cic.kind                --> cic.true.
+
+   [] cic.Axiom cic.box cic.triangle      --> cic.true.
+   [] cic.Axiom cic.star cic.box          --> cic.true.
+   [] cic.Axiom cic.diamond cic.sinf      --> cic.true.
+   [] cic.Axiom cic.triangle cic.sinf     --> cic.true.
 
 
-    []  cic.Rule cic.prop cic.prop cic.prop        --> cic.true.
-    []  cic.Rule cic.prop cic.type cic.type        --> cic.true.
+   [] cic.Rule cic.star     cic.star     cic.star     --> cic.true.
+   [] cic.Rule cic.box      cic.box      cic.box      --> cic.true.
+   [] cic.Rule cic.box      cic.star     cic.star     --> cic.true.
+   [] cic.Rule cic.triangle cic.star     cic.star     --> cic.true.
+   [] cic.Rule cic.triangle cic.diamond  cic.diamond  --> cic.true.
 
-    []  cic.Rule cic.type cic.prop cic.prop        --> cic.true.
-    []  cic.Rule cic.type cic.type cic.type        --> cic.true.
+   [] cic.Rule cic.box      cic.box      cic.diamond  --> cic.true.
 
-    []  cic.Rule cic.kind cic.prop cic.prop        --> cic.true.
-    []  cic.Rule cic.kind cic.type cic.type        --> cic.true.
-    []  cic.Rule cic.kind cic.kind cic.kind        --> cic.true.
-
-    (; [a] cic.Cumul cic.type cic.kind                --> cic.true. ;)
-
+   [] cic.Cumul cic.box  cic.diamond  --> cic.true.
+   [a] cic.Cumul a a                  --> cic.true.
 def end : Type.

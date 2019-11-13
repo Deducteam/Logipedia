@@ -8,6 +8,7 @@ _build/
 *.docdir
 
 # Dedukti files.
+*.dk
 *.dko
 *.stt
 interoperability/**/*.dk
