@@ -49,6 +49,8 @@ def exe_name(opt):
     help="Allow pretty-printer to fail")
 def create_static_website(input, database, output, verbose, pretty_printer,
         pp_extra, pp_allow_failure):
+    if pp_extra is not None:
+        pp_extra = shlex.split(pp_extra)
     pretty_printer = make_pp(exe_name(pretty_printer), pp_extra,
             pp_allow_failure)
     if input is None and database is None:
