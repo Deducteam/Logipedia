@@ -11,6 +11,7 @@ jobs:
             opam switch 4.07
             opam update
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
+            opam pin ocaml-migrate-parsetree 1.3.1            
             opam install dune yojson ppx_deriving_yojson
       - checkout
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat dedukti
@@ -26,6 +27,7 @@ jobs:
             opam switch 4.07
             opam update
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
+            opam pin ocaml-migrate-parsetree 1.3.1            
             opam install dune yojson ppx_deriving_yojson
             opam install coq=8.9.1 -qy
       - checkout
@@ -49,6 +51,7 @@ jobs:
             opam switch 4.07
             opam update
             opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
+            opam pin ocaml-migrate-parsetree 1.3.1            
             opam install dune yojson ppx_deriving_yojson
       - checkout
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export json
