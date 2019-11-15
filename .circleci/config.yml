@@ -86,7 +86,7 @@ jobs:
               popd
       - checkout
       - run: pip install --user ./logigen
-      - run: logigen -i /tmp/workspace/json
+      - run: logigen -i /tmp/workspace/json -pp-extra "--uriconv /tmp/LogiPPedia/scheme/uri2syms/sttfa-latex.scm"
  #     - run: cp -r /tmp/workspace/export gen_website
       - run: cp -r gen_website /tmp/
       - store_artifacts:
