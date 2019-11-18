@@ -63,6 +63,32 @@ jobs:
           paths: 
             - export/lean   
 
+  pvs_export:
+    <<: *ocaml_img
+    steps:
+      - run: sudo apk add m4
+      - <<: *opam_deps
+      - run:
+          command: |
+            echo Installing pvs prover
+            mkdir -p /tmp/pvs
+            pushd /tmp/pvs
+            wget http://pvs.csl.sri.com/download-open/pvs-6.0-ix86_64-Linux-sbclisp.tgz
+            tar zxf pvs-6.0-ix86_64-Linux-sbclisp.tgz
+            ./bin/relocate
+            sudo ln -s /tmp/pvs/pvs /usr/bin/pvs
+            popd
+      - checkout
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export pvs
+      - run: cp -r export /tmp
+      - store_artifacts:
+          path: /tmp/export/pvs
+      - persist_to_workspace:
+          root: /tmp
+          paths: 
+            - export/pvs   
+
+            
   json_export:
     <<: *ocaml_img
     steps:
@@ -117,10 +143,12 @@ workflows:
     jobs:
       - build_logipedia
       - lean_export
+      - pvs_export
 #      - coq_export
       - json_export:
           requires:
             - lean_export
+            - pvs_export
       - build_website:
           requires:
             - json_export
