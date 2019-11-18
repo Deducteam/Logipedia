@@ -120,7 +120,7 @@ workflows:
       - lean_export
 #      - coq_export
       - json_export:
-          requies:
+          requires:
             - lean_export
       - build_website:
           requires:
