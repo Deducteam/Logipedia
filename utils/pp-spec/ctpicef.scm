@@ -1,0 +1,10 @@
+;; Mappings from ctpicef to latex symbols
+(( "cic:ctpicef/S.cst"    . "\\mathfrak{S}" )
+ ( "cic:ctpicef/T.cst"    . "\\mathfrak{T}" )
+ ( "cic:ctpicef/Bool.cst" . "\\mathbb{B}"   )
+ ( "cic:ctpicef/eps.cst"  . "\\espilon"     )
+ ( "cic:ctpicef/true.cst" . "\\top"         )
+ ( "cic:ctpicef/prop.cst" . "\\mathbb{P}"   )
+ ( "cic:ctpicef/set.axm"  . "\\mathbb{S}"   )
+ ( "cic:ctpicef/s.cst"    . "\\mathfrak{s}" )
+ ( "cic:ctpicef/u.axm"    . "\\mathfrak{u}" ))
