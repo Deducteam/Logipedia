@@ -15,6 +15,8 @@ PKG ?= arith_fermat
 # Directory where files are exported
 EXPDIR ?= export
 
+DKFLAGS =
+
 # Directory containing theory files
 _thdir = theories/$(THEORY)
 # All theory files without extension
@@ -69,7 +71,7 @@ endif
 
 $(_thdir)/%.dko: $(_thdir)/%.dk $(_thdepdir/%.d)
 	@echo "[CHECK] $^"
-	@$(DKCHECK) -e -I $(_thdir)/ $^
+	@$(DKCHECK) $(DKFLAGS) -e -I $(_thdir)/ $^
 
 
 #### Producing the Dedukti library #################################
@@ -88,7 +90,7 @@ _srcbase := $(notdir $(basename $(_dks)))
 
 $(_ipath)/%.dko: $(_ipath)/%.dk $(_thdir)/$(_thfiles:=.dko)
 	@echo "[CHECK] $@"
-	@$(DKCHECK) -e -I $(_thdir) -I $(_ipath) $<
+	@$(DKCHECK) $(DKFLAGS) -e -I $(_thdir) -I $(_ipath) $<
 
 .PHONY: dedukti
 dedukti: $(_dkos)
