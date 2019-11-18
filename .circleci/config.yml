@@ -55,9 +55,9 @@ jobs:
             popd
       - checkout
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export lean
-      - run: cp -r export/lean /tmp
+      - run: cp -r export /tmp
       - store_artifacts:
-          path: /tmp/lean
+          path: /tmp/export/lean
       - persist_to_workspace:
           root: /tmp
           paths: 
@@ -119,7 +119,9 @@ workflows:
       - build_logipedia
       - lean_export
 #      - coq_export
-      - json_export
+      - json_export:
+          requies:
+            - lean_export
       - build_website:
           requires:
             - json_export
