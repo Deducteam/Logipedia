@@ -72,7 +72,6 @@ jobs:
       - <<: *opam_deps
       - checkout
       - run: cp -r /tmp/workspace/export/* export/
-      - run: ls
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export json
       - run: cp -r export/json /tmp
       - store_artifacts:
@@ -81,7 +80,7 @@ jobs:
           root: /tmp
           paths: 
             - json
-
+ 
   build_website:
     docker:
       - image: circleci/python:3.7-buster
@@ -106,7 +105,7 @@ jobs:
       - checkout
       - run: pip install --user ./logigen
       - run: logigen -i /tmp/workspace/json --pp-extra "--uriconv /tmp/LogiPPedia/scheme/uri2syms/sttfa-latex.scm"
- #     - run: cp -r /tmp/workspace/export gen_website
+      - run: cp -r /tmp/workspace/export gen_website/
       - run: cp -r gen_website /tmp/
       - store_artifacts:
           path: /tmp/gen_website
