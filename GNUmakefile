@@ -145,6 +145,7 @@ _leanpath = $(EXPDIR)/lean
 _leanfiles=$(addprefix $(_leanpath)/,$(addsuffix .lean,$(_srcbase)))
 
 $(_leanpath)/%.lean: $(_ipath)/%.dko .library_depend_lean $(LOGIPEDIA)
+	@mkdir -p $(_leanpath)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
@@ -197,10 +198,10 @@ _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
 $(_jsonthpath)/%.json: $(_thdir)/%.dko $(LOGIPEDIA)
 	@mkdir -p $(_jsonpath)/_theory
-	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	$(LOGIPEDIA) json --lean $(EXPDIR)/lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 $(_jsonpath)/%.json: $(_ipath)/%.dko $(LOGIPEDIA)
-	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	$(LOGIPEDIA) json --lean $(EXPDIR)/lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
 json: $(addprefix $(_jsonthpath)/, $(_thfiles:=.json)) $(_jsonfiles)

@@ -40,12 +40,38 @@ jobs:
           paths: 
             - coq
 
+  lean_export:
+    <<: *ocaml_img
+    steps:
+      - run: sudo apk add m4
+      - <<: *opam_deps
+      - run:
+          command: |
+            echo Installing lean prover
+            pushd /tmp
+            wget https://github.com/leanprover/lean/releases/download/v3.4.2/lean-3.4.2-linux.tar.gz
+            tar zxf lean-3.4.2-linux.tar.gz
+            sudo ln -s /tmp/lean-3.4.2-linux/bin/lean /usr/bin/lean
+            popd
+      - checkout
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export lean
+      - run: cp -r export /tmp
+      - store_artifacts:
+          path: /tmp/export/lean
+      - persist_to_workspace:
+          root: /tmp
+          paths: 
+            - export/lean   
+
   json_export:
     <<: *ocaml_img
     steps:
+      - attach_workspace:
+          at: /tmp/workspace
       - run: sudo apk add m4 git
       - <<: *opam_deps
       - checkout
+      - run: cp -r /tmp/workspace/export/* export/
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export json
       - run: cp -r export/json /tmp
       - store_artifacts:
@@ -54,7 +80,7 @@ jobs:
           root: /tmp
           paths: 
             - json
-
+ 
   build_website:
     docker:
       - image: circleci/python:3.7-buster
@@ -79,7 +105,7 @@ jobs:
       - checkout
       - run: pip install --user ./logigen
       - run: logigen -i /tmp/workspace/json --pp-extra "--uriconv /tmp/LogiPPedia/scheme/uri2syms/sttfa-latex.scm"
- #     - run: cp -r /tmp/workspace/export gen_website
+      - run: cp -r /tmp/workspace/export gen_website/
       - run: cp -r gen_website /tmp/
       - store_artifacts:
           path: /tmp/gen_website
@@ -90,8 +116,11 @@ workflows:
   build:
     jobs:
       - build_logipedia
+      - lean_export
 #      - coq_export
-      - json_export
+      - json_export:
+          requires:
+            - lean_export
       - build_website:
           requires:
             - json_export
