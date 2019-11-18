@@ -40,6 +40,29 @@ jobs:
           paths: 
             - coq
 
+  lean_export:
+    <<: *ocaml_img
+    steps:
+      - run: sudo apk add m4
+      - <<: *opam_deps
+      - run:
+          command: |
+            echo Installing lean prover
+            pushd /tmp
+            wget https://github.com/leanprover/lean/releases/download/v3.4.2/lean-3.4.2-linux.tar.gz
+            tar zxf lean-3.4.2-linux.tar.gz
+            sudo ln -s /tmp/lean-3.4.2-linux/bin/lean /usr/bin/lean
+            popd
+      - checkout
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export lean
+      - run: cp -r export/lean /tmp
+      - store_artifacts:
+          path: /tmp/lean
+      - persist_to_workspace:
+          root: /tmp
+          paths: 
+            - lean   
+
   json_export:
     <<: *ocaml_img
     steps:
@@ -90,6 +113,7 @@ workflows:
   build:
     jobs:
       - build_logipedia
+      - lean_export
 #      - coq_export
       - json_export
       - build_website:
