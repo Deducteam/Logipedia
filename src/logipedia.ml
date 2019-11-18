@@ -1,6 +1,7 @@
 module B = Kernel.Basic
 module P = Parsing.Parser
 module S = Systems
+module Ms = Middleware_switch
 
 module Denv = Api.Env.Default
 module Derr = Api.Errors.Make(Denv)
@@ -13,6 +14,9 @@ let output_file = ref None
 
 (** Input dedukti files. *)
 let infile : string ref = ref ""
+
+(** The middleware used. *)
+let middleware : string ref = ref ""
 
 (** Options list, redefined according to first argument. *)
 let options : (string * Arg.spec * string) list ref = ref []
@@ -28,15 +32,24 @@ let export_mode : mode option ref = ref None
 
 (** Options common to both modes. *)
 let common_opts =
-    [ ( "-I"
-      , Arg.String B.add_path
-      , " Add folder to Dedukti path" )
-    ; ( "-f"
-      , Arg.Set_string infile
-      , " Input Dedukti file" )
-    ; ( "-o"
-      , Arg.String (fun s -> output_file := Some(s))
-      , " Set output file" ) ]
+  let m_doc =
+    let available_mid =
+      "dummy" :: List.map fst Ms.mid_spec |> String.concat ", "
+    in
+    Format.sprintf " Middleware to use, one of %s" available_mid
+  in
+  [ ( "-I"
+    , Arg.String B.add_path
+    , " Add folder to Dedukti path" )
+  ; ( "-f"
+    , Arg.Set_string infile
+    , " Input Dedukti file" )
+  ; ( "-m"
+    , Arg.Set_string middleware
+    , m_doc )
+  ; ( "-o"
+    , Arg.String (fun s -> output_file := Some(s))
+    , " Set output file" ) ]
 
 (** Options for the json export. *)
 let json_opts =
@@ -104,12 +117,12 @@ let export_system syst file =
   end
 
 (* Json export is done without using the Sttfa AST. *)
-let export_json file =
+let export_json file (module M : Middleware.S) =
   let md = Denv.init file in
   let input = open_in file in
   let entries = P.Parse_channel.parse md input in
   close_in input;
-  let module JsExp = Json.Make(Middleware_sttfa.Sttfa) in
+  let module JsExp = Json.Make(M) in
   let document = JsExp.doc_of_entries md entries in
   let fmt = match !output_file with
     | None    -> Format.std_formatter
@@ -143,7 +156,7 @@ Available options for the selected mode:"
               end
           ; Json.basename := Filename.remove_extension !infile |>
                              Filename.basename
-          ; export_json !infile )
+          ; export_json !infile (Middleware_switch.mid_of_string !middleware) )
         | ModeSystem(s) -> export_system s !infile
       end
   with

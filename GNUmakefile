@@ -14,8 +14,10 @@ THEORY ?= sttfa
 PKG ?= arith_fermat
 # Directory where files are exported
 EXPDIR ?= export
-
+# Additional flags passed to Dedukti (--eta)
 DKFLAGS =
+# Which ocaml middleware module to use
+MIDDLEWARE = sttfa
 
 # Directory containing theory files
 _thdir = theories/$(THEORY)
@@ -28,7 +30,7 @@ _ipath = $(_dkimp)/$(THEORY)/$(PKG)
 # Directory to store dependencies
 _depdir = .depends
 # Most used logipedia options
-_logipediaopts = -I $(_ipath) -I $(_thdir)
+_logipediaopts = -I $(_ipath) -I $(_thdir) -m $(MIDDLEWARE)
 
 #### Logipedia binary ##############################################
 
