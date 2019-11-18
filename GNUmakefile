@@ -201,7 +201,7 @@ $(_jsonthpath)/%.json: $(_thdir)/%.dko $(LOGIPEDIA)
 	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 $(_jsonpath)/%.json: $(_ipath)/%.dko $(LOGIPEDIA)
-	$(LOGIPEDIA) json --lean systems/lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	$(LOGIPEDIA) json --lean $(EXPDIR)/lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
 json: $(addprefix $(_jsonthpath)/, $(_thfiles:=.json)) $(_jsonfiles)
