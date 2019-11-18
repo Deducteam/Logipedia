@@ -61,14 +61,18 @@ jobs:
       - persist_to_workspace:
           root: /tmp
           paths: 
-            - lean   
+            - export/lean   
 
   json_export:
     <<: *ocaml_img
     steps:
+      - attach_workspace:
+          at: /tmp/workspace
       - run: sudo apk add m4 git
       - <<: *opam_deps
       - checkout
+      - run: cp -r /tmp/workspace/export/* export/
+      - run: ls
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export json
       - run: cp -r export/json /tmp
       - store_artifacts:
