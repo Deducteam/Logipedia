@@ -145,6 +145,7 @@ _leanpath = $(EXPDIR)/lean
 _leanfiles=$(addprefix $(_leanpath)/,$(addsuffix .lean,$(_srcbase)))
 
 $(_leanpath)/%.lean: $(_ipath)/%.dko .library_depend_lean $(LOGIPEDIA)
+	@mkdir -p $(_leanpath)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
