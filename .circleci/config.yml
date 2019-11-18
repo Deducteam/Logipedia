@@ -1,35 +1,35 @@
 version: 2.1
-jobs:
-  build_logipedia:
+
+ocaml_img: &ocaml_img
     docker:
       - image: ocaml/opam2:alpine
+
+opam_deps: &opam_deps
+  run:
+    name: opam_deps
+    command: |
+      opam switch 4.07
+      opam update
+      opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
+      opam pin ocaml-migrate-parsetree 1.3.1            
+      opam install dune yojson ppx_deriving_yojson
+  
+
+jobs:
+  build_logipedia:
+    <<: *ocaml_img
     steps:
       - run: sudo apk add m4 git
-      - run:
-          name: opam_deps
-          command: |
-            opam switch 4.07
-            opam update
-            opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
-            opam pin ocaml-migrate-parsetree 1.3.1            
-            opam install dune yojson ppx_deriving_yojson
+      - <<: *opam_deps
       - checkout
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat dedukti
 
   coq_export:
-    docker:
-      - image: ocaml/opam2:alpine
+    <<: *ocaml_img
     steps:
       - run: sudo apk add m4 git
-      - run:
-          name: opam_deps
-          command: |
-            opam switch 4.07
-            opam update
-            opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
-            opam pin ocaml-migrate-parsetree 1.3.1            
-            opam install dune yojson ppx_deriving_yojson
-            opam install coq=8.9.1 -qy
+      - <<: *opam_deps
+      - run: opam install coq=8.9.1 -qy
       - checkout
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export coq
       - run: cp -r export/coq /tmp
@@ -41,18 +41,10 @@ jobs:
             - coq
 
   json_export:
-    docker:
-      - image: ocaml/opam2:alpine
+    <<: *ocaml_img
     steps:
       - run: sudo apk add m4 git
-      - run:
-          name: opam_deps
-          command: |
-            opam switch 4.07
-            opam update
-            opam pin add dedukti git+https://github.com/Deducteam/Dedukti.git -qy
-            opam pin ocaml-migrate-parsetree 1.3.1            
-            opam install dune yojson ppx_deriving_yojson
+      - <<: *opam_deps
       - checkout
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export json
       - run: cp -r export/json /tmp
