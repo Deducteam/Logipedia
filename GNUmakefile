@@ -198,7 +198,7 @@ _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
 $(_jsonthpath)/%.json: $(_thdir)/%.dko $(LOGIPEDIA)
 	@mkdir -p $(_jsonpath)/_theory
-	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	$(LOGIPEDIA) json --lean $(EXPDIR)/lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 $(_jsonpath)/%.json: $(_ipath)/%.dko $(LOGIPEDIA)
 	$(LOGIPEDIA) json --lean $(EXPDIR)/lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
