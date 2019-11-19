@@ -87,14 +87,18 @@ let anon arg =
 
 let export_file ast system =
   let (module M:Export.E) = Export.of_system system in
-  let fmt =
+  let (fmt, file) =
     match !output_file with
-    | None -> Format.std_formatter
-    | Some f ->
-      Format.formatter_of_out_channel (open_out f)
+    | None    -> Format.std_formatter, None
+    | Some(f) ->
+      let file = open_out f in
+      (Format.formatter_of_out_channel file, Some(file))
   in
-  (* FIXME: The file is not closed, is this a problem? *)
-  M.print_ast fmt ast
+  M.print_ast fmt ast;
+  match file with
+  | None    -> ()
+  | Some(f) -> close_out f
+
 
 (* Compute an STTforall ast from Dedukti entries *)
 let mk_ast md entries =
