@@ -1,6 +1,9 @@
 open Ast
 module Basic = Kernel.Basic
 module Signature = Kernel.Signature
+module F = Format
+
+let line oc fmt = Format.fprintf oc (fmt ^^ "\n")
 
 let sys = "pvs"
 
@@ -317,7 +320,7 @@ let print_proof_pvs : string -> Format.formatter -> proof -> unit =
   Format.fprintf oc "\n"
 
 let print_item oc pvs_md it =
-  let line fmt = Format.fprintf oc (fmt ^^ "\n") in
+  let line fmt = line oc fmt in
   match it with
   | TypeDecl (op, ar) ->
     assert (ar = 0);
@@ -356,15 +359,21 @@ let print_item oc pvs_md it =
     line "%%|- QED" ;
     line ""
 
-let print_dep2 oc x = Format.fprintf oc "%s_sttfa_th := %s_pvs_th\n" x x
-
-let print_instance oc s deps x =
-  Format.fprintf oc "%s_pvs_th : THEORY %s_pvs\n" x x;
-  Format.fprintf oc "IMPORTING %s_sttfa {{\n" s;
-    List.iter (print_dep2 oc) deps;
-    Format.fprintf oc "}}\n"
-
-let line oc fmt = Format.fprintf oc (fmt ^^ "\n")
+(** [print_alignment_item fmt m it] prints item [it] of module [m] for
+    alignment. *)
+let print_alignment_item: Format.formatter -> string -> item -> unit =
+  fun fmt pvs_md it ->
+  let prel () = F.fprintf fmt "%%%%" in
+  match it with
+  | TypeDecl(o,_) ->
+    prel ();
+    F.fprintf fmt "@[%a := ...@]" (print_name pvs_md) o
+  | Parameter(n,y) ->
+    prel ();
+    F.fprintf fmt "@[%a%a := ...@]"
+      (print_name pvs_md) n
+      (print_prenex_ty_pvs pvs_md) y
+  | _             -> ()
 
 let print_dep oc x =
   line oc "IMPORTING %s_sttfa AS %s_sttfa_th" x x
@@ -395,16 +404,23 @@ let remove_transitive_deps mdeps deps =
 
 (** [print_alignment fmt md deps] prints the alignment import in the theory with
     [md] the (Dedukti) module, [deps] the [QSet] of dependencies. *)
-let print_alignment : Format.formatter -> string -> QSet.t -> unit =
-  fun fmt md deps ->
+let print_alignment : Format.formatter -> string -> QSet.t -> item list ->
+  unit = fun fmt md deps items ->
   let open Format in
-  let pp_dep fmt d = fprintf fmt "@[%s_sttfa_th := %s_pvs@]" d d in
   let pp_deps fmt deps =
-    let pp_sep fmt () = fprintf fmt "@," in
+    let pp_dep fmt d = fprintf fmt "@[%s_sttfa_th := %s_pvs@]" d d in
+    let pp_sep fmt () = fprintf fmt ",@," in
     pp_print_list ~pp_sep pp_dep fmt (QSet.to_seq deps |> List.of_seq)
   in
-  fprintf fmt "IMPORTING %s_sttfa {{@[<v 2>@,%a@]@,}}@\n" md
-    pp_deps deps
+  let pp_its fmt its =
+    let pp_it fmt it = (* Type assignment *)
+      fprintf fmt "@[%a@]" (fun f -> print_alignment_item f md) it
+    in
+    let pp_sep fmt () = fprintf fmt ",@," in
+    pp_print_list ~pp_sep pp_it fmt its
+  in
+  fprintf fmt "IMPORTING %s_sttfa {{@[<v 2>@,%a@,%a@]@,}}@\n"
+    md pp_deps deps pp_its items
 
 let print_ast : Format.formatter -> ?mdeps:mdeps -> ast -> unit =
   fun oc ?mdeps ast ->
@@ -421,7 +437,7 @@ let print_ast : Format.formatter -> ?mdeps:mdeps -> ast -> unit =
   line oc "%s_pvs : THEORY" ast.md;
   line oc "BEGIN";
   QSet.iter (print_dep_al oc) deps;
-  print_alignment oc ast.md deps;
+  print_alignment oc ast.md deps ast.items;
   line oc "END %s_pvs@\n@." ast.md
 
 let to_string fmt = Format.asprintf "%a" fmt
