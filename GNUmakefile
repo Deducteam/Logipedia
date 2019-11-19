@@ -67,11 +67,12 @@ $(_thdepdir)/%.d: $(_thdir)/%.dk
 
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
-include $(addprefix $(_thdepdir)/, $(_thfiles).d)
+-include $(addprefix $(_thdepdir)/, $(_thfiles).d)
 endif
 endif
 
 $(_thdir)/%.dko: $(_thdir)/%.dk $(_thdepdir/%.d)
+	@mkdir -p $(@D)
 	@echo "[CHECK] $^"
 	@$(DKCHECK) $(DKFLAGS) -e -I $(_thdir)/ $^
 
