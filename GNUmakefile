@@ -178,6 +178,7 @@ _pvsfiles=$(addprefix $(_pvspath)/,$(addsuffix .pvs,$(_srcbase)))
 _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 # For some weird reason, Make consider .pvs are temporary
 $(_pvspath)/%.pvs: $(_ipath)/%.dko .library_depend_pvs $(LOGIPEDIA)
+	@mkdir -p $(_pvspath)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
@@ -198,10 +199,10 @@ _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
 $(_jsonthpath)/%.json: $(_thdir)/%.dko $(LOGIPEDIA)
 	@mkdir -p $(_jsonpath)/_theory
-	$(LOGIPEDIA) json --lean $(EXPDIR)/lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	$(LOGIPEDIA) json --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 $(_jsonpath)/%.json: $(_ipath)/%.dko $(LOGIPEDIA)
-	$(LOGIPEDIA) json --lean $(EXPDIR)/lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	$(LOGIPEDIA) json --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
 json: $(addprefix $(_jsonthpath)/, $(_thfiles:=.json)) $(_jsonfiles)
