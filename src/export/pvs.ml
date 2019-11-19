@@ -356,9 +356,6 @@ let print_item oc pvs_md it =
     line "%%|- QED" ;
     line ""
 
-let print_dep oc x = Format.fprintf oc
-  "IMPORTING %s_sttfa AS %s_sttfa_th\n" x x
-
 let print_dep2 oc x = Format.fprintf oc "%s_sttfa_th := %s_pvs_th\n" x x
 
 let print_instance oc s deps x =
@@ -368,6 +365,13 @@ let print_instance oc s deps x =
     Format.fprintf oc "}}\n"
 
 let line oc fmt = Format.fprintf oc (fmt ^^ "\n")
+
+let print_dep oc x =
+  line oc "IMPORTING %s_sttfa AS %s_sttfa_th" x x
+
+(** Printing dependencies for concept alignment theory. *)
+let print_dep_al oc x =
+  line oc "IMPORTING %s_pvs" x
 
 let remove_transitive_deps mdeps deps =
   let remove_dep dep deps =
@@ -389,18 +393,36 @@ let remove_transitive_deps mdeps deps =
   in
   QSet.fold remove_dep deps deps
 
+(** [print_alignment fmt md deps] prints the alignment import in the theory with
+    [md] the (Dedukti) module, [deps] the [QSet] of dependencies. *)
+let print_alignment : Format.formatter -> string -> QSet.t -> unit =
+  fun fmt md deps ->
+  let open Format in
+  let pp_dep fmt d = fprintf fmt "@[%s_sttfa_th := %s_pvs@]" d d in
+  let pp_deps fmt deps =
+    let pp_sep fmt () = fprintf fmt "@," in
+    pp_print_list ~pp_sep pp_dep fmt (QSet.to_seq deps |> List.of_seq)
+  in
+  fprintf fmt "IMPORTING %s_sttfa {{@[<v 2>@,%a@]@,}}@\n" md
+    pp_deps deps
+
 let print_ast : Format.formatter -> ?mdeps:mdeps -> ast -> unit =
- fun oc ?mdeps ast ->
-   current_module := ast.md;
-   let pf = "_sttfa" in
-   let postfix s = s^pf in
-   line oc "%s : THEORY" (postfix ast.md);
-   line oc "BEGIN";
-   let deps = remove_transitive_deps mdeps ast.dep in
-   QSet.iter (print_dep oc) deps;
-   line oc "";
-   List.iter (print_item oc ast.md) ast.items;
-   line oc "END %s_sttfa" ast.md
+  fun oc ?mdeps ast ->
+  current_module := ast.md;
+  let deps = remove_transitive_deps mdeps ast.dep in
+  (* Actual theory *)
+  line oc "%s_sttfa : THEORY" ast.md;
+  line oc "BEGIN";
+  QSet.iter (print_dep oc) deps;
+  line oc "";
+  List.iter (print_item oc ast.md) ast.items;
+  line oc "END %s_sttfa" ast.md;
+  (* Concept alignment theory *)
+  line oc "%s_pvs : THEORY" ast.md;
+  line oc "BEGIN";
+  QSet.iter (print_dep_al oc) deps;
+  print_alignment oc ast.md deps;
+  line oc "END %s_pvs@\n@." ast.md
 
 let to_string fmt = Format.asprintf "%a" fmt
 
