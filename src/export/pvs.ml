@@ -63,7 +63,9 @@ let rec print_ty_pvs : string -> F.formatter -> ty -> unit =
   | Ty _ty -> print__ty_pvs pvs_md oc _ty
 
 let rec prefix_of_ty : ty -> string list = fun ty ->
-  match ty with ForallK (x, ty') -> x :: prefix_of_ty ty' | Ty _ty -> []
+  match ty with
+  | ForallK(x,ty') -> x :: prefix_of_ty ty'
+  | Ty(_)          -> []
 
 let print_type_list_pvs : F.formatter -> string -> _ty list -> unit =
  fun oc pvs_md l ->
