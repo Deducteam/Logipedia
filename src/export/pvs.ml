@@ -62,8 +62,7 @@ let rec print_ty_pvs : string -> F.formatter -> ty -> unit =
   | ForallK (_, ty') -> print_ty_pvs pvs_md oc ty'
   | Ty _ty -> print__ty_pvs pvs_md oc _ty
 
-let rec prefix_of_ty : ty -> string list =
- fun ty ->
+let rec prefix_of_ty : ty -> string list = fun ty ->
   match ty with ForallK (x, ty') -> x :: prefix_of_ty ty' | Ty _ty -> []
 
 let print_type_list_pvs : F.formatter -> string -> _ty list -> unit =
@@ -85,8 +84,7 @@ let print_string_type_list_pvs : F.formatter -> string list -> unit =
  let pp_str_type fmt s = F.fprintf fmt "%s:TYPE+" s in
  F.pp_print_list ~pp_sep pp_str_type oc l
 
-let print_prenex_ty_pvs : string -> F.formatter -> ty -> unit =
- fun _ oc ty ->
+let print_prenex_ty_pvs : string -> F.formatter -> ty -> unit = fun _ oc ty ->
   let p = prefix_of_ty ty in
   match p with
   | [] -> ()
@@ -95,13 +93,12 @@ let print_prenex_ty_pvs : string -> F.formatter -> ty -> unit =
       print_string_type_list_pvs oc p ;
       F.fprintf oc "]"
 
-let print__te_pvs : string -> F.formatter -> _te -> unit =
-  fun pvs_md oc t ->
-    let rec print stack pvs_md oc t =
+let print__te_pvs : string -> F.formatter -> _te -> unit = fun pvs_md oc t ->
+  let rec print stack pvs_md oc t =
     match t with
-      | TeVar x ->
-        F.fprintf oc "%s" (sanitize_name_pvs x);
-        print_stack oc pvs_md stack
+    | TeVar x ->
+      F.fprintf oc "%s" (sanitize_name_pvs x);
+      print_stack oc pvs_md stack
     | Abs (x, a, t) ->
       F.fprintf oc "(LAMBDA(%s:%a):%a)"
         (sanitize_name_pvs x)
@@ -120,7 +117,7 @@ let print__te_pvs : string -> F.formatter -> _te -> unit =
                        "(%a => %a)"
                        (print [] pvs_md) t
                        (print [] pvs_md) u;
-                       print_stack oc pvs_md stack
+      print_stack oc pvs_md stack
     | AbsTy (_, t) -> F.fprintf oc "%a"
                         (print [] pvs_md) t;
       print_stack oc pvs_md stack
@@ -135,25 +132,20 @@ let print__te_pvs : string -> F.formatter -> _te -> unit =
 
   and print_stack oc pvs_md stack = match stack with
     | [] -> ()
-    | a::l' -> F.fprintf oc "(%a)"
-               (print [] pvs_md) a;
-               print_stack oc pvs_md l'
+    | a::l' ->
+      F.fprintf oc "(%a)" (print [] pvs_md) a;
+      print_stack oc pvs_md l'
   in
   print [] pvs_md oc t
 
-let rec prefix_of_te : te -> string list =
- fun te ->
+let rec prefix_of_te : te -> string list = fun te ->
   match te with ForallP (x, te') -> x :: prefix_of_te te' | Te _ -> []
 
-let print_prenex_te_pvs : string -> F.formatter -> te -> unit =
- fun _  oc te ->
+let print_prenex_te_pvs : string -> F.formatter -> te -> unit = fun _ oc te ->
   let p = prefix_of_te te in
   match p with
   | [] -> ()
-  | _ ->
-      F.fprintf oc "[" ;
-      print_string_type_list_pvs oc p ;
-      F.fprintf oc "]"
+  | _ -> F.fprintf oc "[%a]" print_string_type_list_pvs p
 
 let rec print_te_pvs : string -> F.formatter -> te -> unit =
  fun pvs_md oc te ->
@@ -162,17 +154,17 @@ let rec print_te_pvs : string -> F.formatter -> te -> unit =
   | Te te' -> print__te_pvs pvs_md oc te'
 
 let conclusion_pvs : proof -> te =
- fun prf ->
+  fun prf ->
   let j =
     match prf with
-    | Assume(j,_) -> j
-    | Lemma (_, j) -> j
-    | Conv (j, _, _) -> j
-    | ImplE (j, _, _) -> j
-    | ImplI (j, _, _) -> j
-    | ForallE (j, _, _te) -> j
-    | ForallI (j, _, _) -> j
-    | ForallPE (j, _, _ty) -> j
+    | Assume(j,_)
+    | Lemma (_, j)
+    | Conv (j, _, _)
+    | ImplE (j, _, _)
+    | ImplI (j, _, _)
+    | ForallE (j, _, _)
+    | ForallI (j, _, _)
+    | ForallPE (j, _, _)
     | ForallPI (j, _, _) -> j
   in
   j.thm
@@ -181,7 +173,7 @@ exception Error
 
 let decompose_implication = fun p -> match p with
   | (Te (Impl(a,b))) -> (a,b)
-  |_ -> raise Error
+  | _ -> raise Error
 
 let rec listof = fun l -> match l with
   | [] -> []
@@ -199,8 +191,8 @@ let print_proof_pvs : string -> F.formatter -> proof -> unit =
   fun pvs_md oc prf ->
     let rec print acc pvs_md oc prf =
     match prf with
-      | Assume(_,_)         -> F.fprintf oc "%%|- (propax)"
-      | Lemma(n,_)    ->
+      | Assume(_,_) -> F.fprintf oc "%%|- (propax)"
+      | Lemma(n,_)  ->
          F.fprintf oc "%%|- (sttfa-lemma \"%a%a\")"
           (print_qualified_name pvs_md) n
           (print_type_list_b_pvs pvs_md) acc
