@@ -338,7 +338,6 @@ let print_alignment : F.formatter -> string -> QSet.t -> item list -> unit =
   if QSet.is_empty deps then out "@\n" else
   out " {{@[<v 2>  ";
   out "%a@," pp_deps deps;
-  out "@[%% Type and definition assignments@]@,";
   out "%a" pp_its (List.filter uninterpreted items);
   out "@]@,}}@\n"
 
