@@ -88,10 +88,7 @@ let print_prenex_ty_pvs : string -> F.formatter -> ty -> unit = fun _ oc ty ->
   let p = prefix_of_ty ty in
   match p with
   | [] -> ()
-  | _ ->
-      F.fprintf oc "[" ;
-      print_string_type_list_pvs oc p ;
-      F.fprintf oc "]"
+  | _  -> F.fprintf oc "[%a]" print_string_type_list_pvs p
 
 let print__te_pvs : string -> F.formatter -> _te -> unit = fun pvs_md oc t ->
   let rec print stack pvs_md oc t =
