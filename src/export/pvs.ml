@@ -363,7 +363,7 @@ let print_item oc pvs_md it =
     alignment. *)
 let print_alignment_item: Format.formatter -> string -> item -> unit =
   fun fmt pvs_md it ->
-  let prel () = F.fprintf fmt "%%%%" in
+  let prel () = F.fprintf fmt "%%%% " in
   match it with
   | TypeDecl(o,_) ->
     prel ();
@@ -406,21 +406,27 @@ let remove_transitive_deps mdeps deps =
     [md] the (Dedukti) module, [deps] the [QSet] of dependencies. *)
 let print_alignment : Format.formatter -> string -> QSet.t -> item list ->
   unit = fun fmt md deps items ->
-  let open Format in
+  let uninterpreted = function
+    | Parameter(_) | TypeDecl(_) -> true
+    | _                          -> false
+  in
   let pp_deps fmt deps =
-    let pp_dep fmt d = fprintf fmt "@[%s_sttfa_th := %s_pvs@]" d d in
-    let pp_sep fmt () = fprintf fmt ",@," in
-    pp_print_list ~pp_sep pp_dep fmt (QSet.to_seq deps |> List.of_seq)
+    let pp_dep fmt d = F.fprintf fmt "@[%s_sttfa_th := %s_pvs@]" d d in
+    let pp_sep fmt () = F.fprintf fmt ",@," in
+    F.pp_print_list ~pp_sep pp_dep fmt (QSet.to_seq deps |> List.of_seq)
   in
   let pp_its fmt its =
     let pp_it fmt it = (* Type assignment *)
-      fprintf fmt "@[%a@]" (fun f -> print_alignment_item f md) it
+      F.fprintf fmt "@[%a@]" (fun f -> print_alignment_item f md) it
     in
-    let pp_sep fmt () = fprintf fmt ",@," in
-    pp_print_list ~pp_sep pp_it fmt its
+    let pp_sep fmt () = F.fprintf fmt ",@," in
+    F.pp_print_list ~pp_sep pp_it fmt its
   in
-  fprintf fmt "IMPORTING %s_sttfa {{@[<v 2>@,%a@,%a@]@,}}@\n"
-    md pp_deps deps pp_its items
+  F.fprintf fmt "IMPORTING %s_sttfa {{@[<v 2>  " md;
+  F.fprintf fmt "%a@," pp_deps deps;
+  F.fprintf fmt "@[%% Type and definition assignments@]@,";
+  F.fprintf fmt "%a" pp_its (List.filter uninterpreted items);
+  F.fprintf fmt "@]@,}}@\n"
 
 let print_ast : Format.formatter -> ?mdeps:mdeps -> ast -> unit =
   fun oc ?mdeps ast ->
