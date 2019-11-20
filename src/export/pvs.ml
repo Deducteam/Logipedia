@@ -1,4 +1,4 @@
-open Ast
+module A = Ast
 module Basic = Kernel.Basic
 module Signature = Kernel.Signature
 module F = Format
@@ -23,7 +23,7 @@ let sanitize_name_pvs : string -> string = fun n ->
     "sttfa_" ^ n
   else n
 
-let print_name : string -> F.formatter -> name -> unit =
+let print_name : string -> F.formatter -> A.name -> unit =
  fun _ oc (_, n) ->
  let name = sanitize_name_pvs n in
  F.fprintf oc "%s" name
@@ -34,17 +34,17 @@ let rec print_arity oc arity =
   else
     F.fprintf oc "Type -> %a" print_arity (arity-1)
 
-let print_qualified_name : string -> F.formatter -> name -> unit =
+let print_qualified_name : string -> F.formatter -> A.name -> unit =
   fun pvs_md oc (m, n) ->
    let name = sanitize_name_pvs n in
    if m = pvs_md
    then F.fprintf oc "%s_sttfa.%s" m name
    else F.fprintf oc "%s_sttfa_th.%s" m name
 
-let print__ty_pvs : string -> F.formatter -> _ty -> unit =
+let print__ty_pvs : string -> F.formatter -> A._ty -> unit =
   let rec print is_atom modul oc _ty =
     match _ty with
-    | TyVar x -> F.fprintf oc "%s" x
+    | A.TyVar x -> F.fprintf oc "%s" x
     | Arrow (_, _) when is_atom ->
       F.fprintf oc "%a" (print false modul) _ty
     | Arrow (a, b) ->
@@ -56,23 +56,23 @@ let print__ty_pvs : string -> F.formatter -> _ty -> unit =
   in
   fun modul oc ty -> print false modul oc ty
 
-let rec print_ty_pvs : string -> F.formatter -> ty -> unit =
+let rec print_ty_pvs : string -> F.formatter -> A.ty -> unit =
  fun pvs_md oc ty ->
   match ty with
   | ForallK (_, ty') -> print_ty_pvs pvs_md oc ty'
   | Ty _ty -> print__ty_pvs pvs_md oc _ty
 
-let rec prefix_of_ty : ty -> string list = fun ty ->
+let rec prefix_of_ty : A.ty -> string list = fun ty ->
   match ty with
   | ForallK(x,ty') -> x :: prefix_of_ty ty'
   | Ty(_)          -> []
 
-let print_type_list_pvs : F.formatter -> string -> _ty list -> unit =
+let print_type_list_pvs : F.formatter -> string -> A._ty list -> unit =
  fun oc pvs_md l ->
  let pp_sep fmt () = F.pp_print_string fmt "," in
  F.pp_print_list ~pp_sep (print__ty_pvs pvs_md) oc l
 
-let print_type_list_b_pvs : string -> F.formatter -> _ty list -> unit =
+let print_type_list_b_pvs : string -> F.formatter -> A._ty list -> unit =
  fun pvs_md oc ty ->
   match ty with
   | [] -> ()
@@ -86,16 +86,17 @@ let print_string_type_list_pvs : F.formatter -> string list -> unit =
  let pp_str_type fmt s = F.fprintf fmt "%s:TYPE+" s in
  F.pp_print_list ~pp_sep pp_str_type oc l
 
-let print_prenex_ty_pvs : string -> F.formatter -> ty -> unit = fun _ oc ty ->
+let print_prenex_ty_pvs : string -> F.formatter -> A.ty -> unit =
+  fun _ oc ty ->
   let p = prefix_of_ty ty in
   match p with
   | [] -> ()
   | _  -> F.fprintf oc "[%a]" print_string_type_list_pvs p
 
-let print__te_pvs : string -> F.formatter -> _te -> unit = fun pvs_md oc t ->
+let print__te_pvs : string -> F.formatter -> A._te -> unit = fun pvs_md oc t ->
   let rec print stack pvs_md oc t =
     match t with
-    | TeVar x ->
+    | A.TeVar x ->
       F.fprintf oc "%s" (sanitize_name_pvs x);
       print_stack oc pvs_md stack
     | Abs (x, a, t) ->
@@ -137,22 +138,23 @@ let print__te_pvs : string -> F.formatter -> _te -> unit = fun pvs_md oc t ->
   in
   print [] pvs_md oc t
 
-let rec prefix_of_te : te -> string list = fun te ->
+let rec prefix_of_te : A.te -> string list = fun te ->
   match te with ForallP (x, te') -> x :: prefix_of_te te' | Te _ -> []
 
-let print_prenex_te_pvs : string -> F.formatter -> te -> unit = fun _ oc te ->
+let print_prenex_te_pvs : string -> F.formatter -> A.te -> unit =
+  fun _ oc te ->
   let p = prefix_of_te te in
   match p with
   | [] -> ()
   | _ -> F.fprintf oc "[%a]" print_string_type_list_pvs p
 
-let rec print_te_pvs : string -> F.formatter -> te -> unit =
+let rec print_te_pvs : string -> F.formatter -> A.te -> unit =
  fun pvs_md oc te ->
   match te with
   | ForallP (_, te') -> print_te_pvs pvs_md oc te'
   | Te te' -> print__te_pvs pvs_md oc te'
 
-let conclusion_pvs : proof -> te =
+let conclusion_pvs : A.proof -> A.te =
   fun prf ->
   let j =
     match prf with
@@ -171,12 +173,12 @@ let conclusion_pvs : proof -> te =
 exception Error
 
 let decompose_implication = fun p -> match p with
-  | (Te (Impl(a,b))) -> (a,b)
+  | (A.Te (Impl(a,b))) -> (a,b)
   | _ -> raise Error
 
 let rec listof = fun l -> match l with
   | [] -> []
-  | (Beta _,_)::l' -> listof l'
+  | (A.Beta _,_)::l' -> listof l'
   | (Delta(x,_),_)::l' -> x::(listof l')
 
 let print_name_list = fun pvs_md oc l ->
@@ -186,11 +188,11 @@ let print_name_list = fun pvs_md oc l ->
   in
   F.pp_print_list ~pp_sep pp_quote oc l
 
-let print_proof_pvs : string -> F.formatter -> proof -> unit =
+let print_proof_pvs : string -> F.formatter -> A.proof -> unit =
   fun pvs_md oc prf ->
     let rec print acc pvs_md oc prf =
     match prf with
-      | Assume(_,_) -> F.fprintf oc "%%|- (propax)"
+      | A.Assume(_,_) -> F.fprintf oc "%%|- (propax)"
       | Lemma(n,_)  ->
          F.fprintf oc "%%|- (sttfa-lemma \"%a%a\")"
           (print_qualified_name pvs_md) n
@@ -235,7 +237,7 @@ let print_proof_pvs : string -> F.formatter -> proof -> unit =
 let print_item oc pvs_md it =
   let line fmt = line oc fmt in
   match it with
-  | TypeDecl (op, ar) ->
+  | A.TypeDecl (op, ar) ->
     assert (ar = 0);
     F.fprintf oc "%a : TYPE+" (print_name pvs_md) op;
     line "";
@@ -274,7 +276,7 @@ let print_item oc pvs_md it =
 
 (** [print_alignment_item fmt m it] prints item [it] of module [m] for
     alignment. *)
-let print_alignment_item: F.formatter -> string -> item -> unit =
+let print_alignment_item: F.formatter -> string -> A.item -> unit =
   fun fmt pvs_md it ->
   let prel () = F.fprintf fmt "%%%% " in
   match it with
@@ -300,7 +302,7 @@ let remove_transitive_deps mdeps deps =
     let md = Basic.mk_mident dep in
     let deps_from_signature md =
       let deps = Signature.get_md_deps Basic.dloc md in
-      (QSet.of_list (List.map Basic.string_of_mident deps))
+      (A.QSet.of_list (List.map Basic.string_of_mident deps))
     in
     let md_deps =
       match mdeps with
@@ -311,22 +313,22 @@ let remove_transitive_deps mdeps deps =
         else
           deps_from_signature md
     in
-    QSet.diff deps md_deps
+    A.QSet.diff deps md_deps
   in
-  QSet.fold remove_dep deps deps
+  A.QSet.fold remove_dep deps deps
 
 (** [print_alignment fmt md deps] prints the alignment import in the theory with
     [md] the (Dedukti) module, [deps] the [QSet] of dependencies. *)
-let print_alignment : F.formatter -> string -> QSet.t -> item list -> unit =
+let print_alignment : F.formatter -> string -> A.QSet.t -> A.item list -> unit =
   fun fmt md deps items ->
   let uninterpreted = function
-    | Parameter(_) | TypeDecl(_) -> true
-    | _                          -> false
+    | A.Parameter(_) | TypeDecl(_) -> true
+    | _                            -> false
   in
   let pp_deps fmt deps =
     let pp_dep fmt d = F.fprintf fmt "@[%s_sttfa_th := %s_pvs@]" d d in
     let pp_sep fmt () = F.fprintf fmt ",@," in
-    F.pp_print_list ~pp_sep pp_dep fmt (QSet.to_seq deps |> List.of_seq)
+    F.pp_print_list ~pp_sep pp_dep fmt (A.QSet.to_seq deps |> List.of_seq)
   in
   let pp_its fmt its =
     let pp_it fmt it = (* Type assignment *)
@@ -337,34 +339,34 @@ let print_alignment : F.formatter -> string -> QSet.t -> item list -> unit =
   in
   let out spec = F.fprintf fmt spec in
   out "IMPORTING %s_sttfa" md;
-  if QSet.is_empty deps then out "@\n" else
+  if A.QSet.is_empty deps then out "@\n" else
   out " {{@[<v 2>  ";
   out "%a@," pp_deps deps;
   out "%a" pp_its (List.filter uninterpreted items);
   out "@]@,}}@\n"
 
-let print_ast : F.formatter -> ?mdeps:mdeps -> ast -> unit =
+let print_ast : F.formatter -> ?mdeps:A.mdeps -> A.ast -> unit =
   fun oc ?mdeps ast ->
   current_module := ast.md;
   let deps = remove_transitive_deps mdeps ast.dep in
   (* Actual theory *)
   line oc "%s_sttfa : THEORY" ast.md;
   line oc "BEGIN";
-  QSet.iter (print_dep oc) deps;
+  A.QSet.iter (print_dep oc) deps;
   line oc "";
   List.iter (print_item oc ast.md) ast.items;
   line oc "END %s_sttfa" ast.md;
   (* Concept alignment theory *)
   line oc "%s_pvs : THEORY" ast.md;
   line oc "BEGIN";
-  QSet.iter (print_dep_al oc) deps;
+  A.QSet.iter (print_dep_al oc) deps;
   print_alignment oc ast.md deps ast.items;
   line oc "END %s_pvs@\n@." ast.md
 
 let to_string fmt = F.asprintf "%a" fmt
 
 let string_of_item = function
-  | Parameter((md,id),ty) ->
+  | A.Parameter((md,id),ty) ->
     F.asprintf "%a %a : %a"
       (print_name md) (md,id)
       (print_prenex_ty_pvs md) ty
