@@ -1,9 +1,6 @@
 (** Functions to write files in a foreign system.  Available systems
     are the ones described by the type {!type:Systems.system}. *)
 
-open Kernel
-open Parsing
-
 (** E is the signature for an exporting system. *)
 module type E =
 sig
@@ -23,10 +20,6 @@ sig
 end
 
 val of_system : Systems.system -> (module E)
-
-(* FIXME: STTfa? And the others? *)
-(** [mk_ast md es] creates the STTfa ast for module [md]. *)
-val mk_ast : Basic.mident -> Entry.entry list -> Ast.ast
 
 (** [export_system Exp f] exports file [f] using module [Exp]. *)
 val export_system : (module E) -> string -> Format.formatter -> unit
