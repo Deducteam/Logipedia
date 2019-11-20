@@ -245,15 +245,12 @@ let rec listof = fun l -> match l with
   | (Beta _,_)::l' -> listof l'
   | (Delta(x,_),_)::l' -> x::(listof l')
 
-let rec print_name_list = fun pvs_md oc l -> match l with
-  | [] -> ()
-  | x::[] -> F.fprintf oc "\"";
-             print_qualified_name pvs_md oc x;
-             F.fprintf oc "\""
-  | x::l' -> (F.fprintf oc "\"";
-              print_qualified_name pvs_md oc x;
-              F.fprintf oc "\" ";
-              print_name_list pvs_md oc l')
+let print_name_list = fun pvs_md oc l ->
+  let pp_sep = F.pp_print_space in
+  let pp_quote fmt n =
+    F.fprintf fmt "\"%a\"" (print_qualified_name pvs_md) n
+  in
+  F.pp_print_list ~pp_sep pp_quote oc l
 
 let print_proof_pvs : string -> F.formatter -> proof -> unit =
   fun pvs_md oc prf ->
