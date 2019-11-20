@@ -76,29 +76,24 @@ let rec prefix_of_ty : ty -> string list =
  fun ty ->
   match ty with ForallK (x, ty') -> x :: prefix_of_ty ty' | Ty _ty -> []
 
-let rec print_type_list_pvs : F.formatter -> string -> _ty list -> unit =
+let print_type_list_pvs : F.formatter -> string -> _ty list -> unit =
  fun oc pvs_md l ->
-  match l with
-  | [] -> ()
-  | [a] -> print__ty_pvs pvs_md oc a
-  | a :: l ->
-      print__ty_pvs pvs_md oc a ; F.fprintf oc "," ; print_type_list_pvs oc pvs_md l
+ let pp_sep fmt () = F.pp_print_string fmt "," in
+ F.pp_print_list ~pp_sep (print__ty_pvs pvs_md) oc l
 
 let print_type_list_b_pvs : string -> F.formatter -> _ty list -> unit =
  fun pvs_md oc ty ->
   match ty with
   | [] -> ()
   | _ ->
-      F.fprintf oc "[" ; print_type_list_pvs oc pvs_md ty ; F.fprintf oc "]"
+    let pp_tlp fmt = print_type_list_pvs fmt pvs_md in
+    F.fprintf oc "[%a]" pp_tlp ty
 
-let rec print_string_type_list_pvs : F.formatter -> string list -> unit =
+let print_string_type_list_pvs : F.formatter -> string list -> unit =
  fun oc l ->
-  match l with
-  | [] -> ()
-  | [a] -> F.fprintf oc "%s:TYPE+" a
-  | a :: l ->
-      F.fprintf oc "%s:TYPE+," a ;
-      print_string_type_list_pvs oc l
+ let pp_sep fmt () = F.pp_print_string fmt "," in
+ let pp_str_type fmt s = F.fprintf fmt "%s:TYPE+" s in
+ F.pp_print_list ~pp_sep pp_str_type oc l
 
 let print_prenex_ty_pvs : string -> F.formatter -> ty -> unit =
  fun _ oc ty ->
