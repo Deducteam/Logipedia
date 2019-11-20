@@ -49,6 +49,9 @@ let of_system : system -> (module E) = fun sys ->
   | `Lean       -> (module LEAN)
   | `Pvs        -> failwith "Dedicated binary"
 
+(* FIXME: this function is sttfa specific *)
+(** [mk_ast md es] creates the STTfa ast of entries [es] from dedukti module
+    [md] *)
 let mk_ast : B.mident -> E.entry list -> A.ast = fun md entries ->
   let items = List.map (Compile.compile_entry md) entries in
   let fold_entry_dep dep e = Ast.QSet.union dep
@@ -56,17 +59,11 @@ let mk_ast : B.mident -> E.entry list -> A.ast = fun md entries ->
   let dep = List.fold_left fold_entry_dep Ast.QSet.empty entries in
   { Ast.md = B.string_of_mident md; Ast.dep; items }
 
-let export_file : (module E) -> A.ast -> Format.formatter -> unit =
-  fun (module M:E) ast outfmt ->
-  M.print_ast outfmt ast
-
 let export_system : (module E) -> string -> Format.formatter -> unit =
   fun (module M:E) infile outfmt ->
   let md = Denv.init infile in
   let input = open_in infile in
   let entries = P.Parse_channel.parse md input in
   close_in input;
-  begin
-    let sttfa_ast = mk_ast md entries in
-    export_file (module M:E) sttfa_ast outfmt
-  end
+  let sttfa_ast = mk_ast md entries in
+  M.print_ast outfmt sttfa_ast
