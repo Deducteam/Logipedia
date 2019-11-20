@@ -2,6 +2,7 @@ module A = Ast
 module Basic = Kernel.Basic
 module Signature = Kernel.Signature
 module F = Format
+module Denv = Api.Env.Default
 
 let extension = "pvs"
 
@@ -395,3 +396,18 @@ let string_of_item = function
     assert(arity = 0);
     F.asprintf "%a : TYPE+" (print_name md) (md,id)
   | TypeDef _ -> failwith "[PVS] Type definitions not handled right now"
+
+(** [gen_top mds out] generate the top theory file (using channel [out]) from
+    modules [mds]. *)
+let gen_top : string list -> F.formatter -> unit = fun fnames fmt ->
+  let pp_sep fmt () = F.fprintf fmt ",@," in
+  let out spec = F.fprintf fmt spec in
+  let pp_md fmt s =
+    let name = Filename.remove_extension s |> Filename.basename in
+    F.fprintf fmt "%s_sttfa, %s_pvs" name name
+  in
+  out "top: THEORY@\n";
+  out "BEGIN@\n";
+  out "IMPORTING@\n";
+  out "@[<v 2>  %a@]@\n" (F.pp_print_list ~pp_sep pp_md) fnames;
+  out "END top@."
