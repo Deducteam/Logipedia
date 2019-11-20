@@ -318,8 +318,8 @@ let remove_transitive_deps mdeps deps =
 
 (** [print_alignment fmt md deps] prints the alignment import in the theory with
     [md] the (Dedukti) module, [deps] the [QSet] of dependencies. *)
-let print_alignment : F.formatter -> string -> QSet.t -> item list ->
-  unit = fun fmt md deps items ->
+let print_alignment : F.formatter -> string -> QSet.t -> item list -> unit =
+  fun fmt md deps items ->
   let uninterpreted = function
     | Parameter(_) | TypeDecl(_) -> true
     | _                          -> false
@@ -336,11 +336,12 @@ let print_alignment : F.formatter -> string -> QSet.t -> item list ->
     let pp_sep fmt () = F.fprintf fmt ",@," in
     F.pp_print_list ~pp_sep pp_it fmt its
   in
-  F.fprintf fmt "IMPORTING %s_sttfa {{@[<v 2>  " md;
-  F.fprintf fmt "%a@," pp_deps deps;
-  F.fprintf fmt "@[%% Type and definition assignments@]@,";
-  F.fprintf fmt "%a" pp_its (List.filter uninterpreted items);
-  F.fprintf fmt "@]@,}}@\n"
+  let out spec = F.fprintf fmt spec in
+  out "IMPORTING %s_sttfa {{@[<v 2>  " md;
+  out "%a@," pp_deps deps;
+  out "@[%% Type and definition assignments@]@,";
+  out "%a" pp_its (List.filter uninterpreted items);
+  out "@]@,}}@\n"
 
 let print_ast : F.formatter -> ?mdeps:mdeps -> ast -> unit =
   fun oc ?mdeps ast ->
