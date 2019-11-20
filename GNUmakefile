@@ -29,12 +29,15 @@ _dkimp = import/dedukti
 _ipath = $(_dkimp)/$(THEORY)/$(PKG)
 # Directory to store dependencies
 _depdir = .depends
+# Exporter options
+_expopts = -I $(_ipath) -I $(_thdir)
 # Most used logipedia options
 _logipediaopts = -I $(_ipath) -I $(_thdir) -m $(MIDDLEWARE)
 
 #### Logipedia binary ##############################################
 
 LOGIPEDIA = _build/install/default/bin/logipedia
+DK2PVS = _build/install/default/bin/dk2pvs
 
 .PHONY: all
 all: bin
@@ -44,7 +47,11 @@ logipedia: bin
 	-$(RM) logipedia
 	@ln -s $(LOGIPEDIA) logipedia
 
-bin: $(LOGIPEDIA)
+dk2pvs: bin
+	-$(RM) $@
+	@ln -s $(DK2PVS) $@
+
+bin: $(LOGIPEDIA) $(DK2PVS)
 
 .PHONY: $(LOGIPEDIA)
 $(LOGIPEDIA):
@@ -181,7 +188,7 @@ _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 $(_pvspath)/%.pvs: $(_ipath)/%.dko .library_depend_pvs $(LOGIPEDIA)
 	@mkdir -p $(_pvspath)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	@$(DK2PVS) $(_expopts) -f $(<:.dko=.dk) -o $@
 
 $(_pvspath)/%.summary: $(_pvspath)/%.pvs
 	@echo "[SUMMARY] $@"

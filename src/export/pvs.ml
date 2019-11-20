@@ -3,6 +3,10 @@ module Basic = Kernel.Basic
 module Signature = Kernel.Signature
 module F = Format
 
+let extension = "pvs"
+
+let system = `Pvs
+
 let line oc fmt = F.fprintf oc (fmt ^^ "\n")
 
 let sys = "pvs"

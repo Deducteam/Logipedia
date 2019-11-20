@@ -3,7 +3,7 @@
   (name core)
   (public_name logipedia.core)
   (wrapped false) ; For subdirs
-  (modules :standard \ logipedia)
+  (modules :standard \ logipedia pvs dk2pvs)
   (preprocess (pps ppx_deriving_yojson))
   (libraries unix str dedukti.kernel dedukti.api yojson ppx_deriving_yojson.runtime))
 
@@ -11,4 +11,10 @@
   (name logipedia)
   (public_name logipedia)
   (modules logipedia)
+  (libraries logipedia.core))
+
+(executable
+  (name dk2pvs)
+  (public_name dk2pvs)
+  (modules pvs dk2pvs)
   (libraries logipedia.core))
