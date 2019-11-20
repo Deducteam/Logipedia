@@ -9,40 +9,30 @@ let sys = "pvs"
 
 let current_module : string ref = ref ""
 
-let sanitize_name : string -> string =
- fun n -> String.concat "\\_" (String.split_on_char '_' n)
-
-let sanitize_name_pvs : string -> string =
-  fun n ->
-    if String.equal n "True" || String.equal n "False"
-       || String.equal n "And" || String.equal n "Or"
-       || String.equal n "Not" || String.equal n "ex"
-       || String.equal n "nat"
-       || String.equal n "O"   || String.equal n "S"
-       || String.equal n "bool"
-       || String.equal n "true" || String.equal n "false"
-       || String.equal n "fact" || String.equal n "exp"
-       || String.equal n "divides"
-       || String.equal (String.sub n 0 1) "_" then
-      "sttfa_" ^ n
-    else n
+let sanitize_name_pvs : string -> string = fun n ->
+  if String.equal n "True" || String.equal n "False"
+     || String.equal n "And" || String.equal n "Or"
+     || String.equal n "Not" || String.equal n "ex"
+     || String.equal n "nat"
+     || String.equal n "O"   || String.equal n "S"
+     || String.equal n "bool"
+     || String.equal n "true" || String.equal n "false"
+     || String.equal n "fact" || String.equal n "exp"
+     || String.equal n "divides"
+     || String.equal (String.sub n 0 1) "_" then
+    "sttfa_" ^ n
+  else n
 
 let print_name : string -> F.formatter -> name -> unit =
  fun _ oc (_, n) ->
-  let name = sanitize_name_pvs n in
-  F.fprintf oc "%s" name
+ let name = sanitize_name_pvs n in
+ F.fprintf oc "%s" name
 
 let rec print_arity oc arity =
   if arity = 0 then
     F.fprintf oc "Type"
   else
     F.fprintf oc "Type -> %a" print_arity (arity-1)
-
-let sanitize id =
-  if id = "return" then id ^ "_" else id
-
-let print_var oc id =
-  F.fprintf oc "%s" (sanitize_name_pvs id)
 
 let print_qualified_name : string -> F.formatter -> name -> unit =
   fun pvs_md oc (m, n) ->
@@ -104,19 +94,6 @@ let print_prenex_ty_pvs : string -> F.formatter -> ty -> unit =
       F.fprintf oc "[" ;
       print_string_type_list_pvs oc p ;
       F.fprintf oc "]"
-
-let rec vars acc t = match t with
-  | TeVar x -> x::acc
-  | Abs (x,_,u) -> x::(vars acc u)
-  | App (u,v) -> (vars (vars acc u) v)
-  | Forall (x,_,u) -> x::(vars acc u)
-  | Impl(u,v) -> (vars (vars acc u) v)
-  | AbsTy (_,u) -> (vars acc u)
-  | Cst ((_,n),_) -> n::acc
-
-let rec gensym k l =
-  let v = "x"^(string_of_int k)
-  in if List.mem v l then gensym (k+1) l else v
 
 let print__te_pvs : string -> F.formatter -> _te -> unit =
   fun pvs_md oc t ->
@@ -183,40 +160,6 @@ let rec print_te_pvs : string -> F.formatter -> te -> unit =
   match te with
   | ForallP (_, te') -> print_te_pvs pvs_md oc te'
   | Te te' -> print__te_pvs pvs_md oc te'
-
-let print__ty_ctx : F.formatter -> ty_ctx -> unit =
- fun oc ctx ->
-  match ctx with
-  | [] -> F.fprintf oc "∅"
-  | [_ty] -> F.fprintf oc "%s" _ty
-  | _ty :: l ->
-      F.fprintf oc "%s" _ty ;
-      List.iter (fun _ty -> F.fprintf oc ", %s" _ty) l ;
-      F.fprintf oc " "
-
-let print_te_ctx : F.formatter -> string -> te_ctx -> unit =
- fun oc pvs_md ctx ->
-  match ctx with
-  | [] -> F.fprintf oc "∅"
-  | [(x, _ty)] ->
-      F.fprintf oc "%s:%a" x (print__ty_pvs pvs_md) _ty
-  | (x, _ty) :: l ->
-    F.fprintf oc "%s:%a" x (print__ty_pvs pvs_md) _ty ;
-    List.iter
-      (fun (x, _) -> F.fprintf oc ", %s:%a" x (print__ty_pvs pvs_md) _ty)
-      l ;
-    F.fprintf oc " "
-
-let print_hyp : string -> F.formatter -> hyp -> unit =
- fun pvs_md oc hyp ->
-  let l = TeSet.elements hyp in
-  match l with
-  | [] -> F.fprintf oc "∅"
-  | [(_,x)] -> F.fprintf oc "%a" (print__te_pvs pvs_md) x
-  | (_,x) :: l ->
-      F.fprintf oc "%a" (print__te_pvs pvs_md) x ;
-      List.iter (fun (_,x) -> F.fprintf oc ", %a" (print__te_pvs pvs_md) x) l ;
-      F.fprintf oc " "
 
 let conclusion_pvs : proof -> te =
  fun prf ->
