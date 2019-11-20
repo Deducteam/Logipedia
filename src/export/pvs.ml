@@ -334,7 +334,9 @@ let print_alignment : F.formatter -> string -> QSet.t -> item list -> unit =
     F.pp_print_list ~pp_sep pp_it fmt its
   in
   let out spec = F.fprintf fmt spec in
-  out "IMPORTING %s_sttfa {{@[<v 2>  " md;
+  out "IMPORTING %s_sttfa" md;
+  if QSet.is_empty deps then out "@\n" else
+  out " {{@[<v 2>  ";
   out "%a@," pp_deps deps;
   out "@[%% Type and definition assignments@]@,";
   out "%a" pp_its (List.filter uninterpreted items);
