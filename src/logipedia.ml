@@ -1,7 +1,6 @@
 module B = Kernel.Basic
 module P = Parsing.Parser
 module S = Systems
-module Ms = Middleware_switch
 
 module Denv = Api.Env.Default
 module Derr = Api.Errors.Make(Denv)
@@ -21,44 +20,20 @@ let middleware : string ref = ref ""
 (** Options list, redefined according to first argument. *)
 let options : (string * Arg.spec * string) list ref = ref []
 
-(** Operation mode of logipedia. *)
-type mode =
-  | ModeJson
-  (** Export to JSON *)
-  | ModeSystem of S.system
-  (** Export to a system *)
-
-let export_mode : mode option ref = ref None
+(** Which system to export to. *)
+let export_mode : S.system option ref = ref None
 
 (** Options common to both modes. *)
 let common_opts =
-  let m_doc =
-    let available_mid =
-      "dummy" :: List.map fst Ms.mid_spec |> String.concat ", "
-    in
-    Format.sprintf " Middleware to use, one of %s" available_mid
-  in
   [ ( "-I"
     , Arg.String B.add_path
     , " Add folder to Dedukti path" )
   ; ( "-f"
     , Arg.Set_string infile
     , " Input Dedukti file" )
-  ; ( "-m"
-    , Arg.Set_string middleware
-    , m_doc )
   ; ( "-o"
     , Arg.String (fun s -> output_file := Some(s))
     , " Set output file" ) ]
-
-(** Options for the json export. *)
-let json_opts =
-  let f (name, system) =
-    ( Format.sprintf "--%s" name
-    , Arg.String (fun s -> S.artefact_path := (system, s) :: !S.artefact_path)
-    , Format.sprintf " Output folder of system %s" name )
-  in
-  List.map f S.sys_spec
 
 (** Options for any system export. *)
 let sys_opts =
@@ -73,17 +48,12 @@ let anon arg =
   | Some(_) -> raise (Arg.Bad "Too many anonymous arguments provided")
   | None    ->
     (* Export mode is not set: set it. *)
-    if arg = "json"
-    then
-      ( export_mode := Some(ModeJson)
-      ; options := Arg.align (json_opts @ common_opts) )
-    else
-      try
-        ( export_mode := Some(ModeSystem(S.system_of_string arg))
-        ; options := Arg.align (sys_opts @ common_opts) )
-      with S.UnsupportedSystem(s) ->
-        let msg = Format.sprintf "Can't export to %s: system not supported" s in
-        raise (Arg.Bad msg)
+    try
+      export_mode := Some(S.system_of_string arg);
+      options := Arg.align (sys_opts @ common_opts)
+    with S.UnsupportedSystem(s) ->
+      let msg = Format.sprintf "Can't export to %s: system not supported" s in
+      raise (Arg.Bad msg)
 
 let export_file ast system =
   let (module M:Export.E) = Export.of_system system in
@@ -120,22 +90,8 @@ let export_system syst file =
     export_file sttfa_ast syst;
   end
 
-(* Json export is done without using the Sttfa AST. *)
-let export_json file (module M : Middleware.S) =
-  let md = Denv.init file in
-  let input = open_in file in
-  let entries = P.Parse_channel.parse md input in
-  close_in input;
-  let module JsExp = Json.Make(M) in
-  let document = JsExp.doc_of_entries md entries in
-  let fmt = match !output_file with
-    | None    -> Format.std_formatter
-    | Some(f) -> Format.formatter_of_out_channel (open_out f)
-  in
-  JsExp.print_document fmt document
-
 let _ =
-  let available_sys = "json" :: List.map fst S.sys_spec |> String.concat ", " in
+  let available_sys = List.map fst S.sys_spec |> String.concat ", " in
   let usage = Format.sprintf
       "Usage: %s EXPORT [OPTIONS]...\n\
 \twith EXPORT being one of: %s\n\
@@ -147,22 +103,9 @@ Available options for the selected mode:"
     Arg.parse_dynamic options anon usage;
     match !export_mode with
     | None    -> raise @@ Arg.Bad "Missing export"
-    | Some(m) ->
+    | Some(s) ->
       if !infile = "" then raise (Arg.Bad "Input file required");
-      begin
-        match m with
-        | ModeJson ->
-          (* Some further argument processing for json. *)
-          ( Json_types.json_dir :=
-              begin match !(output_file) with
-                | None    -> raise (Arg.Bad "Output must be set for json")
-                | Some(o) -> Filename.dirname o
-              end
-          ; Json.basename := Filename.remove_extension !infile |>
-                             Filename.basename
-          ; export_json !infile (Middleware_switch.mid_of_string !middleware) )
-        | ModeSystem(s) -> export_system s !infile
-      end
+      export_system s !infile
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;

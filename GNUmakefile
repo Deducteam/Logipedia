@@ -38,6 +38,7 @@ _logipediaopts = -I $(_ipath) -I $(_thdir) -m $(MIDDLEWARE)
 
 LOGIPEDIA = _build/install/default/bin/logipedia
 DK2PVS = _build/install/default/bin/dk2pvs
+DK2JSON = _build/install/default/bin/dk2json
 
 .PHONY: all
 all: bin
@@ -51,10 +52,18 @@ dk2pvs: bin
 	-$(RM) $@
 	@ln -s $(DK2PVS) $@
 
-bin: $(LOGIPEDIA) $(DK2PVS)
+dk2json: bin
+	-$(RM) $@
+	@ln -s $(DK2JSON) $@
 
-.PHONY: $(LOGIPEDIA)
+bin: $(LOGIPEDIA) $(DK2PVS) $(DK2JSON)
+
+.PHONY: $(LOGIPEDIA) $(DK2PVS) $(DK2JSON)
 $(LOGIPEDIA):
+	@dune build
+$(DK2PVS):
+	@dune build
+$(DK2JSON):
 	@dune build
 
 .PHONY: install
@@ -205,12 +214,12 @@ _jsonpath = $(EXPDIR)/json
 _jsonthpath = $(_jsonpath)/_theory
 _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
-$(_jsonthpath)/%.json: $(_thdir)/%.dko $(LOGIPEDIA)
+$(_jsonthpath)/%.json: $(_thdir)/%.dko $(DK2JSON)
 	@mkdir -p $(_jsonpath)/_theory
-	$(LOGIPEDIA) json --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	$(DK2JSON) --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
-$(_jsonpath)/%.json: $(_ipath)/%.dko $(LOGIPEDIA)
-	$(LOGIPEDIA) json --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+$(_jsonpath)/%.json: $(_ipath)/%.dko $(DK2JSON)
+	$(DK2JSON) --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
 json: $(addprefix $(_jsonthpath)/, $(_thfiles:=.json)) $(_jsonfiles)

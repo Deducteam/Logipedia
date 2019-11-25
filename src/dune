@@ -3,15 +3,32 @@
   (name core)
   (public_name logipedia.core)
   (wrapped false) ; For subdirs
-  (modules :standard \ logipedia pvs dk2pvs)
+  (modules :standard \ logipedia pvs dk2pvs
+           json json_types
+           middleware middleware_cic middleware_sttfa middleware_switch
+           dk2json)
   (preprocess (pps ppx_deriving_yojson))
-  (libraries unix str dedukti.kernel dedukti.api yojson ppx_deriving_yojson.runtime))
+  (libraries unix str dedukti.kernel dedukti.api))
+
+(library
+  (name logijson)
+  (public_name logipedia.json)
+  (wrapped false)
+  (modules json json_types middleware middleware_cic middleware_sttfa middleware_switch)
+  (preprocess (pps ppx_deriving_yojson))
+  (libraries logipedia.core dedukti.kernel dedukti.api ppx_deriving.runtime))
 
 (executable
   (name logipedia)
   (public_name logipedia)
   (modules logipedia)
   (libraries logipedia.core))
+
+(executable
+  (name dk2json)
+  (public_name dk2json)
+  (modules dk2json)
+  (libraries logipedia.json))
 
 (executable
   (name dk2pvs)
