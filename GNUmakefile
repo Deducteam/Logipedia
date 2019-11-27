@@ -16,7 +16,7 @@ PKG ?= arith_fermat
 EXPDIR ?= export
 # Additional flags passed to Dedukti (--eta)
 DKFLAGS =
-# Which ocaml middleware module to use
+# Which ocaml middleware module to use (for json export)
 MIDDLEWARE = sttfa
 
 # Directory containing theory files
@@ -29,10 +29,8 @@ _dkimp = import/dedukti
 _ipath = $(_dkimp)/$(THEORY)/$(PKG)
 # Directory to store dependencies
 _depdir = .depends
-# Exporter options
-_expopts = -I $(_ipath) -I $(_thdir)
 # Most used logipedia options
-_logipediaopts = -I $(_ipath) -I $(_thdir) -m $(MIDDLEWARE)
+_logipediaopts = -I $(_ipath) -I $(_thdir)
 
 #### Logipedia binary ##############################################
 
@@ -197,7 +195,7 @@ _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 $(_pvspath)/%.pvs: $(_ipath)/%.dko .library_depend_pvs $(LOGIPEDIA)
 	@mkdir -p $(_pvspath)
 	@echo "[EXPORT] $@"
-	@$(DK2PVS) $(_expopts) -f $(<:.dko=.dk) -o $@
+	@$(DK2PVS) $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 $(_pvspath)/%.summary: $(_pvspath)/%.pvs
 	@echo "[SUMMARY] $@"
@@ -216,10 +214,10 @@ _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
 $(_jsonthpath)/%.json: $(_thdir)/%.dko $(DK2JSON)
 	@mkdir -p $(_jsonpath)/_theory
-	$(DK2JSON) --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	$(DK2JSON) --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
 
 $(_jsonpath)/%.json: $(_ipath)/%.dko $(DK2JSON)
-	$(DK2JSON) --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	$(DK2JSON) --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
 json: $(addprefix $(_jsonthpath)/, $(_thfiles:=.json)) $(_jsonfiles)
