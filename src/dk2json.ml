@@ -10,6 +10,9 @@ let output_file = ref None
 (** Input dedukti files. *)
 let infile : string ref = ref ""
 
+(** Directory containing input dedukti files. *)
+let indir : string ref = ref ""
+
 (** The middleware used. *)
 let middleware : string ref = ref ""
 
@@ -34,6 +37,9 @@ let options =
     [ ( "-I"
       , Arg.String B.add_path
       , " Add folder to Dedukti path" )
+    ; ( "-d"
+      , Arg.Set_string indir
+      , " Input Dedukti directory" )
     ; ( "-f"
       , Arg.Set_string infile
       , " Input Dedukti file" )

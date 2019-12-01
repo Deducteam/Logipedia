@@ -1,3 +1,4 @@
+module D = Deps
 open Ast
 
 module Denv = Api.Env.Default
@@ -156,7 +157,7 @@ let print_item oc = function
   | TypeDef _ -> failwith "[Lean] Type definitions not handled right now"
 
 let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
-  QSet.iter (print_dep fmt) ast.dep;
+  D.QSet.iter (print_dep fmt) ast.dep;
   List.iter (print_item fmt) ast.items
 
 let print_meta_ast fmt meta_ast =

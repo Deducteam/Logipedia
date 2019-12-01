@@ -2,6 +2,7 @@
     Informations are redundant to facilitate exportation. *)
 
 module B = Kernel.Basic
+module D = Deps
 
 (** {b NOTE} underscored types are monomorphic, not underscored are
     polymorphic. *)
@@ -115,14 +116,12 @@ type item =
 
 type kind = [`Parameter | `Definition | `Axiom | `Theorem | `TypeDecl | `TypeDef ]
 
-module QSet = Set.Make (struct type t = string let compare = compare end)
-
 type ast = {
   md   : string;
-  dep  : QSet.t;
+  dep  : D.QSet.t;
   items: item list}
 
-type mdeps = (string * QSet.t) list
+type mdeps = (string * D.QSet.t) list
 
 let kind_of = function
   | Parameter _   -> `Parameter

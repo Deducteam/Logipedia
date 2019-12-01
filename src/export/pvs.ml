@@ -1,4 +1,5 @@
 module A = Ast
+module D = Deps
 module Basic = Kernel.Basic
 module Signature = Kernel.Signature
 module F = Format
@@ -307,7 +308,7 @@ let remove_transitive_deps mdeps deps =
     let md = Basic.mk_mident dep in
     let deps_from_signature md =
       let deps = Signature.get_md_deps Basic.dloc md in
-      (A.QSet.of_list (List.map Basic.string_of_mident deps))
+      (D.QSet.of_list (List.map Basic.string_of_mident deps))
     in
     let md_deps =
       match mdeps with
@@ -318,13 +319,13 @@ let remove_transitive_deps mdeps deps =
         else
           deps_from_signature md
     in
-    A.QSet.diff deps md_deps
+    D.QSet.diff deps md_deps
   in
-  A.QSet.fold remove_dep deps deps
+  D.QSet.fold remove_dep deps deps
 
 (** [print_alignment fmt md deps] prints the alignment import in the theory with
     [md] the (Dedukti) module, [deps] the [QSet] of dependencies. *)
-let print_alignment : F.formatter -> string -> A.QSet.t -> A.item list -> unit =
+let print_alignment : F.formatter -> string -> D.QSet.t -> A.item list -> unit =
   fun fmt md deps items ->
   let uninterpreted = function
     | A.Parameter(_) | TypeDecl(_) -> true
@@ -333,7 +334,7 @@ let print_alignment : F.formatter -> string -> A.QSet.t -> A.item list -> unit =
   let pp_deps fmt deps =
     let pp_dep fmt d = F.fprintf fmt "@[%s_sttfa_th := %s_pvs@]" d d in
     let pp_sep fmt () = F.fprintf fmt ",@," in
-    F.pp_print_list ~pp_sep pp_dep fmt (A.QSet.to_seq deps |> List.of_seq)
+    F.pp_print_list ~pp_sep pp_dep fmt (D.QSet.to_seq deps |> List.of_seq)
   in
   let pp_its fmt its =
     let pp_it fmt it = (* Type assignment *)
@@ -344,7 +345,7 @@ let print_alignment : F.formatter -> string -> A.QSet.t -> A.item list -> unit =
   in
   let out spec = F.fprintf fmt spec in
   out "IMPORTING %s_sttfa" md;
-  if A.QSet.is_empty deps then out "@\n" else
+  if D.QSet.is_empty deps then out "@\n" else
   out " {{@[<v 2>  ";
   out "%a@," pp_deps deps;
   out "%a" pp_its (List.filter uninterpreted items);
@@ -357,14 +358,14 @@ let print_ast : F.formatter -> ?mdeps:A.mdeps -> A.ast -> unit =
   (* Actual theory *)
   line oc "%s_sttfa : THEORY" ast.md;
   line oc "BEGIN";
-  A.QSet.iter (print_dep oc) deps;
+  D.QSet.iter (print_dep oc) deps;
   line oc "";
   List.iter (print_item oc ast.md) ast.items;
   line oc "END %s_sttfa" ast.md;
   (* Concept alignment theory *)
   line oc "%s_pvs : THEORY" ast.md;
   line oc "BEGIN";
-  A.QSet.iter (print_dep_al oc) deps;
+  D.QSet.iter (print_dep_al oc) deps;
   print_alignment oc ast.md deps ast.items;
   line oc "END %s_pvs@\n@." ast.md
 
