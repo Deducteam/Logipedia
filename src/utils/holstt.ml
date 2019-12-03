@@ -263,7 +263,7 @@ module PrintHol = struct
 
   let rec print_term_rec b out = function
       Var(name,ty) when b -> Format.fprintf out "%a" print_var (Var(name,ty))
-    |  Var(name,_) -> Format.fprintf out "%s" name
+    | Var(name,_) -> Format.fprintf out "%s" name
     | Const(cst,_) -> Format.fprintf out "%s" cst
     | Comb(f,t) ->
       begin
@@ -351,6 +351,8 @@ end
 
 module HolSTT = struct
   include PrintHol
+
+  (** Keeping tracks of previous definitions/theorems/etc *)
   let defined_csts = Hashtbl.create 100
 
   let declared_axioms = Hashtbl.create 100
@@ -359,7 +361,12 @@ module HolSTT = struct
 
   let declared_types = Hashtbl.create 100
 
-  let var_typed_cst = ref ["one"]
+  let reset () =
+    Hashtbl.reset defined_thms;
+    Hashtbl.reset defined_csts;
+    Hashtbl.reset declared_axioms
+
+  (** Find type variables in a type*)
 
   module VarsT = Set.Make(String)
 
@@ -369,20 +376,6 @@ module HolSTT = struct
                       (fun setvars -> fun ty -> VarsT.union setvars (free_vartypes vars ty))
                       vars
                       l
-
-
-  let reset () =
-    Hashtbl.reset defined_thms;
-    Hashtbl.reset defined_csts;
-    Hashtbl.reset declared_axioms
-(*
-  let mk_new_const name t ty =
-    let new_cst = term_of_const name ty in
-    let def_new_cst = mk_equal_term new_cst t ty in
-    let proof_def = New_basic_definition_proof(name,def_new_cst) in
-    let thm_def = Sequent(name^"_DEF",[],def_new_cst,proof_def) in
-    Hashtbl.add defined_csts name (thm_def,ty)*)
-
 
   (* Handle hypotheses as implications, notably for axioms which accept none *)
 
@@ -398,38 +391,46 @@ module HolSTT = struct
            y)
       hyps t
 
+  (** Printing axioms *)
   let mk_axiom name hyps term =
     let imp_term = mk_imps hyps term in
     Hashtbl.add declared_axioms name (List.length hyps);
     Sequent(name,[],imp_term,Axiom_proof(imp_term))
 
+  (** Printing a comment, useful for debugging *)
   let mk_comment comment =
     Format.fprintf !oc "------> comment : %s\n" comment
 
+  (** Printing types *)
   let mk_type name arity =
     Format.fprintf !oc "new_type(\"%s\",%i);;\n\n" name arity;
     Hashtbl.add declared_types name arity
 
+  (** Printing deifnitions *)
   let mk_def thm_name name eqt (ty:hol_type) =
     let thm_def = Sequent(name,[],eqt,New_basic_definition_proof(thm_name,name,eqt)) in
     Hashtbl.add defined_csts name (thm_def,ty);
     thm_def
 
+  (** Finding the definition theorem associated with a constant *)
   let thm_of_const_name name =
     if Hashtbl.mem defined_csts name then
       (fst @@ Hashtbl.find defined_csts name)
     else
       failwith (Format.sprintf "Const %s not found" name)
 
+  (** Printing theorems *)
   let mk_thm name term hyp pi =
     let thm = Sequent(name,hyp,term,pi) in
     Hashtbl.add defined_thms name thm;
     print_thm_debug !oc thm;
     print_thm !oc thm
 
+  (** Printing parameters *)
   let mk_parameter name ty =
     print_parameter name ty !oc
 
+  (** Finding theorem using its name *)
   let thm_of_lemma name =
     if Hashtbl.mem defined_thms name then
       Hashtbl.find defined_thms name

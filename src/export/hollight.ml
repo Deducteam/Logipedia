@@ -241,84 +241,58 @@ let rec mk_proof env = function
         else right' in
       mk_conv "" right'' proof'',pc
 
-let content = ref ""
-
-let string_of_item _ = "Printing for OpenTheory is not supported right now." (*
-  let print_item fmt = function
-    | Parameter(name,ty) ->
-      let ty' = mk_ty ty in
-      let name' = mk_qid name in
-      let lhs = term_of_const (const_of_name name') ty' in
-      let eq = mk_equal_term lhs lhs ty' in
-      mk_thm name' eq (mk_hyp []) (mk_refl lhs)
-    | Definition(cst,ty,te) ->
-      let cst' = mk_qid cst in
-      let te' = mk_te Environ.empty_env te in
-      let ty' = mk_ty ty in
-      let eq = mk_equal_term (term_of_const (const_of_name cst') ty') te' ty' in
-      let thm = thm_of_const cst in
-      mk_thm cst' eq (mk_hyp []) thm
-  | Theorem(cst,te,_)
-  | Axiom(cst,te) ->
-    let te' = mk_te empty_env te in
-    let hyp = mk_hyp [] in
-    mk_thm (mk_qid cst)  te' hyp (mk_axiom hyp te')
-  | TyOpDef(tyop,arity) ->
-    let tyop' = mk_qid tyop in
-    let tyop' = mk_tyOp tyop' in
-    let ty' = ty_of_tyOp tyop' [] in
-    let name' = mk_qid ("","foo") in
-    let lhs = term_of_const (const_of_name  name') ty' in
-    let eq = mk_equal_term lhs lhs ty' in
-    mk_thm name' eq (mk_hyp []) (mk_refl lhs)
-  in
-  (* let fmt = Format.formatter_of_out_channel @@ open_out "/tmp/test.art" in *)
-  let str_fmt = Format.str_formatter in
-  set_oc str_fmt;
-  let length = Buffer.length Format.stdbuf in
-  version ();
-  print_item str_fmt item;
-  clean ();
-  let length' = Buffer.length Format.stdbuf in
-  content := Buffer.sub Format.stdbuf length (length'-length);
-  Buffer.truncate Format.stdbuf length;
-  !content
-*)
-
-let print_item _ =
+let print_item ?(short=false) =
   function
   | Parameter(cst,ty) ->
     let ty' = mk_ty ty in
     let cst' = sanitize true (snd cst) in
-    mk_parameter cst' ty'
+    if short
+    then print_var !oc (Var(cst',ty'))
+    else mk_parameter cst' ty'
   | Definition(cst,ty,te) ->
     let cst' = sanitize true (snd cst) in
     let te' = mk_te Environ.empty_env [] te in
     let ty' = mk_ty ty in
     let eq = mk_equal_term (term_of_const (const_of_name cst') ty') te' ty' in
     let Sequent(_,_,_,pi) = thm_of_const cst in
-    mk_thm cst' eq (mk_hyp []) (pi)
+    if short
+    then print_term false !oc eq
+    else mk_thm cst' eq (mk_hyp []) (pi)
   | Axiom(cst,te) ->
     let te' = mk_te empty_env [] te in
     let hyp = mk_hyp [] in
     let Sequent(_,_,_,pi) = mk_axiom (sanitize true (snd cst)) hyp te' in
     (* Axioms just have conclusions in STT and HOL Light *)
     (* Else, introductions of implication would have to be added *)
-    mk_thm (sanitize true (snd cst)) te' hyp pi
+    if short
+    then print_term false !oc te'
+    else mk_thm (sanitize true (snd cst)) te' hyp pi
   | Theorem(cst,te,proof) ->
-    (*let () = Printf.printf "Theorem %s\n" (snd cst) in*)
     let te' = mk_te empty_env [] te in
     let hyp' = mk_hyp [] in
     let proof',_ = mk_proof empty_env proof in
-    mk_thm (sanitize true (snd cst)) te' hyp' proof'
+    let cst' = sanitize true (snd cst) in
+    if short
+    then print_thm_debug !oc (Sequent(cst',hyp',te',proof'))
+    else mk_thm cst' te' hyp' proof'
   | TypeDecl(name,arity) ->
-    mk_type ("mat_"^(snd name)) arity
+    if short
+    then Format.fprintf !oc "%s" ("mat"^(snd name))
+    else mk_type ("mat_"^(snd name)) arity
   | TypeDef _ -> failwith "[HOL Light] Type definitions not handled right now"
+
+let content = ref ""
+
+let string_of_item item =
+  let str_fmt = Format.str_formatter in
+  set_oc str_fmt;
+  print_item ~short:true item;
+  Buffer.contents Format.stdbuf
 
 let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
   Buffer.clear Format.stdbuf;
   let oc_tmp = Format.str_formatter in
   set_oc oc_tmp;
-  List.iter (fun item -> print_item oc_tmp item) ast.items;
+  List.iter (fun item -> print_item item) ast.items;
   content := Buffer.contents Format.stdbuf;
   Format.fprintf fmt "%s" !content
