@@ -1,4 +1,3 @@
-open Kernel.Basic
 open Ast
 open Sttfadk
 open Environ
@@ -20,14 +19,14 @@ let rec compile_proof env proof =
       let j = make_judgment env (TeSet.of_list env.prf) (Te te') in
       (j, Assume(j,var))
   | Term.Lam (_, id, Some cst, _te) when is_sttfa_const sttfa_type cst ->
-    let id = gen_fresh env id in
+    let id = gen_fresh env [] id in
     let jp, proof = compile_proof (add_ty_var_dk env id) _te in
     let j = make_judgment env jp.hyp (ForallP (soi id, jp.thm)) in
     (j, ForallPI (j, proof, soi id))
   | Term.Lam (_, id, Some (Term.App (cst, _, _) as _ty), _te)
     when is_sttfa_const sttfa_etap cst || is_sttfa_const sttfa_eta cst ->
       let _ty' = CType.compile_wrapped__type env _ty in
-      let id = gen_fresh env id in
+      let id = gen_fresh env [] id in
       let jp, proof = compile_proof (add_te_var_dk env id _ty') _te in
       let j =
         make_judgment env jp.hyp

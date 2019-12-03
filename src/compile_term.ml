@@ -22,17 +22,17 @@ let rec compile__term env _te =
       let var = get_dk_var env n in
       TeVar var
   | Term.Lam (_, id, Some cst, _te) when is_sttfa_const sttfa_type cst ->
-    let id = gen_fresh env id in
+    let id = gen_fresh env [] id in
       let _te' = compile__term (add_ty_var_dk env id) _te in
       AbsTy (soi id, _te')
   | Term.Lam (_, id, Some _ty, _te) ->
-      let id = gen_fresh env id in
+      let id = gen_fresh env [] id in
       let _ty' = CType.compile_wrapped__type env _ty in
       let _te' = compile__term (add_te_var_dk env id _ty') _te in
       Abs (soi id, _ty', _te')
   | Term.App (cst, _ty, [(Term.Lam (_, id, Some _, _te))])
     when is_sttfa_const sttfa_forall cst ->
-      let id = gen_fresh env id in
+      let id = gen_fresh env [] id in
       let _ty' = CType.compile__type env _ty in
       let _te' = compile__term (add_te_var_dk env id _ty') _te in
       Forall (soi id, _ty', _te')
@@ -64,7 +64,7 @@ let rec compile_term env te =
   match te with
   | Term.App (cst, Term.Lam (_, x, Some _, te), [])
     when is_sttfa_const sttfa_forall_kind_prop cst ->
-    let x = gen_fresh env x in
+    let x = gen_fresh env [] x in
     let te' = compile_term (add_ty_var_dk env x) te in
     ForallP (soi x, te')
   | _ ->  Te (compile__term env te)
