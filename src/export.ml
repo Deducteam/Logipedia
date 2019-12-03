@@ -43,6 +43,13 @@ struct
   let extension = "lean"
 end
 
+module HOLLIGHT : E =
+struct
+  include Hollight
+  let system = `Hollight
+  let extension = "ml"
+end
+
 let of_system : system -> (module E) = fun sys ->
   match sys with
   | `Pvs        -> (module PVS)
@@ -50,3 +57,4 @@ let of_system : system -> (module E) = fun sys ->
   | `Matita     -> (module MATITA)
   | `OpenTheory -> (module OPENTHEORY)
   | `Lean       -> (module LEAN)
+  | `Hollight   -> (module HOLLIGHT)
