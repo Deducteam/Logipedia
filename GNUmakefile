@@ -165,6 +165,20 @@ opentheory: $(_otfiles)
 	$(OT) info $(_thyfile) 2>/dev/null
 	@echo "[OT] CHECKED"
 
+#### HOL Light ######################################################
+
+_holpath = $(EXPDIR)/hollight
+_holfiles=$(addprefix $(_holpath)/,$(addsuffix .ml,$(_srcbase)))
+
+$(_holpath)/%.ml: $(_ipath)/%.dko .library_depend_hol $(LOGIPEDIA)
+	@echo "[EXPORT] $@"
+	@$(LOGIPEDIA) hollight $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+
+.PHONY: hollight
+hollight: $(_holfiles)
+	@echo "[HOL] FILES TO BE CHECKED"
+
+
 ##### PVS ##########################################################
 
 
@@ -252,6 +266,17 @@ _esc_otpath = $(subst /,\\/,$(_otpath))
 	@sed -i s/dk/dko/g $@
 	@sed  -i "s:$(_ipath)/\([^.]*\)\.art:$(_otpath)/\1\.art:g" $@
 
+_esc_holpath = $(subst /,\\/,$(_holpath))
+.library_depend_hol: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
+	@echo "[DKDEP (ART FILES)] $@"
+	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
+	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
+		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_holpath)\\/$$f/ $@ ; \
+	done
+	@sed -i s/dko/ml/g $@
+	@sed -i s/dk/dko/g $@
+	@sed  -i "s:$(_ipath)/\([^.]*\)\.ml:$(_holpath)/\1\.ml:g" $@
+
 _esc_pvspath = $(subst /,\\/,$(_pvspath))
 .library_depend_pvs: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (PVS FILES)] $@"
@@ -283,6 +308,7 @@ ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend_art
 -include .library_depend_pvs
 -include .library_depend_json
+-include .library_depend_hol
 endif
 endif
 
