@@ -15,9 +15,6 @@ let output_file = ref None
 (** Input dedukti files. *)
 let infile : string ref = ref ""
 
-(** The middleware used. *)
-let middleware : string ref = ref ""
-
 (** Options list, redefined according to first argument. *)
 let options : (string * Arg.spec * string) list ref = ref []
 
