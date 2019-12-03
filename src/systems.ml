@@ -22,7 +22,7 @@ let sys_spec : spec list =
   ; ( "opentheory", `OpenTheory )
   ; ( "pvs"       , `Pvs        )
   ; ( "lean"      , `Lean       )
-  ; ( "hollight" , `Hollight   )] |>
+  ; ( "hollight"  , `Hollight   )] |>
   List.sort (fun (s,_) (t,_) -> String.compare s t)
 
 (** Maps system to their extension. *)
