@@ -36,7 +36,7 @@ let common_opts =
     , Arg.String (fun s -> output_file := Some(s))
     , " Set output file" ) ]
 
-(** Options for any system export. *)
+(** Options for any system export. --fast : does ont compute trace *)
 let sys_opts =
     [ ( "--fast"
       , Arg.Set Sttfatyping.Tracer.fast

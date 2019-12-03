@@ -42,12 +42,20 @@ struct
   let extension = "lean"
 end
 
+module HOLLIGHT : E =
+struct
+  include Hollight
+  let system = `Hollight
+  let extension = "ml"
+end
+
 let of_system : system -> (module E) = fun sys ->
   match sys with
   | `Coq        -> (module COQ)
   | `Matita     -> (module MATITA)
   | `OpenTheory -> (module OPENTHEORY)
   | `Lean       -> (module LEAN)
+  | `Hollight   -> (module HOLLIGHT)
   | `Pvs        -> failwith "Dedicated binary"
 
 (* FIXME: this function is sttfa specific *)

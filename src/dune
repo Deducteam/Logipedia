@@ -25,7 +25,7 @@
   (wrapped false)
   (modules ast compile compile_proof compile_term compile_type decompile
            sttfadk sttfatyping export environ
-           coq lean matita openstt opentheory)
+           coq lean matita openstt opentheory holstt hollight)
   (libraries logipedia.core))
 
 (executable

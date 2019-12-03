@@ -23,7 +23,11 @@ type _ty =
   | TyOp of name * _ty list
   | Prop
 
+let dummy__ty = TyVar("dummy")
+
 type ty = ForallK of ty_var * ty | Ty of _ty
+
+let dummy_ty = Ty(dummy__ty)
 
 type _te =
   | TeVar of te_var
