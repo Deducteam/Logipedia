@@ -47,7 +47,7 @@ let json_opts =
   in
   List.map f S.sys_spec
 
-(** Options for any system export. *)
+(** Options for any system export. --fast : does ont compute trace *)
 let sys_opts =
     [ ( "--fast"
       , Arg.Set Sttfatyping.Tracer.fast
@@ -78,7 +78,7 @@ let export_file ast system =
     match !output_file with
     | None -> Format.std_formatter
     | Some f ->
-      Format.formatter_of_out_channel (open_out f)
+      try Format.formatter_of_out_channel (open_out f) with _ -> failwith "PROBLEM HERE"
   in
   (* FIXME: The file is not closed, is this a problem? *)
   M.print_ast fmt ast

@@ -1,6 +1,6 @@
-type system = [`Coq | `Matita | `Pvs | `OpenTheory | `Lean ]
+type system = [`Coq | `Matita | `Pvs | `OpenTheory | `Lean | `Hollight ]
 
-let systems = [`Coq ; `Matita ; `Pvs ; `OpenTheory ; `Lean ]
+let systems = [`Coq ; `Matita ; `Pvs ; `OpenTheory ; `Lean ; `Hollight ]
 
 exception UnsupportedSystem of string
 
@@ -21,7 +21,8 @@ let sys_spec : spec list =
   ; ( "ot"        , `OpenTheory )
   ; ( "opentheory", `OpenTheory )
   ; ( "pvs"       , `Pvs        )
-  ; ( "lean"      , `Lean       ) ] |>
+  ; ( "lean"      , `Lean       )
+  ; ( "hollight" , `Hollight   )] |>
   List.sort (fun (s,_) (t,_) -> String.compare s t)
 
 (** Maps system to their extension. *)
@@ -30,7 +31,8 @@ let sys_ext : (system * string) list =
   ; ( `Matita    , "ma"   )
   ; ( `Pvs       , "pvs"  )
   ; ( `OpenTheory, "ot"   )
-  ; ( `Lean      , "lean" ) ]
+  ; ( `Lean      , "lean" )
+  ; ( `Hollight  , "ml"   ) ]
 
 (** [system_of_string str] returns the system associated to the string [str]. *)
 let system_of_string : string -> system = fun s ->
@@ -38,6 +40,7 @@ let system_of_string : string -> system = fun s ->
   with Not_found -> raise (UnsupportedSystem s)
 
 let string_of_system : system -> string = function
+  | `Hollight -> "hollight"
   | `Coq -> "coq"
   | `Matita -> "matita"
   | `OpenTheory -> "opentheory"
