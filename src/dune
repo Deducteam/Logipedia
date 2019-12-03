@@ -24,7 +24,7 @@
   (synopsis "Export Logipedia libraries in the STTfa system.")
   (wrapped false)
   (modules ast compile compile_proof compile_term compile_type decompile
-           sttfadk sttfatyping sttforall export environ
+           sttfadk sttfatyping export environ
            coq lean matita openstt opentheory holstt hollight)
   (libraries logipedia.core))
 

@@ -191,6 +191,7 @@ _holpath = $(EXPDIR)/hollight
 _holfiles=$(addprefix $(_holpath)/,$(addsuffix .ml,$(_srcbase)))
 
 $(_holpath)/%.ml: $(_ipath)/%.dko .library_depend_hol $(LOGIPEDIA)
+	@mkdir -p $(_holpath)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) hollight $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
