@@ -20,3 +20,8 @@ sig
 end
 
 val of_system : Systems.system -> (module E)
+(** [of_system s] returns the module associated to system id [s]. *)
+
+val export_system : (module E) -> string -> Format.formatter -> unit
+(** [export_system Exp f out] exports file [f] using module [Exp] to format
+    [out]. *)

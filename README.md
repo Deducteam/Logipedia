@@ -73,6 +73,13 @@ where
 - `<expdir>` is a directory containing the exported files.
 - `<system>` can be either *coq*, *matita*, *lean*, *pvs* or *opentheory*.
 
+### Examples
+
+``` bash
+make json THEORY=ctpicef PKG=std DKFLAGS=--eta
+make json THEORY=sttfa PKG=arith_fermat
+```
+
 ## Maintainers
 
 Logipedia:

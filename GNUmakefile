@@ -14,6 +14,10 @@ THEORY ?= sttfa
 PKG ?= arith_fermat
 # Directory where files are exported
 EXPDIR ?= export
+# Additional flags passed to Dedukti (--eta)
+DKFLAGS =
+# Which ocaml middleware module to use (for json export)
+MIDDLEWARE = sttfa
 
 # Directory containing theory files
 _thdir = theories/$(THEORY)
@@ -31,6 +35,8 @@ _logipediaopts = -I $(_ipath) -I $(_thdir)
 #### Logipedia binary ##############################################
 
 LOGIPEDIA = _build/install/default/bin/logipedia
+STTFA2PVS = _build/install/default/bin/sttfa2pvs
+DK2JSON = _build/install/default/bin/dk2json
 
 .PHONY: all
 all: bin
@@ -40,10 +46,22 @@ logipedia: bin
 	-$(RM) logipedia
 	@ln -s $(LOGIPEDIA) logipedia
 
-bin: $(LOGIPEDIA)
+sttfa2pvs: bin
+	-$(RM) $@
+	@ln -s $(STTFA2PVS) $@
 
-.PHONY: $(LOGIPEDIA)
+dk2json: bin
+	-$(RM) $@
+	@ln -s $(DK2JSON) $@
+
+bin: $(LOGIPEDIA) $(STTFA2PVS) $(DK2JSON)
+
+.PHONY: $(LOGIPEDIA) $(STTFA2PVS) $(DK2JSON)
 $(LOGIPEDIA):
+	@dune build
+$(STTFA2PVS):
+	@dune build
+$(DK2JSON):
 	@dune build
 
 .PHONY: install
@@ -63,13 +81,14 @@ $(_thdepdir)/%.d: $(_thdir)/%.dk
 
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
-include $(addprefix $(_thdepdir)/, $(_thfiles).d)
+-include $(addprefix $(_thdepdir)/, $(_thfiles).d)
 endif
 endif
 
 $(_thdir)/%.dko: $(_thdir)/%.dk $(_thdepdir/%.d)
+	@mkdir -p $(@D)
 	@echo "[CHECK] $^"
-	@$(DKCHECK) -e -I $(_thdir)/ $^
+	@$(DKCHECK) $(DKFLAGS) -e -I $(_thdir)/ $^
 
 
 #### Producing the Dedukti library #################################
@@ -88,7 +107,7 @@ _srcbase := $(notdir $(basename $(_dks)))
 
 $(_ipath)/%.dko: $(_ipath)/%.dk $(_thdir)/$(_thfiles:=.dko)
 	@echo "[CHECK] $@"
-	@$(DKCHECK) -e -I $(_thdir) -I $(_ipath) $<
+	@$(DKCHECK) $(DKFLAGS) -e -I $(_thdir) -I $(_ipath) $<
 
 .PHONY: dedukti
 dedukti: $(_dkos)
@@ -141,6 +160,7 @@ _leanpath = $(EXPDIR)/lean
 _leanfiles=$(addprefix $(_leanpath)/,$(addsuffix .lean,$(_srcbase)))
 
 $(_leanpath)/%.lean: $(_ipath)/%.dko .library_depend_lean $(LOGIPEDIA)
+	@mkdir -p $(_leanpath)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
@@ -187,8 +207,9 @@ _pvsfiles=$(addprefix $(_pvspath)/,$(addsuffix .pvs,$(_srcbase)))
 _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 # For some weird reason, Make consider .pvs are temporary
 $(_pvspath)/%.pvs: $(_ipath)/%.dko .library_depend_pvs $(LOGIPEDIA)
+	@mkdir -p $(_pvspath)
 	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	@$(STTFA2PVS) $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 $(_pvspath)/%.summary: $(_pvspath)/%.pvs
 	@echo "[SUMMARY] $@"
@@ -205,12 +226,12 @@ _jsonpath = $(EXPDIR)/json
 _jsonthpath = $(_jsonpath)/_theory
 _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
-$(_jsonthpath)/%.json: $(_thdir)/%.dko $(LOGIPEDIA)
+$(_jsonthpath)/%.json: $(_thdir)/%.dko $(DK2JSON)
 	@mkdir -p $(_jsonpath)/_theory
-	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	$(DK2JSON) --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
 
-$(_jsonpath)/%.json: $(_ipath)/%.dko $(LOGIPEDIA)
-	$(LOGIPEDIA) json $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+$(_jsonpath)/%.json: $(_ipath)/%.dko $(DK2JSON)
+	$(DK2JSON) --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
 json: $(addprefix $(_jsonthpath)/, $(_thfiles:=.json)) $(_jsonfiles)

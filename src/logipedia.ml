@@ -1,4 +1,5 @@
 module B = Kernel.Basic
+module D = Deps
 module P = Parsing.Parser
 module S = Systems
 
@@ -14,38 +15,26 @@ let output_file = ref None
 (** Input dedukti files. *)
 let infile : string ref = ref ""
 
+(** The middleware used. *)
+let middleware : string ref = ref ""
+
 (** Options list, redefined according to first argument. *)
 let options : (string * Arg.spec * string) list ref = ref []
 
-(** Operation mode of logipedia. *)
-type mode =
-  | ModeJson
-  (** Export to JSON *)
-  | ModeSystem of S.system
-  (** Export to a system *)
-
-let export_mode : mode option ref = ref None
+(** Which system to export to. *)
+let export_mode : S.system option ref = ref None
 
 (** Options common to both modes. *)
 let common_opts =
-    [ ( "-I"
-      , Arg.String B.add_path
-      , " Add folder to Dedukti path" )
-    ; ( "-f"
-      , Arg.Set_string infile
-      , " Input Dedukti file" )
-    ; ( "-o"
-      , Arg.String (fun s -> output_file := Some(s))
-      , " Set output file" ) ]
-
-(** Options for the json export. *)
-let json_opts =
-  let f (name, system) =
-    ( Format.sprintf "--%s" name
-    , Arg.String (fun s -> S.artefact_path := (system, s) :: !S.artefact_path)
-    , Format.sprintf " Output folder of system %s" name )
-  in
-  List.map f S.sys_spec
+  [ ( "-I"
+    , Arg.String B.add_path
+    , " Add folder to Dedukti path" )
+  ; ( "-f"
+    , Arg.Set_string infile
+    , " Input Dedukti file" )
+  ; ( "-o"
+    , Arg.String (fun s -> output_file := Some(s))
+    , " Set output file" ) ]
 
 (** Options for any system export. --fast : does ont compute trace *)
 let sys_opts =
@@ -60,35 +49,34 @@ let anon arg =
   | Some(_) -> raise (Arg.Bad "Too many anonymous arguments provided")
   | None    ->
     (* Export mode is not set: set it. *)
-    if arg = "json"
-    then
-      ( export_mode := Some(ModeJson)
-      ; options := Arg.align (json_opts @ common_opts) )
-    else
-      try
-        ( export_mode := Some(ModeSystem(S.system_of_string arg))
-        ; options := Arg.align (sys_opts @ common_opts) )
-      with S.UnsupportedSystem(s) ->
-        let msg = Format.sprintf "Can't export to %s: system not supported" s in
-        raise (Arg.Bad msg)
+    try
+      export_mode := Some(S.system_of_string arg);
+      options := Arg.align (sys_opts @ common_opts)
+    with S.UnsupportedSystem(s) ->
+      let msg = Format.sprintf "Can't export to %s: system not supported" s in
+      raise (Arg.Bad msg)
 
 let export_file ast system =
   let (module M:Export.E) = Export.of_system system in
-  let fmt =
+  let (fmt, file) =
     match !output_file with
-    | None -> Format.std_formatter
-    | Some f ->
-      try Format.formatter_of_out_channel (open_out f) with _ -> failwith "PROBLEM HERE"
+    | None    -> Format.std_formatter, None
+    | Some(f) ->
+      let file = open_out f in
+      (Format.formatter_of_out_channel file, Some(file))
   in
-  (* FIXME: The file is not closed, is this a problem? *)
-  M.print_ast fmt ast
+  M.print_ast fmt ast;
+  match file with
+  | None    -> ()
+  | Some(f) -> close_out f
+
 
 (* Compute an STTforall ast from Dedukti entries *)
 let mk_ast md entries =
   let items = List.map (Compile.compile_entry md) entries in
-  let fold_entry_dep dep e = Ast.QSet.union dep
+  let fold_entry_dep dep e = D.QSet.union dep
       (Deps.dep_of_entry [Sttfadk.sttfa_module;md] e) in
-  let dep = List.fold_left fold_entry_dep Ast.QSet.empty entries in
+  let dep = List.fold_left fold_entry_dep D.QSet.empty entries in
   { Ast.md = B.string_of_mident md; Ast.dep; items }
 
 (* Export the file for the chosen system. *)
@@ -103,22 +91,8 @@ let export_system syst file =
     export_file sttfa_ast syst;
   end
 
-(* Json export is done without using the Sttfa AST. *)
-let export_json file =
-  let md = Denv.init file in
-  let input = open_in file in
-  let entries = P.Parse_channel.parse md input in
-  close_in input;
-  let module JsExp = Json.Make(Middleware_sttfa.Sttfa) in
-  let document = JsExp.doc_of_entries md entries in
-  let fmt = match !output_file with
-    | None    -> Format.std_formatter
-    | Some(f) -> Format.formatter_of_out_channel (open_out f)
-  in
-  JsExp.print_document fmt document
-
 let _ =
-  let available_sys = "json" :: List.map fst S.sys_spec |> String.concat ", " in
+  let available_sys = List.map fst S.sys_spec |> String.concat ", " in
   let usage = Format.sprintf
       "Usage: %s EXPORT [OPTIONS]...\n\
 \twith EXPORT being one of: %s\n\
@@ -130,22 +104,9 @@ Available options for the selected mode:"
     Arg.parse_dynamic options anon usage;
     match !export_mode with
     | None    -> raise @@ Arg.Bad "Missing export"
-    | Some(m) ->
+    | Some(s) ->
       if !infile = "" then raise (Arg.Bad "Input file required");
-      begin
-        match m with
-        | ModeJson ->
-          (* Some further argument processing for json. *)
-          ( Json_types.json_dir :=
-              begin match !(output_file) with
-                | None    -> raise (Arg.Bad "Output must be set for json")
-                | Some(o) -> Filename.dirname o
-              end
-          ; Json.basename := Filename.remove_extension !infile |>
-                             Filename.basename
-          ; export_json !infile )
-        | ModeSystem(s) -> export_system s !infile
-      end
+      export_system s !infile
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;

@@ -51,3 +51,6 @@ module type S = sig
       {!Json_types.item.term_opt}. *)
 
 end
+
+(** A dummy logic. *)
+module Dummy : S
