@@ -290,7 +290,7 @@ _esc_otpath = $(subst /,\\/,$(_otpath))
 
 _esc_holpath = $(subst /,\\/,$(_holpath))
 .library_depend_hol: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
-	@echo "[DKDEP (ART FILES)] $@"
+	@echo "[DKDEP (HOLLIGHT FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
 	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
 		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_holpath)\\/$$f/ $@ ; \
@@ -359,6 +359,8 @@ clean:
 	@$(RM) .library_depend_lean
 	@$(RM) .library_depend_pvs
 	@$(RM) .library_depend_art
+	@$(RM) .library_depend_hol
+
 
 .PHONY: distclean
 distclean: clean
