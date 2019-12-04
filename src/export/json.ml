@@ -186,7 +186,7 @@ struct
             let file = Filename.concat pth (!basename ^ "." ^ ext) in
             { Jt.system = Sy.string_of_system sys
             ; file
-            ; etype = None }
+            ; etype = Some (M.string_of_item e sys) }
           in
           let exp = List.map art2exp !Sy.artefact_path in
           begin match e with
