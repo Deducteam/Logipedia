@@ -22,11 +22,11 @@ struct
   type tx = unit
   let theory = "dummy"
   exception IllTaxon
-  let tx_of_def _ _ = assert false
-  let tx_of_decl _ = assert false
-  let string_of_tx ?short:_ _ = assert false
-  let tx_of_string _ = assert false
-  let is_axiomatic _ = assert false
-  let fields_of_def _ _ _ = assert false
-  let label _ = assert false
+  let tx_of_def _ _ = ()
+  let tx_of_decl _ = ()
+  let string_of_tx ?short:_ _ = "dummy"
+  let tx_of_string _ = ()
+  let is_axiomatic _ = false
+  let fields_of_def _ _ t = t,None
+  let label _ = "dummy",None
 end
