@@ -2,7 +2,6 @@ module B = Kernel.Basic
 module D = Api.Dep
 module T = Kernel.Term
 module U = Uri
-module Jt = Json_types
 
 module Cic : Middleware.S =
 struct
@@ -63,4 +62,7 @@ struct
     | TxIndType        -> (  "inductive_type", None)
     | TxIndConstructor -> ("constructor_type", None)
     | TxIndDestructor  -> (      "match_type", None)
+
+  (** TODO: Define cic items, and how to print them on the website depending on the export system *)
+  let string_of_item  _ _ = ""
 end

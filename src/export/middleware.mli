@@ -50,6 +50,11 @@ module type S = sig
   (** [label tx] returns labels for the fields {!Json_types.item.term} and
       {!Json_types.item.term_opt}. *)
 
+  val string_of_item : Parsing.Entry.entry -> Systems.system -> string
+  (** [string_of_item item system] returns a string representation of [item] in
+      the export system [system]. This will be printed on the website in the export
+      fields*)
+
 end
 
 (** A dummy logic. *)
