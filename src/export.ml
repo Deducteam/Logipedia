@@ -49,6 +49,9 @@ struct
   let extension = "ml"
 end
 
+(* FIXME *)
+exception Pvs
+
 let of_system : system -> (module E) = fun sys ->
   match sys with
   | `Coq        -> (module COQ)
@@ -56,7 +59,7 @@ let of_system : system -> (module E) = fun sys ->
   | `OpenTheory -> (module OPENTHEORY)
   | `Lean       -> (module LEAN)
   | `Hollight   -> (module HOLLIGHT)
-  | `Pvs        -> failwith "Dedicated binary"
+  | `Pvs        -> raise Pvs
 
 (* FIXME: this function is sttfa specific *)
 (** [mk_ast md es] creates the STTfa ast of entries [es] from dedukti module

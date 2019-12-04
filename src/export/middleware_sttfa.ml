@@ -70,7 +70,9 @@ struct
     | TxThm -> ("statement", None)
 
   let string_of_item entry system =
-    let (module ES) = Export.of_system system in
-    ES.string_of_item (Compile.compile_entry (B.mk_mident "") entry)
+    try
+      let (module ES) = Export.of_system system in
+      ES.string_of_item (Compile.compile_entry (B.mk_mident "") entry)
+    with Export.Pvs -> "FIXME"
 
 end
