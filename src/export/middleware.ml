@@ -14,7 +14,7 @@ module type S = sig
   val is_axiomatic : tx -> bool
   val fields_of_def : tx -> 'a option -> 'a -> 'a * 'a option
   val label : tx -> string * string option
-  val string_of_item : E.entry -> Systems.system -> string
+  val string_of_item : string -> E.entry -> Systems.system -> string
 end
 
 module Dummy : S =
@@ -29,5 +29,5 @@ struct
   let is_axiomatic _ = false
   let fields_of_def _ _ t = t,None
   let label _ = "dummy",None
-  let string_of_item _ _ = "dummy"
+  let string_of_item _ _ _ = "dummy"
 end

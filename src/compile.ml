@@ -5,7 +5,7 @@ open Environ
 module CType  = Compile_type
 module CTerm  = Compile_term
 module CProof = Compile_proof
-
+module PP = Api.Pp
 module Denv = Api.Env.Default
 module Term = Kernel.Term
 module Entry = Parsing.Entry
@@ -25,13 +25,19 @@ let compile_declaration name ty =
       let te' = CTerm.compile_term empty_env a in
       Axiom (of_name name, te')
   | _ ->
-    if is_tyop ty then
+    if Sttfadk.is_tyop ty then
       begin
         (* Format.eprintf "[COMPILE] typeop: %a@." Pp.print_name name ; *)
         TypeDecl (of_name name, arity_of_tyop ty)
       end
     else
-      assert false
+      (Printf.printf "PROBLEM HERE\n--->";
+       Basic.pp_name (Format.std_formatter) name;
+       Format.printf "%!\n";
+       PP.Default.print_term (Format.std_formatter) ty;
+       Printf.printf "%!";
+       Printf.printf "\n\n";
+      assert false)
 
 let compile_definition name ty term =
   match ty with
