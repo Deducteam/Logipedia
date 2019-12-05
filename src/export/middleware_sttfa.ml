@@ -69,10 +69,10 @@ struct
     | TxDef -> ("body", Some("type_annotation"))
     | TxThm -> ("statement", None)
 
-  let string_of_item entry system =
+  let string_of_item mident entry system =
     try
       let (module ES) = Export.of_system system in
-      ES.string_of_item (Compile.compile_entry (B.mk_mident "") entry)
-    with Export.Pvs -> "FIXME"
+      ES.string_of_item (Compile.compile_entry (B.mk_mident mident) entry)
+    with Export.Pvs -> "FIXME: printing not yet available for PVS"
 
 end

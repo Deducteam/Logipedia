@@ -64,5 +64,5 @@ struct
     | TxIndDestructor  -> (      "match_type", None)
 
   (** TODO: Define cic items, and how to print them on the website depending on the export system *)
-  let string_of_item  _ _ = ""
+  let string_of_item _ _ _ = ""
 end
