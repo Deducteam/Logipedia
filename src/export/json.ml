@@ -186,7 +186,7 @@ struct
             let file = Filename.concat pth (!basename ^ "." ^ ext) in
             { Jt.system = Sy.string_of_system sys
             ; file
-            ; etype = if !basename = "sttfa"
+            ; etype = if !basename = M.theory
                 then None
                 else Some (M.string_of_item !basename e sys) }
           in
