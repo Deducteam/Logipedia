@@ -40,7 +40,7 @@ let rec mk_ty = function
   | Ty(_ty) -> mk__ty _ty
 
 let rec mk__te ctx conflicts avoid ?(total=false) =
-  let () = (if total then Printf.printf "Entering mk__te, total is true.\n") in
+  (*let () = (if total then Printf.printf "Entering mk__te, total is true.\n") in*)
   function
   | TeVar(var) ->
     if List.mem_assoc var conflicts then
@@ -98,8 +98,8 @@ let rec mk__te ctx conflicts avoid ?(total=false) =
     let _ty' = CType.compile_wrapped__type ctx
         (Denv.unsafe_reduction ~red:Conv.beta_only _ty) in
     let cst'' = sanitize true (snd cst) in
-    if true || total
-    then (Printf.printf ""; mk_var_term (mk_var (sanitize true (snd(cst))) (mk__ty _ty')))
+    if total || not (Vars.is_empty (frees_ty _ty'))
+    then mk_var_term (mk_var (sanitize true (snd(cst))) (mk__ty _ty'))
     else term_of_const (const_of_name cst'') (mk__ty _ty')
 
 let rec mk_te ctx avoid ?(total=false) = function
@@ -237,27 +237,35 @@ let rec mk_proof env = function
       let _ty = app__te Sttfatyping._infer env right in
       let right' = mk_te env avoid right in
       let right'' = if issue_tyvar right' _ty
-        then (Printf.printf "oops\n"; mk_te env avoid ~total:true right)
+        then mk_te env avoid ~total:true right
         else right' in
       mk_conv "" right'' proof'',pc
 
 let print_item ?(short=false) =
   function
   | Parameter(cst,ty) ->
-    let ty' = mk_ty ty in
-    let cst' = sanitize true (snd cst) in
-    if short
-    then print_var !oc (Var(cst',ty'))
-    else mk_parameter cst' ty'
+    begin
+      try
+        (let ty' = mk_ty ty in
+         let cst' = sanitize true (snd cst) in
+         if short
+         then print_var !oc (Var(cst',ty'))
+         else mk_parameter cst' ty')
+      with _ -> assert false
+    end
   | Definition(cst,ty,te) ->
-    let cst' = sanitize true (snd cst) in
-    let te' = mk_te Environ.empty_env [] te in
-    let ty' = mk_ty ty in
-    let eq = mk_equal_term (term_of_const (const_of_name cst') ty') te' ty' in
-    let Sequent(_,_,_,pi) = thm_of_const cst in
-    if short
-    then print_term false !oc eq
-    else mk_thm cst' eq (mk_hyp []) (pi)
+    begin
+      try
+        (let cst' = sanitize true (snd cst) in
+         let te' = mk_te Environ.empty_env [] te in
+         let ty' = mk_ty ty in
+         let eq = mk_equal_term (term_of_const (const_of_name cst') ty') te' ty' in
+         let Sequent(_,_,_,pi) = thm_of_const cst in
+         if short
+         then print_term false !oc eq
+         else mk_thm cst' eq (mk_hyp []) (pi))
+      with _ -> assert false
+    end
   | Axiom(cst,te) ->
     let te' = mk_te empty_env [] te in
     let hyp = mk_hyp [] in
@@ -265,20 +273,29 @@ let print_item ?(short=false) =
     (* Axioms just have conclusions in STT and HOL Light *)
     (* Else, introductions of implication would have to be added *)
     if short
-    then print_term false !oc te'
+    then Format.fprintf !oc "|- %a" (print_term false) te'
     else mk_thm (sanitize true (snd cst)) te' hyp pi
   | Theorem(cst,te,proof) ->
-    let te' = mk_te empty_env [] te in
-    let hyp' = mk_hyp [] in
-    let proof',_ = mk_proof empty_env proof in
-    let cst' = sanitize true (snd cst) in
-    if short
-    then print_thm_debug !oc (Sequent(cst',hyp',te',proof'))
-    else mk_thm cst' te' hyp' proof'
+    begin
+      try
+        (let te' = mk_te empty_env [] te in
+         let hyp' = mk_hyp [] in
+         let cst' = sanitize true (snd cst) in
+         if short
+         then print_thm_debug !oc (Sequent(cst',hyp',te',dummy_proof))
+         else
+           let proof',_ = mk_proof empty_env proof in
+           mk_thm cst' te' hyp' proof')
+      with _ -> assert false
+    end
   | TypeDecl(name,arity) ->
-    if short
-    then Format.fprintf !oc "%s" ("mat"^(snd name))
-    else mk_type ("mat_"^(snd name)) arity
+    begin
+      try
+        (if short
+         then Format.fprintf !oc "%s" ("mat"^(snd name))
+         else mk_type ("mat_"^(snd name)) arity)
+      with _ -> assert false
+    end
   | TypeDef _ -> failwith "[HOL Light] Type definitions not handled right now"
 
 let content = ref ""
@@ -287,7 +304,7 @@ let string_of_item item =
   let str_fmt = Format.str_formatter in
   set_oc str_fmt;
   print_item ~short:true item;
-  Buffer.contents Format.stdbuf
+  Format.flush_str_formatter ()
 
 let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
   Buffer.clear Format.stdbuf;
