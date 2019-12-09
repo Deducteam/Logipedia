@@ -4,19 +4,26 @@
   (public_name logipedia.core)
   (synopsis "Logipedia core library for interoperability.")
   (wrapped false) ; For subdirs
-  (modules uri deps extras systems)
+  (modules uri deps extras systems export)
   (preprocess (pps ppx_deriving_yojson))
   (libraries unix str dedukti.kernel dedukti.api))
 
-(library
-  (name sttfa)
-  (public_name logipedia.sttfa)
-  (synopsis "Export Logipedia libraries in the STTfa system.")
-  (wrapped false)
-  (modules ast compile compile_proof compile_term compile_type decompile
-           sttfadk sttfatyping export environ
-           coq lean matita openstt opentheory holstt hollight)
-  (libraries logipedia.core))
+; (library
+;   (name sttfa)
+;   (public_name logipedia.sttfa)
+;   (synopsis "Export Logipedia libraries in the STTfa system.")
+;   (wrapped false)
+;   (modules ast compile compile_proof compile_term compile_type decompile
+;            sttfadk sttfatyping export environ
+;            coq lean matita openstt opentheory holstt hollight)
+;   (libraries logipedia.core))
+
+;(library
+;   (name hollight)
+;   (public_name logipedia.hollight)
+;   (wrapped false)
+;   (modules)
+;   (libraries logipedia.core))
 
 (library
   (name middleware)
@@ -25,7 +32,7 @@
   (wrapped false)
   (modules middleware middleware_cic middleware_sttfa
            middleware_switch)
-  (libraries logipedia.core logipedia.sttfa dedukti.api))
+  (libraries logipedia.core dedukti.api))
 
 (library
   (name json)
