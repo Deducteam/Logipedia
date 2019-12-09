@@ -2,7 +2,8 @@
   (name logipedia)
   (public_name logipedia)
   (modules logipedia)
-  (libraries logipedia.pvs logipedia.export logipedia.core logipedia.sttfa))
+  (libraries logipedia.hollight logipedia.pvs logipedia.lean
+  logipedia.export logipedia.core logipedia.sttfa))
 
 (executable
   (name dk2json)

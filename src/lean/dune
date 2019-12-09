@@ -1,0 +1,5 @@
+(library
+   (name lean)
+   (public_name logipedia.lean)
+   (synopsis "Lean into Logipedia.")
+   (libraries logipedia.export logipedia.core logipedia.sttfa))
