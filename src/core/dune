@@ -2,6 +2,5 @@
   (name core)
   (public_name logipedia.core)
   (synopsis "Logipedia core library for interoperability.")
-  (modules uri deps extras systems)
   (preprocess (pps ppx_deriving_yojson))
   (libraries unix str dedukti.kernel dedukti.api))
