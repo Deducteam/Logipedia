@@ -1,0 +1,8 @@
+(library
+  (name json)
+  (public_name logipedia.json)
+  (synopsis "Export Logipedia libraries to json.")
+  (modules json json_types)
+  (preprocess (pps ppx_deriving_yojson))
+  (libraries logipedia.core dedukti.kernel dedukti.api ppx_deriving.runtime
+             logipedia.middleware))

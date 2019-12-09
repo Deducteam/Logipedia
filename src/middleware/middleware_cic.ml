@@ -1,9 +1,9 @@
 module B = Kernel.Basic
 module D = Api.Dep
 module T = Kernel.Term
-module U = Uri
+module U = Core.Uri
 
-module Cic : Middleware.S =
+module Cic : Middleware_types.S =
 struct
   type tx =
     | TxAxiom          (** Axiom *)

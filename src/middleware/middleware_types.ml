@@ -2,7 +2,7 @@ module B = Kernel.Basic
 module D = Api.Dep
 module E = Parsing.Entry
 module T = Kernel.Term
-module U = Uri
+module U = Core.Uri
 module type S = sig
   type tx
   type item
@@ -16,7 +16,7 @@ module type S = sig
   val fields_of_def : tx -> 'a option -> 'a -> 'a * 'a option
   val label : tx -> string * string option
   val item_of_entry : string -> E.entry -> item
-  val string_of_item : item -> Systems.system -> string
+  val string_of_item : item -> Core.Systems.system -> string
 end
 
 module Dummy : S =

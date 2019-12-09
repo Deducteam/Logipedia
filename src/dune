@@ -1,63 +1,17 @@
-(include_subdirs unqualified)
-(library
-  (name core)
-  (public_name logipedia.core)
-  (synopsis "Logipedia core library for interoperability.")
-  (wrapped false) ; For subdirs
-  (modules uri deps extras systems export)
-  (preprocess (pps ppx_deriving_yojson))
-  (libraries unix str dedukti.kernel dedukti.api))
+;(executable
+;  (name logipedia)
+;  (public_name logipedia)
+;  (modules logipedia)
+;  (libraries logipedia.core logipedia.sttfa))
 
-; (library
-;   (name sttfa)
-;   (public_name logipedia.sttfa)
-;   (synopsis "Export Logipedia libraries in the STTfa system.")
-;   (wrapped false)
-;   (modules ast compile compile_proof compile_term compile_type decompile
-;            sttfadk sttfatyping export environ
-;            coq lean matita openstt opentheory holstt hollight)
-;   (libraries logipedia.core))
+;(executable
+;  (name dk2json)
+;  (public_name dk2json)
+;  (modules dk2json)
+;  (libraries logipedia.json))
 
-;(library
-;   (name hollight)
-;   (public_name logipedia.hollight)
-;   (wrapped false)
-;   (modules)
-;   (libraries logipedia.core))
-
-(library
-  (name middleware)
-  (public_name logipedia.middleware)
-  (synopsis "Middleware between logics and json export for Logipedia.")
-  (wrapped false)
-  (modules middleware middleware_cic middleware_sttfa
-           middleware_switch)
-  (libraries logipedia.core dedukti.api))
-
-(library
-  (name json)
-  (public_name logipedia.json)
-  (synopsis "Export Logipedia libraries to json.")
-  (wrapped false)
-  (modules json json_types)
-  (preprocess (pps ppx_deriving_yojson))
-  (libraries logipedia.core dedukti.kernel dedukti.api ppx_deriving.runtime
-             logipedia.middleware))
-
-(executable
-  (name logipedia)
-  (public_name logipedia)
-  (modules logipedia)
-  (libraries logipedia.core logipedia.sttfa))
-
-(executable
-  (name dk2json)
-  (public_name dk2json)
-  (modules dk2json)
-  (libraries logipedia.json))
-
-(executable
-  (name sttfa2pvs)
-  (public_name sttfa2pvs)
-  (modules pvs sttfa2pvs)
-  (libraries logipedia.core logipedia.sttfa))
+;(executable
+;  (name sttfa2pvs)
+;  (public_name sttfa2pvs)
+;  (modules pvs sttfa2pvs)
+;  (libraries logipedia.core logipedia.sttfa))

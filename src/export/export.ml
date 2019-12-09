@@ -13,7 +13,7 @@ module type S =
 sig
   module Ast : AST
 
-  module Mid : Middleware.S
+  module Mid : Middleware.Middleware_types.S
   (** Middleware used for the json export. *)
 
   val export : Ast.t -> Format.formatter -> unit

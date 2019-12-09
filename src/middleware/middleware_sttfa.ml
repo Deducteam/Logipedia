@@ -2,9 +2,9 @@ module B = Kernel.Basic
 module D = Api.Dep
 module E = Parsing.Entry
 module T = Kernel.Term
-module U = Uri
+module U = Core.Uri
 
-module Sttfa : Middleware.S =
+module Sttfa : Middleware_types.S =
 struct
   type tx =
     | TxAxm (** Axiom *)

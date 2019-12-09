@@ -1,0 +1,7 @@
+(library
+  (name middleware)
+  (public_name logipedia.middleware)
+  (synopsis "Middleware between logics and json export for Logipedia.")
+  (modules middleware_types middleware_cic middleware_sttfa
+           middleware_switch)
+  (libraries logipedia.core dedukti.api))
