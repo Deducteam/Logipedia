@@ -35,7 +35,6 @@ _logipediaopts = -I $(_ipath) -I $(_thdir)
 #### Logipedia binary ##############################################
 
 LOGIPEDIA = _build/install/default/bin/logipedia
-STTFA2PVS = _build/install/default/bin/sttfa2pvs
 DK2JSON = _build/install/default/bin/dk2json
 
 .PHONY: all
@@ -46,20 +45,14 @@ logipedia: bin
 	-$(RM) logipedia
 	@ln -s $(LOGIPEDIA) logipedia
 
-sttfa2pvs: bin
-	-$(RM) $@
-	@ln -s $(STTFA2PVS) $@
-
 dk2json: bin
 	-$(RM) $@
 	@ln -s $(DK2JSON) $@
 
-bin: $(LOGIPEDIA) $(STTFA2PVS) $(DK2JSON)
+bin: $(LOGIPEDIA) $(LOGIPEDIA) $(DK2JSON)
 
-.PHONY: $(LOGIPEDIA) $(STTFA2PVS) $(DK2JSON)
+.PHONY: $(LOGIPEDIA) $(LOGIPEDIA) $(DK2JSON)
 $(LOGIPEDIA):
-	@dune build
-$(STTFA2PVS):
 	@dune build
 $(DK2JSON):
 	@dune build
@@ -210,7 +203,7 @@ _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 $(_pvspath)/%.pvs: $(_ipath)/%.dko .library_depend_pvs $(LOGIPEDIA)
 	@mkdir -p $(_pvspath)
 	@echo "[EXPORT] $@"
-	@$(STTFA2PVS) $(_logipediaopts) -f $(<:.dko=.dk) -o $@
+	@$(LOGIPEDIA) pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
 $(_pvspath)/%.summary: $(_pvspath)/%.pvs
 	@echo "[SUMMARY] $@"
