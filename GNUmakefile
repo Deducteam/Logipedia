@@ -229,10 +229,10 @@ _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
 $(_jsonthpath)/%.json: $(_thdir)/%.dko $(DK2JSON)
 	@mkdir -p $(_jsonpath)/_theory
-	$(DK2JSON) --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
+	$(DK2JSON) --hollight $(EXPDIR)/hollight --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs  $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
 
 $(_jsonpath)/%.json: $(_ipath)/%.dko $(DK2JSON)
-	$(DK2JSON) --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
+	$(DK2JSON) --hollight $(EXPDIR)/hollight --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs  $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
 json: $(addprefix $(_jsonthpath)/, $(_thfiles:=.json)) $(_jsonfiles)
