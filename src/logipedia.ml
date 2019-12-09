@@ -39,6 +39,22 @@ let sys_opts =
       , Arg.Set Sttfa.Sttfatyping.Tracer.fast
       , " Fast" ) ]
 
+(** Whether to generate PVS top file. *)
+let pvs_gen_top : bool ref = ref false
+
+(** Options for PVS. *)
+let pvs_opts =
+  [ ( "--gen-top"
+    , Arg.Set pvs_gen_top
+    , " Generate PVS top file" ) ]
+
+(** [get_additional_opts sy] returns additional cli options for a
+    system [sy]. *)
+let get_additional_opts : S.system -> (string * Arg.spec * string) list =
+  function
+  | `Pvs -> pvs_opts
+  | _    -> sys_opts
+
 (** [anon arg] process anonymous argument [arg]. The first anonymous argument is
     supposed to be the export mode. *)
 let anon arg =
@@ -47,7 +63,9 @@ let anon arg =
   | None    ->
     (* Export mode is not set: set it. *)
     try
-      export_mode := Some(S.system_of_string arg);
+      let sy = S.system_of_string arg in
+      export_mode := Some(sy);
+      let sys_opts = get_additional_opts sy in
       options := Arg.align (sys_opts @ common_opts)
     with S.UnsupportedSystem(s) ->
       let msg = Format.sprintf "Can't export to %s: system not supported" s in
