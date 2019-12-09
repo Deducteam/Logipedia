@@ -64,5 +64,5 @@ module type S = sig
 
 end
 
-(** A dummy logic. *)
 module Dummy : S
+(** A dummy logic. *)
