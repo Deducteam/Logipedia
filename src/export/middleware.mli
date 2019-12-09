@@ -9,6 +9,9 @@ module type S = sig
   (** Taxons of the logic. A taxon brings some meta information on an entry,
       e.g. distinguishing 'theorems' from 'lemmas'. *)
 
+  type item
+  (** Items of the logic. Can be directly Dedukti entries, or a separate ast. *)
+
   exception IllTaxon
   (** Exception raised when reading an ill formed taxon. *)
 
@@ -50,7 +53,11 @@ module type S = sig
   (** [label tx] returns labels for the fields {!Json_types.item.term} and
       {!Json_types.item.term_opt}. *)
 
-  val string_of_item : string -> Parsing.Entry.entry -> Systems.system -> string
+  val item_of_entry : string -> Parsing.Entry.entry -> item
+  (** [item_of_entry md entry] returns an item of the logic given an appropriate
+      Dedukti entry [entry] of module [md]. *)
+
+  val string_of_item : item -> Systems.system -> string
   (** [string_of_item md item system] returns a string representation of [item] of
       module [md] in the export system [system]. This will be printed on the
       website in the export fields*)

@@ -12,6 +12,8 @@ struct
     | TxCst (** Constant *)
     | TxThm (** Theorem *)
 
+  type item = Ast.item
+
   exception IllTaxon
   (** Exception raised when reading an ill formed taxon. *)
 
@@ -69,10 +71,32 @@ struct
     | TxDef -> ("body", Some("type_annotation"))
     | TxThm -> ("statement", None)
 
-  let string_of_item mident entry system =
+
+  (*let string_of_error = function
+    | Api.Env.EnvErrorType _ -> "enverrortype"
+    | Api.Env.EnvErrorSignature(e) ->
+      (match e with
+         SymbolNotFound _ -> "symbolnotfound"
+       | CouldNotExportModule _ -> "exportmodule"
+       | AlreadyDefinedSymbol _ -> "alreadydefinedsymbol"
+       | _ -> "enverrorsignature")
+    | Api.Env.EnvErrorRule _ -> "enverrorrule"
+    | Api.Env.EnvErrorDep  _ -> "enverrordep"
+    | Api.Env.NonLinearRule _ -> "nonlinearrule"
+    | Api.Env.NotEnoughArguments _ -> "notenougharguments"
+    | Api.Env.KindLevelDefinition _ -> "kindleveldefinition"
+    | Api.Env.ParseError _ -> "parse"
+    | Api.Env.BracketScopingError -> "bracketscoping"
+    | Api.Env.AssertError -> "assert"*)
+
+
+  let item_of_entry mident entry =
+    Compile.compile_entry (B.mk_mident mident) entry
+
+  let string_of_item item system =
     try
       let (module ES) = Export.of_system system in
-      ES.string_of_item (Compile.compile_entry (B.mk_mident mident) entry)
+      ES.string_of_item item
     with Export.Pvs -> "FIXME: printing not yet available for PVS"
 
 end
