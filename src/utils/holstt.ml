@@ -10,11 +10,15 @@ module BasicHol = struct
       Tyvar of string
     | Tyapp of tyOp * hol_type list
 
+  let dummy_type = Tyvar("dummy")
+
   type term =
       Var of string * hol_type
     | Const of const * hol_type
     | Comb of term * term
     | Abs of term * term
+
+  let dummy_term = Var("dummy",dummy_type)
 
   type hyp = term list
 
@@ -36,6 +40,8 @@ module BasicHol = struct
     | New_basic_definition_proof of string * string * term
     | New_basic_type_definition_proof_left of string * (string * string) * proof
     | New_basic_type_definition_proof_right of string * (string * string) * proof
+
+  let dummy_proof = Axiom_proof(dummy_term)
 
   type thm = Sequent of (string * hyp * term * proof)
 
@@ -245,20 +251,26 @@ module PrintHol = struct
       Tyvar name -> Format.fprintf out "%s" name
     | Tyapp (tyop,[]) -> Format.fprintf out "%s" tyop
     | Tyapp (tyop,tylist)
-        when tyop = "->" -> Format.fprintf out "(%a) -> (%a)"
-                               print_type_rec (List.hd tylist)
-                               print_type_rec (List.hd (List.tl tylist))
+        when tyop = "->" -> Format.fprintf out "%a -> %a"
+                               print_type_atomic (List.hd tylist)
+                               print_type_atomic (List.hd (List.tl tylist))
     | Tyapp (tyop,tylist) -> Format.fprintf out "%s %a"
                                tyop
-                               (print_list " " "(" ")" print_type_rec)
+                               (print_list " " "" "" print_type_atomic)
                                tylist
+
+  and print_type_atomic out t =
+    match t with
+      Tyapp(tyop,_) when tyop = "->" -> Format.fprintf out "(%a)" print_type_rec t
+    | _ -> print_type_rec out t
+
   let print_type out t =
     Format.fprintf out "`:%a`" print_type_rec t
 
   (* Print HOL terms *)
 
   let print_var out = function
-    | Var(name,ty) -> Format.fprintf out "(%s : %a)" name print_type_rec ty
+    | Var(name,ty) -> Format.fprintf out "%s : %a" name print_type_rec ty
     | _ -> failwith "Not a variable\n"
 
   let rec print_term_rec b out = function
@@ -269,13 +281,18 @@ module PrintHol = struct
       begin
       match f,t with
           Const("!",_),Abs(v,t) ->
-          Format.fprintf out "(!%a. %a)" print_var v (print_term_rec b) t
+          Format.fprintf out "! %a. %a" print_var v (print_term_atomic b) t
         |  Comb(Const(s,_),t1),_ when (s = "==>" || s = "/\\" || s = "=") ->
-          Format.fprintf out "(%a %s %a)" (print_term_rec b) t1 s (print_term_rec b) t
+          Format.fprintf out "%a %s %a" (print_term_atomic b) t1 s (print_term_atomic b) t
         | _ ->
-          Format.fprintf out "(%a %a)" (print_term_rec b) f (print_term_rec b) t
+          Format.fprintf out "%a %a" (print_term_atomic b) f (print_term_atomic b) t
     end
-    | Abs(v,t) -> Format.fprintf out "(\\%a. %a)" print_var v (print_term_rec b) t
+    | Abs(v,t) -> Format.fprintf out "\\ %a. %a" print_var v (print_term_atomic b) t
+
+  and print_term_atomic b out t = match t with
+      Comb _ | Abs _ | Var _ when b ->
+      Format.fprintf out "(%a)" (print_term_rec b) t
+    | _ -> print_term_rec b out t
 
   let print_term b out t =
     Format.fprintf out "`%a`" (print_term_rec b) t
