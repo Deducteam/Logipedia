@@ -14,6 +14,13 @@ sig
   val string_of_item : Ast.item -> string
 end
 
+module PVS : E =
+struct
+  include Pvs
+  let system = `Pvs
+  let extension = "pvs"
+end
+
 module COQ : E =
 struct
   include Coq
@@ -59,7 +66,7 @@ let of_system : system -> (module E) = fun sys ->
   | `OpenTheory -> (module OPENTHEORY)
   | `Lean       -> (module LEAN)
   | `Hollight   -> (module HOLLIGHT)
-  | `Pvs        -> raise Pvs
+  | `Pvs        -> (module PVS)
 
 (* FIXME: this function is sttfa specific *)
 (** [mk_ast md es] creates the STTfa ast of entries [es] from dedukti module

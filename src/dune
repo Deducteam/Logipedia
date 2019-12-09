@@ -1,8 +1,8 @@
-;(executable
-;  (name logipedia)
-;  (public_name logipedia)
-;  (modules logipedia)
-;  (libraries logipedia.core logipedia.sttfa))
+(executable
+  (name logipedia)
+  (public_name logipedia)
+  (modules logipedia)
+  (libraries logipedia.pvs logipedia.export logipedia.core logipedia.sttfa))
 
 (executable
   (name dk2json)

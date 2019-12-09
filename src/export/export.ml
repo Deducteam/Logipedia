@@ -4,8 +4,10 @@
 module type AST =
 sig
   type t
-  val compile : 'a -> t
-  val decompile : t -> 'a
+
+  val compile : Kernel.Basic.mident -> Parsing.Entry.entry list -> t
+
+  val decompile : t -> Parsing.Entry.entry list
 end
 
 (** Type of a system. *)
