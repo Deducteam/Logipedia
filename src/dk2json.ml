@@ -1,7 +1,7 @@
 module B = Kernel.Basic
 module P = Parsing.Parser
-module Ms = Middleware_switch
-module S = Systems
+module Ms = Middleware.Middleware_switch
+module S = Core.Systems
 module Denv = Api.Env.Default
 
 (** File into which exported file are written. *)
@@ -52,7 +52,7 @@ let options =
   List.sort (fun (t,_,_) (u,_,_) -> String.compare t u)
 
 (* Json export is done without using the Sttfa AST. *)
-let export_json file (module M : Middleware.S) =
+let export_json file (module M : Middleware.Middleware_types.S) =
   let md = Denv.init file in
   let input = open_in file in
   let entries = P.Parse_channel.parse md input in
@@ -74,7 +74,7 @@ let _ =
       Format.printf "%s@\n" s;
       Arg.usage options usage
   end;
-  Json_types.json_dir :=
+  Json__Json_types.json_dir :=
     begin match !output_file with
       | None    -> raise (Arg.Bad "Output file required")
       | Some(o) -> Filename.dirname o

@@ -12,7 +12,7 @@ struct
     | TxCst (** Constant *)
     | TxThm (** Theorem *)
 
-  type item = Ast.item
+  type item = Sttfa.Ast.item
 
   exception IllTaxon
   (** Exception raised when reading an ill formed taxon. *)
@@ -91,12 +91,12 @@ struct
 
 
   let item_of_entry mident entry =
-    Compile.compile_entry (B.mk_mident mident) entry
+    Sttfa.Compile.compile_entry (B.mk_mident mident) entry
 
   let string_of_item item system =
     try
-      let (module ES) = Export.of_system system in
+      let (module ES) = Sttfa.Export.of_system system in
       ES.string_of_item item
-    with Export.Pvs -> "FIXME: printing not yet available for PVS"
+    with Sttfa.Export.Pvs -> "FIXME: printing not yet available for PVS"
 
 end

@@ -4,7 +4,7 @@
 (** E is the signature for an exporting system. *)
 module type E =
 sig
-  val system            : Systems.system
+  val system            : Core.Systems.system
   (** System identifier. *)
 
   val extension         : string
@@ -19,7 +19,7 @@ sig
   val string_of_item : Ast.item -> string
 end
 
-val of_system : Systems.system -> (module E)
+val of_system : Core.Systems.system -> (module E)
 (** [of_system s] returns the module associated to system id [s]. *)
 
 val export_system : (module E) -> string -> Format.formatter -> unit

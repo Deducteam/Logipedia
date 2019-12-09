@@ -1,6 +1,6 @@
 (** Export to json files. *)
 
-open Extras
+open Core.Extras
 module B = Kernel.Basic
 module D = Api.Dep
 module E = Parsing.Entry
@@ -8,20 +8,20 @@ module F = Format
 module M = Middleware
 module S = Kernel.Signature
 module T = Kernel.Term
-module U = Uri
+module U = Core.Uri
 module Jt = Json_types
-module Sy = Systems
+module Sy = Core.Systems
 
 (** Basename of the processed file, that is, dedukti module. *)
 let basename : string ref = ref ""
 
-module type S = functor (M: Middleware.S) ->
+module type S = functor (M: M.Middleware_types.S) ->
 sig
   val doc_of_entries : B.mident -> E.entry list -> Jt.document
   val print_document : Format.formatter -> Jt.document -> unit
 end
 
-module Make(M:Middleware.S) =
+module Make(M:M.Middleware_types.S) =
 struct
 
   (** Information collected in the current time. *)

@@ -1,4 +1,4 @@
-module D = Deps
+module D = Core.Deps
 open Ast
 
 module Denv = Api.Env.Default
