@@ -30,14 +30,7 @@ let compile_declaration name ty =
         (* Format.eprintf "[COMPILE] typeop: %a@." Pp.print_name name ; *)
         TypeDecl (of_name name, arity_of_tyop ty)
       end
-    else
-      (Printf.printf "PROBLEM HERE\n--->";
-       Basic.pp_name (Format.std_formatter) name;
-       Format.printf "%!\n";
-       PP.Default.print_term (Format.std_formatter) ty;
-       Printf.printf "%!";
-       Printf.printf "\n\n";
-      assert false)
+    else assert false
 
 let compile_definition name ty term =
   match ty with
