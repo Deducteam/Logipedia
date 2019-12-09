@@ -1,5 +1,9 @@
 (** Define functions to interact with intermediate logics called
-    "middleware". *)
+    "middleware". Middlewares are used by the json exporter to provide
+    additional information on items.
+
+    A middleware is defined by a module (e.g. {!module:MidSttfa})
+    implementing the signature {!val:S} and exposed in this file. *)
 
 module B = Kernel.Basic
 module D = Api.Dep
@@ -94,10 +98,12 @@ module Cic : S = MidCic
 (** Simple Type Theory forall. *)
 module Sttfa : S = MidSttfa
 
-(** An association list mapping strings to the modules. *)
+(** An association list mapping strings to the modules. Along with
+    {!val:of_string}, it defines by which identifier any middleware is
+    available. *)
 let spec : (string * (module S)) list =
   [ ( "sttfa", (module Sttfa) )
-  ; ( "cic"  , (module Cic    ) ) ]
+  ; ( "cic"  , (module Cic  ) ) ]
 
 (** [of_string s] returns the middleware associated to string [s]. *)
 let of_string : string -> (module S) = fun s ->
