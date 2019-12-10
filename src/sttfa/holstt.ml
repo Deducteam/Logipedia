@@ -274,7 +274,7 @@ module PrintHol = struct
     | _ -> failwith "Not a variable\n"
 
   let rec print_term_rec b out = function
-      Var(name,ty) when b -> Format.fprintf out "%a" print_var (Var(name,ty))
+      Var(name,ty) when b -> Format.fprintf out "%a" (print_term_atomic b) (Var(name,ty))
     | Var(name,_) -> Format.fprintf out "%s" name
     | Const(cst,_) -> Format.fprintf out "%s" cst
     | Comb(f,t) ->
@@ -290,8 +290,9 @@ module PrintHol = struct
     | Abs(v,t) -> Format.fprintf out "\\ %a. %a" print_var v (print_term_atomic b) t
 
   and print_term_atomic b out t = match t with
-      Comb _ | Abs _ | Var _ when b ->
-      Format.fprintf out "(%a)" (print_term_rec b) t
+      Comb _ | Abs _ -> Format.fprintf out "(%a)" (print_term_rec b) t
+    | Var _ when b ->
+      Format.fprintf out "(%a)" print_var t
     | _ -> print_term_rec b out t
 
   let print_term b out t =
