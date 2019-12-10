@@ -180,11 +180,13 @@ struct
           let uri = U.of_dkname (B.mk_name mdl id) M.theory
               (M.string_of_tx ~short:true tx) |> U.to_string
           in
-          let item = if !basename = M.theory then None else Some(M.item_of_entry !basename e) in
+          let item =
+            if !basename = M.theory then None
+            else Some(M.item_of_entry !basename e)
+          in
           let art2exp (sys, pth) =
             let ext = List.assoc sys Sy.sys_ext in
             let file = Filename.concat pth (!basename ^ "." ^ ext) in
-            (*Printf.printf "%s,%s,%s\n" (Sy.string_of_system sys) file (B.string_of_ident id);*)
             { Jt.system = Sy.string_of_system sys
             ; file
             ; etype = Option.map (fun x -> M.string_of_item x sys) item }

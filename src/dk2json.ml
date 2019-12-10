@@ -56,7 +56,7 @@ let export_json file (module M : Middleware.S) =
   let input = open_in file in
   let entries = P.Parse_channel.parse md input in
   close_in input;
-  let module JsExp = Json.Make(M) in
+  let module JsExp = Json.Compile.Make(M) in
   let document = JsExp.doc_of_entries md entries in
   let fmt = match !output_file with
     | None    -> Format.std_formatter
@@ -73,10 +73,11 @@ let _ =
       Format.printf "%s@\n" s;
       Arg.usage options usage
   end;
-  Json__Json_types.json_dir :=
+  Json.Json_types.json_dir :=
     begin match !output_file with
       | None    -> raise (Arg.Bad "Output file required")
       | Some(o) -> Filename.dirname o
     end;
-  Json.basename := Filename.remove_extension !infile |> Filename.basename;
+  Json.Compile.basename := Filename.remove_extension !infile
+                           |> Filename.basename;
   export_json !infile (Middleware.of_string !middleware)
