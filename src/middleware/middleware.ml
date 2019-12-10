@@ -1,7 +1,15 @@
 (** Define functions to interact with intermediate logics called
-    "middleware". *)
+    "middleware". Middlewares are used by the json exporter to provide
+    additional information on items.
 
-open Kernel
+    A middleware is defined by a module (e.g. {!module:MidSttfa})
+    implementing the signature {!val:S} and exposed in this file. *)
+
+module B = Kernel.Basic
+module D = Api.Dep
+module E = Parsing.Entry
+module T = Kernel.Term
+module U = Core.Uri
 
 (** Specification of a middleware. *)
 module type S = sig
@@ -18,11 +26,11 @@ module type S = sig
   val theory : string
   (** Name of the theory. *)
 
-  val tx_of_def : Term.term option -> Term.term -> tx
+  val tx_of_def : T.term option -> T.term -> tx
   (** [tx_of_def t u] returns a taxon of a term [t] with annotation [u] given
       that [t] and [u] come from a definition. *)
 
-  val tx_of_decl : Term.term -> tx
+  val tx_of_decl : T.term -> tx
   (** [tx_of_def t] returns a taxon of a term [t] given that [t] comes
       from a declaration. *)
 
@@ -57,12 +65,47 @@ module type S = sig
   (** [item_of_entry md entry] returns an item of the logic given an appropriate
       Dedukti entry [entry] of module [md]. *)
 
-  val string_of_item : item -> Systems.system -> string
-  (** [string_of_item md item system] returns a string representation of [item] of
-      module [md] in the export system [system]. This will be printed on the
-      website in the export fields*)
+  val string_of_item : item -> Core.Systems.system -> string
+  (** [string_of_item md item system] returns a string representation
+      of [item] of module [md] in the export system [system]. This
+      will be printed on the website in the export fields. *)
 
 end
 
-module Dummy : S
-(** A dummy logic. *)
+(** A dummy middleware. *)
+module Dummy : S =
+struct
+  type tx = unit
+  type item = unit
+  let theory = "dummy"
+  exception IllTaxon
+  let tx_of_def _ _ = ()
+  let tx_of_decl _ = ()
+  let string_of_tx ?short:_ _ = "dummy"
+  let tx_of_string _ = ()
+  let is_axiomatic _ = false
+  let fields_of_def _ _ t = t,None
+  let label _ = "dummy",None
+  let item_of_entry _ _ = ()
+  let string_of_item _ _ = "dummy"
+end
+
+(** {1 Bindings of available middlewares} *)
+
+(** Coq and the Calculus of Inductive Construction. *)
+module Cic : S = MidCic
+
+(** Simple Type Theory forall. *)
+module Sttfa : S = MidSttfa
+
+(** An association list mapping strings to the modules. Along with
+    {!val:of_string}, it defines by which identifier any middleware is
+    available. *)
+let spec : (string * (module S)) list =
+  [ ( "sttfa", (module Sttfa) )
+  ; ( "cic"  , (module Cic  ) ) ]
+
+(** [of_string s] returns the middleware associated to string [s]. *)
+let of_string : string -> (module S) = fun s ->
+  try List.assoc (String.lowercase_ascii s) spec
+  with Not_found -> (module Dummy)

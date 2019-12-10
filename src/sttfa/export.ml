@@ -1,17 +1,24 @@
 module A = Ast
 module B = Kernel.Basic
-module D = Deps
+module D = Core.Deps
 module E = Parsing.Entry
 module Denv = Api.Env.Default
 module P = Parsing.Parser
-open Systems
+open Core.Systems
 
 module type E =
 sig
-  val system         : Systems.system
+  val system         : system
   val extension      : string
   val print_ast      : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit
   val string_of_item : Ast.item -> string
+end
+
+module PVS : E =
+struct
+  include Pvs
+  let system = `Pvs
+  let extension = "pvs"
 end
 
 module COQ : E =
@@ -59,7 +66,7 @@ let of_system : system -> (module E) = fun sys ->
   | `OpenTheory -> (module OPENTHEORY)
   | `Lean       -> (module LEAN)
   | `Hollight   -> (module HOLLIGHT)
-  | `Pvs        -> raise Pvs
+  | `Pvs        -> (module PVS)
 
 (* FIXME: this function is sttfa specific *)
 (** [mk_ast md es] creates the STTfa ast of entries [es] from dedukti module
@@ -67,7 +74,7 @@ let of_system : system -> (module E) = fun sys ->
 let mk_ast : B.mident -> E.entry list -> A.ast = fun md entries ->
   let items = List.map (Compile.compile_entry md) entries in
   let fold_entry_dep dep e = D.QSet.union dep
-      (Deps.dep_of_entry [Sttfadk.sttfa_module;md] e) in
+      (D.dep_of_entry [Sttfadk.sttfa_module;md] e) in
   let dep = List.fold_left fold_entry_dep D.QSet.empty entries in
   { Ast.md = B.string_of_mident md; Ast.dep; items }
 

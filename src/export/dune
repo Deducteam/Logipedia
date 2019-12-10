@@ -1,0 +1,6 @@
+(library
+   (name export)
+   (public_name logipedia.export)
+   (synopsis "Signatures for export systems.")
+   (modules export)
+   (libraries logipedia.core logipedia.middleware))

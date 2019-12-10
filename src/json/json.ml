@@ -1,16 +1,15 @@
 (** Export to json files. *)
 
-open Extras
+open Core.Extras
 module B = Kernel.Basic
 module D = Api.Dep
 module E = Parsing.Entry
 module F = Format
-module M = Middleware
 module S = Kernel.Signature
 module T = Kernel.Term
-module U = Uri
+module U = Core.Uri
 module Jt = Json_types
-module Sy = Systems
+module Sy = Core.Systems
 
 (** Basename of the processed file, that is, dedukti module. *)
 let basename : string ref = ref ""

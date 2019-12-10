@@ -1,0 +1,6 @@
+(include_subdirs unqualified)
+(library
+  (name sttfa)
+  (public_name logipedia.sttfa)
+  (synopsis "Export Logipedia libraries in the STTfa system.")
+  (libraries logipedia.core))
