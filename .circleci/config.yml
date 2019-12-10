@@ -136,6 +136,31 @@ jobs:
       - store_artifacts:
           path: /tmp/gen_website
 
+          
+  deploy_staging:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - deploy:
+          command: |
+            curl -X POST \
+            -F token=$DEPLOY_TOKEN \
+            -F "ref=master"  \
+            -F "variables[DEPLOY]=staging" \
+            https://gitlab.inria.fr/api/v4/projects/17529/trigger/pipeline
+
+  deploy_prod:
+    docker:
+      - image: circleci/python:3.7-buster
+    steps:
+      - deploy:
+          command: |
+            curl -X POST \
+            -F token=$DEPLOY_TOKEN \
+            -F "ref=master"  \
+            -F "variables[DEPLOY]=prod" \
+            https://gitlab.inria.fr/api/v4/projects/17529/trigger/pipeline
+
 
 workflows:
   version: 2.1
@@ -152,3 +177,20 @@ workflows:
       - build_website:
           requires:
             - json_export
+      - deploy_staging:
+          requires:
+            - build_website
+          filters:
+            branches:
+              only: master
+      - hold:
+          type: approval
+          requires:
+            - deploy_staging
+          filters:
+            branches:
+              only: master
+      - deploy_prod:
+          requires:
+            - hold
+          

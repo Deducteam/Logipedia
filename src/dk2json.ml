@@ -1,6 +1,5 @@
 module B = Kernel.Basic
 module P = Parsing.Parser
-module Ms = Middleware.Middleware_switch
 module S = Core.Systems
 module Denv = Api.Env.Default
 
@@ -20,7 +19,7 @@ let middleware : string ref = ref ""
 let options =
   let m_doc =
     let available_mid =
-      "dummy" :: List.map fst Ms.mid_spec |> String.concat ", "
+      "dummy" :: List.map fst Middleware.spec |> String.concat ", "
     in
     Format.sprintf " Middleware to use, one of %s" available_mid
   in
@@ -52,7 +51,7 @@ let options =
   List.sort (fun (t,_,_) (u,_,_) -> String.compare t u)
 
 (* Json export is done without using the Sttfa AST. *)
-let export_json file (module M : Middleware.Middleware_types.S) =
+let export_json file (module M : Middleware.S) =
   let md = Denv.init file in
   let input = open_in file in
   let entries = P.Parse_channel.parse md input in
@@ -80,4 +79,4 @@ let _ =
       | Some(o) -> Filename.dirname o
     end;
   Json.basename := Filename.remove_extension !infile |> Filename.basename;
-  export_json !infile (Ms.mid_of_string !middleware)
+  export_json !infile (Middleware.of_string !middleware)

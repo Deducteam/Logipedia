@@ -5,7 +5,7 @@ val basename : string ref
 (** Basename of processed file. Output files will be [basename.<ext>] where
     [<ext>] is a suitable extension (e.g. .v for coq). *)
 
-module type S = functor (M: Middleware.Middleware_types.S) ->
+module type S = functor (M: Middleware.S) ->
 sig
   val doc_of_entries : Basic.mident -> Entry.entry list -> Json_types.document
   (** [doc_of_entry md e] transforms a list of Dedukti entries [e]
