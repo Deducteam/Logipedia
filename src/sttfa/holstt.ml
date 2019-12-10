@@ -290,7 +290,8 @@ module PrintHol = struct
     | Abs(v,t) -> Format.fprintf out "\\ %a. %a" print_var v (print_term_atomic b) t
 
   and print_term_atomic b out t = match t with
-      Comb _ | Abs _ | Var _ when b ->
+      Comb _ | Abs _ -> Format.fprintf out "(%a)" (print_term_rec b) t
+    | Var _ when b ->
       Format.fprintf out "(%a)" (print_term_rec b) t
     | _ -> print_term_rec b out t
 
