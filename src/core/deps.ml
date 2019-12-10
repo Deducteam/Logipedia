@@ -3,15 +3,59 @@ open Kernel.Term
 open Parsing.Entry
 open Kernel.Rule
 
+(** {1 Build library} based on Shake. *)
+
+module type Resources =
+sig
+  type key
+  type value
+end
+
+module type BuildSys =
+sig
+  type key
+  type value
+  type action
+  type rule
+  val build : rule list -> key -> value
+  end
+
+module Make : functor (R:Resources) -> BuildSys
+  with type key = R.key
+   and type value = R.value =
+  functor (R:Resources) ->
+struct
+  include R
+
+  type action =
+    | Finished of value
+    (** A computed value. *)
+    | Depends of key * (R.value -> action)
+    (** A dependency on another key, with the appropriate treatment. *)
+
+  type rule =
+    { creates : R.key
+    (** The target created by the rule. *)
+    ; action : action
+    (** The action associated to the rule. *) }
+
+  let rec build : rule list -> key -> value = fun rules target ->
+    let rec run = function
+      | Finished(v)  -> v
+      | Depends(d,a) -> run (a (build rules d))
+    in
+    run (List.find (fun r -> r.creates = target) rules).action
+end
+
+(** {1 Dedukti dependency computation} *)
+
 module QSet = Set.Make(String)
 
 let add_dep : mident -> QSet.t =
  fun md -> QSet.singleton (string_of_mident @@ md)
 
-
 let qset_of_list f l =
   List.fold_left (fun set x -> QSet.union (f x) set) QSet.empty l
-
 
 (** Term / pattern / entry traversal commands. *)
 
@@ -23,7 +67,6 @@ let rec mk_term t =
   | Lam (_, _, None, te) -> mk_term te
   | Lam (_, _, Some ty, te) -> QSet.union (mk_term ty) (mk_term te)
   | Pi (_, _, a, b) -> QSet.union (mk_term a) (mk_term b)
-
 
 let rec mk_pattern p =
   match p with
@@ -51,4 +94,5 @@ let dep_of_entry = function
   | Require (_, md) -> add_dep md
 
 let dep_of_entry (mds:mident list) e =
-  List.fold_left (fun qset md -> QSet.remove (string_of_mident md) qset) (dep_of_entry e) mds
+  List.fold_left (fun qset md -> QSet.remove (string_of_mident md) qset)
+    (dep_of_entry e) mds
