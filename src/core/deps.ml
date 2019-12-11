@@ -3,50 +3,6 @@ open Kernel.Term
 open Parsing.Entry
 open Kernel.Rule
 
-(** {1 Build library} based on Shake. *)
-
-module type Resources =
-sig
-  type key
-  type value
-end
-
-module type BuildSys =
-sig
-  type key
-  type value
-  type action
-  type rule
-  val build : rule list -> key -> value
-  end
-
-module Make : functor (R:Resources) -> BuildSys
-  with type key = R.key
-   and type value = R.value =
-  functor (R:Resources) ->
-struct
-  include R
-
-  type action =
-    | Finished of value
-    (** A computed value. *)
-    | Depends of key * (R.value -> action)
-    (** A dependency on another key, with the appropriate treatment. *)
-
-  type rule =
-    { creates : R.key
-    (** The target created by the rule. *)
-    ; action : action
-    (** The action associated to the rule. *) }
-
-  let rec build : rule list -> key -> value = fun rules target ->
-    let rec run = function
-      | Finished(v)  -> v
-      | Depends(d,a) -> run (a (build rules d))
-    in
-    run (List.find (fun r -> r.creates = target) rules).action
-end
-
 (** {1 Dedukti dependency computation} *)
 
 module QSet = Set.Make(String)
