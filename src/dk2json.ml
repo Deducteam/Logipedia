@@ -1,7 +1,6 @@
 module B = Kernel.Basic
 module P = Parsing.Parser
-module Ms = Middleware_switch
-module S = Systems
+module S = Core.Systems
 module Denv = Api.Env.Default
 
 (** File into which exported file are written. *)
@@ -20,7 +19,7 @@ let middleware : string ref = ref ""
 let options =
   let m_doc =
     let available_mid =
-      "dummy" :: List.map fst Ms.mid_spec |> String.concat ", "
+      "dummy" :: List.map fst Middleware.spec |> String.concat ", "
     in
     Format.sprintf " Middleware to use, one of %s" available_mid
   in
@@ -74,10 +73,10 @@ let _ =
       Format.printf "%s@\n" s;
       Arg.usage options usage
   end;
-  Json_types.json_dir :=
+  Json__Json_types.json_dir :=
     begin match !output_file with
       | None    -> raise (Arg.Bad "Output file required")
       | Some(o) -> Filename.dirname o
     end;
   Json.basename := Filename.remove_extension !infile |> Filename.basename;
-  export_json !infile (Ms.mid_of_string !middleware)
+  export_json !infile (Middleware.of_string !middleware)

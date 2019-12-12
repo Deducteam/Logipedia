@@ -1,5 +1,5 @@
 module A = Ast
-module D = Deps
+module D = Core.Deps
 module Basic = Kernel.Basic
 module Signature = Kernel.Signature
 module F = Format

@@ -2,7 +2,7 @@
     Informations are redundant to facilitate exportation. *)
 
 module B = Kernel.Basic
-module D = Deps
+module D = Core.Deps
 
 (** {b NOTE} underscored types are monomorphic, not underscored are
     polymorphic. *)

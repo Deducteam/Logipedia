@@ -8,11 +8,13 @@
 * DONE [#A] Complete json semantics
 * TODO [#B] Set up ci with
 ** DONE check dk files
-** DONE check coq
-** TODO pvs
-** TODO lean
+** TODO check coq
+** DONE pvs
+** DONE lean
 * TODO [#A] origin of entries, as a field or in another json file
 * TODO [#A] library in uris
-* TODO [#C] update json schema
+* DONE [#C] update json schema
 * TODO [#B] separate translators from logipedia
 * TODO [#D] incremental build
+* TODO [#C] reimplement pvs gen-top (in sttfa2pvs.ml as of
+  https://github.com/Deducteam/Logipedia/commit/de97ed8055b0c9995ec8b3d8557e6da5c82633c8)
