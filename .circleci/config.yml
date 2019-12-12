@@ -149,7 +149,7 @@ jobs:
           at: /tmp/workspace
       - run: cp -r /tmp/workspace/gen_website ./
       - run: tar -zcf website.tar.gz gen_website
-      - run: cp website.tar.gaz /tmp/
+      - run: cp website.tar.gz /tmp/
       - store_artifacts:
           path: /tmp/website.tar.gz
       - deploy:
