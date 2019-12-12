@@ -158,7 +158,7 @@ jobs:
             -F token=$DEPLOY_TOKEN \
             -F "ref=master"  \
             -F "variables[DEPLOY]=staging" \
-            -F "variables[BUILN_NUM]=$CIRCLE_BUILD_NUM" \
+            -F "variables[BUILD_NUM]=$CIRCLE_BUILD_NUM" \
             https://gitlab.inria.fr/api/v4/projects/17529/trigger/pipeline
       
 
