@@ -135,19 +135,32 @@ jobs:
       - run: cp -r gen_website /tmp/
       - store_artifacts:
           path: /tmp/gen_website
+      - persist_to_workspace:
+          root: /tmp
+          paths: 
+            - gen_website
 
           
   deploy_staging:
     docker:
       - image: circleci/python:3.7-buster
     steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: cp -r /tmp/workspace/gen_website ./
+      - run: tar -zcf website.tar.gz gen_website
+      - run: cp website.tar.gz /tmp/
+      - store_artifacts:
+          path: /tmp/website.tar.gz
       - deploy:
           command: |
             curl -X POST \
             -F token=$DEPLOY_TOKEN \
             -F "ref=master"  \
             -F "variables[DEPLOY]=staging" \
+            -F "variables[BUILD_NUM]=$CIRCLE_BUILD_NUM" \
             https://gitlab.inria.fr/api/v4/projects/17529/trigger/pipeline
+      
 
   deploy_prod:
     docker:
@@ -188,6 +201,8 @@ workflows:
           requires:
             - deploy_staging
           filters:
+            # tags:
+            #   only: /^v[0-9]+(\.[0-9]+)*$/
             branches:
               only: master
       - deploy_prod:
