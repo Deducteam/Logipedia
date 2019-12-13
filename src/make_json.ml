@@ -42,8 +42,9 @@ let rec buildm : ('k, 'v) rulem list -> 'k -> 'v = fun rules target ->
 (* Unit because we use the result in the [doc_of_entries]
    function. This should be fixed: [doc_of_entries] should take other
    document in the json type as arguments. *)
-let make_doc_rulem : (module Compile.S) -> string -> (key, unit) rulem =
-  fun (module JsExp) file ->
+(** [make_doc_rulem JsExp fmt file] *)
+let make_doc_rulem : (module Compile.S) -> Format.formatter -> string ->
+  (key, unit) rulem = fun (module JsExp) fmt file ->
   let md = Denv.init file in
   let input = open_in file in
   let m_depends = List.map (fun x -> DkMd(x)) (deps_of_md input md) in
@@ -55,7 +56,7 @@ let make_doc_rulem : (module Compile.S) -> string -> (key, unit) rulem =
     let input = open_in file in
     let entries = Parsing.Parser.Parse_channel.parse md input in
     close_in input;
-    JsExp.print_document Format.std_formatter
+    JsExp.print_document fmt
       (JsExp.doc_of_entries md entries)
   in
   {m_creates=JsMd(md); m_depends; m_action}
