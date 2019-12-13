@@ -14,13 +14,13 @@ module Sy = Core.Systems
 (** Basename of the processed file, that is, dedukti module. *)
 let basename : string ref = ref ""
 
-module type S = functor (M: Middleware.S) ->
+module type S =
 sig
   val doc_of_entries : B.mident -> E.entry list -> Jt.document
   val print_document : Format.formatter -> Jt.document -> unit
 end
 
-module Make(M:Middleware.S) =
+module Make : functor (M:Middleware.S) -> S = functor (M:Middleware.S) ->
 struct
 
   (** Information collected in the current time. *)
