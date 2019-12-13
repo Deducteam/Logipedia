@@ -64,6 +64,12 @@ let export_json file (module M : Middleware.S) =
   in
   JsExp.print_document fmt document
 
+let export_json_new file (module M: Middleware.S) =
+  let module JsExp = Json.Compile.Make(M) in
+  let rule = Make_json.make_doc_rulem (module JsExp) file in
+  let basename = Filename.chop_extension file in
+  Make_json.buildm [rule] (Make_json.JsMd(Kernel.Basic.mk_mident basename))
+
 let _ =
   let usage = Format.sprintf "Usage: %s [OPTIONS]...@\n" Sys.argv.(0) in
   let anon _ = raise (Arg.Bad "No anonymous argument") in
@@ -80,4 +86,6 @@ let _ =
     end;
   Json.Compile.basename := Filename.remove_extension !infile
                            |> Filename.basename;
-  export_json !infile (Middleware.of_string !middleware)
+  (* FIXME *)
+  Kernel.Basic.add_path (Filename.dirname !infile);
+  export_json_new !infile (Middleware.of_string !middleware)
