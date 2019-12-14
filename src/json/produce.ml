@@ -1,11 +1,11 @@
-(** Uses the make facility to solve dependency issues. *)
+(** All the rules to produce json files with {!module:Core.Build} *)
 (* TODO:
    - minimise number of parsing of input file,
    - remove memoization at the level of [doc_of_entries], memoize here,
    - set correctly cl options,
    - avoid rebuilds... *)
 
-open Json
+open Core.Build
 module K = Kernel
 module Denv = Api.Env.Default
 
@@ -41,24 +41,11 @@ let key_eq : key -> key -> bool = fun k l ->
 
 exception NoRuleToMakeTarget of key
 
-(** {1 GNU Make like behaviour} *)
-
-(** Old style make rules. *)
-type ('k, 'v) rulem = { m_creates : 'k
-                      ; m_depends : 'k list
-                      ; m_action : 'v list -> 'v }
-
 (** [pp_rule fmt r] prints rule [r] on format [fmt]. *)
 let pp_rule : Format.formatter -> ('k, 'v) rulem -> unit = fun fmt r ->
   let pp_sep = Format.pp_print_space in
   Format.fprintf fmt "%a: %a" pp_key r.m_creates
     (Format.pp_print_list ~pp_sep pp_key) r.m_depends
-
-let rec buildm : ('k, 'v) rulem list -> 'k -> 'v = fun rules target ->
-  try
-    let rule = List.find (fun r -> key_eq r.m_creates target) rules in
-    rule.m_action (List.map (buildm rules) rule.m_depends)
-  with Not_found -> raise (NoRuleToMakeTarget target)
 
 (* Unit because we use the result in the [doc_of_entries]
    function. This should be fixed: [doc_of_entries] should take other
@@ -102,22 +89,3 @@ let make_doc_rulem : (module Compile.S) -> string ->
     doc
   in
   {m_creates=JsMd(md); m_depends; m_action}
-
-(** {1 Shake like behaviour} *)
-
-type ('k, 'v) action =
-  | Finished of 'v
-  | Depends  of 'k * ('v -> ('k, 'v) action)
-  (** A dependence on a key along with the way to use the value from
-      this dependency. *)
-
-(** Dynamic rules. *)
-type ('k, 'v) rule = 'k * ('k, 'v) action
-
-let rec build : ('k, 'v) rule list -> 'k -> 'v = fun rules target ->
-  let rec run = function
-    | Finished(v)  -> v
-    | Depends(d,a) -> run (a (build rules d))
-  in
-  let action = snd (List.find (fun r -> (fst r) = target) rules) in
-  run action

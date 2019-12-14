@@ -8,5 +8,5 @@
 (executable
   (name dk2json)
   (public_name dk2json)
-  (modules dk2json make_json)
+  (modules dk2json)
   (libraries logipedia.json logipedia.core))

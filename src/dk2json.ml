@@ -1,4 +1,6 @@
-open Core.Extras
+open Core
+open Extras
+open Json
 module B = Kernel.Basic
 module P = Parsing.Parser
 module S = Core.Systems
@@ -36,7 +38,7 @@ let options =
       , Arg.String B.add_path
       , " Add folder to Dedukti path" )
     ; ( "-J"
-      , Arg.Set_string Json.Compile.json_include
+      , Arg.Set_string Compile.json_include
       , " Add folder to Json built files path" )
     ; ( "-m"
       , Arg.Set_string middleware
@@ -47,10 +49,10 @@ let options =
   List.sort (fun (t,_,_) (u,_,_) -> String.compare t u)
 
 let export_json : string -> (module Middleware.S) ->
-  (Make_json.key, unit) Make_json.rulem =
+  (Produce.key, unit) Build.rulem =
   fun file (module M: Middleware.S) ->
-  let module JsExp = Json.Compile.Make(M) in
-  Make_json.make_doc_rulem (module JsExp) file (Option.get !output_dir)
+  let module JsExp = Compile.Make(M) in
+  Produce.make_doc_rulem (module JsExp) file (Option.get !output_dir)
   (* let noext = Filename.chop_extension file in
    * Make_json.buildm [rule] (Make_json.JsMd(Kernel.Basic.mk_mident noext)); *)
 
@@ -72,12 +74,12 @@ let _ =
   in
   begin
     let f t =
-      try Make_json.buildm rules t
-      with Make_json.NoRuleToMakeTarget(t) ->
+      try Build.buildm Produce.key_eq rules t
+      with Produce.NoRuleToMakeTarget(t) ->
         let t = match t with JsMd(t) | DkMd(t) -> t in
         Format.printf "No rule to make %a\n" (Kernel.Basic.pp_mident) t
     in
-    let targets = List.map (fun f -> Make_json.JsMd(Denv.init f)) !infiles in
+    let targets = List.map (fun f -> Produce.JsMd(Denv.init f)) !infiles in
     try
       List.iter f targets
     with e -> Derr.graceful_fail None e
