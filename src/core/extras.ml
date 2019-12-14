@@ -2,12 +2,14 @@ module Option =
 struct
   type 'a t = 'a option
 
-  (** [map f o] is a monadic bind: computes [f v] if [o] is a value
-      [v] (that is, [Some(v)]), or returns [None]. *)
   let map : ('a -> 'b) -> 'a t -> 'b t = fun f op ->
     match op with
     | None    -> None
     | Some(v) -> Some(f v)
+
+  let get : 'a t -> 'a = function
+    | Some(v) -> v
+    | None    -> invalid_arg "Option.get"
 end
 
 module String =

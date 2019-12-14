@@ -89,7 +89,7 @@ let label = function
 
 
 let item_of_entry mident entry =
-  Sttfa__Compile.compile_entry (B.mk_mident mident) entry
+  Sttfa__Compile.compile_entry mident entry
 
 let string_of_item item system =
   try

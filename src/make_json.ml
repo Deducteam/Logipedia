@@ -19,14 +19,27 @@ let deps_of_md : in_channel -> K.Basic.mident -> K.Basic.mident list =
   begin try Api.Dep.make md entries
     with e -> ErrorHandler.graceful_fail None e
   end;
-  let deps = Hashtbl.find Api.Dep.deps md in
-  Api.Dep.MDepSet.to_seq deps.deps |> Seq.map fst |> List.of_seq
+  try
+    let deps = Hashtbl.find Api.Dep.deps md in
+    Api.Dep.MDepSet.to_seq deps.deps |> Seq.map fst |> List.of_seq
+  with Not_found -> assert false
 
 (** {1 General definitions} *)
 
 type key =
   | JsMd of K.Basic.mident
   | DkMd of K.Basic.mident
+
+(** [pp_key fmt k] prints key [k] on format [fmt]. *)
+let pp_key : Format.formatter -> key -> unit = fun fmt k ->
+  match k with DkMd(m) | JsMd(m) -> K.Basic.pp_mident fmt m
+
+(** [key_eq k l] returns true iff [k] and [l] are equal. *)
+let key_eq : key -> key -> bool = fun k l ->
+  match k with JsMd(k) | DkMd(k) ->
+    match l with JsMd(l) | DkMd(l) -> K.Basic.mident_eq k l
+
+exception NoRuleToMakeTarget of key
 
 (** {1 GNU Make like behaviour} *)
 
@@ -35,29 +48,58 @@ type ('k, 'v) rulem = { m_creates : 'k
                       ; m_depends : 'k list
                       ; m_action : 'v list -> 'v }
 
+(** [pp_rule fmt r] prints rule [r] on format [fmt]. *)
+let pp_rule : Format.formatter -> ('k, 'v) rulem -> unit = fun fmt r ->
+  let pp_sep = Format.pp_print_space in
+  Format.fprintf fmt "%a: %a" pp_key r.m_creates
+    (Format.pp_print_list ~pp_sep pp_key) r.m_depends
+
 let rec buildm : ('k, 'v) rulem list -> 'k -> 'v = fun rules target ->
-  let rule = List.find (fun r -> r.m_creates = target) rules in
-  rule.m_action (List.map (buildm rules) rule.m_depends)
+  try
+    let rule = List.find (fun r -> key_eq r.m_creates target) rules in
+    rule.m_action (List.map (buildm rules) rule.m_depends)
+  with Not_found -> raise (NoRuleToMakeTarget target)
 
 (* Unit because we use the result in the [doc_of_entries]
    function. This should be fixed: [doc_of_entries] should take other
    document in the json type as arguments. *)
-(** [make_doc_rulem JsExp fmt file] *)
-let make_doc_rulem : (module Compile.S) -> Format.formatter -> string ->
-  (key, unit) rulem = fun (module JsExp) fmt file ->
-  let md = Denv.init file in
-  let input = open_in file in
-  let m_depends = List.map (fun x -> DkMd(x)) (deps_of_md input md) in
-  close_in input;
+(** [make_doc_rulem JsExp ifile odir] creates a rule to build a json file
+    [odir/file.json] from input Dedukti file [ifile] using Json exporter
+    [JsExp]. [file] is the basename of [ifile] with the suffix [.dk] replaced by
+    [.json]. For instance, if [ifile] is [a/b/eq.dk] then [file] is [eq] and the
+    created file is then [odir/eq.json]. *)
+let make_doc_rulem : (module Compile.S) -> string ->
+  string -> (key, unit) rulem = fun (module JsExp) infile outdir ->
+  let md = Denv.init infile in
+  let m_depends =
+    let input = open_in infile in
+    let ret = List.map (fun x -> DkMd(x)) (deps_of_md input md) in
+    close_in input;
+    ret
+  in
   let m_action _ =
     (* Argument discarded as we previously built jsons in
        [doc_of_entries]. Memoization can be done at the level of make,
        and not [doc_of_entries]. *)
-    let input = open_in file in
-    let entries = Parsing.Parser.Parse_channel.parse md input in
-    close_in input;
-    JsExp.print_document fmt
-      (JsExp.doc_of_entries md entries)
+    let entries =
+      let input = open_in infile in
+      let ret = Parsing.Parser.Parse_channel.parse md input in
+      close_in input;
+      ret
+    in
+    let ochan =
+      let open Filename in
+      let ofile =
+        (concat outdir (basename (chop_extension infile))) ^ ".json"
+      in
+      open_out ofile
+    in
+    let doc =
+      let fmt = Format.formatter_of_out_channel ochan in
+      JsExp.print_document fmt (JsExp.doc_of_entries md entries)
+    in
+    close_out ochan;
+    doc
   in
   {m_creates=JsMd(md); m_depends; m_action}
 

@@ -61,7 +61,7 @@ module type S = sig
   (** [label tx] returns labels for the fields {!Json_types.item.term} and
       {!Json_types.item.term_opt}. *)
 
-  val item_of_entry : string -> Parsing.Entry.entry -> item
+  val item_of_entry : Kernel.Basic.mident -> Parsing.Entry.entry -> item
   (** [item_of_entry md entry] returns an item of the logic given an appropriate
       Dedukti entry [entry] of module [md]. *)
 

@@ -11,9 +11,6 @@ module U = Core.Uri
 module Jt = Json_types
 module Sy = Core.Systems
 
-(** Basename of the processed file, that is, dedukti module. *)
-let basename : string ref = ref ""
-
 module type S =
 sig
   val doc_of_entries : B.mident -> E.entry list -> Jt.document
@@ -53,7 +50,8 @@ struct
             (* If the file has not been found, it is probably a theory file,
                lying in the [theory] subdirectory. *)
             let fullpath = String.concat Filename.dir_sep
-                [ !Jt.json_dir ; Jt.json_thy_dir ; (fname ^ ".json") ] in
+                [ !Jt.json_dir ; (fname ^ ".json") ] in
+            Format.printf "Searching in: %s\n" fullpath;
             Yojson.Safe.from_file fullpath |> Jt.document_of_yojson
         in
         let f it =
@@ -181,12 +179,13 @@ struct
               (M.string_of_tx ~short:true tx) |> U.to_string
           in
           let item =
-            if !basename = M.theory then None
-            else Some(M.item_of_entry !basename e)
+            if (B.string_of_mident mdl) = M.theory then None else
+            Some(M.item_of_entry mdl e)
           in
           let art2exp (sys, pth) =
+            (* Creates the  *)
             let ext = List.assoc sys Sy.sys_ext in
-            let file = Filename.concat pth (!basename ^ "." ^ ext) in
+            let file = Filename.concat pth (B.string_of_mident mdl ^ "." ^ ext) in
             { Jt.system = Sy.string_of_system sys
             ; file
             ; etype = Option.map (fun x -> M.string_of_item x sys) item }
