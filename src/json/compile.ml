@@ -185,9 +185,10 @@ struct
             Some(M.item_of_entry mdl e)
           in
           let art2exp (sys, pth) =
-            (* Creates the  *)
             let ext = List.assoc sys Sy.sys_ext in
-            let file = Filename.concat pth (B.string_of_mident mdl ^ "." ^ ext) in
+            let file =
+              Filename.concat pth (B.string_of_mident mdl ^ "." ^ ext)
+            in
             { Jt.system = Sy.string_of_system sys
             ; file
             ; etype = Option.map (fun x -> M.string_of_item x sys) item }

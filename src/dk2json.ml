@@ -19,12 +19,14 @@ let middleware : string ref = ref ""
 (** Options of command line. *)
 let options =
   let m_doc =
+    (* Documentation string for middlewares. *)
     let available_mid =
       "dummy" :: List.map fst Middleware.spec |> String.concat ", "
     in
     Format.sprintf " Middleware to use, one of %s" available_mid
   in
   let sys_exps =
+    (* Spec list for export systems. *)
     let f (name, system) =
       ( Format.sprintf "--%s" name
       , Arg.String (fun s -> S.artefact_path := (system, s) :: !S.artefact_path)
