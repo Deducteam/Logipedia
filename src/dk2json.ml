@@ -30,17 +30,19 @@ let options =
     in
     List.map f S.sys_spec
   in
-  Arg.align
+  Arg.align @@
     sys_exps @
     [ ( "-I"
       , Arg.String B.add_path
       , " Add folder to Dedukti path" )
+    ; ( "-J"
+      , Arg.Set_string Json.Compile.json_include
+      , " Add folder to Json built files path" )
     ; ( "-m"
       , Arg.Set_string middleware
       , m_doc )
     ; ( "-o"
-      , Arg.String (fun s -> output_dir := Some(s)
-                           ; Json.Json_types.json_dir := s)
+      , Arg.String (fun s -> output_dir := Some(s))
       , " Set output directory" ) ] |>
   List.sort (fun (t,_,_) (u,_,_) -> String.compare t u)
 
@@ -69,17 +71,13 @@ let _ =
       !infiles
   in
   begin
-    let pp_sep = Format.pp_print_newline in
-    Format.pp_print_list ~pp_sep Make_json.pp_rule Format.std_formatter rules
-  end;
-  begin
-    let targets = List.map (fun f -> Make_json.JsMd(Denv.init f)) !infiles in
     let f t =
       try Make_json.buildm rules t
       with Make_json.NoRuleToMakeTarget(t) ->
         let t = match t with JsMd(t) | DkMd(t) -> t in
         Format.printf "No rule to make %a\n" (Kernel.Basic.pp_mident) t
     in
+    let targets = List.map (fun f -> Make_json.JsMd(Denv.init f)) !infiles in
     try
       List.iter f targets
     with e -> Derr.graceful_fail None e

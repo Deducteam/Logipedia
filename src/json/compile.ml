@@ -11,6 +11,8 @@ module U = Core.Uri
 module Jt = Json_types
 module Sy = Core.Systems
 
+let json_include : string ref = ref ""
+
 module type S =
 sig
   val doc_of_entries : B.mident -> E.entry list -> Jt.document
@@ -27,7 +29,7 @@ struct
     ; ct_deps : (B.name list) NameMap.t
     (** Dependencies *)
     ; ct_thax : (B.name list) NameMap.t
-    (** Axiomatic theories *)}
+    (** Axiomatic theories *) }
 
   (** {2 Loading from other json files} *)
 
@@ -44,13 +46,13 @@ struct
         let fname = B.md key |> B.string_of_mident in
         let doc =
           try
-            let fullpath = Filename.concat !(Jt.json_dir) (fname ^ ".json") in
+            let fullpath = Filename.concat !(json_include) (fname ^ ".json") in
             Yojson.Safe.from_file fullpath |> Jt.document_of_yojson
           with Sys_error(_) ->
             (* If the file has not been found, it is probably a theory file,
                lying in the [theory] subdirectory. *)
             let fullpath = String.concat Filename.dir_sep
-                [ !Jt.json_dir ; (fname ^ ".json") ] in
+                [ !json_include ; (fname ^ ".json") ] in
             Format.printf "Searching in: %s\n" fullpath;
             Yojson.Safe.from_file fullpath |> Jt.document_of_yojson
         in
