@@ -70,9 +70,9 @@ let rulem_of_file : (module Compile.S) -> string ->
   let md = Denv.init infile in
   let m_depends =
     let input = open_in infile in
-    let ret = List.map (fun x -> DkMd(x)) (deps_of_md input md) in
+    let deps = deps_of_md input md in
     close_in input;
-    ret
+    List.map (fun x -> DkMd(x)) deps @ List.map (fun x -> JsMd(x)) deps
   in
   let m_action _ =
     (* Argument discarded as we previously built jsons in

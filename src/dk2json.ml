@@ -89,5 +89,7 @@ let _ =
     | Ok(_)     -> ()
     | Error(key) -> Format.printf "No rule to make %a@." Produce.pp_key key
   in
-  List.map (fun f -> Produce.JsMd(Denv.init f)) (!infiles @ dirfiles) |>
-  List.iter build
+  try
+    List.map (fun f -> Produce.JsMd(Denv.init f)) (!infiles @ dirfiles) |>
+    List.iter build
+  with e -> raise (Derr.graceful_fail None e)
