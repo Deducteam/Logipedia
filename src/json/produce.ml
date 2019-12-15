@@ -41,16 +41,21 @@ let pp_key : key pp = fun fmt k ->
 (** [key_eq k l] returns true iff [k] and [l] are equal. *)
 let key_eq : key eq = fun k l ->
   match k, l with
-  | JsMd(k), JsMd(l)
-  | DkMd(k), DkMd(l) ->
+  | JsMd(k), JsMd(l) ->
     let kstr = K.Basic.string_of_mident k in
     let lstr = K.Basic.string_of_mident l in
     Format.printf "### [%s==%s]... " kstr lstr;
     let r = String.equal kstr lstr in
     if r then Format.printf "Ok@.@\n" else Format.printf "Ko@.@\n";
     r
+  | DkMd(_), DkMd(_) -> true (* Only one 'dummy' rule for dks. *)
   (* K.Basic.mident_eq k l *)
   | _                -> false
+
+(** [rulem_dk_idle] creates nothing. It satisfies dependencies on 'dk' files
+    when used in conjunction with [key_eq]. *)
+let rulem_dk_idle : (key, unit) rulem =
+  {m_creates=DkMd(K.Basic.mk_mident ""); m_depends=[]; m_action = fun _ -> ()}
 
 (* Unit because we use the result in the [doc_of_entries]
    function. This should be fixed: [doc_of_entries] should take other

@@ -81,7 +81,7 @@ let _ =
     let prod file =
       Produce.rulem_of_file (module JsExp) file (Option.get !output_dir)
     in
-    List.map prod (!infiles @ dirfiles)
+    Produce.rulem_dk_idle :: List.map prod (!infiles @ dirfiles)
   in
   Format.printf "%a@\n" (Build.pp_rules Produce.pp_key) rules;
   let build target =
