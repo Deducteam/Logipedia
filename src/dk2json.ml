@@ -85,10 +85,9 @@ let _ =
   in
   Format.printf "%a@\n" (Build.pp_rules Produce.pp_key) rules;
   let build target =
-    try Build.buildm Produce.key_eq rules target
-    with Build.NoRuleToMakeTarget ->
-      let t = match target with JsMd(t) | DkMd(t) -> t in
-      Format.printf "No rule to make %a\n" (Kernel.Basic.pp_mident) t
+    match Build.buildm Produce.key_eq rules target with
+    | Ok(_)     -> ()
+    | Error(key) -> Format.printf "No rule to make %a@." Produce.pp_key key
   in
   List.map (fun f -> Produce.JsMd(Denv.init f)) (!infiles @ dirfiles) |>
   List.iter build

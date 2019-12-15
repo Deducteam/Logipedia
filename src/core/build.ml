@@ -15,15 +15,23 @@ type ('k, 'v) rulem =
       target. *) }
 
 (** [buildm key_eq rules target] builds target [target] thanks to rules [rules]
-    using function [key_eq] to find the appropriate rule.
-
-    @raises [NoRuleToMakeTarget] if the target [target] is not found among the
-    rules [rules]. *)
-let rec buildm : 'k eq -> ('k, 'v) rulem list -> 'k -> 'v =
-  fun key_eq rules target ->
-  try let rule = List.find (fun r -> key_eq r.m_creates target) rules in
-    rule.m_action (List.map (buildm key_eq rules) rule.m_depends)
-  with Not_found -> raise NoRuleToMakeTarget
+    using function [key_eq] to find the appropriate rule. Returns [Ok(v)] if the
+    value is computed successfully or [Error(t)] if there is no rule to build
+    target [t]. *)
+let buildm : 'k eq -> ('k, 'v) rulem list -> 'k -> ('v, 'k) result =
+  fun (type k) (key_eq: k eq) (rules: (k, 'v) rulem list) (target: k) ->
+  (* Locally abstract type to be able to create local exception *)
+  let exception NoRule of k in
+  let rec buildm : k -> 'v = fun target ->
+    let rule =
+      try
+        List.find (fun r -> key_eq r.m_creates target) rules
+      with Not_found -> raise (NoRule(target))
+    in
+    rule.m_action (List.map buildm rule.m_depends)
+  in
+  try Ok(buildm target)
+  with NoRule(t) -> Error(t)
 
 (** [pp_rulse pp_key fmt rules] pretty prints rules [rules] to formatter [fmt]
     using function [pp_key] to pretty print the keys. *)
