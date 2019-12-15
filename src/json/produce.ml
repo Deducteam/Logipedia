@@ -52,8 +52,6 @@ let key_eq : key eq = fun k l ->
   (* K.Basic.mident_eq k l *)
   | _                -> false
 
-exception NoRuleToMakeTarget of key
-
 (* Unit because we use the result in the [doc_of_entries]
    function. This should be fixed: [doc_of_entries] should take other
    document in the json type as arguments. *)

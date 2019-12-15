@@ -1,7 +1,5 @@
 open Extras
 
-exception NoRuleToMakeTarget
-
 (** {1 Classic make behaviour} *)
 
 (** Type of a rule. The type ['k] is the type of keys and ['v] of values. *)
@@ -24,8 +22,7 @@ let buildm : 'k eq -> ('k, 'v) rulem list -> 'k -> ('v, 'k) result =
   let exception NoRule of k in
   let rec buildm : k -> 'v = fun target ->
     let rule =
-      try
-        List.find (fun r -> key_eq r.m_creates target) rules
+      try List.find (fun r -> key_eq r.m_creates target) rules
       with Not_found -> raise (NoRule(target))
     in
     rule.m_action (List.map buildm rule.m_depends)
