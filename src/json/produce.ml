@@ -9,6 +9,7 @@ open Core.Extras
 open Core.Build
 module K = Kernel
 module Denv = Api.Env.Default
+module Dpp = Api.Pp.Default
 
 module E = Api.Env.Make(Kernel.Reduction.Default)
 module ErrorHandler = Api.Errors.Make(E)
@@ -33,12 +34,23 @@ type key =
 
 (** [pp_key fmt k] prints key [k] on format [fmt]. *)
 let pp_key : key pp = fun fmt k ->
-  match k with DkMd(m) | JsMd(m) -> K.Basic.pp_mident fmt m
+  match k with
+  | DkMd(m) -> Format.fprintf fmt "DkMd(%a)" Dpp.print_mident m
+  | JsMd(m) -> Format.fprintf fmt "JsMd(%a)" Dpp.print_mident m
 
 (** [key_eq k l] returns true iff [k] and [l] are equal. *)
 let key_eq : key eq = fun k l ->
-  match k with JsMd(k) | DkMd(k) ->
-    match l with JsMd(l) | DkMd(l) -> K.Basic.mident_eq k l
+  match k, l with
+  | JsMd(k), JsMd(l)
+  | DkMd(k), DkMd(l) ->
+    let kstr = K.Basic.string_of_mident k in
+    let lstr = K.Basic.string_of_mident l in
+    Format.printf "### [%s==%s]... " kstr lstr;
+    let r = String.equal kstr lstr in
+    if r then Format.printf "Ok@.@\n" else Format.printf "Ko@.@\n";
+    r
+  (* K.Basic.mident_eq k l *)
+  | _                -> false
 
 exception NoRuleToMakeTarget of key
 
