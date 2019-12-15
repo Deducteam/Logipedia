@@ -1,4 +1,6 @@
-type 'a eq = 'a -> 'a -> bool
+open Extras
+
+exception NoRuleToMakeTarget
 
 (** {1 Classic make behaviour} *)
 
@@ -13,11 +15,28 @@ type ('k, 'v) rulem =
       target. *) }
 
 (** [buildm key_eq rules target] builds target [target] thanks to rules [rules]
-    using function [key_eq] to find the appropriate rule. *)
+    using function [key_eq] to find the appropriate rule.
+
+    @raises [NoRuleToMakeTarget] if the target [target] is not found among the
+    rules [rules]. *)
 let rec buildm : 'k eq -> ('k, 'v) rulem list -> 'k -> 'v =
   fun key_eq rules target ->
-  let rule = List.find (fun r -> key_eq r.m_creates target) rules in
-  rule.m_action (List.map (buildm key_eq rules) rule.m_depends)
+  try let rule = List.find (fun r -> key_eq r.m_creates target) rules in
+    rule.m_action (List.map (buildm key_eq rules) rule.m_depends)
+  with Not_found -> raise NoRuleToMakeTarget
+
+(** [pp_rulse pp_key fmt rules] pretty prints rules [rules] to formatter [fmt]
+    using function [pp_key] to pretty print the keys. *)
+let pp_rules : 'k pp -> ('k, _) rulem list pp = fun pp_key fmt rules ->
+  let pp_sep = Format.pp_print_newline in
+  let pp_rule : ('k, _) rulem pp = fun fmt rule ->
+    let pp_sep = Format.pp_print_space in
+    let pp_keys : ('k list) pp = fun fmt keys ->
+      Format.pp_print_list ~pp_sep pp_key fmt keys
+    in
+    Format.fprintf fmt "@[%a:@ %a@]" pp_key rule.m_creates pp_keys rule.m_depends
+  in
+  Format.pp_print_list ~pp_sep pp_rule fmt rules
 
 (** {1 Shake behaviour} *)
 

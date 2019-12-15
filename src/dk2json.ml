@@ -13,6 +13,9 @@ let output_dir = ref None
 (** Input Dedukti files. *)
 let infiles : string list ref = ref []
 
+(** Directory with files to convert. *)
+let indir : string ref = ref ""
+
 (** The middleware used. *)
 let middleware : string ref = ref ""
 
@@ -45,6 +48,9 @@ let options =
     ; ( "-m"
       , Arg.Set_string middleware
       , m_doc )
+    ; ( "-d"
+      , Arg.Set_string indir
+      , " Add directory containing Dedukti files to convert" )
     ; ( "-o"
       , Arg.String (fun s -> output_dir := Some(s))
       , " Set output directory" ) ] |>
@@ -61,19 +67,28 @@ let _ =
       Format.printf "%s@\n" s;
       Arg.usage options usage
   end;
+  let dirfiles =
+    if !indir <> "" then
+      Sys.readdir !indir |> Array.to_seq |>
+      Seq.filter (fun f -> String.equal (Filename.extension f) ".dk") |>
+      Seq.map (fun f -> Filename.concat !indir f) |>
+      List.of_seq
+    else []
+  in
   let rules =
     let (module M) = Middleware.of_string !middleware in
     let module JsExp = Compile.Make(M) in
     let prod file =
-      Produce.make_doc_rulem (module JsExp) file (Option.get !output_dir)
+      Produce.rulem_of_file (module JsExp) file (Option.get !output_dir)
     in
-    List.map prod !infiles
+    List.map prod (!infiles @ dirfiles)
   in
+  Format.printf "%a@\n" (Build.pp_rules Produce.pp_key) rules;
   let build target =
     try Build.buildm Produce.key_eq rules target
-    with Produce.NoRuleToMakeTarget(target) ->
+    with Build.NoRuleToMakeTarget ->
       let t = match target with JsMd(t) | DkMd(t) -> t in
       Format.printf "No rule to make %a\n" (Kernel.Basic.pp_mident) t
   in
-  List.map (fun f -> Produce.JsMd(Denv.init f)) !infiles |>
+  List.map (fun f -> Produce.JsMd(Denv.init f)) (!infiles @ dirfiles) |>
   List.iter build

@@ -5,6 +5,7 @@
    - set correctly cl options,
    - avoid rebuilds... *)
 
+open Core.Extras
 open Core.Build
 module K = Kernel
 module Denv = Api.Env.Default
@@ -31,31 +32,25 @@ type key =
   | DkMd of K.Basic.mident
 
 (** [pp_key fmt k] prints key [k] on format [fmt]. *)
-let pp_key : Format.formatter -> key -> unit = fun fmt k ->
+let pp_key : key pp = fun fmt k ->
   match k with DkMd(m) | JsMd(m) -> K.Basic.pp_mident fmt m
 
 (** [key_eq k l] returns true iff [k] and [l] are equal. *)
-let key_eq : key -> key -> bool = fun k l ->
+let key_eq : key eq = fun k l ->
   match k with JsMd(k) | DkMd(k) ->
     match l with JsMd(l) | DkMd(l) -> K.Basic.mident_eq k l
 
 exception NoRuleToMakeTarget of key
 
-(** [pp_rule fmt r] prints rule [r] on format [fmt]. *)
-let pp_rule : Format.formatter -> ('k, 'v) rulem -> unit = fun fmt r ->
-  let pp_sep = Format.pp_print_space in
-  Format.fprintf fmt "%a: %a" pp_key r.m_creates
-    (Format.pp_print_list ~pp_sep pp_key) r.m_depends
-
 (* Unit because we use the result in the [doc_of_entries]
    function. This should be fixed: [doc_of_entries] should take other
    document in the json type as arguments. *)
-(** [make_doc_rulem JsExp ifile odir] creates a rule to build a json file
+(** [rulem_of_file JsExp ifile odir] creates a rule to build a json file
     [odir/file.json] from input Dedukti file [ifile] using Json exporter
     [JsExp]. [file] is the basename of [ifile] with the suffix [.dk] replaced by
     [.json]. For instance, if [ifile] is [a/b/eq.dk] then [file] is [eq] and the
     created file is then [odir/eq.json]. *)
-let make_doc_rulem : (module Compile.S) -> string ->
+let rulem_of_file : (module Compile.S) -> string ->
   string -> (key, unit) rulem = fun (module JsExp) infile outdir ->
   let md = Denv.init infile in
   let m_depends =

@@ -1,3 +1,9 @@
+(** Type of equality function. *)
+type 'a eq = 'a -> 'a -> bool
+
+(** Type of a pretty printer. *)
+type 'a pp = Format.formatter -> 'a -> unit
+
 module Option =
 struct
   type 'a t = 'a option
