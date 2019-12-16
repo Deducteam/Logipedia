@@ -1,6 +1,19 @@
 open Extras
 
+(** Type of time to avoid making twice same target. Here an [int] as
+    the number of build runs. *)
+type b_time = int
+
 (** {1 Classic make behaviour} *)
+
+(** Manipulated result. *)
+type ('k, 'v) resultm =
+  { r_created : 'k
+  (** Key of the value to find it back in the database. *)
+  ; r_value : 'v
+  (** The computed value. *)
+  ; r_built : b_time
+  (** Building timestamp. *) }
 
 (** Type of a rule. The type ['k] is the type of keys and ['v] of values. *)
 type ('k, 'v) rulem =
@@ -12,20 +25,50 @@ type ('k, 'v) rulem =
   (** What to do with the values of the dependencies to create the value of the
       target. *) }
 
+(** [skipm old ask rule] returns true if rule [rule] does not need to
+    be run. Result [old] is the result from a previous run and [ask] a
+    way to retrieve results from keys (to get results of
+    dependencies). *)
+  let skipm : ('k, 'v) resultm -> ('k -> ('k, 'v) resultm) -> ('k, 'v) rulem ->
+    bool = fun old ask rule ->
+    let f x = (ask x).r_built <= old.r_built in
+    List.for_all f rule.m_depends
+
 (** [buildm key_eq rules target] builds target [target] thanks to rules [rules]
     using function [key_eq] to find the appropriate rule. Returns [Ok(v)] if the
     value is computed successfully or [Error(t)] if there is no rule to build
     target [t]. *)
-let buildm : 'k eq -> ('k, 'v) rulem list -> 'k -> ('v, 'k) result =
-  fun (type k) (key_eq: k eq) (rules: (k, 'v) rulem list) (target: k) ->
-  (* Locally abstract type to be able to create local exception *)
+let buildm (type k): k eq -> (k, 'v) rulem list -> k -> ('v, k) result =
+  (* Locally abstract type for the local exception. *)
+  (* Counts build processes to timestamp builds. *)
+  let time : b_time ref = ref 0 in
+  (* Save previous results in the database. *)
+  let database : (k, (k, 'v) resultm) Hashtbl.t = Hashtbl.create 19 in
+  (* [ask key] returns the pre-computed result for key [key] or
+     @raise Not_found. *)
+  let ask : k -> (k, _) resultm = fun target ->
+    Hashtbl.find database target
+  in
+  (* [store key value] stores value [value] as computed from key
+     [key]. *)
+  let store : k -> 'v -> unit = fun target value ->
+    Hashtbl.replace database target
+      {r_created=target; r_value=value; r_built=(!time)}
+  in
+  fun key_eq rules target ->
   let exception NoRule of k in
   let rec buildm : k -> 'v = fun target ->
+    incr time;
     let rule =
       try List.find (fun r -> key_eq r.m_creates target) rules
       with Not_found -> raise (NoRule(target))
     in
-    rule.m_action (List.map buildm rule.m_depends)
+    match try Some(ask target) with Not_found -> None with
+    | Some(old) when skipm old ask rule -> old.r_value
+    | _                                 ->
+      let value = rule.m_action (List.map buildm rule.m_depends) in
+      store target value;
+      value
   in
   try Ok(buildm target)
   with NoRule(t) -> Error(t)
@@ -39,7 +82,9 @@ let pp_rules : 'k pp -> ('k, _) rulem list pp = fun pp_key fmt rules ->
     let pp_keys : ('k list) pp = fun fmt keys ->
       Format.pp_print_list ~pp_sep pp_key fmt keys
     in
-    Format.fprintf fmt "@[%a:@ %a@]" pp_key rule.m_creates pp_keys rule.m_depends
+    Format.fprintf fmt "@[%a:@ %a@]"
+      pp_key rule.m_creates
+      pp_keys rule.m_depends
   in
   Format.pp_print_list ~pp_sep pp_rule fmt rules
 
