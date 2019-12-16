@@ -299,17 +299,6 @@ _esc_pvspath = $(subst /,\\/,$(_pvspath))
 	@sed -i s/dk/dko/g $@
 	@sed  -i "s:$(_ipath)/\([^.]*\)\.pvs:$(_pvspath)/\1\.pvs:g" $@
 
-_esc_jsonpath = $(subst /,\\/,$(_jsonpath))
-.library_depend_json: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
-	@echo "[DKDEP (JSON FILES)] $@"
-	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_jsonpath)\\/theory\\/$$f/ $@ ; \
-	done
-	@sed -i s/dko/json/g $@
-	@sed -i s/dk/dko/g $@
-	@sed  -i "s:$(_ipath)/\([^.]*\)\.json:$(_jsonpath)/\1\.json:g" $@
-
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend_dko
