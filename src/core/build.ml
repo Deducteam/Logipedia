@@ -24,14 +24,15 @@ type ('key, 'value) rulem =
     [ask] a way to retrieve results from keys (to get results of
     dependencies). *)
 let skipm : ('key, 'value) resultm -> ('key -> ('key, 'value) resultm)
-  -> ('key, 'value') rulem -> bool = fun old ask rule ->
+  -> ('key, 'value) rulem -> bool = fun old ask rule ->
   let f x = (ask x).r_built <= old.r_built in
   List.for_all f rule.m_depends
 
-(** [buildm rules target] builds target [target] thanks to
-    rules [rules] using function [k_eq] to find the appropriate
-    rule. Returns [Ok(v)] if the value is computed successfully or
-    [Error(t)] if there is no rule to build target [t]. *)
+(** [buildm key_eq] returns a builder, that is, a function [b] such that
+    [b rules target] builds target [target] thanks to rules [rules] using
+    function [k_eq] to find the appropriate rule. Returns [Ok(v)] if the value
+    is computed successfully or [Error(t)] if there is no rule to build target
+    [t]. Applying twice [b] is memoized while [buildm] is not. *)
 let buildm (type key): key eq -> (key, 'value) rulem list -> key ->
   ('value, key) result = fun key_eq ->
   (* Locally abstract type for the local exception. *)

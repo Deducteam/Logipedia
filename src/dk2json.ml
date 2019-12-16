@@ -84,8 +84,10 @@ let _ =
     Produce.rulem_dk_idle :: List.map prod (!infiles @ dirfiles)
   in
   Format.printf "%a@\n" (Build.pp_rules Produce.pp_key) rules;
+  let build = Build.buildm Produce.key_eq in
+  (* [build] is now memoized: rules are not ran twice. *)
   let build target =
-    match Build.buildm Produce.key_eq rules target with
+    match build rules target with
     | Ok(_)      -> ()
     | Error(key) ->
       Format.printf "No rule to make %a@." Produce.pp_key key

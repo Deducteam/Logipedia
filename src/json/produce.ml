@@ -2,8 +2,7 @@
 (* TODO:
    - minimise number of parsing of input file,
    - remove memoization at the level of [doc_of_entries], memoize here,
-   - set correctly cl options,
-   - avoid rebuilds... *)
+   - set correctly cl options *)
 
 open Core.Extras
 open Core.Build
