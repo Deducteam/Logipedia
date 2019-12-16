@@ -87,9 +87,16 @@ let label = function
   | Api.Env.BracketScopingError -> "bracketscoping"
   | Api.Env.AssertError -> "assert"*)
 
-
-let item_of_entry mident entry =
-  Sttfa__Compile.compile_entry mident entry
+let item_of_entry =
+  (* Memoization because compiling twice same entry raises
+     AlreadyDeclaredSymbol error. *)
+  let memo : ((B.mident * E.entry), item) Hashtbl.t = Hashtbl.create 19 in
+  fun mident entry ->
+    try Hashtbl.find memo (mident, entry)
+    with Not_found ->
+      let r = Sttfa__Compile.compile_entry mident entry in
+      Hashtbl.add memo (mident, entry) r;
+      r
 
 let string_of_item item system =
   try
