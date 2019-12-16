@@ -217,18 +217,13 @@ pvs: $(_pvssum)
 #### Json ##########################################################
 
 _jsonpath = $(EXPDIR)/json
-_jsonthpath = $(_jsonpath)/_theory
 _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
-
-$(_jsonthpath)/%.json: $(_thdir)/%.dko $(DK2JSON)
-	@mkdir -p $(_jsonpath)/_theory
-	$(DK2JSON) --hollight $(EXPDIR)/hollight --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs  $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
-
-$(_jsonpath)/%.json: $(_ipath)/%.dko $(DK2JSON)
-	$(DK2JSON) --hollight $(EXPDIR)/hollight --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs  $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
+_thfiles = $(wildcard $(_thdir)/*.dk)
 
 .PHONY: json
-json: $(addprefix $(_jsonthpath)/, $(_thfiles:=.json)) $(_jsonfiles)
+json: dedukti
+	$(DK2JSON) -m $(MIDDLEWARE) -o $(_jsonpath) -J $(_jsonpath) \
+-I $(_ipath) -d $(_ipath) -I $(_thdir) $(_thfiles)
 
 #### Dependencies ##################################################
 
