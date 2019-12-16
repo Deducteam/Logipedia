@@ -9,7 +9,8 @@ type ('key, 'value) resultm =
   ; r_built : int
   (** Building timestamp. *) }
 
-(** Type of a rule. The type ['k] is the type of keys and ['v] of values. *)
+(** Type of a rule. The type ['key] is the type of keys and ['value] of
+    values. *)
 type ('key, 'value) rulem =
   { m_creates : 'key
   (** Key of the created element. *)
@@ -23,8 +24,8 @@ type ('key, 'value) rulem =
     to be run. Result [old] is the result from a previous run and
     [ask] a way to retrieve results from keys (to get results of
     dependencies). *)
-let skipm : ('key, 'value) resultm -> ('key -> ('key, 'value) resultm)
-  -> ('key, 'value) rulem -> bool = fun old ask rule ->
+let skipm : ('key, 'value) resultm -> ('key -> ('key, 'value) resultm) ->
+  ('key, 'value) rulem -> bool = fun old ask rule ->
   let f x = (ask x).r_built <= old.r_built in
   List.for_all f rule.m_depends
 
@@ -45,7 +46,7 @@ let buildm (type key): key eq -> (key, 'value) rulem list -> key ->
       let hash = Stdlib.Hashtbl.hash
     end)
   in
-  let database : ((key, 'value) resultm) Db.t = Db.create 19 in
+  let database : (key, 'value) resultm Db.t = Db.create 19 in
   (* [ask key] returns the pre-computed result for key [key] or
      @raise Not_found. *)
   let ask : key -> (key, 'value) resultm = fun target ->
