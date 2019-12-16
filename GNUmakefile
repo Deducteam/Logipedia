@@ -221,7 +221,7 @@ _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 _thfiles = $(wildcard $(_thdir)/*.dk)
 
 .PHONY: json
-json: dedukti
+json: dedukti $(DK2JSON)
 	$(DK2JSON) -m $(MIDDLEWARE) -o $(_jsonpath) -J $(_jsonpath) \
 -I $(_ipath) -d $(_ipath) -I $(_thdir) $(_thfiles)
 
