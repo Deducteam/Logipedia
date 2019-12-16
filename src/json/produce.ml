@@ -72,7 +72,10 @@ let rulem_of_file : (module Compile.S) -> string ->
     let input = open_in infile in
     let deps = deps_of_md input md in
     close_in input;
-    List.map (fun x -> DkMd(x)) deps @ List.map (fun x -> JsMd(x)) deps
+    DkMd(md) :: List.map (fun x -> DkMd(x)) deps @
+    (* Dependency on json files because [doc_of_entries] reparses the
+    produced files (to find taxons). FIXME *)
+    List.map (fun x -> JsMd(x)) deps
   in
   let m_action _ =
     (* Argument discarded as we previously built jsons in
