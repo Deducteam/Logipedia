@@ -29,28 +29,39 @@ let deps_of_md : in_channel -> K.Basic.mident -> K.Basic.mident list =
 
 (** {1 General definitions} *)
 
-type key =
+type mkey =
   | JsMd of K.Basic.mident
   | DkMd of K.Basic.mident
 
-(** [pp_key fmt k] prints key [k] on format [fmt]. *)
-let pp_key : key pp = fun fmt k ->
-  match k with
-  | DkMd(m) -> Format.fprintf fmt "DkMd(%a)" Dpp.print_mident m
-  | JsMd(m) -> Format.fprintf fmt "JsMd(%a)" Dpp.print_mident m
+module JsKV : KV
+  with type key = mkey
+   and type value = unit =
+struct
+  type key = mkey
+  type value = unit
 
-(** [key_eq k l] returns true iff [k] and [l] are equal. *)
-let key_eq : key eq = fun k l ->
-  match k, l with
-  | JsMd(k), JsMd(l) -> K.Basic.mident_eq k l
-  | DkMd(_), DkMd(_) -> true (* Only one 'dummy' rule for dks. *)
-  (* K.Basic.mident_eq k l *)
-  | _                -> false
+  (** [pp_key fmt k] prints key [k] on format [fmt]. *)
+  let pp_key : key pp = fun fmt k ->
+    match k with
+    | DkMd(m) -> Format.fprintf fmt "DkMd(%a)" Dpp.print_mident m
+    | JsMd(m) -> Format.fprintf fmt "JsMd(%a)" Dpp.print_mident m
+
+  (** [key_eq k l] returns true iff [k] and [l] are equal. *)
+  let key_eq : key eq = fun k l ->
+    match k, l with
+    | JsMd(k), JsMd(l) -> K.Basic.mident_eq k l
+    | DkMd(_), DkMd(_) -> true (* Only one 'dummy' rule for dks. *)
+    (* K.Basic.mident_eq k l *)
+    | _                -> false
+end
+
+module BuildSys = MakeM(JsKV)
 
 (** [rulem_dk_idle] creates nothing. It satisfies dependencies on 'dk' files
     when used in conjunction with [key_eq]. *)
-let rulem_dk_idle : (key, unit) rulem =
-  {m_creates=DkMd(K.Basic.mk_mident ""); m_depends=[]; m_action = fun _ -> ()}
+let rulem_dk_idle : BuildSys.rulem =
+  {m_creates=DkMd(K.Basic.mk_mident "");
+   m_depends=[]; m_action = fun _ -> ()}
 
 (* Unit because we use the result in the [doc_of_entries]
    function. This should be fixed: [doc_of_entries] should take other
@@ -61,7 +72,7 @@ let rulem_dk_idle : (key, unit) rulem =
     [.json]. For instance, if [ifile] is [a/b/eq.dk] then [file] is [eq] and the
     created file is then [odir/eq.json]. *)
 let rulem_of_file : (module Compile.S) -> string ->
-  string -> (key, unit) rulem = fun (module JsExp) infile outdir ->
+  string -> BuildSys.rulem = fun (module JsExp) infile outdir ->
   let md = Denv.init infile in
   let m_depends =
     let input = open_in infile in
