@@ -83,12 +83,12 @@ let _ =
     in
     Produce.rulem_dk_idle :: List.map prod (!infiles @ dirfiles)
   in
-  Format.printf "%a@\n" (Produce.BuildSys.pp_rules) rules;
+  Format.printf "%a@\n" (Build.pp_rules Produce.pp_key) rules;
   let build target =
-    match Produce.BuildSys.buildm rules target with
+    match Build.buildm Produce.key_eq rules target with
     | Ok(_)      -> ()
     | Error(key) ->
-      Format.printf "No rule to make %a@." Produce.JsKV.pp_key key
+      Format.printf "No rule to make %a@." Produce.pp_key key
   in
   try
     List.map (fun f -> Produce.JsMd(Denv.init f)) (!infiles @ dirfiles) |>
