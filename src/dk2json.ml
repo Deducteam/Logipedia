@@ -1,14 +1,9 @@
 open Core
 open Extras
 open Json
-module B = Kernel.Basic
-module P = Parsing.Parser
-module S = Systems
-module Denv = Api.Env.Default
-module Derr = Api.Errors.Make(Denv)
 
 (** File into which exported file are written. *)
-let output_dir = ref None
+let outdir = ref None
 
 (** Input Dedukti files. *)
 let infiles : string list ref = ref []
@@ -30,6 +25,7 @@ let options =
   in
   let sys_exps =
     (* Spec list for export systems. *)
+    let module S = Systems in
     let f (name, system) =
       ( Format.sprintf "--%s" name
       , Arg.String (fun s -> S.artefact_path := (system, s) :: !S.artefact_path)
@@ -40,7 +36,7 @@ let options =
   Arg.align @@
     sys_exps @
     [ ( "-I"
-      , Arg.String B.add_path
+      , Arg.String Kernel.Basic.add_path
       , " Add folder to Dedukti path" )
     ; ( "-J"
       , Arg.Set_string Compile.json_include
@@ -52,7 +48,7 @@ let options =
       , Arg.Set_string indir
       , " Add directory containing Dedukti files to convert" )
     ; ( "-o"
-      , Arg.String (fun s -> output_dir := Some(s))
+      , Arg.String (fun s -> outdir := Some(s))
       , " Set output directory" ) ] |>
   List.sort (fun (t,_,_) (u,_,_) -> String.compare t u)
 
@@ -79,20 +75,23 @@ let _ =
     let (module M) = Middleware.of_string !middleware in
     let module JsExp = Compile.Make(M) in
     let prod file =
-      Produce.rulem_of_file (module JsExp) file (Option.get !output_dir)
+      Produce.rulem_of_file (module JsExp) file (Option.get !outdir)
     in
     Produce.rulem_dk_idle :: List.map prod (!infiles @ dirfiles)
   in
   Format.printf "%a@\n" (Build.pp_rules Produce.pp_key) rules;
   let build = Build.buildm Produce.key_eq in
-  (* [build] is now memoized: rules are not ran twice. *)
+  (* [build] is now memoized: rules are not run twice. *)
   let build target =
     match build rules target with
-    | Ok(_)      -> ()
+    | Ok(())     -> ()
     | Error(key) ->
       Format.printf "No rule to make %a@." Produce.pp_key key
   in
+  let module Denv = Api.Env.Default in
   try
     List.map (fun f -> Produce.JsMd(Denv.init f)) (!infiles @ dirfiles) |>
     List.iter build
-  with e -> raise (Derr.graceful_fail None e)
+  with e ->
+    let module Derr = Api.Errors.Make(Denv) in
+    raise (Derr.graceful_fail None e)
