@@ -3,6 +3,9 @@ open Kernel.Term
 open Parsing.Entry
 open Kernel.Rule
 
+module E = Api.Env.Make(Kernel.Reduction.Default)
+module ErrorHandler = Api.Errors.Make(E)
+
 (** {1 Dedukti dependency computation} *)
 
 module QSet = Set.Make(String)
@@ -52,3 +55,16 @@ let dep_of_entry = function
 let dep_of_entry (mds:mident list) e =
   List.fold_left (fun qset md -> QSet.remove (string_of_mident md) qset)
     (dep_of_entry e) mds
+
+let deps_of_md : in_channel -> mident -> mident list =
+  fun ichan md ->
+  Api.Dep.compute_ideps := false;
+  let entries = Parsing.Parser.Parse_channel.parse md ichan in
+  begin
+    try Api.Dep.make md entries
+    with e -> ErrorHandler.graceful_fail None e
+  end;
+  try
+    let deps = Hashtbl.find Api.Dep.deps md in
+    Api.Dep.MDepSet.to_seq deps.deps |> Seq.map fst |> List.of_seq
+  with Not_found -> assert false

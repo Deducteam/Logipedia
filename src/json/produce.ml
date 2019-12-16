@@ -10,22 +10,6 @@ module K = Kernel
 module Denv = Api.Env.Default
 module Dpp = Api.Pp.Default
 
-module E = Api.Env.Make(Kernel.Reduction.Default)
-module ErrorHandler = Api.Errors.Make(E)
-
-let deps_of_md : in_channel -> K.Basic.mident -> K.Basic.mident list =
-  fun ichan md ->
-  Api.Dep.compute_ideps := false;
-  let entries = Parsing.Parser.Parse_channel.parse md ichan in
-  begin
-    try Api.Dep.make md entries
-    with e -> ErrorHandler.graceful_fail None e
-  end;
-  try
-    let deps = Hashtbl.find Api.Dep.deps md in
-    Api.Dep.MDepSet.to_seq deps.deps |> Seq.map fst |> List.of_seq
-  with Not_found -> assert false
-
 (** {1 General definitions} *)
 
 type key =
@@ -65,7 +49,7 @@ let rulem_of_file : (module Compile.S) -> string ->
   let md = Denv.init infile in
   let m_depends =
     let input = open_in infile in
-    let deps = deps_of_md input md in
+    let deps = Core.Deps.deps_of_md input md in
     close_in input;
     DkMd(md) :: List.map (fun x -> DkMd(x)) deps @
     (* Dependency on json files because [doc_of_entries] reparses the
