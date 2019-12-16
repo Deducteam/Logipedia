@@ -222,6 +222,7 @@ _thfiles = $(wildcard $(_thdir)/*.dk)
 
 .PHONY: json
 json: dedukti $(DK2JSON)
+	@mkdir -p $(_jsonpath)
 	$(DK2JSON) -m $(MIDDLEWARE) -o $(_jsonpath) -J $(_jsonpath) \
 -I $(_ipath) -d $(_ipath) -I $(_thdir) $(_thfiles)
 
