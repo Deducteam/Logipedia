@@ -18,7 +18,8 @@ let deps_of_md : in_channel -> K.Basic.mident -> K.Basic.mident list =
   fun ichan md ->
   Api.Dep.compute_ideps := false;
   let entries = Parsing.Parser.Parse_channel.parse md ichan in
-  begin try Api.Dep.make md entries
+  begin
+    try Api.Dep.make md entries
     with e -> ErrorHandler.graceful_fail None e
   end;
   try
@@ -41,13 +42,7 @@ let pp_key : key pp = fun fmt k ->
 (** [key_eq k l] returns true iff [k] and [l] are equal. *)
 let key_eq : key eq = fun k l ->
   match k, l with
-  | JsMd(k), JsMd(l) ->
-    let kstr = K.Basic.string_of_mident k in
-    let lstr = K.Basic.string_of_mident l in
-    Format.printf "### [%s==%s]... " kstr lstr;
-    let r = String.equal kstr lstr in
-    if r then Format.printf "Ok@.@\n" else Format.printf "Ko@.@\n";
-    r
+  | JsMd(k), JsMd(l) -> K.Basic.mident_eq k l
   | DkMd(_), DkMd(_) -> true (* Only one 'dummy' rule for dks. *)
   (* K.Basic.mident_eq k l *)
   | _                -> false
