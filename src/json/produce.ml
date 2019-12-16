@@ -1,4 +1,4 @@
-(** All the rules to produce json files with {!module:Core.Build} *)
+(** All the rules to produce json files with {!module:Core.Build}. *)
 (* TODO:
    - minimise number of parsing of input file,
    - remove memoization at the level of [doc_of_entries], memoize here,
@@ -7,8 +7,6 @@
 open Core.Extras
 open Core.Build
 module K = Kernel
-module Denv = Api.Env.Default
-module Dpp = Api.Pp.Default
 
 (** {1 General definitions} *)
 
@@ -18,6 +16,7 @@ type key =
 
 (** [pp_key fmt k] prints key [k] on format [fmt]. *)
 let pp_key : key pp = fun fmt k ->
+  let module Dpp = Api.Pp.Default in
   match k with
   | DkMd(m) -> Format.fprintf fmt "DkMd(%a)" Dpp.print_mident m
   | JsMd(m) -> Format.fprintf fmt "JsMd(%a)" Dpp.print_mident m
@@ -27,7 +26,6 @@ let key_eq : key eq = fun k l ->
   match k, l with
   | JsMd(k), JsMd(l) -> K.Basic.mident_eq k l
   | DkMd(_), DkMd(_) -> true (* Only one 'dummy' rule for dks. *)
-  (* K.Basic.mident_eq k l *)
   | _                -> false
 
 (** [rulem_dk_idle] creates nothing. It satisfies dependencies on 'dk' files
@@ -46,7 +44,7 @@ let rulem_dk_idle : (key, unit) rulem =
     created file is then [odir/eq.json]. *)
 let rulem_of_file : (module Compile.S) -> string ->
   string -> (key, unit) rulem = fun (module JsExp) infile outdir ->
-  let md = Denv.init infile in
+  let md = Api.Env.Default.init infile in
   let m_depends =
     let input = open_in infile in
     let deps = Core.Deps.deps_of_md input md in
