@@ -177,7 +177,6 @@ opentheory: $(_otfiles)
 #### HOL Light ######################################################
 
 _holpath = $(EXPDIR)/hollight
-
 hollight: $(_dkos) $(LOGIPEDIA)
 	@mkdir -p $(_holpath)
 	$(LOGIPEDIA) hollight -I $(_thdir) -I $(_ipath) -o $(_holpath) \
@@ -284,10 +283,7 @@ clean:
 	@$(RM) .library_depend_v
 	@$(RM) .library_depend_vo
 	@$(RM) .library_depend_ma
-	@$(RM) .library_depend_lean
-	@$(RM) .library_depend_pvs
 	@$(RM) .library_depend_art
-	@$(RM) .library_depend_hol
 
 
 .PHONY: distclean
