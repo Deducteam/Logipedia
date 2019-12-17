@@ -152,13 +152,10 @@ matita: $(_mafiles) $(_matitapath)/root
 _leanpath = $(EXPDIR)/lean
 _leanfiles=$(addprefix $(_leanpath)/,$(addsuffix .lean,$(_srcbase)))
 
-$(_leanpath)/%.lean: $(_ipath)/%.dko .library_depend_lean $(LOGIPEDIA)
-	@mkdir -p $(_leanpath)
-	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) lean $(_logipediaopts) -f $(<:.dko=.dk) -o $@
-
 .PHONY: lean
-lean: $(_leanfiles)
+lean: $(_dkos) $(LOGIPEDIA)
+	@mkdir -p $(_leanpath)
+	$(LOGIPEDIA) lean -I $(_thdir) -I $(_ipath) -o $(_leanpath) -d $(_ipath)
 	@cd $(_leanpath) && $(LEAN) *.lean
 	@echo "[LEAN] CHECKED"
 
@@ -251,17 +248,6 @@ _esc_matitapath = $(subst /,\\/,$(_matitapath))
 	@sed -i s/dk/dko/g $@
 	@sed  -i "s:$(_ipath)/\([^.]*\)\.ma:$(_matitapath)/\1\.ma:g" $@
 
-_esc_leanpath = $(subst /,\\/,$(_leanpath))
-.library_depend_lean: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
-	@echo "[DKDEP (LEAN FILES)] $@"
-	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_leanpath)\\/$$f/ $@ ; \
-	done
-	@sed -i s/dko/lean/g $@
-	@sed -i s/dk/dko/g $@
-	@sed  -i "s:$(_ipath)/\([^.]*\)\.lean:$(_leanpath)/\1\.lean:g" $@
-
 _esc_otpath = $(subst /,\\/,$(_otpath))
 .library_depend_art: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
 	@echo "[DKDEP (ART FILES)] $@"
@@ -289,7 +275,6 @@ ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend_dko
 -include .library_depend_v
 -include .library_depend_ma
--include .library_depend_lean
 -include .library_depend_art
 -include .library_depend_hol
 endif
