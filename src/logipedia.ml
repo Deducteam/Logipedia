@@ -1,5 +1,6 @@
+(** Export Dedukti encoded in STTfa to systems. *)
 open Core
-open Core.Extras
+open Extras
 
 (** File into which exported file are written. *)
 let outdir = ref None
@@ -88,8 +89,8 @@ Available options for the selected mode:"
   try
     Arg.parse_dynamic options anon usage;
     match !export_mode with
-    | None    -> raise @@ Arg.Bad "Missing export"
-    | Some(s) ->
+    | None       -> raise @@ Arg.Bad "Missing export"
+    | Some(syst) ->
       let dirfiles =
         if !indir <> "" then
           Sys.readdir !indir |> Array.to_seq |>
@@ -97,15 +98,16 @@ Available options for the selected mode:"
           Seq.map (Filename.concat !indir) |> List.of_seq
         else []
       in
-      let (module Syst) = get_system s in
       let rules =
+        (* Create the needed rules *)
+        let (module Syst) = get_system syst in
         let prod file =
           let md = Denv.init file in
           let entries_pp : Parsing.Entry.entry list pp = fun fmt entries ->
             let ast = Syst.Ast.compile md entries in
             Syst.export ast fmt
           in
-          let ext = "." ^ List.assoc s Core.Systems.sys_ext in
+          let ext = List.assoc syst Core.Systems.sys_ext in
           [ Build_template.mk_rule_sys_of_dk ~entries_pp md ext (Option.get !outdir)
           ; Build_template.mk_rule_sig md ]
         in
@@ -120,9 +122,8 @@ Available options for the selected mode:"
         | Error(key) ->
           Format.printf "No rule to make %a@." Build_template.pp_key key
       in
-      let package file = (`SysMd(Denv.init file)) in
-      List.map package (!infiles @ dirfiles) |>
-      List.iter build
+      let package file = `SysMd(Denv.init file) in
+      List.map package (!infiles @ dirfiles) |> List.iter build
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;

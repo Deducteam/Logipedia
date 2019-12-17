@@ -81,7 +81,7 @@ let mk_rule_sys_of_dk :
       let ochan =
         let open Filename in
         let ofile =
-          (concat outdir (basename (chop_extension infile))) ^ fext
+          (concat outdir (basename (chop_extension infile))) ^ "." ^ fext
         in
         open_out ofile
       in
