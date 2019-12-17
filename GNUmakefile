@@ -199,19 +199,15 @@ hollight: $(_holfiles)
 _pvspath = $(EXPDIR)/pvs
 _pvsfiles=$(addprefix $(_pvspath)/,$(addsuffix .pvs,$(_srcbase)))
 _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
-# For some weird reason, Make consider .pvs are temporary
-$(_pvspath)/%.pvs: $(_ipath)/%.dko .library_depend_pvs $(LOGIPEDIA)
-	@mkdir -p $(_pvspath)
-	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) pvs $(_logipediaopts) -f $(<:.dko=.dk) -o $@
-
 $(_pvspath)/%.summary: $(_pvspath)/%.pvs
 	@echo "[SUMMARY] $@"
 # proveit always return 1
 	@true || $(PROVEIT) --importchain --scripts --force $<
 
 .PHONY: pvs
-pvs: $(_pvssum)
+pvs: $(_dkos) $(LOGIPEDIA)
+	@mkdir -p $(_pvspath)
+	$(LOGIPEDIA) pvs -I $(_thdir) -I $(_ipath) -o $(_pvspath) -d $(_ipath)
 	@echo "[PVS] CHECKED"
 
 #### Json ##########################################################
@@ -288,17 +284,6 @@ _esc_holpath = $(subst /,\\/,$(_holpath))
 	@sed -i s/dk/dko/g $@
 	@sed  -i "s:$(_ipath)/\([^.]*\)\.ml:$(_holpath)/\1\.ml:g" $@
 
-_esc_pvspath = $(subst /,\\/,$(_pvspath))
-.library_depend_pvs: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
-	@echo "[DKDEP (PVS FILES)] $@"
-	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_leanpath)\\/$$f/ $@ ; \
-	done
-	@sed -i s/dko/pvs/g $@
-	@sed -i s/dk/dko/g $@
-	@sed  -i "s:$(_ipath)/\([^.]*\)\.pvs:$(_pvspath)/\1\.pvs:g" $@
-
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend_dko
@@ -306,8 +291,6 @@ ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend_ma
 -include .library_depend_lean
 -include .library_depend_art
--include .library_depend_pvs
--include .library_depend_json
 -include .library_depend_hol
 endif
 endif
