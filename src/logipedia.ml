@@ -98,23 +98,33 @@ Available options for the selected mode:"
         else []
       in
       let (module Syst) = get_system s in
-      let ext = List.assoc s Core.Systems.sys_ext in
       let rules =
         let prod file =
-          Export.Production.rulem_of_file (module Syst) file ext
-            (Option.get !outdir)
+          let md = Denv.init file in
+          let entries_pp : Parsing.Entry.entry list pp = fun fmt entries ->
+            let ast = Syst.Ast.compile md entries in
+            Syst.export ast fmt
+          in
+          let keep_deps : 'k list -> 'k list = fun deps ->
+            `DkMd(md) :: deps
+          in
+          let ext = "." ^ List.assoc s Core.Systems.sys_ext in
+          Build_template.mk_rule_sys_of_dk
+            ~entries_pp ~keep_deps md ext (Option.get !outdir)
         in
-        Export.Production.rulem_dk_idle :: List.map prod (!infiles @ dirfiles)
+        let dummymd = Kernel.Basic.mk_mident "" in
+        Build_template.mk_rule_idle (`DkMd(dummymd)) ::
+        List.map prod (!infiles @ dirfiles)
       in
-      Format.printf "%a@." (Build.pp_rules Export.Production.pp_key) rules;
-      let build = Build.buildm Export.Production.key_eq in
+      Format.printf "%a@." (Build.pp_rules Build_template.pp_key) rules;
+      let build = Build.buildm Build_template.key_eq in
       let build target =
         match build rules target with
         | Ok(())     -> ()
         | Error(key) ->
-          Format.printf "No rule to make %a@." Export.Production.pp_key key
+          Format.printf "No rule to make %a@." Build_template.pp_key key
       in
-      let package file = Export.Production.SysMd(Denv.init file) in
+      let package file = (`SysMd(Denv.init file)) in
       List.map package (!infiles @ dirfiles) |>
       List.iter build
   with
