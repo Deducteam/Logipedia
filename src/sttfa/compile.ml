@@ -63,17 +63,19 @@ let compile_definition name ty term =
       assert false
 
 let compile_entry md e =
-  (* FIXME use correct exception and factorise with
-           [build_template.mk_rule_load_dk]. *)
-    match e with
-    | Entry.Decl (lc, id, st, ty) ->
-      ( try Denv.declare lc id st ty
-        with _ -> () )
-      ; compile_declaration (Basic.mk_name md id) ty
-    | Entry.Def (lc, id, opaque, Some ty, te) ->
-      ( try Denv.define lc id opaque te (Some ty)
-        with _ -> () )
-      ; compile_definition (Basic.mk_name md id) ty te
-    | Entry.Def _ -> failwith "Definition without types are not supported"
-    | Entry.Rules _ -> failwith "Rules are not part of the sttforall logic"
-    | _ -> failwith "Dedukti Commands are not supported"
+  (* FIXME factorise with [build_template.mk_rule_load_dk]. *)
+  let module S = Kernel.Signature in
+  let module E = Api.Env in
+  let open Parsing.Entry in
+  match e with
+  | Decl (lc, id, st, ty) ->
+    ( try Denv.declare lc id st ty
+      with E.EnvError(_,_,EnvErrorSignature(S.AlreadyDefinedSymbol(_))) -> () )
+  ; compile_declaration (Basic.mk_name md id) ty
+  | Def (lc, id, opaque, Some ty, te) ->
+    ( try Denv.define lc id opaque te (Some ty)
+      with E.EnvError(_,_,EnvErrorSignature(S.AlreadyDefinedSymbol(_))) -> () )
+  ; compile_definition (Basic.mk_name md id) ty te
+  | Def _ -> failwith "Definition without types are not supported"
+  | Rules _ -> failwith "Rules are not part of the sttforall logic"
+  | _ -> failwith "Dedukti Commands are not supported"

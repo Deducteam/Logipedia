@@ -38,13 +38,14 @@ let mk_rule_load_dk : 'k -> ('k, _) rulem = fun key ->
         let open Parsing.Entry in
         let module Denv = Api.Env.Default in
         let module S = Kernel.Signature in
+        let module E = Api.Env in
         try
           begin match e with
             | Decl(lc,id,st,ty) -> Denv.declare lc id st ty
             | Def(lc,id,op,Some(ty),te) -> Denv.define lc id op te (Some ty)
             | _                         -> ()
           end
-        with _ -> () (* FIXME use correct exception *)
+        with E.EnvError(_,_,EnvErrorSignature(S.AlreadyDefinedSymbol(_))) -> ()
       in
       List.iter declare entries
     | _         -> assert false
