@@ -1,6 +1,6 @@
 open Extras
 
-(** Manipulated result. *)
+(** Manipulated result, to be stored in the database. *)
 type ('key, 'value) resultm =
   { r_created : 'key
   (** Key of the value to find it back in the database. *)
@@ -9,16 +9,26 @@ type ('key, 'value) resultm =
   ; r_built : int
   (** Building timestamp. *) }
 
-(** Type of a rule. The type ['key] is the type of keys and ['value] of
-    values. *)
 type ('key, 'value) rulem =
   { m_creates : 'key
-  (** Key of the created element. *)
   ; m_depends : 'key list
-  (** Key of elements on which the created element depends. *)
-  ; m_action : 'value list -> 'value
-  (** What to do with the values of the dependencies to create the
-      value of the target. *) }
+  ; m_action : 'value list -> 'value }
+
+(** [pp_rulse fmt rules] pretty prints rules [rules] to formatter
+    [fmt] using function [pp_key] to pretty print the keys. *)
+let pp_rulems : 'key pp -> ('key, 'value) rulem list pp =
+  fun pp_key fmt rules ->
+  let pp_sep = Format.pp_print_newline in
+  let pp_rule : ('key, 'value) rulem pp = fun fmt rule ->
+    let pp_sep = Format.pp_print_space in
+    let pp_keys : ('key list) pp = fun fmt keys ->
+      Format.pp_print_list ~pp_sep pp_key fmt keys
+    in
+    Format.fprintf fmt "@[%a:@ %a@]"
+      pp_key rule.m_creates
+      pp_keys rule.m_depends
+  in
+  Format.pp_print_list ~pp_sep pp_rule fmt rules
 
 (** [skipm old ask rule] returns true if rule [rule] does not need
     to be run. Result [old] is the result from a previous run and
@@ -29,11 +39,6 @@ let skipm : ('key, 'value) resultm -> ('key -> ('key, 'value) resultm) ->
   let f x = (ask x).r_built <= old.r_built in
   List.for_all f rule.m_depends
 
-(** [buildm key_eq] returns a builder, that is, a function [b] such that
-    [b rules target] builds target [target] thanks to rules [rules] using
-    function [k_eq] to find the appropriate rule. Returns [Ok(v)] if the value
-    is computed successfully or [Error(t)] if there is no rule to build target
-    [t]. Applying twice [b] is memoized while [buildm] is not. *)
 let buildm (type key): key eq -> (key, 'value) rulem list -> key ->
   ('value, key) result = fun key_eq ->
   (* Locally abstract type for the local exception. *)
@@ -75,22 +80,6 @@ let buildm (type key): key eq -> (key, 'value) rulem list -> key ->
     in
     try Ok(buildm target)
     with NoRule(t) -> Error(t)
-
-(** [pp_rulse fmt rules] pretty prints rules [rules] to formatter
-    [fmt] using function [pp_key] to pretty print the keys. *)
-let pp_rules : 'key pp -> ('key, 'value) rulem list pp =
-  fun pp_key fmt rules ->
-  let pp_sep = Format.pp_print_newline in
-  let pp_rule : ('key, 'value) rulem pp = fun fmt rule ->
-    let pp_sep = Format.pp_print_space in
-    let pp_keys : ('key list) pp = fun fmt keys ->
-      Format.pp_print_list ~pp_sep pp_key fmt keys
-    in
-    Format.fprintf fmt "@[%a:@ %a@]"
-      pp_key rule.m_creates
-      pp_keys rule.m_depends
-  in
-  Format.pp_print_list ~pp_sep pp_rule fmt rules
 
 (** {1 Shake behaviour} *)
 

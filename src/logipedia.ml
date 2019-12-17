@@ -116,7 +116,7 @@ Available options for the selected mode:"
         Build_template.mk_rule_load_dk (`DkMd(Kernel.Basic.mk_mident "sttfa"))
         :: (List.map prod (!infiles @ dirfiles) |> List.flatten)
       in
-      Format.printf "%a@." (Build.pp_rules Build_template.pp_key) rules;
+      Format.printf "%a@." (Build.pp_rulems Build_template.pp_key) rules;
       let build = Build.buildm Build_template.key_eq in
       let build target =
         match build rules target with
