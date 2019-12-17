@@ -150,7 +150,6 @@ matita: $(_mafiles) $(_matitapath)/root
 #### Lean ##########################################################
 
 _leanpath = $(EXPDIR)/lean
-_leanfiles=$(addprefix $(_leanpath)/,$(addsuffix .lean,$(_srcbase)))
 
 .PHONY: lean
 lean: $(_dkos) $(LOGIPEDIA)
@@ -178,23 +177,19 @@ opentheory: $(_otfiles)
 #### HOL Light ######################################################
 
 _holpath = $(EXPDIR)/hollight
-_holfiles=$(addprefix $(_holpath)/,$(addsuffix .ml,$(_srcbase)))
 
-$(_holpath)/%.ml: $(_ipath)/%.dko .library_depend_hol $(LOGIPEDIA)
+hollight: $(_dkos) $(LOGIPEDIA)
 	@mkdir -p $(_holpath)
-	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) hollight $(_logipediaopts) -f $(<:.dko=.dk) -o $@
-
-.PHONY: hollight
-hollight: $(_holfiles)
+	$(LOGIPEDIA) hollight -I $(_thdir) -I $(_ipath) -o $(_holpath) \
+-d $(_ipath)
 	@echo "[HOL] FILES TO BE CHECKED"
+
 
 
 ##### PVS ##########################################################
 
 
 _pvspath = $(EXPDIR)/pvs
-_pvsfiles=$(addprefix $(_pvspath)/,$(addsuffix .pvs,$(_srcbase)))
 _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 $(_pvspath)/%.summary: $(_pvspath)/%.pvs
 	@echo "[SUMMARY] $@"
@@ -210,7 +205,6 @@ pvs: $(_dkos) $(LOGIPEDIA)
 #### Json ##########################################################
 
 _jsonpath = $(EXPDIR)/json
-_jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 _thfiles = $(wildcard $(_thdir)/*.dk)
 
 .PHONY: json
@@ -259,24 +253,12 @@ _esc_otpath = $(subst /,\\/,$(_otpath))
 	@sed -i s/dk/dko/g $@
 	@sed  -i "s:$(_ipath)/\([^.]*\)\.art:$(_otpath)/\1\.art:g" $@
 
-_esc_holpath = $(subst /,\\/,$(_holpath))
-.library_depend_hol: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
-	@echo "[DKDEP (HOLLIGHT FILES)] $@"
-	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_holpath)\\/$$f/ $@ ; \
-	done
-	@sed -i s/dko/ml/g $@
-	@sed -i s/dk/dko/g $@
-	@sed  -i "s:$(_ipath)/\([^.]*\)\.ml:$(_holpath)/\1\.ml:g" $@
-
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend_dko
 -include .library_depend_v
 -include .library_depend_ma
 -include .library_depend_art
--include .library_depend_hol
 endif
 endif
 
