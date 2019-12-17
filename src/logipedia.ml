@@ -105,15 +105,11 @@ Available options for the selected mode:"
             let ast = Syst.Ast.compile md entries in
             Syst.export ast fmt
           in
-          let keep_deps : Kernel.Basic.mident list -> 'k list = fun deps ->
-            `DkMd(md) :: List.map (fun x -> `DkMd(x)) deps
-          in
           let ext = "." ^ List.assoc s Core.Systems.sys_ext in
-          [ Build_template.mk_rule_sys_of_dk
-              ~entries_pp ~keep_deps md ext (Option.get !outdir)
-          ; Build_template.mk_rule_load_dk (`DkMd(md)) ]
+          [ Build_template.mk_rule_sys_of_dk ~entries_pp md ext (Option.get !outdir)
+          ; Build_template.mk_rule_sig md ]
         in
-        Build_template.mk_rule_load_dk (`DkMd(Kernel.Basic.mk_mident "sttfa"))
+        Build_template.mk_rule_sig (Kernel.Basic.mk_mident "sttfa")
         :: (List.map prod (!infiles @ dirfiles) |> List.flatten)
       in
       Format.printf "%a@." (Build.pp_rulems Build_template.pp_key) rules;
