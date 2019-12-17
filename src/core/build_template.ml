@@ -1,15 +1,19 @@
+(** Some rule making facilities. *)
 open Extras
 open Build
 
 type mident = Kernel.Basic.mident
+let mident_eq : mident eq = Kernel.Basic.mident_eq
 
-let key_eq : _ eq = fun k l ->
+(** [key_eq k l] returns if key [k] and key [l] are the equal. *)
+let key_eq : [< `DkMd of mident | `SysMd of mident | `DkSig of mident] eq =
+  fun k l ->
   match k, l with
-  | `SysMd(k), `SysMd(l)
-  | `DkSig(k), `DkSig(l)
-  | `DkMd(k) , `DkMd(l) -> Kernel.Basic.mident_eq k l
+  | `SysMd(k), `SysMd(l) | `DkSig(k), `DkSig(l)
+  | `DkMd(k) , `DkMd(l) -> mident_eq k l
   | _                   -> false
 
+(** [pp_key fmt k] prints key [k] to formatter [fmt]. *)
 let pp_key : [> `DkMd of mident | `SysMd of mident | `DkSig of mident] pp =
   fun fmt k ->
   let module Dpp = Api.Pp.Default in
@@ -19,7 +23,8 @@ let pp_key : [> `DkMd of mident | `SysMd of mident | `DkSig of mident] pp =
   | `DkSig(m) -> Format.fprintf fmt "DkSig(%a)" Dpp.print_mident m
   | _         -> Format.fprintf fmt "NoPrinter"
 
-let mk_rule_idle : 'k -> ('k, _) rulem = fun key ->
+(** [mk_rule_idle k] creates a rule that does nothing. *)
+let mk_rule_idle : 'k -> ('k, unit) rulem = fun key ->
   {m_creates=key; m_depends=[]; m_action = fun _ -> ()}
 
 (** [mk_rule_sig md] creates a rule to load module [md] into the signature. *)
@@ -57,9 +62,8 @@ let mk_rule_sig : mident -> ([> `DkSig of mident], unit) rulem =
     entries in module [md] with [~entries_pp] into a file [md.fext] in
     [outdir]. *)
 let mk_rule_sys_of_dk :
-  entries_pp:Parsing.Entry.entry list pp ->
-  Kernel.Basic.mident -> string -> string -> ('k, _) rulem =
-  fun ~entries_pp md fext outdir ->
+  entries_pp:Parsing.Entry.entry list pp -> mident -> string -> string ->
+  ('k, unit) rulem = fun ~entries_pp md fext outdir ->
   let infile = Api.Dep.get_file md in
     let m_depends =
       let input = open_in infile in
