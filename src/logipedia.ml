@@ -105,10 +105,11 @@ Available options for the selected mode:"
           let md = Denv.init file in
           let entries_pp : Parsing.Entry.entry list pp = fun fmt entries ->
             let ast = Syst.Ast.compile md entries in
-            Syst.export ast fmt
+            Syst.export fmt ast
           in
           let ext = List.assoc syst Core.Systems.sys_ext in
-          [ Build_template.mk_rule_sys_of_dk ~entries_pp md ext (Option.get !outdir)
+          let outdir = Option.get !outdir in
+          [ Build_template.mk_rule_sys_of_dk ~entries_pp md ext outdir
           ; Build_template.mk_rule_sig md ]
         in
         Build_template.mk_rule_sig (Kernel.Basic.mk_mident "sttfa")

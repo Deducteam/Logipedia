@@ -1,5 +1,7 @@
 (** Signature of a system. *)
 
+open Core.Extras
+
 (** Ast and interactions with Dk files that a system must provide. *)
 module type AST =
 sig
@@ -22,7 +24,7 @@ sig
   module Mid : Middleware.S
   (** Middleware used for the json export. *)
 
-  val export : Ast.t -> Format.formatter -> unit
-  (** [export ast fmt] exports abstract syntax tree [ast] to formatter
+  val export : Ast.t pp
+  (** [export fmt ast] exports abstract syntax tree [ast] to formatter
       [fmt] in the syntax of the system. *)
 end
