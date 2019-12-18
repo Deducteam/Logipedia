@@ -210,7 +210,8 @@ _thfiles = $(wildcard $(_thdir)/*.dk)
 json: dedukti $(DK2JSON)
 	@mkdir -p $(_jsonpath)
 	$(DK2JSON) -m $(MIDDLEWARE) -o $(_jsonpath) -J $(_jsonpath) \
--I $(_ipath) -d $(_ipath) -I $(_thdir) $(_thfiles)
+-I $(_ipath) -d $(_ipath) -I $(_thdir) $(_thfiles) \
+--hollight $(_holpath) --pvs $(_pvspath) --lean $(_leanpath)
 
 #### Dependencies ##################################################
 
