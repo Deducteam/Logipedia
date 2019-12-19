@@ -25,12 +25,11 @@ let pp_key : [> `DkMd of mident | `SysMd of mident | `DkSig of mident] pp =
   | _         -> Format.fprintf fmt "NoPrinter"
 
 (** [mk_rule_idle k] creates a rule that does nothing. *)
-let mk_rule_idle : 'k -> ('k, unit) rulem = fun key ->
-  {m_creates=key; m_depends=[]; m_action = fun _ -> ()}
+let mk_rule_idle : 'k -> ('k, [> `Idle]) rulem = fun key ->
+  {m_creates=key; m_depends=[]; m_action = fun _ -> `Idle}
 
 (** [mk_rule_sig md] creates a rule to load module [md] into the signature. *)
-let mk_rule_sig : mident -> ([> `DkSig of mident], unit) rulem =
-  fun md ->
+let mk_rule_sig : mident -> ([> `DkSig of mident], [> `Side]) rulem = fun md ->
   let file = Api.Dep.get_file md in
   let m_creates = `DkSig(md) in
   let m_depends = Deps.deps_of_md md |> List.map (fun x -> `DkSig(x)) in
@@ -52,16 +51,21 @@ let mk_rule_sig : mident -> ([> `DkSig of mident], unit) rulem =
         end
       with E.EnvError(_,_,EnvErrorSignature(S.AlreadyDefinedSymbol(_))) -> ()
     in
-    List.iter declare entries
+    List.iter declare entries;
+    `Sign
   in
   {m_creates; m_depends; m_action}
+
+(** Representation of a file, absolute path along with digest, proof that the
+    file exists. *)
+type file = string * Digest.t
 
 (** [mk_rule_sys_of_dk ~entries_pp md fext outdir] allows to print
     entries in module [md] with [~entries_pp] into a file [md.fext] in
     [outdir]. *)
 let mk_rule_sys_of_dk :
   entries_pp:Parsing.Entry.entry list pp -> mident -> string -> string ->
-  ('k, unit) rulem = fun ~entries_pp md fext outdir ->
+  (_, [> `File of file]) rulem = fun ~entries_pp md fext outdir ->
   let infile = Api.Dep.get_file md in
   let m_creates = `SysMd(md) in
   let m_depends =
@@ -76,15 +80,14 @@ let mk_rule_sys_of_dk :
       close_in input;
       ret
     in
-    let ochan =
+    let ofile =
       let open Filename in
-      let ofile =
-        (concat outdir (basename (chop_extension infile))) ^ "." ^ fext
-      in
-      open_out ofile
+      (concat outdir (basename (chop_extension infile))) ^ "." ^ fext
     in
+    let ochan = open_out ofile in
     let ofmt = Format.formatter_of_out_channel ochan in
     entries_pp ofmt entries;
     close_out ochan;
+    `File(ofile, Digest.file ofile)
   in
   {m_creates; m_depends; m_action}

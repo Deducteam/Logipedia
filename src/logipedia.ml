@@ -124,7 +124,7 @@ Available options for the selected mode:"
       let build = Build.buildm Build_template.key_eq in
       let build target =
         match build rules target with
-        | Ok(())     -> ()
+        | Ok(_)      -> ()
         | Error(key) ->
           Format.printf "No rule to make %a@." Build_template.pp_key key
       in
