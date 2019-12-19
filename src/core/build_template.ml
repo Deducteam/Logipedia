@@ -31,12 +31,7 @@ let mk_rule_idle : 'k -> ('k, unit) rulem = fun key ->
 let mk_rule_sig : mident -> ([> `DkSig of mident], unit) rulem =
   fun md ->
   let file = Api.Dep.get_file md in
-  let m_depends =
-    let inchan = open_in file in
-    let r = Deps.deps_of_md inchan md |> List.map (fun x -> `DkSig(x)) in
-    close_in inchan;
-    r
-  in
+  let m_depends = Deps.deps_of_md md |> List.map (fun x -> `DkSig(x)) in
   let m_action _ =
     let inchan = open_in file in
     let entries = Parsing.Parser.Parse_channel.parse md inchan in
@@ -66,9 +61,7 @@ let mk_rule_sys_of_dk :
   ('k, unit) rulem = fun ~entries_pp md fext outdir ->
   let infile = Api.Dep.get_file md in
     let m_depends =
-      let input = open_in infile in
-      let deps = Deps.deps_of_md input md in
-      close_in input;
+      let deps = Deps.deps_of_md md in
       `DkSig(md) :: List.map (fun x -> `DkSig(x)) deps
     in
     let m_action _ =
