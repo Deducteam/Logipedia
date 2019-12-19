@@ -1,5 +1,6 @@
 (** Some rule making facilities. *)
 open Extras
+open Console
 open Build
 
 type mident = Kernel.Basic.mident
@@ -31,8 +32,10 @@ let mk_rule_idle : 'k -> ('k, unit) rulem = fun key ->
 let mk_rule_sig : mident -> ([> `DkSig of mident], unit) rulem =
   fun md ->
   let file = Api.Dep.get_file md in
+  let m_creates = `DkSig(md) in
   let m_depends = Deps.deps_of_md md |> List.map (fun x -> `DkSig(x)) in
   let m_action _ =
+    if !log_enabled then Format.printf "[build] [%a]" pp_key m_creates;
     let inchan = open_in file in
     let entries = Parsing.Parser.Parse_channel.parse md inchan in
     close_in inchan;
@@ -51,7 +54,7 @@ let mk_rule_sig : mident -> ([> `DkSig of mident], unit) rulem =
     in
     List.iter declare entries
   in
-  {m_creates=`DkSig(md); m_depends; m_action}
+  {m_creates; m_depends; m_action}
 
 (** [mk_rule_sys_of_dk ~entries_pp md fext outdir] allows to print
     entries in module [md] with [~entries_pp] into a file [md.fext] in
@@ -60,26 +63,28 @@ let mk_rule_sys_of_dk :
   entries_pp:Parsing.Entry.entry list pp -> mident -> string -> string ->
   ('k, unit) rulem = fun ~entries_pp md fext outdir ->
   let infile = Api.Dep.get_file md in
-    let m_depends =
-      let deps = Deps.deps_of_md md in
-      `DkSig(md) :: List.map (fun x -> `DkSig(x)) deps
+  let m_creates = `SysMd(md) in
+  let m_depends =
+    let deps = Deps.deps_of_md md in
+    `DkSig(md) :: List.map (fun x -> `DkSig(x)) deps
+  in
+  let m_action _ =
+    if !log_enabled then Format.printf "[build] [%a]" pp_key m_creates;
+    let entries =
+      let input = open_in infile in
+      let ret = Parsing.Parser.Parse_channel.parse md input in
+      close_in input;
+      ret
     in
-    let m_action _ =
-      let entries =
-        let input = open_in infile in
-        let ret = Parsing.Parser.Parse_channel.parse md input in
-        close_in input;
-        ret
+    let ochan =
+      let open Filename in
+      let ofile =
+        (concat outdir (basename (chop_extension infile))) ^ "." ^ fext
       in
-      let ochan =
-        let open Filename in
-        let ofile =
-          (concat outdir (basename (chop_extension infile))) ^ "." ^ fext
-        in
-        open_out ofile
-      in
-      let ofmt = Format.formatter_of_out_channel ochan in
-      entries_pp ofmt entries;
-      close_out ochan;
+      open_out ofile
     in
-    {m_creates=`SysMd(md); m_depends; m_action}
+    let ofmt = Format.formatter_of_out_channel ochan in
+    entries_pp ofmt entries;
+    close_out ochan;
+  in
+  {m_creates; m_depends; m_action}
