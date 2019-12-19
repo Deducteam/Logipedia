@@ -29,7 +29,7 @@ let mk_rule_idle : 'k -> ('k, [> `Idle]) rulem = fun key ->
   {m_creates=key; m_depends=[]; m_action = fun _ -> `Idle}
 
 (** [mk_rule_sig md] creates a rule to load module [md] into the signature. *)
-let mk_rule_sig : mident -> ([> `DkSig of mident], [> `Side]) rulem = fun md ->
+let mk_rule_sig : mident -> ([> `DkSig of mident], [> `Sign]) rulem = fun md ->
   let file = Api.Dep.get_file md in
   let m_creates = `DkSig(md) in
   let m_depends = Deps.deps_of_md md |> List.map (fun x -> `DkSig(x)) in
