@@ -120,7 +120,7 @@ Available options for the selected mode:"
         :: (List.map prod (!infiles @ dirfiles) |> List.flatten)
       in
       if !log_enabled then
-        Format.printf "%a@." (Build.pp_rulems Build_template.pp_key) rules;
+        log "%a@." (Build.pp_rulems Build_template.pp_key) rules;
       let build = Build.buildm Build_template.key_eq in
       let build target =
         match build rules target with
