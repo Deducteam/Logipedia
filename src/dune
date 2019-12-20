@@ -4,7 +4,8 @@
   (modules logipedia)
   (libraries
     logipedia.hollight logipedia.pvs logipedia.lean logipedia.coq
-    logipedia.matita logipedia.export logipedia.core logipedia.sttfa))
+    logipedia.matita logipedia.opentheory logipedia.export logipedia.core
+    logipedia.sttfa))
 
 (executable
   (name dk2json)
