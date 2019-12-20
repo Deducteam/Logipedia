@@ -56,10 +56,12 @@ let dep_of_entry (mds:mident list) e =
   List.fold_left (fun qset md -> QSet.remove (string_of_mident md) qset)
     (dep_of_entry e) mds
 
-let deps_of_md : in_channel -> mident -> mident list =
-  fun ichan md ->
+let deps_of_md : mident -> mident list = fun md ->
+  let file = Api.Dep.get_file md in
+  let inchan = open_in file in
   Api.Dep.compute_ideps := false;
-  let entries = Parsing.Parser.Parse_channel.parse md ichan in
+  let entries = Parsing.Parser.Parse_channel.parse md inchan in
+  close_in inchan;
   begin
     try Api.Dep.make md entries
     with e -> ErrorHandler.graceful_fail None e

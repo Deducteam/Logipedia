@@ -46,9 +46,7 @@ let rulem_of_file : (module Compile.S) -> string ->
   string -> (key, unit) rulem = fun (module JsExp) infile outdir ->
   let md = Api.Env.Default.init infile in
   let m_depends =
-    let input = open_in infile in
-    let deps = Core.Deps.deps_of_md input md in
-    close_in input;
+    let deps = Core.Deps.deps_of_md md in
     DkMd(md) :: List.map (fun x -> DkMd(x)) deps @
     (* Dependency on json files because [doc_of_entries] reparses the
     produced files (to find taxons). FIXME *)
