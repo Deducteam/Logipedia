@@ -131,24 +131,20 @@ coq: $(_coqpath)/Makefile $(_vfiles)
 
 
 #### Matita ########################################################
-
 _matitapath = $(EXPDIR)/matita
-_mafiles=$(addprefix $(_matitapath)/, $(addsuffix .ma, $(_srcbase)))
-
-$(_matitapath)/%.ma: $(_ipath)/%.dko .library_depend_ma $(LOGIPEDIA)
-	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) matita $(_logipediaopts) -f $(<:.dko=.dk) -o $@
-
 $(_matitapath)/root:
+	@mkdir -p $(_matitapath)
 	@echo "baseuri = cic:/matita" > $@
 
 .PHONY: matita
-matita: $(_mafiles) $(_matitapath)/root
+matita: $(LOGIPEDIA) $(_matitapath)/root
+	@mkdir -p $(_matitapath)
+	$(LOGIPEDIA) matita -I $(_thdir) -I $(_ipath) -o $(_matitapath) \
+-d $(_ipath)
 	@cd $(_matitapath) && $(MATITAC) *.ma
 	@echo "[MATITA] CHECKED"
 
 #### Lean ##########################################################
-
 _leanpath = $(EXPDIR)/lean
 
 .PHONY: lean
@@ -159,23 +155,19 @@ lean: $(_dkos) $(LOGIPEDIA)
 	@echo "[LEAN] CHECKED"
 
 #### OpenTheory ####################################################
-
 _otpath = $(EXPDIR)/opentheory
 _otfiles=$(addprefix $(_otpath)/,$(addsuffix .art,$(_srcbase)))
 _thyfile=$(_otpath)/$(PKG).thy
 
-$(_otpath)/%.art: $(_ipath)/%.dko .library_depend_art $(LOGIPEDIA)
-	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) opentheory $(_logipediaopts) -f $(<:.dko=.dk) -o $@
-
 .PHONY: opentheory
-opentheory: $(_otfiles)
+opentheory: $(LOGIPEDIA)
+	$(LOGIPEDIA) opentheory -I $(_thdir) -I $(_ipath) -o $(_otpath) \
+-d $(_ipath)
 	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
 	$(OT) info $(_thyfile) 2>/dev/null
 	@echo "[OT] CHECKED"
 
 #### HOL Light ######################################################
-
 _holpath = $(EXPDIR)/hollight
 hollight: $(_dkos) $(LOGIPEDIA)
 	@mkdir -p $(_holpath)
@@ -183,11 +175,7 @@ hollight: $(_dkos) $(LOGIPEDIA)
 -d $(_ipath)
 	@echo "[HOL] FILES TO BE CHECKED"
 
-
-
 ##### PVS ##########################################################
-
-
 _pvspath = $(EXPDIR)/pvs
 _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 $(_pvspath)/%.summary: $(_pvspath)/%.pvs
@@ -202,7 +190,6 @@ pvs: $(_dkos) $(LOGIPEDIA)
 	@echo "[PVS] CHECKED"
 
 #### Json ##########################################################
-
 _jsonpath = $(EXPDIR)/json
 _thfiles = $(wildcard $(_thdir)/*.dk)
 
@@ -231,34 +218,10 @@ _esc_coqpath = $(subst /,\\/,$(_coqpath))
 	@sed -i s/dk/dko/g $@
 	@sed -i "s:$(_ipath)/\([^/]\+\)\.v:$(_coqpath)/\1\.v:g" $@
 
-_esc_matitapath = $(subst /,\\/,$(_matitapath))
-.library_depend_ma: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
-	@echo "[DKDEP (MA FILES)] $@"
-	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_matitapath)\\/$$f/ $@ ; \
-	done
-	@sed -i s/dko/ma/g $@
-	@sed -i s/dk/dko/g $@
-	@sed  -i "s:$(_ipath)/\([^.]*\)\.ma:$(_matitapath)/\1\.ma:g" $@
-
-_esc_otpath = $(subst /,\\/,$(_otpath))
-.library_depend_art: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
-	@echo "[DKDEP (ART FILES)] $@"
-	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_otpath)\\/$$f/ $@ ; \
-	done
-	@sed -i s/dko/art/g $@
-	@sed -i s/dk/dko/g $@
-	@sed  -i "s:$(_ipath)/\([^.]*\)\.art:$(_otpath)/\1\.art:g" $@
-
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend_dko
 -include .library_depend_v
--include .library_depend_ma
--include .library_depend_art
 endif
 endif
 
@@ -283,8 +246,6 @@ clean:
 	@$(RM) .library_depend_dko
 	@$(RM) .library_depend_v
 	@$(RM) .library_depend_vo
-	@$(RM) .library_depend_ma
-	@$(RM) .library_depend_art
 
 
 .PHONY: distclean
