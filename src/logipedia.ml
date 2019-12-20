@@ -79,6 +79,7 @@ let get_system : S.system -> (module Export.S) = fun sy ->
   | `Hollight -> (module Hollight)
   | `Lean     -> (module Lean)
   | `Coq      -> (module Coq)
+  | `Matita   -> (module Matita)
   | _         -> failwith "Not yet implemented"
 
 let _ =
