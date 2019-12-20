@@ -75,7 +75,7 @@ $(_thdepdir)/%.d: $(_thdir)/%.dk
 $(_thdir)/%.dko: $(_thdir)/%.dk $(_thdepdir)/%.d
 	@mkdir -p $(@D)
 	@echo "[CHECK] $^"
-	@$(DKCHECK) $(DKFLAGS) -e -I $(_thdir)/ $^
+	@$(DKCHECK) $(DKFLAGS) -e -I $(_thdir)/ $<
 
 
 #### Producing the Dedukti library #################################
