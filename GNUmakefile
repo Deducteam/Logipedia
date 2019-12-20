@@ -170,7 +170,7 @@ _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 pvs: $(_dkos) $(LOGIPEDIA)
 	@mkdir -p $(_pvspath)
 	$(LOGIPEDIA) pvs -I $(_thdir) -I $(_ipath) -o $(_pvspath) -d $(_ipath)
-	for file in $(wildcard $(_pvspath/*.pvs)); do \
+	for file in $(shell ls $(_pvspath)/*.pvs); do \
 		$(PROVEIT) --importchain --scripts --force $$file ; \
 	done
 	@echo "[PVS] CHECKED"
