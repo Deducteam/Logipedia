@@ -123,13 +123,10 @@ coq: $(LOGIPEDIA) $(_dkos)
 
 #### Matita ########################################################
 _matitapath = $(EXPDIR)/matita
-$(_matitapath)/root:
-	@mkdir -p $(_matitapath)
-	@echo "baseuri = cic:/matita" > $@
-
 .PHONY: matita
-matita: $(LOGIPEDIA) $(_matitapath)/root
+matita: $(LOGIPEDIA) $(_matitapath)/root $(_dkos)
 	@mkdir -p $(_matitapath)
+	@echo "baseuri = cic:/matita" > $(_matitapath)/root
 	$(LOGIPEDIA) matita -I $(_thdir) -I $(_ipath) -o $(_matitapath) \
 -d $(_ipath)
 	@cd $(_matitapath) && $(MATITAC) *.ma
@@ -147,11 +144,10 @@ lean: $(_dkos) $(LOGIPEDIA)
 
 #### OpenTheory ####################################################
 _otpath = $(EXPDIR)/opentheory
-_otfiles=$(addprefix $(_otpath)/,$(addsuffix .art,$(_srcbase)))
 _thyfile=$(_otpath)/$(PKG).thy
 
 .PHONY: opentheory
-opentheory: $(LOGIPEDIA)
+opentheory: $(LOGIPEDIA) $(_dkos)
 	$(LOGIPEDIA) opentheory -I $(_thdir) -I $(_ipath) -o $(_otpath) \
 -d $(_ipath)
 	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
@@ -169,15 +165,14 @@ hollight: $(_dkos) $(LOGIPEDIA)
 ##### PVS ##########################################################
 _pvspath = $(EXPDIR)/pvs
 _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
-$(_pvspath)/%.summary: $(_pvspath)/%.pvs
-	@echo "[SUMMARY] $@"
-# proveit always return 1
-	@true || $(PROVEIT) --importchain --scripts --force $<
 
 .PHONY: pvs
 pvs: $(_dkos) $(LOGIPEDIA)
 	@mkdir -p $(_pvspath)
 	$(LOGIPEDIA) pvs -I $(_thdir) -I $(_ipath) -o $(_pvspath) -d $(_ipath)
+	for file in $(wildcard $(_pvspath/*.pvs)); do \
+		$(PROVEIT) --importchain --scripts --force $$file ; \
+	done
 	@echo "[PVS] CHECKED"
 
 #### Json ##########################################################
