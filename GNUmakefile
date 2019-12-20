@@ -107,26 +107,17 @@ dedukti: $(_dkos)
 	@echo "[DEDUKTI] CHECKED"
 
 #### Coq ###########################################################
-
 _coqpath = $(EXPDIR)/coq
-_vfiles = $(addprefix $(_coqpath)/, $(addsuffix .v, $(_srcbase)))
-
-$(_coqpath)/%.v: $(_ipath)/%.dko .library_depend_v $(LOGIPEDIA)
-	@mkdir -p $(_coqpath)
-	@echo "[EXPORT] $@"
-	@$(LOGIPEDIA) coq $(_logipediaopts) --fast -f $(<:.dko=.dk) -o $@
-	@mv $@ $(addsuffix .v, $(subst -,_, $(subst .,_,$(basename $@)))) \
-|| true 2>/dev/null # avoid fail if there is no change
-
-$(_coqpath)/_CoqProject: $(_vfiles)
-	@cd $(_coqpath) && ls *.v > _CoqProject
-
-$(_coqpath)/Makefile: $(_coqpath)/_CoqProject
-	@cd $(_coqpath) && coq_makefile -f _CoqProject -o Makefile
-
 .PHONY: coq
-coq: $(_coqpath)/Makefile $(_vfiles)
-	@cd $(_coqpath) && make
+coq: $(LOGIPEDIA) $(_dkos)
+	@mkdir -p $(_coqpath)
+	$(LOGIPEDIA) coq -I $(_thdir) -I $(_ipath) -o $(_coqpath) \
+-d $(_ipath)
+	cd $(_coqpath) && rename 's:-:_:g' $(_coqpath)/*.v
+	cd $(_coqpath) && rename 's:\.:_:g' $(_coqpath)/*.v
+	@cd $(_coqpath) && ls *.v > _CoqProject
+	@cd $(_coqpath) && coq_makefile -f _CoqProject -o Makefile
+	@cd $(_coqpath) && $(MAKE)
 	@echo "[COQ] CHECKED"
 
 
@@ -207,21 +198,9 @@ _esc_thdir = $(subst /,\\/,$(_thdir))
 	@echo "[DKDEP (DK FILES)] $@"
 	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
 
-_esc_coqpath = $(subst /,\\/,$(_coqpath))
-.library_depend_v: $(wildcard $(_ipath)/*.dk $(_thdir)/$(_thfiles).dk)
-	@echo "[DKDEP (V FILES)] $@"
-	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-	@for f in $(addsuffix .dko, $(_thfiles)) ; do \
-		sed -i s/$(_esc_thdir)\\/$$f/$(_esc_coqpath)\\/$$f/ $@ ; \
-	done
-	@sed -i s/dko/v/g $@
-	@sed -i s/dk/dko/g $@
-	@sed -i "s:$(_ipath)/\([^/]\+\)\.v:$(_coqpath)/\1\.v:g" $@
-
 ifneq ($(MAKECMDGOALS), clean)
 ifneq ($(MAKECMDGOALS), distclean)
 -include .library_depend_dko
--include .library_depend_v
 endif
 endif
 
@@ -244,8 +223,6 @@ clean:
 	@dune clean
 	@$(RM) -r $(_depdir)
 	@$(RM) .library_depend_dko
-	@$(RM) .library_depend_v
-	@$(RM) .library_depend_vo
 
 
 .PHONY: distclean
