@@ -72,13 +72,7 @@ $(_thdepdir)/%.d: $(_thdir)/%.dk
 	@mkdir -p $(@D)
 	@$(DKDEP) -o $@ -I $(_thdir) $^
 
-ifneq ($(MAKECMDGOALS), clean)
-ifneq ($(MAKECMDGOALS), distclean)
--include $(addprefix $(_thdepdir)/, $(_thfiles).d)
-endif
-endif
-
-$(_thdir)/%.dko: $(_thdir)/%.dk $(_thdepdir/%.d)
+$(_thdir)/%.dko: $(_thdir)/%.dk $(_thdepdir)/%.d
 	@mkdir -p $(@D)
 	@echo "[CHECK] $^"
 	@$(DKCHECK) $(DKFLAGS) -e -I $(_thdir)/ $^
@@ -98,9 +92,15 @@ _dks := $(addprefix $(_ipath)/, $(__dks))
 _dkos := $(patsubst %.dk,%.dko,$(_dks))
 _srcbase := $(notdir $(basename $(_dks)))
 
-$(_ipath)/%.dko: $(_ipath)/%.dk $(_thdir)/$(_thfiles:=.dko)
+_dkodepdir = $(_depdir)/$(_ipath)
+$(_dkodepdir)/%.d: $(_ipath)/%.dk
+	@mkdir -p $(_dkodepdir)
+	$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
+depfiles = $(patsubst %.dk, $(_dkodepdir)/%.d, $(__dks))
+
+$(_ipath)/%.dko: $(_ipath)/%.dk $(_thdir)/$(_thfiles:=.dko) $(depfiles)
 	@echo "[CHECK] $@"
-	@$(DKCHECK) $(DKFLAGS) -e -I $(_thdir) -I $(_ipath) $<
+	$(DKCHECK) $(DKFLAGS) -e -I $(_thdir) -I $(_ipath) $<
 
 .PHONY: dedukti
 dedukti: $(_dkos)
@@ -186,19 +186,6 @@ json: dedukti $(DK2JSON)
 -I $(_ipath) -d $(_ipath) -I $(_thdir) $(_thfiles) \
 --hollight $(_holpath) --pvs $(_pvspath) --lean $(_leanpath)
 
-#### Dependencies ##################################################
-
-_esc_thdir = $(subst /,\\/,$(_thdir))
-.library_depend_dko: $(_dks) $(_thdir)/$(_thfiles).dk
-	@echo "[DKDEP (DK FILES)] $@"
-	@$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
-
-ifneq ($(MAKECMDGOALS), clean)
-ifneq ($(MAKECMDGOALS), distclean)
--include .library_depend_dko
-endif
-endif
-
 #### Pretty printer ################################################
 
 # FIXME logipp-latex definitve?
@@ -211,14 +198,19 @@ install_pp: $(PP)
 $(PP):
 	$(shell utils/install-pp.sh)
 
+ifneq ($(MAKECMDGOALS), clean)
+ifneq ($(MAKECMDGOALS), distclean)
+-include $(addprefix $(_thdepdir)/, $(_thfiles).d)
+-include $(depfiles)
+endif
+endif
+
 #### Cleaning targets ##############################################
 
 .PHONY: clean
 clean:
 	@dune clean
 	@$(RM) -r $(_depdir)
-	@$(RM) .library_depend_dko
-
 
 .PHONY: distclean
 distclean: clean
