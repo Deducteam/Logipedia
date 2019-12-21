@@ -1,4 +1,5 @@
 open Core
+open Console
 open Extras
 open Json
 
@@ -47,6 +48,9 @@ let options =
     ; ( "-d"
       , Arg.Set_string indir
       , " Add directory containing Dedukti files to convert" )
+    ; ( "--debug"
+      , Arg.Set log_enabled
+      , " Enable debug mode" )
     ; ( "-o"
       , Arg.String (fun s -> outdir := Some(s))
       , " Set output directory" ) ] |>
@@ -79,7 +83,8 @@ let _ =
     in
     Produce.rulem_dk_idle :: List.map prod (!infiles @ dirfiles)
   in
-  Format.printf "%a@\n" (Build.pp_rulems Produce.pp_key) rules;
+  if !log_enabled then
+    Format.printf "%a@\n" (Build.pp_rulems Produce.pp_key) rules;
   let valid_stored _ _ = false in
   let build = Build.buildm ~key_eq:Produce.key_eq ~valid_stored in
   (* [build] is now memoized: rules are not run twice. *)
