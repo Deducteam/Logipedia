@@ -80,7 +80,8 @@ let _ =
     Produce.rulem_dk_idle :: List.map prod (!infiles @ dirfiles)
   in
   Format.printf "%a@\n" (Build.pp_rulems Produce.pp_key) rules;
-  let build = Build.buildm Produce.key_eq in
+  let valid_stored _ _ = false in
+  let build = Build.buildm ~key_eq:Produce.key_eq ~valid_stored in
   (* [build] is now memoized: rules are not run twice. *)
   let build target =
     match build rules target with

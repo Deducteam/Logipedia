@@ -1,5 +1,8 @@
 open Extras
 
+(** Directory where metadata are saved. *)
+let metadata_dir = ".logibuild"
+
 (** Manipulated result, to be stored in the database. *)
 type ('key, 'value) resultm =
   { r_created : 'key
@@ -39,12 +42,12 @@ let skipm : ('key, 'value) resultm -> ('key -> ('key, 'value) resultm) ->
   let f x = (ask x).r_built <= old.r_built in
   List.for_all f rule.m_depends
 
-let buildm (type key): key eq -> (key, 'value) rulem list -> key ->
-  ('value, key) result = fun key_eq ->
-  (* Locally abstract type for the local exception. *)
+let buildm (type key): key_eq:key eq -> valid_stored:(key -> 'value -> bool) ->
+  (key, 'value) rulem list -> key ->
+  ('value, key) result = fun ~key_eq ~valid_stored ->
   (* Counts build processes to timestamp builds. *)
   let time : int ref = ref 0 in
-  (* Save previous results in the database. *)
+  (* Module of the database *)
   let module Db = Hashtbl.Make(struct
       type t = key
       let equal = key_eq
@@ -52,10 +55,15 @@ let buildm (type key): key eq -> (key, 'value) rulem list -> key ->
     end)
   in
   let database : (key, _) resultm Db.t = Db.create 19 in
-  (* [ask key] returns the pre-computed result for key [key] or
+  (* [ask key] returns the pre-computed result for key [key] in the database or
      @raise Not_found. *)
   let ask : key -> (key, _) resultm = fun target ->
     Db.find database target
+  in
+  (* [check k r] removes key [k] from database if result [r] is not valid
+     according to function [valid_stored]. *)
+  let check : key -> (key, _) resultm -> unit = fun k r ->
+    if valid_stored k r.r_value then Db.remove database k
   in
   (* [store key value] stores value [value] as computed from key
      [key]. *)
@@ -63,7 +71,18 @@ let buildm (type key): key eq -> (key, 'value) rulem list -> key ->
     Db.replace database target
       {r_created=target; r_value=value; r_built=(!time)}
   in
+  (* Definition of the effective build function *)
   fun rules target ->
+    (* Load database for target and check it. *)
+    let dbfile =
+      Hashtbl.hash target |> string_of_int |>
+      Filename.concat metadata_dir
+    in
+    let database : (key, _) resultm Db.t =
+      Marshal.from_channel (open_in dbfile)
+    in
+    Db.iter check database;
+    (* The build algorithm. *)
     let exception NoRule of key in
     let rec buildm : key -> _ = fun target ->
       incr time;
@@ -78,8 +97,13 @@ let buildm (type key): key eq -> (key, 'value) rulem list -> key ->
         store target value;
         value
     in
-    try Ok(buildm target)
-    with NoRule(t) -> Error(t)
+    (* Save result to new database. *)
+    begin
+      if not (Sys.file_exists metadata_dir) then Unix.mkdir metadata_dir 0o755;
+      let ochan = open_out dbfile in
+      Marshal.to_channel ochan database []
+    end;
+    try Ok(buildm target) with NoRule(t) -> Error(t)
 
 (** {1 Shake behaviour} *)
 

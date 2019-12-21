@@ -21,12 +21,15 @@ type ('key, 'value) rulem =
     [fmt] using function [pp_key] to pretty print the keys. *)
 val pp_rulems : 'key pp -> ('key, 'value) rulem list pp
 
-(** [buildm key_eq] returns a builder, that is, a function [b] such that
-    [b rules target] builds target [target] thanks to rules [rules] using
-    function [key_eq] to find the appropriate rule. Returns [Ok(v)] if the value
-    is computed successfully or [Error(t)] if there is no rule to build target
-    [t]. Applying twice [b] is memoized while [buildm] is not. *)
-val buildm : 'key eq -> ('key, 'value) rulem list -> 'key ->
+(** [buildm ~key_eq ~valid_stored] returns a builder, that is, a function [b]
+    such that [b rules target] builds target [target] thanks to rules [rules]
+    using function [key_eq] to find the appropriate rule. Returns [Ok(v)] if the
+    value is computed successfully or [Error(t)] if there is no rule to build
+    target [t]. The function [b] uses a database (stored in folder [.logibuild])
+    to avoid recomputing targets. The function [valid_stored key value] returns
+    whether the value [value] of key [key] is up to date in the database. *)
+val buildm : key_eq:'key eq -> valid_stored:('key -> 'value -> bool) ->
+  ('key, 'value) rulem list -> 'key ->
   ('value, 'key) result
 
 (** {1 Shake behaviour} *)
