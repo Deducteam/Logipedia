@@ -51,21 +51,21 @@ let buildm (type key): key eq -> (key, 'value) rulem list -> key ->
       let hash = Stdlib.Hashtbl.hash
     end)
   in
-  let database : (key, 'value) resultm Db.t = Db.create 19 in
+  let database : (key, _) resultm Db.t = Db.create 19 in
   (* [ask key] returns the pre-computed result for key [key] or
      @raise Not_found. *)
-  let ask : key -> (key, 'value) resultm = fun target ->
+  let ask : key -> (key, _) resultm = fun target ->
     Db.find database target
   in
   (* [store key value] stores value [value] as computed from key
      [key]. *)
-  let store : key -> 'value -> unit = fun target value ->
+  let store : key -> _ -> unit = fun target value ->
     Db.replace database target
       {r_created=target; r_value=value; r_built=(!time)}
   in
   fun rules target ->
     let exception NoRule of key in
-    let rec buildm : key -> 'value = fun target ->
+    let rec buildm : key -> _ = fun target ->
       incr time;
       let rule =
         try List.find (fun r -> key_eq r.m_creates target) rules

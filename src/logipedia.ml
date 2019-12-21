@@ -1,5 +1,6 @@
 (** Export Dedukti encoded in STTfa to systems. *)
 open Core
+open Console
 open Extras
 
 (** File into which exported file are written. *)
@@ -25,6 +26,9 @@ let common_opts =
   ; ( "-d"
     , Arg.Set_string indir
     , " Add directory containing Dedukti files to convert" )
+  ; ( "--debug"
+    , Arg.Set log_enabled
+    , " Enable debug mode" )
   ; ( "-o"
     , Arg.String (fun s -> outdir := Some(s))
     , " Set output file" ) ]
@@ -71,10 +75,12 @@ let anon arg =
     identifier [sys]. *)
 let get_system : Systems.system -> (module Export.S) = fun sy ->
   match sy with
-  | `Pvs -> (module Pvs)
-  | `Hollight -> (module Hollight)
-  | `Lean -> (module Lean)
-  | _    -> failwith "Not yet implemented"
+  | `Pvs        -> (module Pvs)
+  | `Hollight   -> (module Hollight)
+  | `Lean       -> (module Lean)
+  | `Coq        -> (module Coq)
+  | `Matita     -> (module Matita)
+  | `OpenTheory -> (module Opentheory)
 
 let _ =
   let available_sys = List.map fst Systems.sys_spec |> String.concat ", " in
@@ -115,11 +121,12 @@ Available options for the selected mode:"
         Build_template.mk_rule_sig (Kernel.Basic.mk_mident "sttfa")
         :: (List.map prod (!infiles @ dirfiles) |> List.flatten)
       in
-      Format.printf "%a@." (Build.pp_rulems Build_template.pp_key) rules;
+      if !log_enabled then
+        log "%a@." (Build.pp_rulems Build_template.pp_key) rules;
       let build = Build.buildm Build_template.key_eq in
       let build target =
         match build rules target with
-        | Ok(())     -> ()
+        | Ok(_)      -> ()
         | Error(key) ->
           Format.printf "No rule to make %a@." Build_template.pp_key key
       in

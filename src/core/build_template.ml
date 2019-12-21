@@ -1,5 +1,6 @@
 (** Some rule making facilities. *)
 open Extras
+open Console
 open Build
 
 type mident = Kernel.Basic.mident
@@ -24,15 +25,16 @@ let pp_key : [> `DkMd of mident | `SysMd of mident | `DkSig of mident] pp =
   | _         -> Format.fprintf fmt "NoPrinter"
 
 (** [mk_rule_idle k] creates a rule that does nothing. *)
-let mk_rule_idle : 'k -> ('k, unit) rulem = fun key ->
-  {m_creates=key; m_depends=[]; m_action = fun _ -> ()}
+let mk_rule_idle : 'k -> ('k, [> `Idle]) rulem = fun key ->
+  {m_creates=key; m_depends=[]; m_action = fun _ -> `Idle}
 
 (** [mk_rule_sig md] creates a rule to load module [md] into the signature. *)
-let mk_rule_sig : mident -> ([> `DkSig of mident], unit) rulem =
-  fun md ->
+let mk_rule_sig : mident -> ([> `DkSig of mident], [> `Sign]) rulem = fun md ->
   let file = Api.Dep.get_file md in
+  let m_creates = `DkSig(md) in
   let m_depends = Deps.deps_of_md md |> List.map (fun x -> `DkSig(x)) in
   let m_action _ =
+    if !log_enabled then log "[build] [%a]" pp_key m_creates;
     let inchan = open_in file in
     let entries = Parsing.Parser.Parse_channel.parse md inchan in
     close_in inchan;
@@ -49,37 +51,43 @@ let mk_rule_sig : mident -> ([> `DkSig of mident], unit) rulem =
         end
       with E.EnvError(_,_,EnvErrorSignature(S.AlreadyDefinedSymbol(_))) -> ()
     in
-    List.iter declare entries
+    List.iter declare entries;
+    `Sign
   in
-  {m_creates=`DkSig(md); m_depends; m_action}
+  {m_creates; m_depends; m_action}
+
+(** Representation of a file, absolute path along with digest, proof that the
+    file exists. *)
+type file = string * Digest.t
 
 (** [mk_rule_sys_of_dk ~entries_pp md fext outdir] allows to print
     entries in module [md] with [~entries_pp] into a file [md.fext] in
     [outdir]. *)
 let mk_rule_sys_of_dk :
   entries_pp:Parsing.Entry.entry list pp -> mident -> string -> string ->
-  (_, unit) rulem = fun ~entries_pp md fext outdir ->
+  (_, [> `File of file]) rulem = fun ~entries_pp md fext outdir ->
   let infile = Api.Dep.get_file md in
-    let m_depends =
-      let deps = Deps.deps_of_md md in
-      `DkSig(md) :: List.map (fun x -> `DkSig(x)) deps
+  let m_creates = `SysMd(md) in
+  let m_depends =
+    let deps = Deps.deps_of_md md in
+    `DkSig(md) :: List.map (fun x -> `DkSig(x)) deps
+  in
+  let m_action _ =
+    if !log_enabled then log "[build] [%a]" pp_key m_creates;
+    let entries =
+      let input = open_in infile in
+      let ret = Parsing.Parser.Parse_channel.parse md input in
+      close_in input;
+      ret
     in
-    let m_action _ =
-      let entries =
-        let input = open_in infile in
-        let ret = Parsing.Parser.Parse_channel.parse md input in
-        close_in input;
-        ret
-      in
-      let ochan =
-        let open Filename in
-        let ofile =
-          (concat outdir (basename (chop_extension infile))) ^ "." ^ fext
-        in
-        open_out ofile
-      in
-      let ofmt = Format.formatter_of_out_channel ochan in
-      entries_pp ofmt entries;
-      close_out ochan;
+    let ofile =
+      let open Filename in
+      (concat outdir (basename (chop_extension infile))) ^ "." ^ fext
     in
-    {m_creates=`SysMd(md); m_depends; m_action}
+    let ochan = open_out ofile in
+    let ofmt = Format.formatter_of_out_channel ochan in
+    entries_pp ofmt entries;
+    close_out ochan;
+    `File(ofile, Digest.file ofile)
+  in
+  {m_creates; m_depends; m_action}

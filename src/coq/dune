@@ -1,0 +1,5 @@
+(library
+  (name coq)
+  (public_name logipedia.coq)
+  (synopsis "Coq into and out of Logipedia")
+  (libraries logipedia.export logipedia.core logipedia.sttfa))

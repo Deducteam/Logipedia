@@ -1,0 +1,5 @@
+(library
+  (name opentheory)
+  (public_name logipedia.opentheory)
+  (synopsis "OpenTheory into and out of Logipedia")
+  (libraries logipedia.export logipedia.core logipedia.sttfa))
