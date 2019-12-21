@@ -58,7 +58,7 @@ let mk_rule_sig : mident -> ([> `DkSig of mident], unit) rulem =
     [outdir]. *)
 let mk_rule_sys_of_dk :
   entries_pp:Parsing.Entry.entry list pp -> mident -> string -> string ->
-  ('k, unit) rulem = fun ~entries_pp md fext outdir ->
+  (_, unit) rulem = fun ~entries_pp md fext outdir ->
   let infile = Api.Dep.get_file md in
     let m_depends =
       let deps = Deps.deps_of_md md in
