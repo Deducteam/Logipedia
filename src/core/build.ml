@@ -56,45 +56,39 @@ let buildm (type key): key_eq:key eq -> valid_stored:(key -> 'value -> bool) ->
       let hash = Stdlib.Hashtbl.hash
     end)
   in
+  let database : (key, _) resultm Db.t = Db.create 19 in
+  (* [ask key] returns the pre-computed result for key [key] in the database or
+     @raise Not_found. *)
+  let ask : key -> (key, _) resultm = fun target ->
+    Db.find database target
+  in
+  (* [store key value] stores value [value] as computed from key [key]. *)
+  let store : key -> _ -> unit = fun target value ->
+    Db.replace database target
+      {r_created=target; r_value=value; r_built=(!time)}
+  in
   (* Definition of the effective build function *)
   fun rules target ->
     let dbfile =
       Hashtbl.hash target |> string_of_int |>
       Filename.concat metadata_dir
     in
-    (* Load the database. *)
-    let database : (key, _) resultm Db.t =
-      (* If a database already exists, load it... *)
-      if Sys.file_exists dbfile then
-        begin
-          let inchan = open_in dbfile in
-          let database : (key, _) resultm Db.t = Marshal.from_channel inchan in
-          close_in inchan;
-          (* [check k r] removes key [k] from database if result [r] is not
-             valid according to function [valid_stored]. *)
-          let check k r =
-            if valid_stored k r.r_value then Db.remove database k
-          in
-          (* ... and check its content. *)
-          Db.iter check database;
-          database
-        end
-      else
-        (* Otherwise, create the database. *)
-        Db.create 19
-    in
-    (* [ask key] returns the pre-computed result for key [key] in the database
-       or
-       @raise Not_found. *)
-    let ask : key -> (key, _) resultm = fun target ->
-      Db.find database target
-    in
-    (* [store key value] stores value [value] as computed from key
-       [key]. *)
-    let store : key -> _ -> unit = fun target value ->
-      Db.replace database target
-        {r_created=target; r_value=value; r_built=(!time)}
-    in
+    (* If a database already exists, load it... *)
+    if Sys.file_exists dbfile then
+      begin
+        let inchan = open_in dbfile in
+        let db : (key, _) resultm Db.t = Marshal.from_channel inchan in
+        close_in inchan;
+        (* [check k r] removes key [k] from database if result [r] is not
+           valid according to function [valid_stored]. *)
+        let check k r =
+          if valid_stored k r.r_value then Db.remove db k
+        in
+        (* ... and check its content... *)
+        Db.iter check db;
+        (* to overwrite global database. *)
+        Db.iter (fun k r -> Db.replace database k r) db
+      end;
     (* The build algorithm. *)
     let exception NoRule of key in
     let rec buildm : key -> _ = fun target ->
