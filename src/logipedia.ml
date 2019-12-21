@@ -131,7 +131,7 @@ Available options for the selected mode:"
         | Error(key) ->
           Format.printf "No rule to make %a@." Build_template.pp_key key
       in
-      let package file = `SysMd(Denv.init file) in
+      let package file = `Kfile(file) in
       List.map package (!infiles @ dirfiles) |> List.iter build
   with
   | Arg.Bad(s) ->
