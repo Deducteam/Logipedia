@@ -20,19 +20,19 @@ let theory = "sttfa"
 let tx_of_def = fun t _ ->
   match t with
   | Some(T.App(Const(_,name),_,_)) when
-      (B.id name = B.mk_ident "etap" && B.md name = B.mk_mident "sttfa") ->
+      (B.id name = B.mk_ident "etap" && B.md name = B.mk_mident theory) ->
     TxDef
   | Some(App(Const(_,name),_,_)) when
-      (B.id name = B.mk_ident "eps" && B.md name = B.mk_mident "sttfa") ->
+      (B.id name = B.mk_ident "eps" && B.md name = B.mk_mident theory) ->
     TxThm
   | _ -> TxDef
 
 let tx_of_decl = function
   | T.App(Const(_,name),_,_) when
-      (B.id name = B.mk_ident "etap" && B.md name = B.mk_mident "sttfa") ->
+      (B.id name = B.mk_ident "etap" && B.md name = B.mk_mident theory) ->
     TxCst
   | App(Const(_,name),_,_) when
-      (B.id name = B.mk_ident "eps" && B.md name = B.mk_mident "sttfa") ->
+      (B.id name = B.mk_ident "eps" && B.md name = B.mk_mident theory) ->
     TxAxm
   | _ -> TxCst
 
