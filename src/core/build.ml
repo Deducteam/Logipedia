@@ -2,7 +2,7 @@ open Console
 open Extras
 
 (** Directory where metadata are saved. *)
-let metadata_dir = ".logibuild"
+let dbfile = ".logibuild.db"
 
 (** Manipulated result, to be stored in the database. *)
 type ('key, 'value) resultm =
@@ -59,9 +59,6 @@ let buildm (type key): key_eq:key eq -> valid_stored:(key -> 'value -> bool) ->
     end)
   in
   (* Global database file. *)
-  let dbfile = Filename.concat metadata_dir "db" in
-  (* Create database directory if it doesn't exist *)
-  if not (Sys.file_exists metadata_dir) then Unix.mkdir metadata_dir 0o755;
   let database : (key, _) resultm Db.t =
     if Sys.file_exists dbfile then
       let inchan = open_in dbfile in
