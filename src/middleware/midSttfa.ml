@@ -69,34 +69,7 @@ let label = function
   | TxDef -> ("body", Some("type_annotation"))
   | TxThm -> ("statement", None)
 
-
-(*let string_of_error = function
-  | Api.Env.EnvErrorType _ -> "enverrortype"
-  | Api.Env.EnvErrorSignature(e) ->
-    (match e with
-       SymbolNotFound _ -> "symbolnotfound"
-     | CouldNotExportModule _ -> "exportmodule"
-     | AlreadyDefinedSymbol _ -> "alreadydefinedsymbol"
-     | _ -> "enverrorsignature")
-  | Api.Env.EnvErrorRule _ -> "enverrorrule"
-  | Api.Env.EnvErrorDep  _ -> "enverrordep"
-  | Api.Env.NonLinearRule _ -> "nonlinearrule"
-  | Api.Env.NotEnoughArguments _ -> "notenougharguments"
-  | Api.Env.KindLevelDefinition _ -> "kindleveldefinition"
-  | Api.Env.ParseError _ -> "parse"
-  | Api.Env.BracketScopingError -> "bracketscoping"
-  | Api.Env.AssertError -> "assert"*)
-
-let item_of_entry =
-  (* Memoization because compiling twice same entry raises
-     AlreadyDeclaredSymbol error. *)
-  let memo : ((B.mident * E.entry), item) Hashtbl.t = Hashtbl.create 19 in
-  fun mident entry ->
-    try Hashtbl.find memo (mident, entry)
-    with Not_found ->
-      let r = Sttfa__Compile.compile_entry mident entry in
-      Hashtbl.add memo (mident, entry) r;
-      r
+let item_of_entry mident entry = Sttfa__Compile.compile_entry mident entry
 
 let string_of_item item system =
   try
