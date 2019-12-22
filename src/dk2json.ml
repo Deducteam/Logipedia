@@ -67,7 +67,8 @@ let _ =
       Format.printf "%s@\n" s;
       Arg.usage options usage
   end;
-  let dirfiles =
+  let files =
+    !infiles @
     if !indir <> "" then
       Sys.readdir !indir |> Array.to_seq |>
       Seq.filter (fun f -> String.equal (Filename.extension f) ".dk") |>
@@ -75,28 +76,36 @@ let _ =
       List.of_seq
     else []
   in
+  let mk_target file =
+    let open Filename in
+    file |> basename |> chop_extension |>
+    (fun x -> String.concat "." [x; "json"]) |> concat (Option.get !outdir)
+  in
+  let module Denv = Api.Env.Default in
+  let open Build_template in
+  let mds = List.map Denv.init files in
   let rules =
     let (module M) = Middleware.of_string !middleware in
     let module JsExp = Compile.Make(M) in
-    let prod file =
-      Produce.rulem_of_file (module JsExp) file (Option.get !outdir)
+    let mk_rule file =
+      let md = Denv.init file in
+      let entries_pp fmt entries =
+        JsExp.print_document fmt (JsExp.doc_of_entries md entries)
+      in
+      mk_sysrule ~target:(mk_target file) ~entries_pp md
     in
-    Produce.rulem_dk_idle :: List.map prod (!infiles @ dirfiles)
+    List.map mk_sigrule mds @ List.map mk_rule files
   in
-  if !log_enabled then
-    Format.printf "%a@\n" (Build.pp_rulems Produce.pp_key) rules;
-  let valid_stored _ _ = false in
-  let build = Build.buildm ~key_eq:Produce.key_eq ~valid_stored in
+  if !log_enabled then Format.printf "%a@\n" (Build.pp_rulems pp_key) rules;
+  let build = Build.buildm ~key_eq ~valid_stored in
   (* [build] is now memoized: rules are not run twice. *)
   let build target =
     match build rules target with
-    | Ok(())     -> ()
-    | Error(key) ->
-      Format.printf "No rule to make %a@." Produce.pp_key key
+    | Ok(_)    -> ()
+    | Error(k) -> Format.printf "No rule to make %a@." pp_key k
   in
-  let module Denv = Api.Env.Default in
   try
-    List.map (fun f -> Produce.JsMd(Denv.init f)) (!infiles @ dirfiles) |>
+    List.map (fun f -> mk_target f |> want) files |>
     List.iter build
   with e ->
     let module Derr = Api.Errors.Make(Denv) in
