@@ -97,29 +97,36 @@ Available options for the selected mode:"
     match !export_mode with
     | None       -> raise @@ Arg.Bad "Missing export"
     | Some(syst) ->
-      let dirfiles =
+      let files =
+        !infiles @
         if !indir <> "" then
           Sys.readdir !indir |> Array.to_seq |>
           Seq.filter (fun f -> String.equal (Filename.extension f) ".dk") |>
           Seq.map (Filename.concat !indir) |> List.of_seq
         else []
       in
+      let mk_target file =
+        let ext = List.assoc syst Core.Systems.sys_ext in
+        let open Filename in
+        file |> basename |> chop_extension
+        |> (fun x -> String.concat "." [x; ext])
+        |> concat (Option.get !outdir)
+      in
+      let mds = List.map Denv.init files in
       let rules =
         (* Create the needed rules *)
         let (module Syst) = get_system syst in
-        let prod file =
+        let mk_sysrule file =
           let md = Denv.init file in
           let entries_pp : Parsing.Entry.entry list pp = fun fmt entries ->
             let ast = Syst.Ast.compile md entries in
             Syst.export fmt ast
           in
-          let ext = List.assoc syst Core.Systems.sys_ext in
-          let outdir = Option.get !outdir in
-          [ Build_template.mk_rule_sys_of_dk ~entries_pp md ext outdir
-          ; Build_template.mk_rule_sig md ]
+          Build_template.mk_rule_sys_of_dk ~target:(mk_target file) ~entries_pp md
         in
-        Build_template.mk_rule_sig (Kernel.Basic.mk_mident "sttfa")
-        :: (List.map prod (!infiles @ dirfiles) |> List.flatten)
+        Build_template.mk_rule_sig (Kernel.Basic.mk_mident "sttfa") ::
+        List.map Build_template.mk_rule_sig mds @
+        List.map mk_sysrule files
       in
       if !log_enabled then
         log "%a@." (Build.pp_rulems Build_template.pp_key) rules;
@@ -131,8 +138,8 @@ Available options for the selected mode:"
         | Error(key) ->
           Format.printf "No rule to make %a@." Build_template.pp_key key
       in
-      let package file = `Kfile(file) in
-      List.map package (!infiles @ dirfiles) |> List.iter build
+      List.map (fun x -> mk_target x |> Build_template.want) files
+      |> List.iter build
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;
