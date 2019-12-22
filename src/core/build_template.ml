@@ -3,20 +3,30 @@ open Extras
 open Console
 open Build
 
+(** Some shorthands. *)
 type mident = Kernel.Basic.mident
 let mident_eq : mident eq = Kernel.Basic.mident_eq
-
 type entry = Parsing.Entry.entry
 
+(** Type of path. *)
 type path = string
 
+(** Keys are files or signatures. *)
 type key =
   | Kfile of path
+  (** A filepath. *)
   | Ksign of mident
+  (** The signature of a module. *)
 
+(** [time p] returns the modification time of a file. *)
+let time : path -> float = fun path -> Unix.((stat path).st_mtime)
+
+(** Values are either files or signatures. *)
 type value =
   | Vfile of path * float
+  (** A filepath and its last modification time. *)
   | Vsign of entry list
+  (** The entries of a signature. *)
 
 (** [key_eq k l] returns true if key [k] and key [l] are the equal. *)
 let key_eq : key eq = fun k l ->
@@ -31,6 +41,15 @@ let pp_key : key pp = fun fmt k ->
   match k with
   | Kfile(p) -> out "File(%s)" p
   | Ksign(m) -> out "Sign(%a)" Dpp.print_mident m
+
+(** [valid_stored k v] returns true *)
+let valid_stored : key -> value -> bool = fun k v ->
+  match k, v with
+  | Kfile(p), Vfile(_,t) ->
+    if Sys.file_exists p then t >= (time p) else false
+  | Ksign(_), Vsign(_)   -> false
+  (* Rebuild avoided by dkos for the moment *)
+  | _                    -> false
 
 (** [mk_rule_sig md] creates a rule to load module [md] into the signature. *)
 let mk_rule_sig : mident -> (key, value) rulem = fun md ->
@@ -74,7 +93,7 @@ let mk_rule_sys_of_dk : target:string -> entries_pp:entry list pp -> mident ->
     | [Vsign(entries)] ->
       entries_pp ofmt entries;
       close_out ochan;
-      Vfile(target, Unix.((stat target).st_mtime))
+      Vfile(target, time target)
     | _                -> assert false
   in
   {m_creates; m_depends; m_action}

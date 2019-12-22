@@ -130,7 +130,7 @@ Available options for the selected mode:"
       in
       if !log_enabled then
         log "%a@." (Build.pp_rulems Build_template.pp_key) rules;
-      let valid_stored _ _ = false in
+      let valid_stored = Build_template.valid_stored in
       let build = Build.buildm ~key_eq:Build_template.key_eq ~valid_stored in
       let build target =
         match build rules target with

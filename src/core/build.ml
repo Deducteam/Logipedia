@@ -82,7 +82,7 @@ let buildm (type key): key_eq:key eq -> valid_stored:(key -> 'value -> bool) ->
         (* [check k r] removes key [k] from database if result [r] is not
            valid according to function [valid_stored]. *)
         let check k r =
-          if valid_stored k r.r_value then Db.remove db k
+          if not (valid_stored k r.r_value) then Db.remove db k
         in
         (* ... and check its content... *)
         Db.iter check db;
