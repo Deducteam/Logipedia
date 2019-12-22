@@ -45,8 +45,7 @@ let pp_key : key pp = fun fmt k ->
 (** [valid_stored k v] returns true *)
 let valid_stored : key -> value -> bool = fun k v ->
   match k, v with
-  | Kfile(p), Vfile(_,t) ->
-    if Sys.file_exists p then t >= (time p) else false
+  | Kfile(p), Vfile(_,t) -> Sys.file_exists p && t >= (time p)
   | Ksign(_), Vsign(_)   -> false
   (* Rebuild avoided by dkos for the moment *)
   | _                    -> false
