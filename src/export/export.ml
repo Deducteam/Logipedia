@@ -1,6 +1,7 @@
 (** Signature of a system. *)
 
-open Core.Extras
+open Core
+open Extras
 
 (** Ast and interactions with Dk files that a system must provide. *)
 module type AST =
@@ -23,6 +24,9 @@ sig
 
   module Mid : Middleware.S
   (** Middleware used for the json export. *)
+
+  module Makefile : Build_template.S
+  (** Defines the rules to build targets. *)
 
   val export : Ast.t pp
   (** [export fmt ast] exports abstract syntax tree [ast] to formatter

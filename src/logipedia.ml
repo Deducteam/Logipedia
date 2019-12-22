@@ -105,39 +105,36 @@ Available options for the selected mode:"
           Seq.map (Filename.concat !indir) |> List.of_seq
         else []
       in
-      let mk_target file =
-        let ext = List.assoc syst Core.Systems.sys_ext in
-        let open Filename in
-        file |> basename |> chop_extension
-        |> (fun x -> String.concat "." [x; ext])
-        |> concat (Option.get !outdir)
-      in
-      let mds = List.map Denv.init files in
-      (* Create the needed rules *)
-      let open Build_template in
-      let rules =
-        let (module Syst) = get_system syst in
-        let mk_sysrule file =
-          let md = Denv.init file in
-          let entries_pp fmt entries =
-            let ast = Syst.Ast.compile md entries in
-            Syst.export fmt ast
-          in
-          mk_sysrule ~target:(mk_target file) ~entries_pp md
+      let targets =
+        let mk_target file =
+          let ext = List.assoc syst Core.Systems.sys_ext in
+          let open Filename in
+          file |> basename |> chop_extension
+          |> (fun x -> String.concat "." [x; ext])
+          |> concat (Option.get !outdir)
         in
-        mk_sigrule (Kernel.Basic.mk_mident "sttfa") ::
-        List.map mk_sigrule mds @
-        List.map mk_sysrule files
+        List.map mk_target files
       in
+      let (module Syst) = get_system syst in
+      let mds = List.map Denv.init files in
+      let rules =
+        List.map2 Syst.Makefile.rules_for mds targets |>
+        List.flatten
+      in
+      (* Create the needed rules *)
       let module B = Build.Classic in
-      if !log_enabled then log "%a@." (B.pp_rules pp_key) rules;
-      let build = B.build ~key_eq:Build_template.key_eq ~valid_stored in
+      if !log_enabled then log "%a@." (B.pp_rules Syst.Makefile.pp_key) rules;
+      let build =
+        B.build ~key_eq:Syst.Makefile.key_eq
+          ~valid_stored:Syst.Makefile.valid_stored
+      in
       let build target =
         match build rules target with
         | Ok(_)      -> ()
-        | Error(key) -> Format.printf "No rule to make %a@." pp_key key
+        | Error(key) ->
+          Format.printf "No rule to make %a@." Syst.Makefile.pp_key key
       in
-      List.map (fun x -> mk_target x |> want) files |> List.iter build
+      List.map Syst.Makefile.want targets |> List.iter build
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;
