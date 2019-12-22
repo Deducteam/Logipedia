@@ -1,3 +1,4 @@
+open Console
 open Extras
 
 (** Directory where metadata are saved. *)
@@ -76,6 +77,7 @@ let buildm (type key): key_eq:key eq -> valid_stored:(key -> 'value -> bool) ->
     (* If a database already exists, load it... *)
     if Sys.file_exists dbfile then
       begin
+        if !log_enabled then log "[build] loading [%s]" dbfile;
         let inchan = open_in dbfile in
         let db : (key, _) resultm Db.t = Marshal.from_channel inchan in
         close_in inchan;
@@ -97,12 +99,15 @@ let buildm (type key): key_eq:key eq -> valid_stored:(key -> 'value -> bool) ->
         try List.find (fun r -> key_eq r.m_creates target) rules
         with Not_found -> raise (NoRule(target))
       in
-      match try Some(ask target) with Not_found -> None with
-      | Some(old) when skipm old ask rule -> old.r_value
-      | _                                 ->
+      let compute () =
         let value = rule.m_action (List.map buildm rule.m_depends) in
         store target value;
         value
+      in
+      match Some(ask target) with
+      | exception Not_found               -> compute ()
+      | Some(old) when skipm old ask rule -> old.r_value
+      | _                                 -> compute ()
     in
     (* Save result to new database. *)
     let ochan = open_out dbfile in
