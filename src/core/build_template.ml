@@ -1,7 +1,7 @@
 (** Some rule making facilities. *)
 open Extras
 open Console
-open Build
+open Build.Classic
 
 (** Some shorthands. *)
 type mident = Kernel.Basic.mident
@@ -51,7 +51,7 @@ let valid_stored : key -> value -> bool = fun k v ->
   | _                    -> false
 
 (** [mk_rule_sig md] creates a rule to load module [md] into the signature. *)
-let mk_sigrule : mident -> (key, value) rulem = fun md ->
+let mk_sigrule : mident -> (key, value) rule = fun md ->
   let file = Api.Dep.get_file md in
   let m_creates = Ksign(md) in
   let m_depends = Deps.deps_of_md md |> List.map (fun x -> Ksign(x)) in
@@ -81,7 +81,7 @@ let mk_sigrule : mident -> (key, value) rulem = fun md ->
 (** [mk_sysrule ~target ~entries_pp md] creates a rule that prints entries of
     module [md] with [~entries_pp] into file [~target]. *)
 let mk_sysrule : target:string -> entries_pp:entry list pp -> mident ->
-  (key, value) rulem = fun ~target ~entries_pp md ->
+  (key, value) rule = fun ~target ~entries_pp md ->
   let m_creates = Kfile(target) in
   let m_depends = [Ksign(md)] in
   let m_action entries =

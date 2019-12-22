@@ -119,7 +119,7 @@ Available options for the selected mode:"
         let (module Syst) = get_system syst in
         let mk_sysrule file =
           let md = Denv.init file in
-          let entries_pp : Parsing.Entry.entry list pp = fun fmt entries ->
+          let entries_pp fmt entries =
             let ast = Syst.Ast.compile md entries in
             Syst.export fmt ast
           in
@@ -129,15 +129,15 @@ Available options for the selected mode:"
         List.map mk_sigrule mds @
         List.map mk_sysrule files
       in
-      if !log_enabled then log "%a@." (Build.pp_rulems pp_key) rules;
-      let build = Build.buildm ~key_eq:Build_template.key_eq ~valid_stored in
+      let module B = Build.Classic in
+      if !log_enabled then log "%a@." (B.pp_rules pp_key) rules;
+      let build = B.build ~key_eq:Build_template.key_eq ~valid_stored in
       let build target =
         match build rules target with
         | Ok(_)      -> ()
         | Error(key) -> Format.printf "No rule to make %a@." pp_key key
       in
-      List.map (fun x -> mk_target x |> want) files
-      |> List.iter build
+      List.map (fun x -> mk_target x |> want) files |> List.iter build
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;

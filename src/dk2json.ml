@@ -96,8 +96,9 @@ let _ =
     in
     List.map mk_sigrule mds @ List.map mk_rule files
   in
-  if !log_enabled then Format.printf "%a@\n" (Build.pp_rulems pp_key) rules;
-  let build = Build.buildm ~key_eq ~valid_stored in
+  let module B = Build.Classic in
+  if !log_enabled then Format.printf "%a@\n" (B.pp_rules pp_key) rules;
+  let build = B.build ~key_eq ~valid_stored in
   (* [build] is now memoized: rules are not run twice. *)
   let build target =
     match build rules target with
