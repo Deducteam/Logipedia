@@ -89,10 +89,26 @@ let _ =
     let module JsExp = Compile.Make(M) in
     let mk_rule file =
       let md = Denv.init file in
-      let entries_pp fmt entries =
-        JsExp.print_document fmt (JsExp.doc_of_entries md entries)
+      let target = mk_target file in
+      let m_creates = Kfile(target) in
+      let m_depends =
+        let deps = Deps.deps_of_md md in
+        Ksign(md) ::
+        List.map (fun m -> Kfile(Api.Dep.get_file m |> mk_target)) deps
       in
-      mk_sysrule ~target:(mk_target file) ~entries_pp md
+      let m_action res =
+        if !log_enabled then log "[build] target [%s]" target;
+        let entries =
+          try List.find is_vsign res |> to_entries
+          with Not_found -> assert false
+        in
+        let ochan = open_out target in
+        let ofmt = Format.formatter_of_out_channel ochan in
+        JsExp.print_document ofmt (JsExp.doc_of_entries md entries);
+        close_out ochan;
+        Vfile(target, time target)
+      in
+      Build.Classic.{m_creates; m_depends; m_action}
     in
     List.map mk_sigrule mds @ List.map mk_rule files
   in

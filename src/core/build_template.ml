@@ -28,6 +28,14 @@ type value =
   | Vsign of entry list
   (** The entries of a signature. *)
 
+(** [is_vsign v] returns [true] if value [v] comes from a signature. *)
+let is_vsign : value -> bool = function Vsign(_) -> true | _ -> false
+
+(** [to_entries v] returns the list of entries associated to value [v] or
+    @raise Invalid_argument. *)
+let to_entries : value -> entry list = function
+    Vsign(ens) -> ens | _ -> invalid_arg "to_entries"
+
 (** [key_eq k l] returns true if key [k] and key [l] are the equal. *)
 let key_eq : key eq = fun k l ->
   match k, l with
