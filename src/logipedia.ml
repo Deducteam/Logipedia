@@ -113,8 +113,9 @@ Available options for the selected mode:"
         |> concat (Option.get !outdir)
       in
       let mds = List.map Denv.init files in
+      (* Create the needed rules *)
+      let open Build_template in
       let rules =
-        (* Create the needed rules *)
         let (module Syst) = get_system syst in
         let mk_sysrule file =
           let md = Denv.init file in
@@ -122,23 +123,20 @@ Available options for the selected mode:"
             let ast = Syst.Ast.compile md entries in
             Syst.export fmt ast
           in
-          Build_template.mk_rule_sys_of_dk ~target:(mk_target file) ~entries_pp md
+          mk_sysrule ~target:(mk_target file) ~entries_pp md
         in
-        Build_template.mk_rule_sig (Kernel.Basic.mk_mident "sttfa") ::
-        List.map Build_template.mk_rule_sig mds @
+        mk_sigrule (Kernel.Basic.mk_mident "sttfa") ::
+        List.map mk_sigrule mds @
         List.map mk_sysrule files
       in
-      if !log_enabled then
-        log "%a@." (Build.pp_rulems Build_template.pp_key) rules;
-      let valid_stored = Build_template.valid_stored in
+      if !log_enabled then log "%a@." (Build.pp_rulems pp_key) rules;
       let build = Build.buildm ~key_eq:Build_template.key_eq ~valid_stored in
       let build target =
         match build rules target with
         | Ok(_)      -> ()
-        | Error(key) ->
-          Format.printf "No rule to make %a@." Build_template.pp_key key
+        | Error(key) -> Format.printf "No rule to make %a@." pp_key key
       in
-      List.map (fun x -> mk_target x |> Build_template.want) files
+      List.map (fun x -> mk_target x |> want) files
       |> List.iter build
   with
   | Arg.Bad(s) ->
