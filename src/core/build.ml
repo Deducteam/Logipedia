@@ -70,7 +70,7 @@ struct
     let database : (key, 'value) build_res Db.t =
       if Sys.file_exists dbfile then
         let inchan = open_in dbfile in
-        if !log_enabled then log_build "loading [%s]" dbfile;
+        log_build ~lvl:25 "loading [%s]" dbfile;
         let db = Marshal.from_channel inchan in
         close_in inchan;
         (* [check k r] removes key [k] from database if result [r] is not

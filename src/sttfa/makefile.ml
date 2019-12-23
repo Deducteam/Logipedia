@@ -24,7 +24,7 @@ let mk_sysrule : string -> (mident -> entry list pp) -> mident ->
   let m_depends = [`Ksign(md)] in
   let pp_entries = pp_entries md in
   let m_action entries =
-    if !log_enabled then log_rule "target [%a]" pp_key m_creates;
+    log_rule ~lvl:25 "target [%a]" pp_key m_creates;
     let ochan = open_out target in
     let ofmt = Format.formatter_of_out_channel ochan in
     match entries with

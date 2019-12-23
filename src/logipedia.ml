@@ -27,7 +27,7 @@ let common_opts =
     , Arg.Set_string indir
     , " Add directory containing Dedukti files to convert" )
   ; ( "--debug"
-    , Arg.Set log_enabled
+    , Arg.Set_int log_level
     , " Enable debug mode" )
   ; ( "-o"
     , Arg.String (fun s -> outdir := Some(s))
@@ -123,7 +123,7 @@ Available options for the selected mode:"
         let mds = List.map Denv.init files in
         rules_for (List.combine targets mds)
       in
-      if !log_enabled then Format.printf "%a@." (B.pp_rules pp_key) rules;
+      if !log_level > 0 then Format.printf "%a@." (B.pp_rules pp_key) rules;
       let build = B.build ~key_eq ~valid_stored in
       let build target =
         match build rules target with
