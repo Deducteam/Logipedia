@@ -116,25 +116,21 @@ Available options for the selected mode:"
         List.map mk_target files
       in
       let (module Syst) = get_system syst in
-      let mds = List.map Denv.init files in
+      let open Syst.Makefile in
+      (* Create the needed rules. *)
       let rules =
-        List.map2 Syst.Makefile.rules_for mds targets |>
-        List.flatten
+        let mds = List.map Denv.init files in
+        List.map2 rules_for mds targets |> List.flatten
       in
-      (* Create the needed rules *)
       let module B = Build.Classic in
-      if !log_enabled then log "%a@." (B.pp_rules Syst.Makefile.pp_key) rules;
-      let build =
-        B.build ~key_eq:Syst.Makefile.key_eq
-          ~valid_stored:Syst.Makefile.valid_stored
-      in
+      if !log_enabled then log "%a@." (B.pp_rules pp_key) rules;
+      let build = B.build ~key_eq ~valid_stored in
       let build target =
         match build rules target with
         | Ok(_)      -> ()
-        | Error(key) ->
-          Format.printf "No rule to make %a@." Syst.Makefile.pp_key key
+        | Error(key) -> Format.printf "No rule to make %a@." pp_key key
       in
-      List.map Syst.Makefile.want targets |> List.iter build
+      List.map want targets |> List.iter build
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;
