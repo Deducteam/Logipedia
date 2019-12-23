@@ -82,19 +82,19 @@ let _ =
     (fun x -> String.concat "." [x; "json"]) |> concat (Option.get !outdir)
   in
   let module Denv = Api.Env.Default in
-  let open Build_template in
+  let open Build_template.Dk in
   let mds = List.map Denv.init files in
   let rules =
     let (module M) = Middleware.of_string !middleware in
     let module JsExp = Compile.Make(M) in
-    let mk_rule file =
+    let mk_rule file : (key, value) Build.Classic.rule =
       let md = Denv.init file in
       let target = mk_target file in
-      let m_creates = Kfile(target) in
+      let m_creates = `Kfile(target) in
       let m_depends =
         let deps = Deps.deps_of_md md in
-        Ksign(md) ::
-        List.map (fun m -> Kfile(Api.Dep.get_file m |> mk_target)) deps
+        `Ksign(md) ::
+        List.map (fun m -> `Kfile(Api.Dep.get_file m |> mk_target)) deps
       in
       let m_action res =
         if !log_enabled then log "[build] target [%s]" target;
@@ -106,7 +106,7 @@ let _ =
         let ofmt = Format.formatter_of_out_channel ochan in
         JsExp.print_document ofmt (JsExp.doc_of_entries md entries);
         close_out ochan;
-        Vfile(target, time target)
+        `Vfile(target, time target)
       in
       Build.Classic.{m_creates; m_depends; m_action}
     in

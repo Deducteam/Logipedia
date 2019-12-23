@@ -86,6 +86,7 @@ let mk_sigrule : mident -> (key, value) rule = fun md ->
   in
   {m_creates; m_depends; m_action}
 
+(* FIXME: redundant with build_template.Dk.mk_sigrule *)
 (** [mk_sysrule ~target ~entries_pp md] creates a rule that prints entries of
     module [md] with [~entries_pp] into file [~target]. *)
 let mk_sysrule : target:string -> entries_pp:entry list pp -> mident ->
