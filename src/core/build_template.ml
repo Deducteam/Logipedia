@@ -8,6 +8,9 @@ type mident = Kernel.Basic.mident
 let mident_eq : mident eq = Kernel.Basic.mident_eq
 type entry = Parsing.Entry.entry
 
+(** Type of a filepath. *)
+type path = string
+
 (** Module taking in charge export of modules. *)
 module type S =
 sig
@@ -17,17 +20,14 @@ sig
   val key_eq : key eq
   val pp_key : key pp
   val valid_stored : key -> value -> bool
-  val want : string -> key
-  val rules_for : mident -> string -> (key, value) rule list
+  val want : path -> key
+  val rules_for : (path * mident) list -> (key, value) rule list
 end
 
 (** Provides some standard functions for Dedukti related operations and file
     manipulatons. *)
 module Dk =
 struct
-  (** Type of a filepath. *)
-  type path = string
-
   (** Keys are either files or signatures. *)
   type key =
     [ `Kfile of path
@@ -72,7 +72,7 @@ struct
     | _                      -> false
 
   (** [is_vsign v] returns whether value [v] is a signature. *)
-  let is_vsign : [> `Vsign of _] -> bool = function
+  let is_vsign : [> `Vsign of entry list] -> bool = function
     | `Vsign(_) -> true
     | _         -> false
 

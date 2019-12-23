@@ -117,12 +117,12 @@ Available options for the selected mode:"
       in
       let (module Syst) = get_system syst in
       let open Syst.Makefile in
+      let module B = Build.Classic in
       (* Create the needed rules. *)
       let rules =
         let mds = List.map Denv.init files in
-        List.map2 rules_for mds targets |> List.flatten
+        rules_for (List.combine targets mds)
       in
-      let module B = Build.Classic in
       if !log_enabled then log "%a@." (B.pp_rules pp_key) rules;
       let build = B.build ~key_eq ~valid_stored in
       let build target =
