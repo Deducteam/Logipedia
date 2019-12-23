@@ -5,6 +5,10 @@
     - the [buildm]/[rulem] which uses static dependencies,
     - the [build]/[rule] which allows to declare dependencies in actions. *)
 open Extras
+open Console
+
+(** A logger to be used by defined rules. *)
+val log_rule : 'a logger
 
 (** Classic make behaviour with precomputed dependencies. *)
 module Classic :

@@ -4,6 +4,11 @@ open Extras
 (** Directory where metadata are saved. *)
 let dbfile = ".logibuild.db"
 
+(** Define a logger. *)
+let log_build = (new_logger "buil").logger
+
+let log_rule = new_logger "rule"
+
 module Classic =
 struct
 
@@ -65,7 +70,7 @@ struct
     let database : (key, 'value) build_res Db.t =
       if Sys.file_exists dbfile then
         let inchan = open_in dbfile in
-        if !log_enabled then log "[build] loading [%s]" dbfile;
+        if !log_enabled then log_build "loading [%s]" dbfile;
         let db = Marshal.from_channel inchan in
         close_in inchan;
         (* [check k r] removes key [k] from database if result [r] is not

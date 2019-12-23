@@ -123,7 +123,7 @@ Available options for the selected mode:"
         let mds = List.map Denv.init files in
         rules_for (List.combine targets mds)
       in
-      if !log_enabled then log "%a@." (B.pp_rules pp_key) rules;
+      if !log_enabled then Format.printf "%a@." (B.pp_rules pp_key) rules;
       let build = B.build ~key_eq ~valid_stored in
       let build target =
         match build rules target with

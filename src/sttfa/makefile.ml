@@ -6,6 +6,8 @@ open Extras
 open Build_template
 open Dk
 
+let log_rule = Build.log_rule.logger
+
 (** The rule of a system file roughly looks like, where [export] is the export
     folder, [sys] the extension of the system files, [file] the module,
 
@@ -22,7 +24,7 @@ let mk_sysrule : string -> (mident -> entry list pp) -> mident ->
   let m_depends = [`Ksign(md)] in
   let pp_entries = pp_entries md in
   let m_action entries =
-    if !log_enabled then log "[build] [%a]" pp_key m_creates;
+    if !log_enabled then log_rule "target [%a]" pp_key m_creates;
     let ochan = open_out target in
     let ofmt = Format.formatter_of_out_channel ochan in
     match entries with

@@ -11,6 +11,8 @@ type entry = Parsing.Entry.entry
 (** Type of a filepath. *)
 type path = string
 
+let log_rule = Build.log_rule.logger
+
 (** Module taking in charge export of modules. *)
 module type S =
 sig
@@ -89,7 +91,7 @@ struct
     let m_creates = `Ksign(md) in
     let m_depends = Deps.deps_of_md md |> List.map (fun x -> `Ksign(x)) in
     let m_action _ =
-      if !log_enabled then log "[build] target [%a]" pp_key m_creates;
+      if !log_enabled then log_rule "target [%a]" pp_key m_creates;
       let inchan = open_in file in
       let entries = Parsing.Parser.Parse_channel.parse md inchan in
       close_in inchan;

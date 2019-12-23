@@ -85,6 +85,7 @@ let _ =
   let open Build_template.Dk in
   let mds = List.map Denv.init files in
   let rules =
+    let log_rule = Build.log_rule.logger in
     let (module M) = Middleware.of_string !middleware in
     let module JsExp = Compile.Make(M) in
     let mk_rule file : (key, value) Build.Classic.rule =
@@ -97,7 +98,7 @@ let _ =
         List.map (fun m -> `Kfile(Api.Dep.get_file m |> mk_target)) deps
       in
       let m_action res =
-        if !log_enabled then log "[build] target [%s]" target;
+        if !log_enabled then log_rule "target [%s]" target;
         let entries =
           try List.find is_vsign res |> to_entries
           with Not_found -> assert false
