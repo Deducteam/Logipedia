@@ -10,7 +10,7 @@ type 'a outfmt = ('a, Format.formatter, unit) format
 let out_fmt : Format.formatter ref = ref Format.std_formatter
 
 (** Type of a logger, a logger [log] is used as [log ?lvl msg] where [?lvl]
-    is an optional level (set to 50 by default), and [msg] the message as an
+    is an optional level (set to 1 by default), and [msg] the message as an
     [outfmt]. *)
 type 'a logger = {logger : 'a. ?lvl:int -> 'a outfmt -> 'a}
 
@@ -22,11 +22,11 @@ type logger_data =
 (** The registered loggers. *)
 let loggers : logger_data list ref = ref []
 
-(** [new_logger name] creates and registers a new logger. Loggers' output is
-    {!val:out_fmt}. *)
+(** [new_logger name] creates and registers a new logger with 4 letters name
+    [name]. Loggers' output is {!val:out_fmt}. *)
 let new_logger : string -> 'a logger = fun name ->
   if String.length name <> 4 then invalid_arg "new_logger";
   loggers := {logger_name=name} :: !loggers;
-  { logger = fun ?(lvl=50) fmt ->
+  { logger = fun ?(lvl=1) fmt ->
         let pp = Format.(if !log_level >= lvl then fprintf else ifprintf) in
         pp !out_fmt ("[%s] " ^^ fmt ^^ "@.") name }
