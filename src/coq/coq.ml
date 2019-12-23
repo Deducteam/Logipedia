@@ -12,11 +12,9 @@ let export : Ast.t pp = fun fmt ast->
 
 module Makefile : Build_template.S =
 struct
-  include Sttfa.Makefile
+  include Build_template.Dk
 
   let rules_for md pth =
-    let entries_pp fmt ens =
-      Ast.compile md ens |> export fmt
-    in
+    let entries_pp fmt ens = Ast.compile md ens |> export fmt in
     Sttfa.Makefile.rules_for ~target:pth ~entries_pp md
 end
