@@ -62,20 +62,15 @@ let compile_definition name ty term =
     else
       assert false
 
+(* NOTE [compile_entry] assumes that the signature already contains the item.
+   This is ensured by the dependency rules: any file having that need the symbol
+   in the signature should depend on [`Sign(md)] (this is set in the [rules_for]
+   functions in the [Makefile] modules). *)
 let compile_entry md e =
-  (* FIXME factorise with [build_template.mk_rule_load_dk]. *)
-  let module S = Kernel.Signature in
-  let module E = Api.Env in
   let open Parsing.Entry in
   match e with
-  | Decl (lc, id, st, ty) ->
-    ( try Denv.declare lc id st ty
-      with E.EnvError(_,_,EnvErrorSignature(S.AlreadyDefinedSymbol(_))) -> () )
-  ; compile_declaration (Basic.mk_name md id) ty
-  | Def (lc, id, opaque, Some ty, te) ->
-    ( try Denv.define lc id opaque te (Some ty)
-      with E.EnvError(_,_,EnvErrorSignature(S.AlreadyDefinedSymbol(_))) -> () )
-  ; compile_definition (Basic.mk_name md id) ty te
-  | Def _ -> failwith "Definition without types are not supported"
-  | Rules _ -> failwith "Rules are not part of the sttforall logic"
-  | _ -> failwith "Dedukti Commands are not supported"
+  | Decl(_,id,_,ty)        -> compile_declaration (Basic.mk_name md id) ty
+  | Def(_,id,_,Some ty,te) -> compile_definition (Basic.mk_name md id) ty te
+  | Def(_)   -> failwith "Definition without types are not supported"
+  | Rules(_) -> failwith "Rules are not part of the sttforall logic"
+  | _        -> failwith "Dedukti Commands are not supported"
