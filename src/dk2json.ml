@@ -1,6 +1,6 @@
 open Core
-open Console
 open Extras
+open Console
 open Json
 
 (** File into which exported file are written. *)
@@ -83,35 +83,10 @@ let _ =
   in
   let module Denv = Api.Env.Default in
   let open Build_template.Dk in
-  let mds = List.map Denv.init files in
   let rules =
-    let log_rule = Build.log_rule.logger in
     let (module M) = Middleware.of_string !middleware in
     let module JsExp = Compile.Make(M) in
-    let mk_rule file : (key, value) Build.Classic.rule =
-      let md = Denv.init file in
-      let target = mk_target file in
-      let m_creates = `Kfile(target) in
-      let m_depends =
-        let deps = Deps.deps_of_md md in
-        `Ksign(md) ::
-        List.map (fun m -> `Kfile(Api.Dep.get_file m |> mk_target)) deps
-      in
-      let m_action res =
-        log_rule ~lvl:25 "target [%s]" target;
-        let entries =
-          try List.find is_vsign res |> to_entries
-          with Not_found -> assert false
-        in
-        let ochan = open_out target in
-        let ofmt = Format.formatter_of_out_channel ochan in
-        JsExp.print_document ofmt (JsExp.doc_of_entries md entries);
-        close_out ochan;
-        `Vfile(target, time target)
-      in
-      Build.Classic.{m_creates; m_depends; m_action}
-    in
-    List.map mk_sigrule mds @ List.map mk_rule files
+    Makefile.rules_for (module JsExp: Json.Compile.S) files mk_target
   in
   let module B = Build.Classic in
   if !log_level > 0 then Format.printf "%a@\n" (B.pp_rules pp_key) rules;
