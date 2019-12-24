@@ -65,21 +65,6 @@ install:
 doc:
 	@dune build @doc
 
-#### Producing the theory file #####################################
-
-_thdepdir = $(_depdir)/_$(THEORY)
-$(_thdepdir)/%.d: $(_thdir)/%.dk
-	@mkdir -p $(@D)
-	@$(DKDEP) -o $@ -I $(_thdir) $^
-
-$(_thdir)/%.dko: $(_thdir)/%.dk $(_thdepdir)/%.d
-	@mkdir -p $(@D)
-	@echo "[CHECK] $^"
-	@$(DKCHECK) $(DKFLAGS) -e -I $(_thdir)/ $<
-
-
-#### Producing the Dedukti library #################################
-
 ## We untar the archive here to have the list of files available at first run of
 ## Make
 ## HACK files are stored on a lsv webpage, something better should be set
@@ -92,7 +77,18 @@ _dks := $(addprefix $(_ipath)/, $(__dks))
 _dkos := $(patsubst %.dk,%.dko,$(_dks))
 _srcbase := $(notdir $(basename $(_dks)))
 
+#### Checking Dedukti #####################################
+_thdepdir = $(_depdir)/_$(THEORY)
+$(_thdepdir)/%.d: $(_thdir)/%.dk
+	@mkdir -p $(@D)
+	@$(DKDEP) -o $@ -I $(_thdir) $^
+
+$(_thdir)/%.dko: $(_thdir)/%.dk $(_thdepdir)/%.d
+	@mkdir -p $(@D)
+	@echo "[CHECK] $^"
+	@$(DKCHECK) $(DKFLAGS) -e -I $(_thdir)/ $<
 _dkodepdir = $(_depdir)/$(_ipath)
+
 $(_dkodepdir)/%.d: $(_ipath)/%.dk
 	@mkdir -p $(_dkodepdir)
 	$(DKDEP) -o $@ -I $(_ipath) -I $(_thdir) $^
@@ -101,15 +97,19 @@ depfiles = $(patsubst %.dk, $(_dkodepdir)/%.d, $(__dks))
 $(_ipath)/%.dko: $(_ipath)/%.dk $(_thdir)/$(_thfiles:=.dko) $(depfiles)
 	@echo "[CHECK] $@"
 	$(DKCHECK) $(DKFLAGS) -e -I $(_thdir) -I $(_ipath) $<
-
 .PHONY: dedukti
 dedukti: $(_dkos)
 	@echo "[DEDUKTI] CHECKED"
 
+ifeq ($(MAKECMDGOALS), dedukti)
+-include $(addprefix $(_thdepdir)/, $(_thfiles).d)
+-include $(depfiles)
+endif
+
 #### Coq ###########################################################
 _coqpath = $(EXPDIR)/coq
 .PHONY: coq
-coq: $(LOGIPEDIA) $(_dkos)
+coq: $(LOGIPEDIA)
 	@mkdir -p $(_coqpath)
 	$(LOGIPEDIA) coq -I $(_thdir) -I $(_ipath) -o $(_coqpath) \
 -d $(_ipath)
@@ -124,7 +124,7 @@ coq: $(LOGIPEDIA) $(_dkos)
 #### Matita ########################################################
 _matitapath = $(EXPDIR)/matita
 .PHONY: matita
-matita: $(LOGIPEDIA) $(_matitapath)/root $(_dkos)
+matita: $(LOGIPEDIA) $(_matitapath)/root
 	@mkdir -p $(_matitapath)
 	@echo "baseuri = cic:/matita" > $(_matitapath)/root
 	$(LOGIPEDIA) matita -I $(_thdir) -I $(_ipath) -o $(_matitapath) \
@@ -147,7 +147,7 @@ _otpath = $(EXPDIR)/opentheory
 _thyfile=$(_otpath)/$(PKG).thy
 
 .PHONY: opentheory
-opentheory: $(LOGIPEDIA) $(_dkos)
+opentheory: $(LOGIPEDIA)
 	$(LOGIPEDIA) opentheory -I $(_thdir) -I $(_ipath) -o $(_otpath) \
 -d $(_ipath)
 	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
@@ -167,7 +167,7 @@ _pvspath = $(EXPDIR)/pvs
 _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 
 .PHONY: pvs
-pvs: $(_dkos) $(LOGIPEDIA)
+pvs: $(LOGIPEDIA)
 	@mkdir -p $(_pvspath)
 	$(LOGIPEDIA) pvs -I $(_thdir) -I $(_ipath) -o $(_pvspath) -d $(_ipath)
 	for file in $(shell ls $(_pvspath)/*.pvs); do \
@@ -180,14 +180,13 @@ _jsonpath = $(EXPDIR)/json
 _thfiles = $(wildcard $(_thdir)/*.dk)
 
 .PHONY: json
-json: dedukti $(DK2JSON)
+json: $(DK2JSON)
 	@mkdir -p $(_jsonpath)
 	$(DK2JSON) -m $(MIDDLEWARE) -o $(_jsonpath) -J $(_jsonpath) \
 -I $(_ipath) -d $(_ipath) -I $(_thdir) $(_thfiles) \
 --hollight $(_holpath) --pvs $(_pvspath) --lean $(_leanpath)
 
 #### Pretty printer ################################################
-
 # FIXME logipp-latex definitve?
 PP ?= /usr/local/bin/logipp-latex
 
@@ -197,13 +196,6 @@ install_pp: $(PP)
 .PHONY: $(PP)
 $(PP):
 	$(shell utils/install-pp.sh)
-
-ifneq ($(MAKECMDGOALS), clean)
-ifneq ($(MAKECMDGOALS), distclean)
--include $(addprefix $(_thdepdir)/, $(_thfiles).d)
--include $(depfiles)
-endif
-endif
 
 #### Cleaning targets ##############################################
 
