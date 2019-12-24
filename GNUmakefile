@@ -136,7 +136,7 @@ matita: $(LOGIPEDIA) $(_matitapath)/root
 _leanpath = $(EXPDIR)/lean
 
 .PHONY: lean
-lean: $(_dkos) $(LOGIPEDIA)
+lean: $(LOGIPEDIA)
 	@mkdir -p $(_leanpath)
 	$(LOGIPEDIA) lean -I $(_thdir) -I $(_ipath) -o $(_leanpath) -d $(_ipath)
 	@cd $(_leanpath) && $(LEAN) *.lean
