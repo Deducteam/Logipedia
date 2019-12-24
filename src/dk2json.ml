@@ -76,10 +76,13 @@ let _ =
       List.of_seq
     else []
   in
+  let outdir = Option.get !outdir in
+  (* Create output dir if it does not exist. *)
+  if not (Sys.file_exists outdir) then Unix.mkdir outdir 0o755;
   let mk_target file =
     let open Filename in
     file |> basename |> chop_extension |>
-    (fun x -> String.concat "." [x; "json"]) |> concat (Option.get !outdir)
+    (fun x -> x ^ ".json") |> concat outdir
   in
   let module Denv = Api.Env.Default in
   let open Build_template.Dk in

@@ -84,12 +84,22 @@ struct
     | `Vsign(x) -> x
     | _         -> invalid_arg "Dk.to_entries"
 
+  (** [objectify pth] transforms [f.dk] in [f.dko]. If [file] is not of the form
+      [f.dk],
+      @raise Invalid_argument *)
+  let objectify : path -> path = fun file ->
+    if Filename.extension file <> ".dk" then invalid_arg "Dk.mk_dko";
+    file ^ "o"
+
   (** [mk_sigrule md] creates a rule to load module [md] into the signature and
       compute the entries of [md]. *)
   let mk_sigrule : mident -> (key, value) rule = fun md ->
     let file = Api.Dep.get_file md in
     let m_creates = `Ksign(md) in
-    let m_depends = Deps.deps_of_md md |> List.map (fun x -> `Ksign(x)) in
+    let m_depends =
+      `Kfile(objectify file) ::
+      (Deps.deps_of_md md |> List.map (fun x -> `Ksign(x)))
+    in
     let m_action _ =
       log_rule ~lvl:25 "target [%a]" pp_key m_creates;
       let inchan = open_in file in
@@ -110,6 +120,28 @@ struct
       in
       List.iter declare entries;
       `Vsign(entries)
+    in
+    {m_creates; m_depends; m_action}
+
+  (** [mk_dko ?incl f] creates a rule to create the Dedukti object file of
+      [f], with include path [?incl]. *)
+  let mk_dko : ?incl:(path list) -> path -> (key, value) rule =
+    fun ?(incl=[]) file ->
+    let log_rule = Build.log_rule.logger in
+    let dir = Filename.dirname file in
+    let out = objectify file in
+    let m_creates = `Kfile(out) in
+    let m_depends =
+      Deps.deps_of_md (Api.Env.Default.init file) |>
+      List.map (fun m -> Api.Dep.get_file m |> objectify) |>
+      List.map (fun x -> `Kfile(x))
+    in
+    let m_action _ =
+      let includes = List.map ((^) "-I ") incl |> String.concat " " in
+      let cmd = Format.sprintf "dkcheck -e %s -I %s %s" includes dir file in
+      log_rule ~lvl:25 "%s" cmd;
+      ignore @@ Sys.command cmd;
+      `Vfile(out, time out)
     in
     {m_creates; m_depends; m_action}
 end

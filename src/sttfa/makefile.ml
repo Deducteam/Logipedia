@@ -43,9 +43,17 @@ let mk_sysrule : string -> (mident -> entry list pp) -> mident ->
     module [md], [entries_pp md] is a usable printer for entries. *)
 let rules_for : ((path * mident) list) -> (mident -> entry list pp) ->
   (key, value) rule list =
+  (* TODO unify with json's [rules_for], that is, take a target creator of type
+  [path -> path] rather that a [(path * mident) list]. *)
   fun target entries_pp ->
+  let module B = Kernel.Basic in
   let sigrule md = mk_sigrule md in
   let sysrule md target = mk_sysrule target entries_pp md in
-  let logic_rule = mk_sigrule (Kernel.Basic.mk_mident "sttfa") in
-  logic_rule ::
-  (List.map (fun (tg, md) -> [sigrule md; sysrule md tg]) target |> List.flatten)
+  let objrule md = mk_dko ~incl:(B.get_path ()) (Api.Dep.get_file md) in
+  let logic_rules =
+    let sttfamd = B.mk_mident "sttfa" in
+    [mk_sigrule sttfamd; objrule sttfamd]
+  in
+  logic_rules @
+  (List.map (fun (_,m) -> objrule m)) target @
+  (List.map (fun (t,m) -> [sigrule m; sysrule m t]) target |> List.flatten)

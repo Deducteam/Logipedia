@@ -7,7 +7,7 @@ open Build_template
     files [files] to json using Json exporter [JsExp] and the function
     [mk_target] such that [mk_target f] is the filepath of the target. *)
 let rules_for : (module Compile.S) -> path list -> (path -> path) ->
-  (Dk.key, Dk.value) rule list = fun (module JsExp) mds mk_target ->
+  (Dk.key, Dk.value) rule list = fun (module JsExp) files mk_target ->
   let log_rule = Build.log_rule.logger in
   let mk_rule file =
     let target = mk_target file in
@@ -32,5 +32,6 @@ let rules_for : (module Compile.S) -> path list -> (path -> path) ->
     in
     {m_creates; m_depends; m_action}
   in
-  List.map mk_rule mds @
-  List.map Dk.mk_sigrule (List.map Api.Env.Default.init mds)
+  List.map mk_rule files @
+  List.map (Dk.mk_dko ~incl:(Kernel.Basic.get_path ())) files @
+  List.map Dk.mk_sigrule (List.map Api.Env.Default.init files)
