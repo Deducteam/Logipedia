@@ -14,7 +14,7 @@ module Makefile : Build_template.S =
 struct
   include Build_template.Dk
 
-  let rules_for targets =
+  let rules_for files mk_target =
     let entries_pp md fmt ens = Ast.compile md ens |> export fmt in
-    Sttfa.Makefile.rules_for targets entries_pp
+    Sttfa.Makefile.rules_for files mk_target entries_pp
 end

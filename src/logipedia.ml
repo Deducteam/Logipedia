@@ -105,24 +105,18 @@ Available options for the selected mode:"
           Seq.map (Filename.concat !indir) |> List.of_seq
         else []
       in
-      let targets =
-        let mk_target file =
-          let ext = List.assoc syst Core.Systems.sys_ext in
-          let open Filename in
-          file |> basename |> chop_extension
-          |> (fun x -> String.concat "." [x; ext])
-          |> concat (Option.get !outdir)
-        in
-        List.map mk_target files
+      let mk_target file =
+        let ext = List.assoc syst Core.Systems.sys_ext in
+        let open Filename in
+        file |> basename |> chop_extension
+        |> (fun x -> String.concat "." [x; ext])
+        |> concat (Option.get !outdir)
       in
       let (module Syst) = get_system syst in
       let open Syst.Makefile in
       let module B = Build.Classic in
       (* Create the needed rules. *)
-      let rules =
-        let mds = List.map Denv.init files in
-        rules_for (List.combine targets mds)
-      in
+      let rules = rules_for files mk_target in
       if !log_level > 0 then Format.printf "%a@." (B.pp_rules pp_key) rules;
       let build = B.build ~key_eq ~valid_stored in
       let build target =
@@ -130,7 +124,7 @@ Available options for the selected mode:"
         | Ok(_)      -> ()
         | Error(key) -> Format.printf "No rule to make %a@." pp_key key
       in
-      List.map want targets |> List.iter build
+      List.map (fun f -> mk_target f |> want) files |> List.iter build
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;
