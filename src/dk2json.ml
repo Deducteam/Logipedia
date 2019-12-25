@@ -78,7 +78,7 @@ let _ =
   in
   let outdir = Option.get !outdir in
   (* Create output dir if it does not exist. *)
-  if not (Sys.file_exists outdir) then Unix.mkdir outdir 0o755;
+  if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
   let mk_target file =
     let open Filename in
     file |> basename |> chop_extension |>

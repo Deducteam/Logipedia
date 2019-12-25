@@ -27,5 +27,3 @@ val mk_ast : Kernel.Basic.mident -> Parsing.Entry.entry list -> Ast.ast
 val export_system : (module E) -> string -> Format.formatter -> unit
 (** [export_system Exp f out] exports file [f] using module [Exp] to format
     [out]. *)
-
-exception Pvs
