@@ -18,6 +18,22 @@ struct
     | None    -> invalid_arg "Option.get"
 end
 
+module Unix =
+struct
+  include Unix
+
+  (** [mkdir_rec s p] is like [mkdir -p s] setting file permissions [p]. *)
+  let mkdir_rec : string -> file_perm -> unit = fun pth perm ->
+    let reps = String.split_on_char '/' pth in
+    let rec loop rem dir = match rem with
+      | []    -> Unix.mkdir dir perm
+      | p::tl ->
+        if not (Sys.file_exists dir) then Unix.mkdir dir perm;
+        loop tl (Filename.concat dir p)
+    in
+    loop reps "."
+end
+
 module String =
 struct
   include String

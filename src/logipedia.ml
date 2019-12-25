@@ -105,12 +105,14 @@ Available options for the selected mode:"
           Seq.map (Filename.concat !indir) |> List.of_seq
         else []
       in
+      let outdir = Option.get !outdir in
+      (* Create output dir if it does not exist. *)
+      if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
       let mk_target file =
         let ext = List.assoc syst Core.Systems.sys_ext in
         let open Filename in
         file |> basename |> chop_extension
-        |> (fun x -> String.concat "." [x; ext])
-        |> concat (Option.get !outdir)
+        |> (fun x -> String.concat "." [x; ext]) |> concat outdir
       in
       let (module Syst) = get_system syst in
       let open Syst.Makefile in
