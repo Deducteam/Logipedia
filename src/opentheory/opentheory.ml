@@ -10,7 +10,7 @@ let export : Ast.t pp = fun fmt ast ->
   let (module M:Sttfa.Export.E) = Sttfa.Export.of_system `OpenTheory in
   M.print_ast fmt ast
 
-module Makefile : Build_template.S =
+module Makefile : MAKEFILE =
 struct
   open Build_template
 

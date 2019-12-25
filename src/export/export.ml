@@ -17,6 +17,36 @@ sig
       ast [ast]. *)
 end
 
+(** Build rules for the system. *)
+module type MAKEFILE =
+sig
+  open Build.Classic
+
+  type key
+  (** Keys or targets. *)
+
+  type value
+  (** Values are either the created files or the loaded signatures. *)
+
+  val key_eq : key eq
+  (** Equality on keys. *)
+
+  val pp_key : key pp
+  (** [pp_key fmt k] prints key [k] to formatter [fmt]. *)
+
+  val valid_stored : key -> value -> bool
+  (** [valid_stored k v] returns whether value [v] stored in the database is a
+      valid value of key [k]. *)
+
+  val want : string -> key
+  (** [want p] creates a target out of path [p]. Used to declare initial
+      targets. *)
+
+  val rules_for : string list -> (string -> string) -> (key, value) rule list
+  (** [rules_for pth mk_target] creates the rules to export files in [pth] to
+      targets [t] such that [t = mk_target f] for [f] in [pth]. *)
+end
+
 (** Type of a system. *)
 module type S =
 sig
@@ -25,7 +55,7 @@ sig
   module Mid : Middleware.S
   (** Middleware used for the json export. *)
 
-  module Makefile : Build_template.S
+  module Makefile : MAKEFILE
   (** Defines the rules to build targets. *)
 
   val export : Ast.t pp

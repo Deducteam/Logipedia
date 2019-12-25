@@ -13,34 +13,6 @@ type path = string
 
 let log_rule = Build.log_rule.logger
 
-(** Module taking in charge export of modules. *)
-module type S =
-sig
-  (** Keys or targets. *)
-  type key
-
-  (** Values are either the created files or the loaded signatures. *)
-  type value
-
-  (** Equality on keys. *)
-  val key_eq : key eq
-
-  (** [pp_key fmt k] prints key [k] to formatter [fmt]. *)
-  val pp_key : key pp
-
-  (** [valid_stored k v] returns whether value [v] stored in the database is a
-      valid value of key [k]. *)
-  val valid_stored : key -> value -> bool
-
-  (** [want p] creates a target out of path [p]. Used to declare initial
-      targets. *)
-  val want : path -> key
-
-  (** [rules_for pth mk_target] creates the rules to export files in [pth] to
-      targets [t] such that [t = mk_target f] for [f] in [pth]. *)
-  val rules_for : path list -> (path -> path) -> (key, value) rule list
-end
-
 (** Provides some standard functions for Dedukti related operations and file
     manipulatons. *)
 module Dk =
