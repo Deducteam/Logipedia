@@ -24,7 +24,7 @@ struct
   type value =
     [ `Vfile of path * float
     | `Vsign of entry list
-    | `Vchck of path * float
+    | `Vchck of float
       (** Checked file with time of last check. *) ]
 
   (** [want pth] declares path [pth] as a checked target. *)
@@ -34,8 +34,8 @@ struct
   let atime pth = Unix.((stat pth).st_atime)
 
   let valid_stored k v = match k, v with
-    | `Kchck(p), `Vchck(_,t) -> Sys.file_exists p && t >= (atime p)
-    | _                      -> Dk.valid_stored k v
+    | `Kchck(p), `Vchck(t) -> Sys.file_exists p && t >= (atime p)
+    | _                    -> Dk.valid_stored k v
 
   let pp_key fmt k = match k with
     | `Kchck(p) -> Format.fprintf fmt"%s checked" p
@@ -55,7 +55,7 @@ struct
       in
       log_rule ~lvl:25 "%s" cmd;
       if Sys.command cmd <> 0 then log_rule ~lvl:10 "Command failure";
-      `Vchck(tg, atime tg)
+      `Vchck(atime tg)
     in
     target (`Kchck(tg)) +< `Kfile(tg) +> proveit
 
