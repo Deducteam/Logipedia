@@ -18,22 +18,20 @@ let log_rule = Build.log_rule.logger
 (** [mk_sysrule target entries_pp md] creates a rule that prints entries of
     module [md] with [entries_pp md] into file [target]. *)
 let mk_sysrule : path -> (mident -> entry list pp) -> mident ->
-  (_ Dk.key, _ Dk.value) rule = fun target pp_entries md ->
-  let m_creates = `Kfile(target) in
-  let m_depends = [`Ksign(md)] in
+  (_ Dk.key, _ Dk.value) rule = fun tg pp_entries md ->
   let pp_entries = pp_entries md in
-  let m_action entries =
-    log_rule ~lvl:25 "target [%a]" Dk.pp_key m_creates;
-    let ochan = open_out target in
+  let print entries =
+    log_rule ~lvl:25 "printing [%s]" tg;
+    let ochan = open_out tg in
     let ofmt = Format.formatter_of_out_channel ochan in
     match entries with
     | [`Vsign(entries)] ->
       pp_entries ofmt entries;
       close_out ochan;
-      `Vfile(target, Dk.mtime target)
+      `Vfile(tg, Dk.mtime tg)
     | _                 -> assert false
   in
-  {m_creates; m_depends; m_action}
+  (target (`Kfile(tg))) +< (`Ksign(md)) |> assemble print
 
 (** [rules_for files mk_target entries_pp] yields all the rules necessary to
     export source files [files] using [entries_pp] to print entries. The

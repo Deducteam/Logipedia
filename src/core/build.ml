@@ -42,6 +42,18 @@ struct
     in
     Format.pp_print_list ~pp_sep pp_rule fmt rules
 
+  type 'key dependence = 'key * 'key list
+
+  let target : 'key -> 'key dependence = fun k -> (k, [])
+
+  let depends : 'key -> 'key dependence -> 'key dependence = fun dep (t,d) ->
+    (t, dep :: d)
+
+  let (+<) dep t = depends t dep
+
+  let assemble : ('v list -> 'v) -> 'k dependence -> ('k, 'v) rule =
+    fun m_action (m_creates, m_depends) -> {m_creates; m_depends; m_action}
+
   (** [skipm old ask rule] returns true if rule [rule] does not need
       to be run. Result [old] is the result from a previous run and
       [ask] a way to retrieve results from keys (to get results of

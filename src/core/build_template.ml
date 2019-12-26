@@ -83,14 +83,11 @@ struct
   (** [mk_sigrule md] creates a rule to load module [md] into the signature and
       compute the entries of [md]. *)
   let mk_sigrule : mident -> (_ key, _ value) rule = fun md ->
+    let log_rule = Build.log_rule.logger in
     let file = Api.Dep.get_file md in
-    let m_creates = `Ksign(md) in
-    let m_depends =
-      `Kfile(objectify file) ::
-      (Deps.deps_of_md md |> List.map (fun x -> `Ksign(x)))
-    in
-    let m_action _ =
-      log_rule ~lvl:25 "target [%a]" pp_key m_creates;
+    let sigs = Deps.deps_of_md md |> List.map (fun x -> `Ksign(x)) in
+    let action : _ value list -> _ value = fun _ ->
+      log_rule ~lvl:25 "loading %s" file;
       let inchan = open_in file in
       let entries = Parsing.Parser.Parse_channel.parse md inchan in
       close_in inchan;
@@ -110,7 +107,9 @@ struct
       List.iter declare entries;
       `Vsign(entries)
     in
-    {m_creates; m_depends; m_action}
+    (target (`Ksign(md))) +< (`Kfile(objectify file)) |>
+    List.fold_right depends sigs |>
+    assemble action
 
   (** [mk_dko ?incl f] creates a rule to create the Dedukti object file of
       [f], with include path [?incl]. *)
@@ -119,18 +118,19 @@ struct
     let log_rule = Build.log_rule.logger in
     let dir = Filename.dirname file in
     let out = objectify file in
-    let m_creates = `Kfile(out) in
-    let m_depends =
+    let md_deps =
       Deps.deps_of_md (Api.Env.Default.init file) |>
       List.map (fun m -> Api.Dep.get_file m |> objectify) |>
       List.map (fun x -> `Kfile(x))
     in
-    let m_action _ =
+    let dkcheck _ =
       let includes = List.map ((^) "-I ") incl |> String.concat " " in
       let cmd = Format.sprintf "dkcheck -e %s -I %s %s" includes dir file in
       log_rule ~lvl:25 "%s" cmd;
       ignore @@ Sys.command cmd;
       `Vfile(out, mtime out)
     in
-    {m_creates; m_depends; m_action}
+    target (`Kfile(out)) |>
+    List.fold_right depends md_deps |>
+    assemble dkcheck
 end

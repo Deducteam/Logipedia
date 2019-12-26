@@ -15,14 +15,24 @@ module Classic :
 sig
   (** Type of a rule. The type ['key] is the type of keys and ['value] of
       values. *)
-  type ('key, 'value) rule =
-    { m_creates : 'key
-    (** Key of the created element. *)
-    ; m_depends : 'key list
-    (** Key of elements on which the created element depends. *)
-    ; m_action : 'value list -> 'value
-    (** What to do with the values of the dependencies to create the
-        value of the target. *) }
+  type ('key, 'value) rule
+
+  (** Specification of dependencies. *)
+  type 'key dependence
+
+  (** [target t] sets [t] as a target for a rule (without action yet). *)
+  val target : 'key -> 'key dependence
+
+  (** [depends dep rule] sets key [dep] as a dependency for rule [rule]. *)
+  val depends : 'key -> 'key dependence -> 'key dependence
+
+  (** [dep +< rule] is [depends dep rule]. *)
+  val ( +< ) : 'key dependence -> 'key -> 'key dependence
+
+  (** [assemble f rule] sets function [f] as the recipe to build the value of
+      the target from the values of dependencies set in [rule]. *)
+  val assemble : ('value list -> 'value) -> 'key dependence ->
+    ('key, 'value) rule
 
   (** [pp_rules fmt rules] pretty prints rules [rules] to formatter [fmt] using
       function [pp_key] to pretty print the keys. *)

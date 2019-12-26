@@ -10,27 +10,27 @@ let rules_for : (module Compile.S) -> path list -> (path -> path) ->
   (_ Dk.key, _ Dk.value) rule list = fun (module JsExp) files mk_target ->
   let log_rule = Build.log_rule.logger in
   let mk_rule file =
-    let target = mk_target file in
+    let tg = mk_target file in
     let md = Api.Env.Default.init file in
-    let m_creates = `Kfile(target) in
-    let m_depends =
-      let deps = Deps.deps_of_md md in
-      `Ksign(md) ::
-      List.map (fun m -> `Kfile(Api.Dep.get_file m |> mk_target)) deps
+    let md_deps =
+      let mds = Deps.deps_of_md md in
+      List.map (fun m -> `Kfile(Api.Dep.get_file m |> mk_target)) mds
     in
-    let m_action values =
-      log_rule ~lvl:25 "target [%s]" target;
+    let json_print values =
+      log_rule ~lvl:25 "target [%s]" tg;
       let entries =
         try List.find Dk.is_vsign values |> Dk.to_entries
         with Not_found -> assert false
       in
-      let ochan = open_out target in
+      let ochan = open_out tg in
       let ofmt = Format.formatter_of_out_channel ochan in
       JsExp.print_document ofmt (JsExp.doc_of_entries md entries);
       close_out ochan;
-      `Vfile(target, Dk.mtime target)
+      `Vfile(tg, Dk.mtime tg)
     in
-    {m_creates; m_depends; m_action}
+    target (`kfile(tg)) +< `Ksign(md) |>
+    List.fold_right depends md_deps |>
+    assemble json_print
   in
   List.map mk_rule files @
   List.map (Dk.mk_dko ~incl:(Kernel.Basic.get_path ())) files @
