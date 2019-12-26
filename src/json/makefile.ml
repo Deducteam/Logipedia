@@ -26,9 +26,9 @@ let rules_for : (module Compile.S) -> path list -> (path -> path) ->
       let ofmt = Format.formatter_of_out_channel ochan in
       JsExp.print_document ofmt (JsExp.doc_of_entries md entries);
       close_out ochan;
-      `Vfile(tg, Dk.mtime tg)
+      `Vfile(Dk.mtime tg)
     in
-    target (`kfile(tg)) +< `Ksign(md) |>
+    target (`Kfile(tg)) +< `Ksign(md) |>
     List.fold_right depends md_deps |>
     assemble json_print
   in

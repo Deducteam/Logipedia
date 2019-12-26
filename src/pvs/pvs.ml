@@ -22,7 +22,7 @@ struct
       (** A checked file. *) ]
 
   type value =
-    [ `Vfile of path * float
+    [ `Vfile of float
     | `Vsign of entry list
     | `Vchck of float
       (** Checked file with time of last check. *) ]

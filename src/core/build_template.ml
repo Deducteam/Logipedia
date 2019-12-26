@@ -26,9 +26,9 @@ struct
 
   (** Values are either the created files or the loaded signatures. *)
   type 'a value = 'a constraint 'a =
-    [> `Vfile of path * float
-    (** A filepath along its last modification time (used to verify validity of
-        a file from the database). *)
+    [> `Vfile of float
+    (** The last modification time of a file (used to verify validity of a file
+        from the database). *)
     | `Vsign of entry list
       (** Signature and the entries that are in it. *) ]
 
@@ -57,10 +57,10 @@ struct
   (** [valid_stored k v] returns true *)
   let valid_stored : _ key -> _ value -> bool =
     fun k v -> match k, v with
-    | `Kfile(p), `Vfile(_,t) -> Sys.file_exists p && t >= (mtime p)
-    | `Ksign(_), `Vsign(_)   -> false
+    | `Kfile(p), `Vfile(t) -> Sys.file_exists p && t >= (mtime p)
+    | `Ksign(_), `Vsign(_) -> false
     (* Rebuild avoided by dkos for the moment *)
-    | _                      -> false
+    | _                    -> false
 
   (** [is_vsign v] returns whether value [v] is a signature. *)
   let is_vsign : _ value -> bool = function
@@ -107,7 +107,7 @@ struct
       List.iter declare entries;
       `Vsign(entries)
     in
-    (target (`Ksign(md))) +< `Kfile(objectify file) |>
+    target (`Ksign(md)) +< `Kfile(objectify file) |>
     List.fold_right depends sigs |>
     assemble action
 
@@ -128,7 +128,7 @@ struct
       let cmd = Format.sprintf "dkcheck -e %s -I %s %s" includes dir file in
       log_rule ~lvl:25 "%s" cmd;
       ignore @@ Sys.command cmd;
-      `Vfile(out, mtime out)
+      `Vfile(mtime out)
     in
     target (`Kfile(out)) |>
     List.fold_right depends md_deps |>

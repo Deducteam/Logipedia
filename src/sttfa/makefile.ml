@@ -28,7 +28,7 @@ let mk_sysrule : path -> (mident -> entry list pp) -> mident ->
     | [`Vsign(entries)] ->
       pp_entries ofmt entries;
       close_out ochan;
-      `Vfile(tg, Dk.mtime tg)
+      `Vfile(Dk.mtime tg)
     | _                 -> assert false
   in
   (target (`Kfile(tg))) +< (`Ksign(md)) |> assemble print
@@ -53,3 +53,23 @@ let rules_for : path list -> (path -> path) -> (mident -> entry list pp) ->
   in
   logic_rules @
   (List.map (fun t -> [objrule t; sigrule t; sysrule t]) files |> List.flatten)
+
+(** A basis for sttfa makefiles. *)
+module Basis =
+struct
+  open Build_template
+
+  type key =
+    [ `Kfile of path
+    | `Ksign of mident ]
+
+  type value =
+    [ `Vfile of float
+    | `Vsign of entry list ]
+
+  let key_eq = Dk.key_eq
+  let pp_key = Dk.pp_key
+  let valid_stored = Dk.valid_stored
+
+  let want : path -> key = Dk.want
+end
