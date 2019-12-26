@@ -30,9 +30,13 @@ sig
   val ( +< ) : 'key dependence -> 'key -> 'key dependence
 
   (** [assemble f rule] sets function [f] as the recipe to build the value of
-      the target from the values of dependencies set in [rule]. *)
+      the target from the values of dependencies set in [rule], and promotes
+      [rule] to a usable rule, that is, that can be used with {!val:build}. *)
   val assemble : ('value list -> 'value) -> 'key dependence ->
     ('key, 'value) rule
+
+  (** [rule +> f] is [assemble f rule]. *)
+  val ( +> ) : 'key dependence -> ('value list -> 'value) -> ('key, 'value) rule
 
   (** [pp_rules fmt rules] pretty prints rules [rules] to formatter [fmt] using
       function [pp_key] to pretty print the keys. *)

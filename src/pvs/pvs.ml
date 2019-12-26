@@ -57,7 +57,7 @@ struct
       if Sys.command cmd <> 0 then log_rule ~lvl:10 "Command failure";
       `Vchck(tg, atime tg)
     in
-    target (`Kchck(tg)) +< `Kfile(tg) |> assemble proveit
+    target (`Kchck(tg)) +< `Kfile(tg) +> proveit
 
   let rules_for files mk_target =
     let entries_pp md fmt ens = Ast.compile md ens |> export fmt in

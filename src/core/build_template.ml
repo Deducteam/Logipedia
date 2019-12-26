@@ -107,7 +107,7 @@ struct
       List.iter declare entries;
       `Vsign(entries)
     in
-    (target (`Ksign(md))) +< (`Kfile(objectify file)) |>
+    (target (`Ksign(md))) +< `Kfile(objectify file) |>
     List.fold_right depends sigs |>
     assemble action
 

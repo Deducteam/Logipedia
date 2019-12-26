@@ -54,6 +54,8 @@ struct
   let assemble : ('v list -> 'v) -> 'k dependence -> ('k, 'v) rule =
     fun m_action (m_creates, m_depends) -> {m_creates; m_depends; m_action}
 
+  let ( +> ) dep f = assemble f dep
+
   (** [skipm old ask rule] returns true if rule [rule] does not need
       to be run. Result [old] is the result from a previous run and
       [ask] a way to retrieve results from keys (to get results of
