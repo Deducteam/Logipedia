@@ -110,7 +110,6 @@ endif
 _coqpath = $(EXPDIR)/coq
 .PHONY: coq
 coq: $(LOGIPEDIA)
-	@mkdir -p $(_coqpath)
 	$(LOGIPEDIA) coq -I $(_thdir) -I $(_ipath) -o $(_coqpath) \
 -d $(_ipath)
 	cd $(_coqpath) && rename 's:-:_:g' $(_coqpath)/*.v
@@ -125,7 +124,6 @@ coq: $(LOGIPEDIA)
 _matitapath = $(EXPDIR)/matita
 .PHONY: matita
 matita: $(LOGIPEDIA) $(_matitapath)/root
-	@mkdir -p $(_matitapath)
 	@echo "baseuri = cic:/matita" > $(_matitapath)/root
 	$(LOGIPEDIA) matita -I $(_thdir) -I $(_ipath) -o $(_matitapath) \
 -d $(_ipath)
@@ -137,7 +135,6 @@ _leanpath = $(EXPDIR)/lean
 
 .PHONY: lean
 lean: $(LOGIPEDIA)
-	@mkdir -p $(_leanpath)
 	$(LOGIPEDIA) lean -I $(_thdir) -I $(_ipath) -o $(_leanpath) -d $(_ipath)
 	@cd $(_leanpath) && $(LEAN) *.lean
 	@echo "[LEAN] CHECKED"
@@ -157,7 +154,6 @@ opentheory: $(LOGIPEDIA)
 #### HOL Light ######################################################
 _holpath = $(EXPDIR)/hollight
 hollight: $(_dkos) $(LOGIPEDIA)
-	@mkdir -p $(_holpath)
 	$(LOGIPEDIA) hollight -I $(_thdir) -I $(_ipath) -o $(_holpath) \
 -d $(_ipath)
 	@echo "[HOL] FILES TO BE CHECKED"
@@ -168,7 +164,6 @@ _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 
 .PHONY: pvs
 pvs: $(LOGIPEDIA)
-	@mkdir -p $(_pvspath)
 	$(LOGIPEDIA) pvs -I $(_thdir) -I $(_ipath) -o $(_pvspath) -d $(_ipath)
 	@echo "[PVS] CHECKED"
 
@@ -178,7 +173,6 @@ _thfiles = $(wildcard $(_thdir)/*.dk)
 
 .PHONY: json
 json: $(DK2JSON)
-	@mkdir -p $(_jsonpath)
 	$(DK2JSON) -m $(MIDDLEWARE) -o $(_jsonpath) -J $(_jsonpath) \
 -I $(_ipath) -d $(_ipath) -I $(_thdir) $(_thfiles) \
 --hollight $(_holpath) --pvs $(_pvspath) --lean $(_leanpath)
