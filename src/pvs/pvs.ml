@@ -14,6 +14,7 @@ module Makefile : MAKEFILE =
 struct
   open Build.Classic
   open Build_template
+  open Sttfa.Makefile
 
   type key =
     [ `Kfile of path
@@ -33,17 +34,20 @@ struct
   (** [atime p] returns the last access time of filepath [p]. *)
   let atime pth = Unix.((stat pth).st_atime)
 
-  let valid_stored k v = match k, v with
-    | `Kchck(p), `Vchck(t) -> Sys.file_exists p && t >= (atime p)
-    | _                    -> Dk.valid_stored k v
+  let valid_stored k v =
+    match k, v with
+    | `Kchck(p), `Vchck(t)     -> Sys.file_exists p && t >= (atime p)
+    | #Basis.key, #Basis.value -> Sttfa.Makefile.Basis.valid_stored k v
+    | _                        -> false
 
   let pp_key fmt k = match k with
-    | `Kchck(p) -> Format.fprintf fmt"%s checked" p
-    | _         -> Dk.pp_key fmt k
+    | `Kchck(p)  -> Format.fprintf fmt"%s checked" p
+    | #Basis.key -> Basis.pp_key fmt k
 
   let key_eq k l = match k, l with
-    | `Kchck(p), `Kchck(q) -> String.equal p q
-    | _                    -> Dk.key_eq k l
+    | `Kchck(p), `Kchck(q)   -> String.equal p q
+    | #Basis.key, #Basis.key -> Basis.key_eq k l
+    | _                      -> false
 
   (** [rule_check t] specifies that file [t] should be checked with
       "proveit". *)

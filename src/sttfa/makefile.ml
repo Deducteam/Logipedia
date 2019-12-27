@@ -17,8 +17,8 @@ let log_rule = Build.log_rule.logger
 
 (** [mk_sysrule target entries_pp md] creates a rule that prints entries of
     module [md] with [entries_pp md] into file [target]. *)
-let mk_sysrule : path -> (mident -> entry list pp) -> mident ->
-  (_ Dk.key, _ Dk.value) rule = fun tg pp_entries md ->
+let mk_sysrule : path -> (mident -> entry list pp) -> mident -> (_, _) rule =
+  fun tg pp_entries md ->
   let pp_entries = pp_entries md in
   let print entries =
     log_rule ~lvl:25 "printing [%s]" tg;
@@ -28,7 +28,7 @@ let mk_sysrule : path -> (mident -> entry list pp) -> mident ->
     | [`Vsign(entries)] ->
       pp_entries ofmt entries;
       close_out ochan;
-      `Vfile(Dk.mtime tg)
+      `Vfile(mtime tg)
     | _                 -> assert false
   in
   (target (`Kfile(tg))) +< (`Ksign(md)) |> assemble print
@@ -39,17 +39,17 @@ let mk_sysrule : path -> (mident -> entry list pp) -> mident ->
     [entries_pp] is a function such that for any module [md], [entries_pp md] is
     a usable printer for entries. *)
 let rules_for : path list -> (path -> path) -> (mident -> entry list pp) ->
-  (_ Dk.key, _ Dk.value) rule list =
+  (_, _) rule list =
   fun files mk_target entries_pp ->
   let module B = Kernel.Basic in
   let module E = Api.Env.Default in
-  let sigrule f = Dk.mk_sigrule (E.init f) in
+  let sigrule f = Sign.mk_sigrule (E.init f) in
   let sysrule f = mk_sysrule (mk_target f) entries_pp (E.init f) in
-  let objrule f = Dk.mk_dko ~incl:(B.get_path ()) f in
+  let objrule f = Dkob.mk_dko ~incl:(B.get_path ()) f in
   let logic_rules =
     (* Kind of unsafe *)
     let sttfamd = B.mk_mident "sttfa" in
-    [Dk.mk_sigrule sttfamd; objrule (Api.Dep.get_file sttfamd)]
+    [Sign.mk_sigrule sttfamd; objrule (Api.Dep.get_file sttfamd)]
   in
   logic_rules @
   (List.map (fun t -> [objrule t; sigrule t; sysrule t]) files |> List.flatten)
@@ -67,9 +67,21 @@ struct
     [ `Vfile of float
     | `Vsign of entry list ]
 
-  let key_eq = Dk.key_eq
-  let pp_key = Dk.pp_key
-  let valid_stored = Dk.valid_stored
+  let key_eq k l =
+    match k, l with
+    | `Kfile(p), `Kfile(q) -> Dkob.key_eq p q
+    | `Ksign(m), `Ksign(n) -> Sign.key_eq m n
+    | _                    -> false
 
-  let want : path -> key = Dk.want
+  let valid_stored k v = match k, v with
+    | `Kfile(p), `Vfile(t) -> Dkob.valid_stored p t
+    | `Ksign(x), `Vsign(y) -> Sign.valid_stored x y
+    | _                    -> false
+
+  let pp_key fmt k = match k with
+    | `Kfile(p) -> Dkob.pp_key fmt p
+    | `Ksign(m) -> Sign.pp_key fmt m
+    | _         -> invalid_arg "No printer"
+
+  let want : path -> key = fun p -> `Kfile(p)
 end
