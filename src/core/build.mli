@@ -17,26 +17,23 @@ sig
       values. *)
   type ('key, 'value) rule
 
-  (** Specification of dependencies. *)
-  type 'key dependence
-
   (** [target t] sets [t] as a target for a rule (without action yet). *)
-  val target : 'key -> 'key dependence
+  val target : 'key -> ('key, _) rule
 
   (** [depends dep rule] sets key [dep] as a dependency for rule [rule]. *)
-  val depends : 'key -> 'key dependence -> 'key dependence
+  val depends : 'key -> ('key, 'v) rule -> ('key, 'v) rule
 
   (** [dep +< rule] is [depends dep rule]. *)
-  val ( +< ) : 'key dependence -> 'key -> 'key dependence
+  val ( +< ) : ('key, 'value) rule -> 'key -> ('key, 'value) rule
 
   (** [assemble f rule] sets function [f] as the recipe to build the value of
       the target from the values of dependencies set in [rule], and promotes
       [rule] to a usable rule, that is, that can be used with {!val:build}. *)
-  val assemble : ('value list -> 'value) -> 'key dependence ->
+  val assemble : ('value list -> 'value) -> ('key, 'value) rule ->
     ('key, 'value) rule
 
   (** [rule +> f] is [assemble f rule]. *)
-  val ( +> ) : 'key dependence -> ('value list -> 'value) -> ('key, 'value) rule
+  val ( +> ) : ('key, _) rule -> ('value list -> 'value) -> ('key, 'value) rule
 
   (** [pp_rules fmt rules] pretty prints rules [rules] to formatter [fmt] using
       function [pp_key] to pretty print the keys. *)

@@ -42,17 +42,17 @@ struct
     in
     Format.pp_print_list ~pp_sep pp_rule fmt rules
 
-  type 'key dependence = 'key * 'key list
+  let target : 'key -> ('key, _) rule = fun k ->
+    {m_creates=k; m_depends=[]; m_action=fun _ -> failwith "no action set"}
 
-  let target : 'key -> 'key dependence = fun k -> (k, [])
+  let depends : 'key -> ('key, 'v) rule -> ('key, 'v) rule = fun dep r ->
+    {r with m_depends = dep :: r.m_depends}
 
-  let depends : 'key -> 'key dependence -> 'key dependence = fun dep (t,d) ->
-    (t, dep :: d)
+  let (+<) : ('key, 'v) rule -> 'key -> ('key, 'v) rule = fun  dep t ->
+    depends t dep
 
-  let (+<) dep t = depends t dep
-
-  let assemble : ('v list -> 'v) -> 'k dependence -> ('k, 'v) rule =
-    fun m_action (m_creates, m_depends) -> {m_creates; m_depends; m_action}
+  let assemble : ('v list -> 'v) -> ('k, _) rule -> ('k, 'v) rule =
+    fun m_action r -> {r with m_action}
 
   let ( +> ) dep f = assemble f dep
 
