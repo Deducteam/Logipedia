@@ -112,11 +112,6 @@ _coqpath = $(EXPDIR)/coq
 coq: $(LOGIPEDIA)
 	$(LOGIPEDIA) coq -I $(_thdir) -I $(_ipath) -o $(_coqpath) \
 -d $(_ipath)
-	cd $(_coqpath) && rename 's:-:_:g' $(_coqpath)/*.v
-	cd $(_coqpath) && rename 's:\.:_:g' $(_coqpath)/*.v
-	@cd $(_coqpath) && ls *.v > _CoqProject
-	@cd $(_coqpath) && coq_makefile -f _CoqProject -o Makefile
-	@cd $(_coqpath) && $(MAKE)
 	@echo "[COQ] CHECKED"
 
 

@@ -178,8 +178,10 @@ let sys : string -> string -> string -> (key, value) rule = fun cmd src tg ->
   in
   target (`K_file(tg)) +< `K_file(src) +> check
 
-(** [phony cmds name] creates a rule named [name] that executes system commands
-    [cmds] sequentially. *)
-let phony : string list -> string -> (key, value) rule = fun cmds name ->
-  target (`K_phon(name)) +>
+(** [phony cmds ?deps name] creates a rule named [name] that executes system
+    commands [cmds] sequentially. Dependencies can be specified with [?deps]
+    (which is by default the empty list). *)
+let phony : string list -> ?deps:(key list) -> string -> (key, value) rule =
+  fun cmds ?(deps=[]) name ->
+  target (`K_phon(name)) |> List.fold_right depends deps |> assemble
   (fun _ -> List.iter (fun c -> run c ()) cmds; `V_phon(()))
