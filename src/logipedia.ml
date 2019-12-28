@@ -3,9 +3,6 @@ open Core
 open Console
 open Extras
 
-(** File into which exported file are written. *)
-let outdir = ref None
-
 (** Input dedukti files. *)
 let infiles : string list ref = ref []
 
@@ -30,7 +27,7 @@ let common_opts =
     , Arg.Set_int log_level
     , " Enable debug mode" )
   ; ( "-o"
-    , Arg.String (fun s -> outdir := Some(s))
+    , Arg.String (fun s -> Build_template.outdir := Some(s))
     , " Set output file" ) ]
 
 (** Options for any system export. --fast : does ont compute trace *)
@@ -97,6 +94,7 @@ Available options for the selected mode:"
     match !export_mode with
     | None       -> raise @@ Arg.Bad "Missing export"
     | Some(syst) ->
+      (* Get all the input files. *)
       let files =
         !infiles @
         if !indir <> "" then
@@ -105,20 +103,14 @@ Available options for the selected mode:"
           Seq.map (Filename.concat !indir) |> List.of_seq
         else []
       in
-      let outdir = Option.get !outdir in
+      let outdir = Option.get !Build_template.outdir in
       (* Create output dir if it does not exist. *)
       if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
-      let mk_target file =
-        let ext = List.assoc syst Core.Systems.sys_ext in
-        let open Filename in
-        file |> basename |> chop_extension
-        |> (fun x -> String.concat "." [x; ext]) |> concat outdir
-      in
       let (module Syst) = get_system syst in
       let open Syst.Makefile in
       let module B = Build.Classic in
       (* Create the needed rules. *)
-      let rules = rules_for files mk_target in
+      let rules = rules_for files in
       if !log_level > 0 then Format.printf "%a@." (B.pp_rules pp_key) rules;
       let build = B.build ~key_eq ~valid_stored in
       let build target =
@@ -126,7 +118,7 @@ Available options for the selected mode:"
         | Ok(_)      -> ()
         | Error(key) -> Format.printf "No rule to make %a@." pp_key key
       in
-      List.map (fun f -> mk_target f |> want) files |> List.iter build
+      want files |> List.iter build
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;

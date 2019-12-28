@@ -5,9 +5,9 @@ open Build.Classic
 
 include Build_template
 
-let want : path -> key = create
+let want : string -> key = create
 
-let json : (path -> path) -> (mident -> entry list pp) -> mident ->
+let json : (string -> string) -> (mident -> entry list pp) -> mident ->
   (key, value) rule = fun mk_target pp_entries md ->
   let tg_of_md md = Api.Dep.get_file md |> mk_target in
   let tg = tg_of_md md in
@@ -29,7 +29,7 @@ let json : (path -> path) -> (mident -> entry list pp) -> mident ->
 (** [rules_for JsExp files mk_target] results in the rules needed to export
     files [files] to json using Json exporter [JsExp] and the function
     [mk_target] such that [mk_target f] is the filepath of the target. *)
-let rules_for : (module Compile.S) -> path list -> (path -> path) ->
+let rules_for : (module Compile.S) -> string list -> (string -> string) ->
   (key, value) rule list = fun (module JsExp) files mk_target ->
   let pp_entries md : entry list pp = fun fmt ens ->
     JsExp.doc_of_entries md ens |> JsExp.print_document fmt

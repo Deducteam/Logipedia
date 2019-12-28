@@ -12,23 +12,21 @@ open Build_template
          entries_pp entries
     v} *)
 
-(** [rules_for files mk_target entries_pp] yields all the rules necessary to
-    export source files [files] using [entries_pp] to print entries. The
-    function [mk_target] transforms a file of [files] into the target filepath.
-    [entries_pp] is a function such that for any module [md], [entries_pp md] is
-    a usable printer for entries. *)
-let rules_for : path list -> (path -> path) -> (mident -> entry list pp) ->
+(** [rules_for files f_ext entries_pp] yields all the rules necessary to export
+    source files [files] using [entries_pp] to print entries. The file extension
+    is [f_ext]. [entries_pp] is a function such that for any module [md],
+    [entries_pp md] is a usable printer for entries. *)
+let rules_for : (string * string) list -> (mident -> entry list pp) ->
   (key, value) rule list =
-  fun files mk_target entries_pp ->
+  fun files entries_pp ->
   let module B = Kernel.Basic in
   let module E = Api.Env.Default in
-  let sigrule f = load (E.init f) in
-  let sysrule f = entry_printer (mk_target f) entries_pp (E.init f) in
-  let objrule f = dko_of f in
+  let sigrule (s,_) = load (E.init s) in
+  let sysrule (s,t) = entry_printer t entries_pp (E.init s) in
+  let objrule (s,_) = dko_of s in
   let logic_rules =
-    (* Kind of unsafe *)
     let sttfamd = B.mk_mident "sttfa" in
-    [load sttfamd; objrule (Api.Dep.get_file sttfamd)]
+    [load sttfamd; dko_of (Api.Dep.get_file sttfamd)]
   in
   logic_rules @
   (List.map (fun t -> [objrule t; sigrule t; sysrule t]) files |> List.flatten)
@@ -36,6 +34,9 @@ let rules_for : path list -> (path -> path) -> (mident -> entry list pp) ->
 (** A basis for sttfa makefiles. *)
 module Basis =
 struct
-  include Build_template
-  let want : path -> key = fun p -> `K_file(p)
+  type nonrec key = key
+  let key_eq = key_eq
+  let pp_key = pp_key
+  type nonrec value = value
+  let valid_stored = valid_stored
 end

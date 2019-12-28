@@ -3,41 +3,48 @@ open Extras
 open Console
 open Build.Classic
 
+let outdir : string option ref = ref None
+
 (** Some shorthands. *)
 type mident = Kernel.Basic.mident
 let mident_eq : mident eq = Kernel.Basic.mident_eq
 type entry = Parsing.Entry.entry
-
-(** Type of a filepath. *)
-type path = string
 
 let log_rule = Build.log_rule.logger
 
 (** [objectify pth] transforms [f.dk] in [f.dko]. If [file] is not of the form
     [f.dk],
     @raise Invalid_argument *)
-let objectify : path -> path = fun file ->
+let objectify : string -> string = fun file ->
   if Filename.extension file <> ".dk" then invalid_arg "StdBuild.mk_dko";
   file ^ "o"
 
 (** [mtime p] returns the modification time of a file. *)
-let mtime : path -> float = fun path -> Unix.((stat path).st_mtime)
+let mtime : string -> float = fun string -> Unix.((stat string).st_mtime)
 
 (** [atime p] returns the modification time of a file. *)
-let atime : path -> float = fun path -> Unix.((stat path).st_atime)
+let atime : string -> float = fun string -> Unix.((stat string).st_atime)
+
+(** [run cmd] creates an action that runs command [cmd]. The command should
+    return 0 in case of success. *)
+let run : string -> _ -> unit = fun cmd _ ->
+  if Sys.command cmd <> 0 then log_rule ~lvl:10 "command failed [%s]" cmd
 
 (** Keys used. *)
 type key =
-  [ `K_file of path
+  [ `K_file of string
   (** A file to create. *)
   | `K_sign of mident
   (** The signature of a module. *)
-  | `K_cfil of path
-  (** A file to check. *) ]
+  | `K_cfil of string
+  (** A file to check. *)
+  | `K_phon of string
+  (** A phony rule with a name. *) ]
 
 (** [key_eq k l] is equality among keys. *)
 let key_eq k l = match k, l with
   | `K_file(p), `K_file(q)
+  | `K_phon(p), `K_phon(q)
   | `K_cfil(p), `K_cfil(q) -> String.equal p q
   | `K_sign(m), `K_sign(n) -> mident_eq m n
   | _                      -> false
@@ -49,12 +56,13 @@ let pp_key : key pp = fun fmt k ->
   | `K_file(p) -> out "File(%s)" p
   | `K_cfil(p) -> out "Check(%s)" p
   | `K_sign(m) -> out "Load(%a)" Api.Pp.Default.print_mident m
+  | `K_phon(n) -> out "Phon(%s)" n
 
-(** [check p] sets path [p] as a to be checked target. *)
-let check : path -> [> `K_cfil of _] = fun p -> `K_cfil(p)
+(** [check p] sets string [p] as a to be checked target. *)
+let check : string -> [> `K_cfil of _] = fun p -> `K_cfil(p)
 
-(** [create p] sets path [p] as a to be created file. *)
-let create : path -> [> `K_file of _] = fun p -> `K_file(p)
+(** [create p] sets string [p] as a to be created file. *)
+let create : string -> [> `K_file of _] = fun p -> `K_file(p)
 
 (** Values that can be requested from a build run. *)
 type value =
@@ -63,12 +71,15 @@ type value =
   | `V_rfil of float
   (** The access time of a read file. *)
   | `V_sign of entry list
-  (** The entries of a signature. *) ]
+  (** The entries of a signature. *)
+  | `V_phon of unit
+  (** Result of a phony rule. *) ]
 
 let valid_stored : key -> value -> bool = fun k v -> match k, v with
   | `K_file(p), `V_wfil(t) -> Sys.file_exists p && t >= mtime p
   | `K_cfil(p), `V_rfil(t) -> Sys.file_exists p && t >= atime p
-  | `K_sign(_), `V_sign(_) -> false
+  | `K_sign(_), `V_sign(_)
+  | `K_phon(_), `V_phon(_) -> false
   | _                      -> invalid_arg "Build_shelf.valid_stored"
 
 let is_vsign : [> `V_sign of _] -> bool = function
@@ -80,7 +91,7 @@ let to_entries : [> `V_sign of _] -> entry list = function
   | _          -> invalid_arg "Build_shelf.to_entries"
 
 (** [dko_of f] creates a rule to create the Dedukti object file of [f], with. *)
-let dko_of : path -> (key, value) rule = fun file ->
+let dko_of : string -> (key, value) rule = fun file ->
   let dir = Filename.dirname file in
   let out = objectify file in
   let md_deps =
@@ -131,7 +142,7 @@ let load : mident -> (key, value) rule = fun md ->
 
 (** [entry_printer target entries_pp md] creates a rule that prints entries of
     module [md] with [entries_pp md] into file [target]. *)
-let entry_printer : path -> (mident -> entry list pp) -> mident ->
+let entry_printer : string -> (mident -> entry list pp) -> mident ->
   (key, value) rule = fun tg pp_entries md ->
   let pp_entries = pp_entries md in
   let print entries =
@@ -149,10 +160,26 @@ let entry_printer : path -> (mident -> entry list pp) -> mident ->
 
 (** [check cmd pth] creates a rule to check file [pth] with command [cmd] which
     should return 0 in case of success. *)
-let check_with : string -> path -> (key, value) rule = fun cmd pth ->
+let check_with : string -> string -> (key, value) rule = fun cmd pth ->
     let check _ =
       log_rule ~lvl:25 "%s" cmd;
-      if Sys.command cmd <> 0 then log_rule ~lvl:10 "Command failure [%s]" cmd;
+      run cmd();
       `V_rfil(atime pth)
     in
     target (`K_cfil(pth)) +< `K_file(pth) +> check
+
+(** [sys cmd src tg] transforms file [src] into file [tg] using system command
+    [cmd]. *)
+let sys : string -> string -> string -> (key, value) rule = fun cmd src tg ->
+  let check _ =
+    log_rule ~lvl:25 "sys [%s]" cmd;
+    run cmd ();
+    `V_wfil(mtime tg)
+  in
+  target (`K_file(tg)) +< `K_file(src) +> check
+
+(** [phony cmds name] creates a rule named [name] that executes system commands
+    [cmds] sequentially. *)
+let phony : string list -> string -> (key, value) rule = fun cmds name ->
+  target (`K_phon(name)) +>
+  (fun _ -> List.iter (fun c -> run c ()) cmds; `V_phon(()))

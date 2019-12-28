@@ -1,4 +1,5 @@
-(** Signature of a system. *)
+(** Signature of a system. Any export system must comply with the signature
+    {!val:S} defined here. *)
 
 open Core
 open Extras
@@ -17,7 +18,8 @@ sig
       ast [ast]. *)
 end
 
-(** Build rules for the system. *)
+(** Build rules for the system. Provides the rules, keys and values to use the
+    build system {!module:Build.Classic}. *)
 module type MAKEFILE =
 sig
   open Build.Classic
@@ -38,25 +40,29 @@ sig
   (** [valid_stored k v] returns whether value [v] stored in the database is a
       valid value of key [k]. *)
 
-  val want : string -> key
-  (** [want p] creates a target out of path [p]. Used to declare initial
+  val want : string list -> key list
+  (** [want p] creates targets out of paths [p]. Used to declare initial
       targets. *)
 
-  val rules_for : string list -> (string -> string) -> (key, value) rule list
-  (** [rules_for pth mk_target] creates the rules to export files in [pth] to
-      targets [t] such that [t = mk_target f] for [f] in [pth]. *)
+  val rules_for : string list -> (key, value) rule list
+  (** [rules_for pth] creates the rules to export files in [pth]. The files
+      [pth] are the Dedukti files selected from the command line. *)
 end
 
-(** Type of a system. *)
+(** Type of a system. An export system must have this signature. *)
 module type S =
 sig
   module Ast : AST
+  (** Representation of the Ast. *)
 
   module Mid : Middleware.S
   (** Middleware used for the json export. *)
 
   module Makefile : MAKEFILE
   (** Defines the rules to build targets. *)
+
+  val file_ext : string
+  (** Extension of files (without the dot). *)
 
   val export : Ast.t pp
   (** [export fmt ast] exports abstract syntax tree [ast] to formatter

@@ -123,8 +123,7 @@ coq: $(LOGIPEDIA)
 #### Matita ########################################################
 _matitapath = $(EXPDIR)/matita
 .PHONY: matita
-matita: $(LOGIPEDIA) $(_matitapath)/root
-	@echo "baseuri = cic:/matita" > $(_matitapath)/root
+matita: $(LOGIPEDIA)
 	$(LOGIPEDIA) matita -I $(_thdir) -I $(_ipath) -o $(_matitapath) \
 -d $(_ipath)
 	@cd $(_matitapath) && $(MATITAC) *.ma

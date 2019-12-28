@@ -10,11 +10,22 @@ let export : Ast.t pp = fun fmt ast ->
   let (module M:Sttfa.Export.E) = Sttfa.Export.of_system `Lean in
   M.print_ast fmt ast
 
+let file_ext = "lean"
+
 module Makefile : MAKEFILE =
 struct
-  include Sttfa.Makefile.Basis
+  module Bt = Build_template
+  open Sttfa.Makefile
+  include Basis
 
-  let rules_for files mk_target =
+  let mk_target f =
+    let open Filename in
+    (Option.get !Bt.outdir) </> !/f <.> file_ext
+
+  let rules_for files =
     let entries_pp md fmt ens = Ast.compile md ens |> export fmt in
-    Sttfa.Makefile.rules_for files mk_target entries_pp
+    let files = List.map (fun x -> x, mk_target x) files in
+    rules_for files entries_pp
+
+  let want = List.map (fun x -> Bt.create @@ mk_target x)
 end

@@ -44,6 +44,22 @@ struct
     sub s (start + 1) (len - start - 1)
 end
 
+module Filename =
+struct
+  include Filename
+  type t = string
+
+  (** [t <.> u] returns path [t.u]. *)
+  let ( <.> ) : t -> t -> t = fun t u -> t ^ "." ^ u
+
+  (** [t </> u] is an alias for [concat]. *)
+  let ( </> ) : t -> t -> t = concat
+
+  (** [!/ t] removes the extension of [t] and takes the basename, that is,
+      [!/"import/leibniz.dk" = "leibniz"]. *)
+  let ( !/ ) : t -> t = fun t -> chop_extension t |> basename
+end
+
 module NameHashtbl = Hashtbl.Make(struct
     type t = Kernel.Basic.name
     let equal = Kernel.Basic.name_eq
