@@ -129,10 +129,10 @@ let load : mident -> (key, value) rule = fun md ->
   target (`K_sign(md)) +< `K_file(objectify file) |>
   List.fold_right depends sigs |> assemble action
 
-(** [sys target entries_pp md] creates a rule that prints entries of
+(** [entry_printer target entries_pp md] creates a rule that prints entries of
     module [md] with [entries_pp md] into file [target]. *)
-let sys : path -> (mident -> entry list pp) -> mident -> (key, value) rule =
-  fun tg pp_entries md ->
+let entry_printer : path -> (mident -> entry list pp) -> mident ->
+  (key, value) rule = fun tg pp_entries md ->
   let pp_entries = pp_entries md in
   let print entries =
     log_rule ~lvl:25 "printing [%s]" tg;
@@ -146,25 +146,6 @@ let sys : path -> (mident -> entry list pp) -> mident -> (key, value) rule =
     | _                  -> assert false
   in
   target (`K_file(tg)) +< (`K_sign(md)) +> print
-
-let json : (path -> path) -> (mident -> entry list pp) -> mident ->
-  (key, value) rule = fun mk_target pp_entries md ->
-  let tg_of_md md = Api.Dep.get_file md |> mk_target in
-  let tg = tg_of_md md in
-  let md_deps =
-    List.map (fun m -> `K_file(tg_of_md m)) (Deps.deps_of_md md)
-  in
-  let pp_entries = pp_entries md in
-  let print values =
-    log_rule ~lvl:25 "json [%s]" tg;
-    let ochan = open_out tg in
-    let ofmt = Format.formatter_of_out_channel ochan in
-    List.find is_vsign values |> to_entries |> pp_entries ofmt;
-    close_out ochan;
-    `V_wfil(mtime tg)
-  in
-  target (`K_file(tg)) +< `K_sign(md) |> (List.fold_right depends md_deps) |>
-  assemble print
 
 (** [check cmd pth] creates a rule to check file [pth] with command [cmd] which
     should return 0 in case of success. *)

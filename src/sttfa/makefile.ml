@@ -23,7 +23,7 @@ let rules_for : path list -> (path -> path) -> (mident -> entry list pp) ->
   let module B = Kernel.Basic in
   let module E = Api.Env.Default in
   let sigrule f = load (E.init f) in
-  let sysrule f = sys (mk_target f) entries_pp (E.init f) in
+  let sysrule f = entry_printer (mk_target f) entries_pp (E.init f) in
   let objrule f = dko_of f in
   let logic_rules =
     (* Kind of unsafe *)
