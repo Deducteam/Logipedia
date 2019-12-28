@@ -3,9 +3,6 @@ open Extras
 open Console
 open Json
 
-(** File into which exported file are written. *)
-let outdir = ref None
-
 (** Input Dedukti files. *)
 let infiles : string list ref = ref []
 
@@ -52,7 +49,7 @@ let options =
       , Arg.Set_int log_level
       , " Enable debug mode" )
     ; ( "-o"
-      , Arg.String (fun s -> outdir := Some(s))
+      , Arg.String (fun s -> Build_template.outdir := Some(s))
       , " Set output directory" ) ] |>
   List.sort (fun (t,_,_) (u,_,_) -> String.compare t u)
 
@@ -76,19 +73,14 @@ let _ =
       List.of_seq
     else []
   in
-  let outdir = Option.get !outdir in
+  let outdir = Option.get !Build_template.outdir in
   (* Create output dir if it does not exist. *)
   if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
-  let mk_target file =
-    let open Filename in
-    file |> basename |> chop_extension |>
-    (fun x -> x ^ ".json") |> concat outdir
-  in
   let module Denv = Api.Env.Default in
   let rules =
     let (module M) = Middleware.of_string !middleware in
     let module JsExp = Compile.Make(M) in
-    Makefile.rules_for (module JsExp: Json.Compile.S) files mk_target
+    Makefile.rules_for (module JsExp: Json.Compile.S) files
   in
   let module B = Build.Classic in
   let open Json.Makefile in
@@ -100,9 +92,7 @@ let _ =
     | Ok(_)    -> ()
     | Error(k) -> Format.printf "No rule to make %a@." pp_key k
   in
-  try
-    List.map (fun f -> mk_target f |> want) files |>
-    List.iter build
+  try want files |> List.iter build
   with e ->
     let module Derr = Api.Errors.Make(Denv) in
     raise (Derr.graceful_fail None e)
