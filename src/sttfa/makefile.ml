@@ -37,5 +37,5 @@ let rules_for : path list -> (path -> path) -> (mident -> entry list pp) ->
 module Basis =
 struct
   include Build_template
-  let want : path -> key = fun p -> K_file(p)
+  let want : path -> key = fun p -> `K_file(p)
 end
