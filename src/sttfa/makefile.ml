@@ -8,8 +8,8 @@ open Build_template
     files (first elements of [files]) to targets (second elements of) [files]
     using [entries_pp] to print entries. [entries_pp] is a function such that
     for any module [md], [entries_pp md] is a usable printer for entries. *)
-let rules_for : (string * string) list -> (mident -> entry list pp) ->
-  (key, value) rule list =
+let rules_for : (string * string) list ->
+  (DkTools.mident -> DkTools.entry list pp) -> (key, value) rule list =
   fun files entries_pp ->
   let module B = Kernel.Basic in
   let module E = Api.Env.Default in
@@ -19,7 +19,7 @@ let rules_for : (string * string) list -> (mident -> entry list pp) ->
   let filrule (s,_) = need s in
   let logic_rules =
     let sttfamd = B.mk_mident "sttfa" in
-    let sttfafile = Api.Dep.get_file sttfamd in
+    let sttfafile = DkTools.get_file sttfamd in
     [need sttfafile; load sttfamd; dko_of sttfafile]
   in
   logic_rules @

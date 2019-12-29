@@ -15,8 +15,8 @@ let mk_target f =
 let want : string list -> key list =
   List.map (fun x -> create (mk_target x))
 
-let json : (mident -> entry list pp) -> mident -> (key, value) rule =
-  fun pp_entries md ->
+let json : (DkTools.mident -> DkTools.entry list pp) -> DkTools.mident ->
+  (key, value) rule = fun pp_entries md ->
   let tg_of_md md = Api.Dep.get_file md |> mk_target in
   let tg = tg_of_md md in
   let md_deps =
@@ -39,7 +39,7 @@ let json : (mident -> entry list pp) -> mident -> (key, value) rule =
     [mk_target] such that [mk_target f] is the filepath of the target. *)
 let rules_for : (module Compile.S) -> string list ->
   (key, value) rule list = fun (module JsExp) files ->
-  let pp_entries md : entry list pp = fun fmt ens ->
+  let pp_entries md : DkTools.entry list pp = fun fmt ens ->
     JsExp.doc_of_entries md ens |> JsExp.print_document fmt
   in
   let module E = Api.Env.Default in

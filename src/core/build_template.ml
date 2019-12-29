@@ -106,7 +106,7 @@ let to_entries : [> `V_sign of _] -> entry list = function
 (** [need pth] creates a rule that verifies if file [pth] exists. *)
 let need : string -> (_, _) rule = fun pth ->
   let exists _ =
-    if not (Sys.file_exists pth) then failwith "File needed" else
+    if not (Sys.file_exists pth) then exit_with "missing %s" pth else
     `V_rfil(atime pth)
   in
   target (`K_file(pth)) +> exists
