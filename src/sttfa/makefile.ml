@@ -4,18 +4,10 @@ open Extras
 open Build.Classic
 open Build_template
 
-(** The rule of a system file roughly looks like, where [export] is the export
-    folder, [sys] the extension of the system files, [file] the module,
-
-    {v
-    `Vfile(export/file.sys): `Vsign(entries)
-         entries_pp entries
-    v} *)
-
-(** [rules_for files f_ext entries_pp] yields all the rules necessary to export
-    source files [files] using [entries_pp] to print entries. The file extension
-    is [f_ext]. [entries_pp] is a function such that for any module [md],
-    [entries_pp md] is a usable printer for entries. *)
+(** [rules_for files entries_pp] yields all the rules necessary to export source
+    files (first elements of [files]) to targets (second elements of) [files]
+    using [entries_pp] to print entries. [entries_pp] is a function such that
+    for any module [md], [entries_pp md] is a usable printer for entries. *)
 let rules_for : (string * string) list -> (mident -> entry list pp) ->
   (key, value) rule list =
   fun files entries_pp ->
