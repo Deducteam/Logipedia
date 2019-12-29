@@ -77,6 +77,7 @@ type value =
 
 let valid_stored : key -> value -> bool = fun k v -> match k, v with
   | `K_file(p), `V_wfil(t) -> Sys.file_exists p && t >= mtime p
+  | `K_file(p), `V_rfil(t) -> Sys.file_exists p && t >= atime p
   | `K_cfil(p), `V_rfil(t) -> Sys.file_exists p && t >= atime p
   | `K_sign(_), `V_sign(_)
   | `K_phon(_), `V_phon(_) -> false
@@ -90,11 +91,19 @@ let to_entries : [> `V_sign of _] -> entry list = function
   | `V_sign(x) -> x
   | _          -> invalid_arg "Build_shelf.to_entries"
 
-(** [dko_of f] creates a rule to create the Dedukti object file of [f], with. *)
+(** [need pth] creates a rule that verifies if file [pth] exists. *)
+let need : string -> (_, _) rule = fun pth ->
+  let exists _ =
+    if not (Sys.file_exists pth) then failwith "File needed" else
+    `V_rfil(atime pth)
+  in
+  target (`K_file(pth)) +> exists
+
+(** [dko_of f] creates a rule to create the Dedukti object file of [f]. *)
 let dko_of : string -> (key, value) rule = fun file ->
   let dir = Filename.dirname file in
   let out = objectify file in
-  let md_deps =
+  let o_deps =
     Deps.deps_of_md (Api.Env.Default.init file) |>
     List.map (fun m -> Api.Dep.get_file m |> objectify) |>
     List.map (fun x -> `K_file(x))
@@ -104,11 +113,11 @@ let dko_of : string -> (key, value) rule = fun file ->
     let includes = List.map ((^) "-I ") incl |> String.concat " " in
     let cmd = Format.sprintf "dkcheck -e %s -I %s %s" includes dir file in
     log_rule ~lvl:25 "%s" cmd;
-    if Sys.command cmd <> 0 then log_rule ~lvl:10 "failure [%s]" cmd;
+    run cmd ();
     `V_wfil(mtime out)
   in
-  target (`K_file(out)) |>
-  List.fold_right depends md_deps |>
+  target (`K_file(out)) +< (`K_file(file)) |>
+  List.fold_right depends o_deps |>
   assemble dkcheck
 
 (** [load md] creates a rule to load module [md] into the signature and
@@ -141,7 +150,8 @@ let load : mident -> (key, value) rule = fun md ->
   List.fold_right depends sigs |> assemble action
 
 (** [entry_printer target entries_pp md] creates a rule that prints entries of
-    module [md] with [entries_pp md] into file [target]. *)
+    module [md] with [entries_pp md] into file [target]. The target depends on
+    the signature of the module. *)
 let entry_printer : string -> (mident -> entry list pp) -> mident ->
   (key, value) rule = fun tg pp_entries md ->
   let pp_entries = pp_entries md in

@@ -114,9 +114,8 @@ struct
       Db.replace database target
         {r_created=target; r_value=value; r_built=(!time)}
     in
-    (* Definition of the effective build function *)
+    (* The build algorithm. *)
     fun rules target ->
-      (* The build algorithm. *)
       let exception NoRule of key in
       let rec build : key -> 'value = fun target ->
         incr time;

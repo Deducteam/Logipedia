@@ -24,12 +24,15 @@ let rules_for : (string * string) list -> (mident -> entry list pp) ->
   let sigrule (s,_) = load (E.init s) in
   let sysrule (s,t) = entry_printer t entries_pp (E.init s) in
   let objrule (s,_) = dko_of s in
+  let filrule (s,_) = need s in
   let logic_rules =
     let sttfamd = B.mk_mident "sttfa" in
-    [load sttfamd; dko_of (Api.Dep.get_file sttfamd)]
+    let sttfafile = Api.Dep.get_file sttfamd in
+    [need sttfafile; load sttfamd; dko_of sttfafile]
   in
   logic_rules @
-  (List.map (fun t -> [objrule t; sigrule t; sysrule t]) files |> List.flatten)
+  (List.map (fun t -> [filrule t; objrule t; sigrule t; sysrule t]) files |>
+   List.flatten)
 
 (** A basis for sttfa makefiles. *)
 module Basis =
