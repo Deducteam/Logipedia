@@ -3,20 +3,32 @@ open Extras
 open Console
 open Build.Classic
 
+(** Directory where files are exported. *)
 let outdir : string option ref = ref None
 
-(** Some shorthands. *)
-type mident = Kernel.Basic.mident
-let mident_eq : mident eq = Kernel.Basic.mident_eq
-type entry = Parsing.Entry.entry
+(** All Dedukti functions needed. *)
+module DkTools =
+struct
+  type mident = Kernel.Basic.mident
+  let mident_eq : mident eq = Kernel.Basic.mident_eq
+  let pp_mident : mident pp = Api.Pp.Default.print_mident
 
+  let get_file : mident -> string = Api.Dep.get_file
+  let init : string -> mident = Api.Env.Default.init
+  type entry = Parsing.Entry.entry
+
+  let get_path : unit -> string list = Kernel.Basic.get_path
+end
+open DkTools
+
+(** A logger to be used in rules. *)
 let log_rule = Build.log_rule.logger
 
 (** [objectify pth] transforms [f.dk] in [f.dko]. If [file] is not of the form
     [f.dk],
     @raise Invalid_argument *)
 let objectify : string -> string = fun file ->
-  if Filename.extension file <> ".dk" then invalid_arg "StdBuild.mk_dko";
+  if Filename.extension file <> ".dk" then invalid_arg "objectify";
   file ^ "o"
 
 (** [mtime p] returns the modification time of a file. *)
@@ -55,7 +67,7 @@ let pp_key : key pp = fun fmt k ->
   match k with
   | `K_file(p) -> out "File(%s)" p
   | `K_cfil(p) -> out "Check(%s)" p
-  | `K_sign(m) -> out "Load(%a)" Api.Pp.Default.print_mident m
+  | `K_sign(m) -> out "Load(%a)" pp_mident m
   | `K_phon(n) -> out "Phon(%s)" n
 
 (** [check p] sets string [p] as a to be checked target. *)
@@ -81,7 +93,7 @@ let valid_stored : key -> value -> bool = fun k v -> match k, v with
   | `K_cfil(p), `V_rfil(t) -> Sys.file_exists p && t >= atime p
   | `K_sign(_), `V_sign(_)
   | `K_phon(_), `V_phon(_) -> false
-  | _                      -> invalid_arg "Build_shelf.valid_stored"
+  | _                      -> invalid_arg "valid_stored"
 
 let is_vsign : [> `V_sign of _] -> bool = function
   | `V_sign(_) -> true
@@ -89,7 +101,7 @@ let is_vsign : [> `V_sign of _] -> bool = function
 
 let to_entries : [> `V_sign of _] -> entry list = function
   | `V_sign(x) -> x
-  | _          -> invalid_arg "Build_shelf.to_entries"
+  | _          -> invalid_arg "to_entries"
 
 (** [need pth] creates a rule that verifies if file [pth] exists. *)
 let need : string -> (_, _) rule = fun pth ->
@@ -104,12 +116,12 @@ let dko_of : string -> (key, value) rule = fun file ->
   let dir = Filename.dirname file in
   let out = objectify file in
   let o_deps =
-    Deps.deps_of_md (Api.Env.Default.init file) |>
-    List.map (fun m -> Api.Dep.get_file m |> objectify) |>
+    Deps.deps_of_md (init file) |>
+    List.map (fun m -> get_file m |> objectify) |>
     List.map (fun x -> `K_file(x))
   in
   let dkcheck _ =
-    let incl = Kernel.Basic.get_path () in
+    let incl = get_path () in
     let includes = List.map ((^) "-I ") incl |> String.concat " " in
     let cmd = Format.sprintf "dkcheck -e %s -I %s %s" includes dir file in
     log_rule ~lvl:25 "%s" cmd;
@@ -123,7 +135,7 @@ let dko_of : string -> (key, value) rule = fun file ->
 (** [load md] creates a rule to load module [md] into the signature and
     compute the entries of [md]. *)
 let load : mident -> (key, value) rule = fun md ->
-  let file = Api.Dep.get_file md in
+  let file = get_file md in
   let sigs = Deps.deps_of_md md |> List.map (fun x -> `K_sign(x)) in
   let action _ =
     log_rule ~lvl:25 "loading %s" file;
