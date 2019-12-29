@@ -16,6 +16,8 @@ PKG ?= arith_fermat
 EXPDIR ?= export
 # Additional flags passed to Dedukti (--eta)
 DKFLAGS =
+# Additional flags passed to Logipedia
+LOGIPEDIAFLAGS =
 # Which ocaml middleware module to use (for json export)
 MIDDLEWARE = sttfa
 
@@ -111,7 +113,7 @@ _coqpath = $(EXPDIR)/coq
 .PHONY: coq
 coq: $(LOGIPEDIA)
 	$(LOGIPEDIA) coq -I $(_thdir) -I $(_ipath) -o $(_coqpath) \
--d $(_ipath)
+-d $(_ipath) $(LOGIPEDIAFLAGS)
 	@echo "[COQ] CHECKED"
 
 
@@ -120,7 +122,7 @@ _matitapath = $(EXPDIR)/matita
 .PHONY: matita
 matita: $(LOGIPEDIA)
 	$(LOGIPEDIA) matita -I $(_thdir) -I $(_ipath) -o $(_matitapath) \
--d $(_ipath)
+-d $(_ipath) $(LOGIPEDIAFLAGS)
 	@cd $(_matitapath) && $(MATITAC) *.ma
 	@echo "[MATITA] CHECKED"
 
@@ -129,7 +131,8 @@ _leanpath = $(EXPDIR)/lean
 
 .PHONY: lean
 lean: $(LOGIPEDIA)
-	$(LOGIPEDIA) lean -I $(_thdir) -I $(_ipath) -o $(_leanpath) -d $(_ipath)
+	$(LOGIPEDIA) lean -I $(_thdir) -I $(_ipath) -o $(_leanpath) -d $(_ipath) \
+$(LOGIPEDIAFLAGS)
 	@cd $(_leanpath) && $(LEAN) *.lean
 	@echo "[LEAN] CHECKED"
 
@@ -140,7 +143,7 @@ _thyfile=$(_otpath)/$(PKG).thy
 .PHONY: opentheory
 opentheory: $(LOGIPEDIA)
 	$(LOGIPEDIA) opentheory -I $(_thdir) -I $(_ipath) -o $(_otpath) \
--d $(_ipath)
+-d $(_ipath) $(LOGIPEDIAFLAGS)
 	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
 	$(OT) info $(_thyfile) 2>/dev/null
 	@echo "[OT] CHECKED"
@@ -149,7 +152,7 @@ opentheory: $(LOGIPEDIA)
 _holpath = $(EXPDIR)/hollight
 hollight: $(_dkos) $(LOGIPEDIA)
 	$(LOGIPEDIA) hollight -I $(_thdir) -I $(_ipath) -o $(_holpath) \
--d $(_ipath)
+-d $(_ipath) $(LOGIPEDIAFLAGS)
 	@echo "[HOL] FILES TO BE CHECKED"
 
 ##### PVS ##########################################################
@@ -158,7 +161,8 @@ _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 
 .PHONY: pvs
 pvs: $(LOGIPEDIA)
-	$(LOGIPEDIA) pvs -I $(_thdir) -I $(_ipath) -o $(_pvspath) -d $(_ipath)
+	$(LOGIPEDIA) pvs -I $(_thdir) -I $(_ipath) -o $(_pvspath) -d $(_ipath) \
+$(LOGIPEDIAFLAGS)
 	@echo "[PVS] CHECKED"
 
 #### Json ##########################################################
@@ -169,7 +173,7 @@ _thfiles = $(wildcard $(_thdir)/*.dk)
 json: $(DK2JSON)
 	$(DK2JSON) -m $(MIDDLEWARE) -o $(_jsonpath) -J $(_jsonpath) \
 -I $(_ipath) -d $(_ipath) -I $(_thdir) $(_thfiles) \
---hollight $(_holpath) --pvs $(_pvspath) --lean $(_leanpath)
+--hollight $(_holpath) --pvs $(_pvspath) --lean $(_leanpath) $(LOGIPEDIAFLAGS)
 
 #### Pretty printer ################################################
 # FIXME logipp-latex definitve?

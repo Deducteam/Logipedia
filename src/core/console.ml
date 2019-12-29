@@ -13,7 +13,7 @@ type ('a, 'b) koutfmt = ('a, Format.formatter, unit, unit, unit, 'b) format6
 let out_fmt : Format.formatter ref = ref Format.std_formatter
 
 (** [colour k fmt] adds colour [k] to format [fmt]. *)
-let colour k fmt = "\027[" ^^ k ^^ "m" ^^ fmt ^^ "\027[0m@!"
+let colour k fmt = "\027[" ^^ k ^^ "m" ^^ fmt ^^ "\027[0m@?"
 
 let red fmt = colour "31" fmt
 let cya fmt = colour "36" fmt
@@ -35,10 +35,15 @@ let loggers : logger_data list ref = ref []
     [name]. Loggers' output is {!val:out_fmt}. *)
 let new_logger : string -> 'a logger = fun name ->
   if String.length name <> 4 then invalid_arg "new_logger";
+  let check data =
+    if name = data.logger_name then invalid_arg "used logger name"; ()
+  in
+  List.iter check !loggers;
   loggers := {logger_name=name} :: !loggers;
   { logger = fun ?(lvl=1) fmt ->
         let pp = Format.(if !log_level >= lvl then fprintf else ifprintf) in
         pp !out_fmt ((cya "[%s] ") ^^ fmt ^^ "@.") name }
 
+(** [exit_with msg] aborts execution with error message [msg] and code 1. *)
 let exit_with : ('a, 'b) koutfmt -> 'a = fun fmt ->
   Format.kfprintf (fun _ -> exit 1) Format.err_formatter (red (fmt ^^ "@."))
