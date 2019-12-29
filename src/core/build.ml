@@ -136,27 +136,3 @@ struct
       in
       try Ok(build target) with NoRule(t) -> Error(t)
 end
-
-(** {1 Shake behaviour} *)
-
-(** The recipe to create a target. *)
-type ('k, 'v) action =
-  | Finished of 'v
-  (** The computed value. *)
-  | Depends  of 'k * ('v -> ('k, 'v) action)
-  (** A dependency on a key along with the way to use the value computed from
-      this dependency. *)
-
-(** Dynamic rules. A couple [(t,r)] is the target [t] along with the recipe
-    [r]. *)
-type ('k, 'v) rule = 'k * ('k, 'v) action
-
-(** [build key_eq rules target] builds value of target [target] according to
-    rules [rules] using function [key_eq] to equate keys. *)
-let rec build : 'k eq -> ('k, 'v) rule list -> 'k -> 'v =
-  fun key_eq rules target ->
-  let rec run = function
-    | Finished(v)  -> v
-    | Depends(d,a) -> run (a (build key_eq rules d))
-  in
-  rules |> List.find (fun r -> key_eq (fst r) target) |> snd |> run
