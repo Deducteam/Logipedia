@@ -144,7 +144,7 @@ struct
   let need : string -> (_, _) rule = fun pth ->
     let exists _ =
       if not (Sys.file_exists pth) then exit_with "missing %s" pth else
-        `V_rfil(atime pth)
+      Value.checked pth
     in
     target (Key.create pth) +> exists
 
@@ -209,8 +209,8 @@ struct
       let ochan = open_out tg in
       let ofmt = Format.formatter_of_out_channel ochan in
       match entries with
-      | [`V_sign(entries)] ->
-        pp_entries ofmt entries;
+      | [x] ->
+        Value.to_entries x |> pp_entries ofmt;
         close_out ochan;
         Value.written tg
       | _                  -> assert false
