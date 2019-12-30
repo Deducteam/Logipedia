@@ -14,30 +14,30 @@ let file_ext = "v"
 
 module Makefile : MAKEFILE =
 struct
-  module Bt = Build_template
+  open Build_template
   open Sttfa.Makefile
   include Basis
 
   let mk_target f =
     let open Filename in
-    (Option.get !Bt.outdir) </> !/f <.> file_ext
+    (Option.get !outdir) </> !/f <.> file_ext
 
-  let want = List.map (fun x -> Bt.create @@ mk_target x)
+  let want = List.map (fun x -> Key.create @@ mk_target x)
 
   let rules_for files =
     let entries_pp md fmt ens = Ast.compile md ens |> export fmt in
-    let outdir = Option.get !Bt.outdir in
+    let outdir = Option.get !outdir in
     let finalize =
-      let open Format in
-      Bt.phony ~deps:(want files)
-        [sprintf "rename 's:-:_:g' %s/*.v" outdir;
-         sprintf "cd %s && ls *.v > _CoqProject" outdir;
-         sprintf "cd %s && coq_makefile -f _CoqProject -o Makefile" outdir;
-         sprintf "cd %s && make" outdir]
-        "finalize"
+      Format.(
+        Rule.phony ~deps:(want files)
+          [sprintf "rename 's:-:_:g' %s/*.v" outdir;
+           sprintf "cd %s && ls *.v > _CoqProject" outdir;
+           sprintf "cd %s && coq_makefile -f _CoqProject -o Makefile" outdir;
+           sprintf "cd %s && make" outdir]
+          "finalize")
     in
     let files = List.map (fun x -> x, mk_target x) files in
     finalize :: rules_for files entries_pp
 
-  let want files = `K_phon("finalize") :: want files
+  let want files = Key.fake "finalize" :: want files
 end

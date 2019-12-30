@@ -9,18 +9,18 @@ open Build_template
     using [entries_pp] to print entries. [entries_pp] is a function such that
     for any module [md], [entries_pp md] is a usable printer for entries. *)
 let rules_for : (string * string) list ->
-  (DkTools.mident -> DkTools.entry list pp) -> (key, value) rule list =
+  (DkTools.mident -> DkTools.entry list pp) -> (Key.t, Value.t) rule list =
   fun files entries_pp ->
   let module B = Kernel.Basic in
   let module E = Api.Env.Default in
-  let sigrule (s,_) = load (E.init s) in
-  let sysrule (s,t) = entry_printer t entries_pp (E.init s) in
-  let objrule (s,_) = dko_of s in
-  let filrule (s,_) = need s in
+  let sigrule (s,_) = Rule.load (E.init s) in
+  let sysrule (s,t) = Rule.entry_printer t entries_pp (E.init s) in
+  let objrule (s,_) = Rule.dko s in
+  let filrule (s,_) = Rule.need s in
   let logic_rules =
     let sttfamd = B.mk_mident "sttfa" in
     let sttfafile = DkTools.get_file sttfamd in
-    [need sttfafile; load sttfamd; dko_of sttfafile]
+    Rule.[need sttfafile; load sttfamd; dko sttfafile]
   in
   logic_rules @
   (List.map (fun t -> [filrule t; objrule t; sigrule t; sysrule t]) files |>
@@ -29,9 +29,9 @@ let rules_for : (string * string) list ->
 (** A basis for sttfa makefiles. *)
 module Basis =
 struct
-  type nonrec key = key
-  let key_eq = key_eq
-  let pp_key = pp_key
-  type nonrec value = value
+  type nonrec key = Key.t
+  let key_eq = Key.eq
+  let pp_key = Key.pp
+  type nonrec value = Value.t
   let valid_stored = valid_stored
 end
