@@ -1,4 +1,5 @@
-(** Some rule making facilities. *)
+(** This module defines all that is necessary to use the {!module:Build}
+    module, that is, the keys, the values and some functions to create rules. *)
 open Extras
 open Console
 open Build.Classic
@@ -37,9 +38,9 @@ let mtime : string -> float = fun string -> Unix.((stat string).st_mtime)
 (** [atime p] returns the modification time of a file. *)
 let atime : string -> float = fun string -> Unix.((stat string).st_atime)
 
-(** [run cmd] creates an action that runs command [cmd]. The command should
-    return 0 in case of success. *)
-let run : string -> _ -> unit = fun cmd _ ->
+(** [run0 cmd] runs command [cmd] and logs an error if the result is not
+    zero. *)
+let run0 : string -> unit -> unit = fun cmd () ->
   if Sys.command cmd <> 0 then log_rule ~lvl:10 "command failed [%s]" cmd
 
 (** Definition of keys used and helper functions. *)
@@ -47,46 +48,46 @@ module Key =
 struct
   (** Keys used. *)
   type t =
-    [ `K_file of string
+    | File of string
     (** A file to create. *)
-    | `K_sign of mident
+    | Sign of mident
     (** The signature of a module. *)
-    | `K_cfil of string
+    | Chck of string
     (** A file to check. *)
-    | `K_phon of string
-      (** A phony rule with a name. *) ]
+    | Phon of string
+    (** A phony rule with a name. *)
 
   (** [eq k l] is equality among keys. *)
   let eq k l = match k, l with
-    | `K_file(p), `K_file(q)
-    | `K_phon(p), `K_phon(q)
-    | `K_cfil(p), `K_cfil(q) -> String.equal p q
-    | `K_sign(m), `K_sign(n) -> mident_eq m n
-    | _                      -> false
+    | File(p), File(q)
+    | Phon(p), Phon(q)
+    | Chck(p), Chck(q) -> String.equal p q
+    | Sign(m), Sign(n) -> mident_eq m n
+    | _                -> false
 
   (** [pp fmt k] prints key [k] to formatter [fmt]. *)
   let pp : t pp = fun fmt k ->
     let out ofmt = Format.fprintf fmt ofmt in
     match k with
-    | `K_file(p) -> out "File(%s)" p
-    | `K_cfil(p) -> out "Chck(%s)" p
-    | `K_sign(m) -> out "Load(%a)" pp_mident m
-    | `K_phon(n) -> out "Phon(%s)" n
+    | File(p) -> out "File(%s)" p
+    | Chck(p) -> out "Chck(%s)" p
+    | Sign(m) -> out "Load(%a)" pp_mident m
+    | Phon(n) -> out "Phon(%s)" n
 
   (** [check f] asks to check file [f]. *)
-  let check : string -> [> `K_cfil of _] = fun p -> `K_cfil(p)
+  let check : string -> t = fun p -> Chck(p)
 
   (** [exists p] requires the existence of file [p]. *)
   let exists = check
 
   (** [create f] requires the creation of file [f]. *)
-  let create : string -> [> `K_file of _] = fun p -> `K_file(p)
+  let create : string -> t = fun p -> File(p)
 
   (** [load m] requires to load module [m] into the signature. *)
-  let load : mident -> [> `K_sign of mident] = fun md -> `K_sign(md)
+  let load : mident -> t = fun md -> Sign(md)
 
   (** [fake n] requires the phony rule of name [n]. *)
-  let fake : string -> [> `K_phon of string] = fun name -> `K_phon(name)
+  let fake : string -> t = fun name -> Phon(name)
 end
 
 (** Definitions of values and helper functions. *)
@@ -94,55 +95,56 @@ module Value =
 struct
   (** Values that can be requested from a build run. *)
   type t =
-    [ `V_wfil of float
+    | Wfil of float
     (** The modification time of a written file. The 'intuitive' value, the
         content of the file, is already saved on the filesystem, so we don't keep
         it. *)
-    | `V_rfil of float
+    | Rfil of float
     (** The access time of a read file. *)
-    | `V_sign of entry list
+    | Sign of entry list
     (** The content of a signature, that is, the entries. *)
-    | `V_phon of unit
-    (** Result of a phony rule. *) ]
+    | Phon of unit
+    (** Result of a phony rule. *)
 
   (** [checked pth] sets filepath [pth] as checked. *)
-  let written : string -> [> `V_wfil of float] = fun pth -> `V_wfil(mtime pth)
+  let written : string -> t = fun pth -> Wfil(mtime pth)
 
   (** [loaded e] returns the value containing entries [e]. *)
-  let loaded : entry list -> [> `V_sign of _] = fun ens -> `V_sign(ens)
+  let loaded : entry list -> t = fun ens -> Sign(ens)
 
   (** [checked pth] sets filepath [pth] as checked. *)
-  let checked : string -> [> `V_rfil of float] = fun pth -> `V_rfil(atime pth)
+  let checked : string -> t = fun pth -> Rfil(atime pth)
 
   (** [faked ()] returns the value for a phony target. *)
-  let faked : unit -> [> `V_phon of unit] = fun () -> `V_phon(())
+  let faked : unit -> t = fun () -> Phon(())
 
-  let is_vsign : [> `V_sign of _] -> bool = function
-    | `V_sign(_) -> true
-    | _          -> false
+  let is_vsign : t -> bool = function
+    | Sign(_) -> true
+    | _       -> false
 
-  let to_entries : [> `V_sign of _] -> entry list = function
-    | `V_sign(x) -> x
-    | _          -> invalid_arg "to_entries"
+  let to_entries : t -> entry list = function
+    | Sign(x) -> x
+    | _       -> invalid_arg "to_entries"
 
 end
 
 (** [valid_store key value] tells whether value [value] computed from key [key]
     is up to date. *)
-let valid_stored : Key.t -> Value.t -> bool = fun k v -> match k, v with
-  | `K_file(p), `V_wfil(t) -> Sys.file_exists p && t >= mtime p
-  | `K_file(p), `V_rfil(t) -> Sys.file_exists p && t >= atime p
-  | `K_cfil(p), `V_rfil(t) -> Sys.file_exists p && t >= atime p
-  | `K_sign(_), `V_sign(_)
-  | `K_phon(_), `V_phon(_) -> false
-  | _                      -> invalid_arg "valid_stored"
+let valid_stored : Key.t -> Value.t -> bool = fun k v ->
+  let module K = Key in let module V = Value in
+  match k, v with
+  | K.File(p), V.Wfil(t) -> Sys.file_exists p && t >= mtime p
+  | K.File(p), V.Rfil(t)
+  | K.Chck(p), V.Rfil(t) -> Sys.file_exists p && t >= atime p
+  | K.Sign(_), V.Sign(_)
+  | K.Phon(_), V.Phon(_) -> false
+  | _                    -> invalid_arg "valid_stored"
 
 (** Generation of rules. *)
 module Rule =
 struct
   (** [need pth] creates a rule that verifies if file [pth] exists. *)
-  let need : string -> (Key.t, Value.t) rule =
-    fun pth ->
+  let need : string -> (Key.t, Value.t) rule = fun pth ->
     let exists _ =
       if not (Sys.file_exists pth) then exit_with "missing %s" pth else
       Value.checked pth
@@ -163,7 +165,7 @@ struct
       let includes = List.map ((^) "-I ") incl |> String.concat " " in
       let cmd = Format.sprintf "dkcheck -e %s -I %s %s" includes dir file in
       log_rule ~lvl:25 "%s" cmd;
-      run cmd ();
+      run0 cmd ();
       Value.written out
     in
     target (Key.create out) +< (Key.create file) |>
@@ -223,7 +225,7 @@ struct
   let check : string -> string -> (Key.t, Value.t) rule = fun cmd pth ->
     let check _ =
       log_rule ~lvl:25 "%s" cmd;
-      run cmd();
+      run0 cmd();
       Value.checked pth
     in
     target (Key.check pth) +< Key.create pth +> check
@@ -233,7 +235,7 @@ struct
   let sys : string -> string -> string -> (Key.t, Value.t) rule = fun cmd src tg ->
     let check _ =
       log_rule ~lvl:25 "sys [%s]" cmd;
-      run cmd ();
+      run0 cmd ();
       Value.written tg
     in
     target (Key.create tg) +< Key.create src +> check
@@ -244,5 +246,5 @@ struct
   let phony : string list -> ?deps:(Key.t list) -> string ->
     (Key.t, Value.t) rule = fun cmds ?(deps=[]) name ->
     target (Key.fake name) |> List.fold_right depends deps |> assemble
-      (fun _ -> List.iter (fun c -> run c ()) cmds; Value.faked ())
+      (fun _ -> List.iter (fun c -> run0 c ()) cmds; Value.faked ())
 end
