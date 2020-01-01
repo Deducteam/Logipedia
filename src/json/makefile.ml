@@ -46,4 +46,6 @@ let rules_for : (module Compile.S) -> string list ->
   let loadrule f = Rule.load (E.init f) in
   let json f = json pp_entries (E.init f) in
   let objrule f = Rule.dko f in
-  List.map (fun t -> [objrule t; loadrule t; json t]) files |> List.flatten
+  let filrule f = Rule.need f in
+  List.map (fun t -> [filrule t; objrule t; loadrule t; json t]) files |>
+  List.flatten
