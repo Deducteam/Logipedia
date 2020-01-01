@@ -38,7 +38,7 @@ let atime : string -> float = fun string -> Unix.((stat string).st_atime)
 (** [run0 cmd] runs command [cmd] and logs an error if the result is not
     zero. *)
 let run0 : string -> unit -> unit = fun cmd () ->
-  if Sys.command cmd <> 0 then log_rule ~lvl:2 "command failed [%s]" cmd
+  if Sys.command cmd <> 0 then log_rule ~lvl:2 (red "command failed [%s]") cmd
 
 (** Definition of keys used and helper functions. *)
 module Key =
