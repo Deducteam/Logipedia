@@ -4,9 +4,6 @@ open Extras
 open Console
 open Build.Classic
 
-(** Directory where files are exported. *)
-let outdir : string option ref = ref None
-
 (** All Dedukti functions needed. *)
 module DkTools =
 struct

@@ -1,4 +1,5 @@
 open Core
+open Console
 open Extras
 open Export
 
@@ -20,7 +21,7 @@ struct
 
   let mk_target f =
     let open Filename in
-    (Option.get !outdir) </> !/f <.> file_ext
+    (Option.get !Cli.outdir) </> !/f <.> file_ext
 
   let rules_for files =
     let entries_pp md fmt ens = Ast.compile md ens |> export fmt in

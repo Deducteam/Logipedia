@@ -1,4 +1,5 @@
 open Core
+open Console
 open Extras
 open Export
 
@@ -20,13 +21,13 @@ struct
 
   let mk_target f =
     let open Filename in
-    (Option.get !outdir) </> !/f <.> file_ext
+    (Option.get !Cli.outdir) </> !/f <.> file_ext
 
   let want = List.map (fun x -> Key.create @@ mk_target x)
 
   let rules_for files =
     let entries_pp md fmt ens = Ast.compile md ens |> export fmt in
-    let outdir = Option.get !outdir in
+    let outdir = Option.get !Cli.outdir in
     let finalize =
       Format.(
         Rule.phony ~deps:(want files)

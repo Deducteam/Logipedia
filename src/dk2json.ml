@@ -6,9 +6,6 @@ open Json
 (** Input Dedukti files. *)
 let infiles : string list ref = ref []
 
-(** Directory with files to convert. *)
-let indir : string ref = ref ""
-
 (** The middleware used. *)
 let middleware : string ref = ref ""
 
@@ -31,26 +28,16 @@ let options =
     in
     List.map f S.sys_spec
   in
-  Arg.align @@
-    sys_exps @
-    [ ( "-I"
-      , Arg.String Kernel.Basic.add_path
-      , " Add folder to Dedukti path" )
-    ; ( "-J"
-      , Arg.Set_string Compile.json_include
-      , " Add folder to Json built files path" )
-    ; ( "-m"
-      , Arg.Set_string middleware
-      , m_doc )
-    ; ( "-d"
-      , Arg.Set_string indir
-      , " Add directory containing Dedukti files to convert" )
-    ; ( "--debug"
-      , Arg.Set_int log_level
-      , " Enable debug mode" )
-    ; ( "-o"
-      , Arg.String (fun s -> Build_template.outdir := Some(s))
-      , " Set output directory" ) ] |>
+  Arg.align @@ Cli.options @ sys_exps @
+  [ ( "-J"
+    , Arg.Set_string Compile.json_include
+    , " Add folder to Json built files path" )
+  ; ( "-m"
+    , Arg.Set_string middleware
+    , m_doc )
+  ; ( "--debug"
+    , Arg.Set_int log_level
+    , " Enable debug mode" ) ] |>
   List.sort (fun (t,_,_) (u,_,_) -> String.compare t u)
 
 (** [anon f] adds file [f] to the list of input dedukti files {!val:infiles}. *)
@@ -66,14 +53,15 @@ let _ =
   end;
   let files =
     !infiles @
-    if !indir <> "" then
-      Sys.readdir !indir |> Array.to_seq |>
-      Seq.filter (fun f -> String.equal (Filename.extension f) ".dk") |>
-      Seq.map (fun f -> Filename.concat !indir f) |>
+    if !Cli.indir <> "" then
+      let open Filename in
+      Sys.readdir !Cli.indir |> Array.to_seq |>
+      Seq.filter (fun f -> String.equal (extension f) ".dk") |>
+      Seq.map (fun f -> !Cli.indir </> f) |>
       List.of_seq
     else []
   in
-  let outdir = Option.get !Build_template.outdir in
+  let outdir = Option.get !Cli.outdir in
   (* Create output dir if it does not exist. *)
   if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
   let module Denv = Api.Env.Default in

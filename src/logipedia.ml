@@ -6,29 +6,11 @@ open Extras
 (** Input dedukti files. *)
 let infiles : string list ref = ref []
 
-(** Input Dedukti directory. *)
-let indir : string ref = ref ""
-
 (** Options list, redefined according to first argument. *)
 let options : (string * Arg.spec * string) list ref = ref []
 
 (** Which system to export to. *)
 let export_mode : Systems.system option ref = ref None
-
-(** Options common to both modes. *)
-let common_opts =
-  [ ( "-I"
-    , Arg.String Kernel.Basic.add_path
-    , " Add folder to Dedukti path" )
-  ; ( "-d"
-    , Arg.Set_string indir
-    , " Add directory containing Dedukti files to convert" )
-  ; ( "--debug"
-    , Arg.Set_int log_level
-    , " Enable debug mode" )
-  ; ( "-o"
-    , Arg.String (fun s -> Build_template.outdir := Some(s))
-    , " Set output file" ) ]
 
 (** Options for any system export. --fast : does ont compute trace *)
 let sys_opts =
@@ -63,7 +45,7 @@ let anon arg =
       let sy = Systems.system_of_string arg in
       export_mode := Some(sy);
       let sys_opts = get_additional_opts sy in
-      options := Arg.align (sys_opts @ common_opts)
+      options := Arg.align (sys_opts @ Cli.options)
     with Systems.UnsupportedSystem(s) ->
       let msg = Format.sprintf "Can't export to %s: system not supported" s in
       raise (Arg.Bad msg)
@@ -97,13 +79,13 @@ Available options for the selected mode:"
       (* Get all the input files. *)
       let files =
         !infiles @
-        if !indir <> "" then
-          Sys.readdir !indir |> Array.to_seq |>
+        if !Cli.indir <> "" then
+          Sys.readdir !Cli.indir |> Array.to_seq |>
           Seq.filter (fun f -> String.equal (Filename.extension f) ".dk") |>
-          Seq.map (Filename.concat !indir) |> List.of_seq
+          Seq.map (Filename.concat !Cli.indir) |> List.of_seq
         else []
       in
-      let outdir = Option.get !Build_template.outdir in
+      let outdir = Option.get !Cli.outdir in
       (* Create output dir if it does not exist. *)
       if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
       let (module Syst) = get_system syst in
@@ -122,7 +104,7 @@ Available options for the selected mode:"
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;
-    Arg.usage (Arg.align common_opts) usage
+    Arg.usage (Arg.align Cli.options) usage
   | e          ->
     let module Derr = Api.Errors.Make(Denv) in
     raise (Derr.graceful_fail None e)

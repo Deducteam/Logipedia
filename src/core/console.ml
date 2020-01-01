@@ -1,5 +1,7 @@
 (** Tools for the command line (e.g. logging). *)
 
+(** {1 Logging} *)
+
 (** Logging level, between 0 and anything. The lower the quieter. *)
 let log_level : int ref = ref 0
 
@@ -47,3 +49,34 @@ let new_logger : string -> 'a logger = fun name ->
 (** [exit_with msg] aborts execution with error message [msg] and code 1. *)
 let exit_with : ('a, 'b) koutfmt -> 'a = fun fmt ->
   Format.kfprintf (fun _ -> exit 1) Format.err_formatter (red (fmt ^^ "@."))
+
+(** {2 Command line interface} *)
+
+(** Some command line interface arguments. *)
+module Cli =
+struct
+  (** Directory containing Dedukti files. *)
+  let indir : string ref = ref ""
+
+  (** Directory where to put translated files. We use a reference to avoid using
+      uninitialised values. *)
+  let outdir : string option ref = ref None
+
+  (** A command line argument specification. *)
+  type t = string * Arg.spec * string
+
+  (** Common options. *)
+  let options : (string * Arg.spec * string) list =
+    [ ( "-I"
+      , Arg.String Kernel.Basic.add_path
+      , " Add folder to Dedukti path" )
+    ; ( "-d"
+      , Arg.Set_string indir
+      , " Add directory containing Dedukti files to convert" )
+    ; ( "--debug"
+      , Arg.Set_int log_level
+      , " Enable debug mode" )
+    ; ( "-o"
+      , Arg.String (fun s -> outdir := Some(s))
+      , " Set output directory" ) ]
+end

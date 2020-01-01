@@ -1,4 +1,5 @@
 open Core
+open Console
 open Extras
 open Export
 
@@ -20,13 +21,13 @@ struct
 
   let mk_target f =
     let open Filename in
-    (Option.get !outdir) </> !/f <.> file_ext
+    (Option.get !Cli.outdir) </> !/f <.> file_ext
 
   let rules_for files =
     let entries_pp md fmt ens = Ast.compile md ens |> export fmt in
     let mkroot = (* Rule to create root file *)
       let open Filename in
-      let outf = (Option.get !outdir) </> "root" in
+      let outf = (Option.get !Cli.outdir) </> "root" in
       Rule.phony
         [Format.sprintf "echo 'baseuri = cic:/matita' > %s" outf]
         "matitaroot"

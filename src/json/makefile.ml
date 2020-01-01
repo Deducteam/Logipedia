@@ -1,6 +1,7 @@
 (** Rules to export dk files to json. *)
 open Core
 open Extras
+open Console
 open Build.Classic
 open Build_template
 
@@ -10,7 +11,7 @@ let key_eq = Key.eq
 
 let mk_target f =
   let open Filename in
-  (Option.get !outdir) </> !/f <.> "json"
+  (Option.get !Cli.outdir) </> !/f <.> "json"
 
 let want : string list -> Key.t list =
   List.map (fun x -> Key.create (mk_target x))
