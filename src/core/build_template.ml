@@ -38,7 +38,7 @@ let atime : string -> float = fun string -> Unix.((stat string).st_atime)
 (** [run0 cmd] runs command [cmd] and logs an error if the result is not
     zero. *)
 let run0 : string -> unit -> unit = fun cmd () ->
-  if Sys.command cmd <> 0 then log_rule ~lvl:10 "command failed [%s]" cmd
+  if Sys.command cmd <> 0 then log_rule ~lvl:2 "command failed [%s]" cmd
 
 (** Definition of keys used and helper functions. *)
 module Key =
@@ -161,7 +161,7 @@ struct
       let incl = get_path () in
       let includes = List.map ((^) "-I ") incl |> String.concat " " in
       let cmd = Format.sprintf "dkcheck -e %s -I %s %s" includes dir file in
-      log_rule ~lvl:25 "%s" cmd;
+      log_rule ~lvl:3 "%s" cmd;
       run0 cmd ();
       Value.written out
     in
@@ -175,7 +175,7 @@ struct
     let file = get_file md in
     let sigs = Deps.deps_of_md md |> List.map Key.load in
     let action _ =
-      log_rule ~lvl:25 "loading %s" file;
+      log_rule ~lvl:3 "loading %s" file;
       let inchan = open_in file in
       let entries = Parsing.Parser.Parse_channel.parse md inchan in
       close_in inchan;
@@ -205,7 +205,7 @@ struct
     (Key.t, Value.t) rule = fun tg pp_entries md ->
     let pp_entries = pp_entries md in
     let print entries =
-      log_rule ~lvl:25 "printing [%s]" tg;
+      log_rule ~lvl:3 "printing [%s]" tg;
       let ochan = open_out tg in
       let ofmt = Format.formatter_of_out_channel ochan in
       match entries with
@@ -221,7 +221,7 @@ struct
       should return 0 in case of success. *)
   let check : string -> string -> (Key.t, Value.t) rule = fun cmd pth ->
     let check _ =
-      log_rule ~lvl:25 "%s" cmd;
+      log_rule ~lvl:3 "%s" cmd;
       run0 cmd();
       Value.checked pth
     in
@@ -231,7 +231,7 @@ struct
       [cmd]. *)
   let sys : string -> string -> string -> (Key.t, Value.t) rule = fun cmd src tg ->
     let check _ =
-      log_rule ~lvl:25 "sys [%s]" cmd;
+      log_rule ~lvl:3 "sys [%s]" cmd;
       run0 cmd ();
       Value.written tg
     in

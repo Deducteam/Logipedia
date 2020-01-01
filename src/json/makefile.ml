@@ -25,7 +25,7 @@ let json : (DkTools.mident -> DkTools.entry list pp) -> DkTools.mident ->
   in
   let pp_entries = pp_entries md in
   let print values =
-    log_rule ~lvl:25 "json [%s]" tg;
+    log_rule ~lvl:3 "json [%s]" tg;
     let ochan = open_out tg in
     let ofmt = Format.formatter_of_out_channel ochan in
     List.find Value.is_vsign values |> Value.to_entries |> pp_entries ofmt;
