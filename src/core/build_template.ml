@@ -103,7 +103,7 @@ struct
     | `V_sign of entry list
     (** The content of a signature, that is, the entries. *)
     | `V_phon of unit
-      (** Result of a phony rule. *) ]
+    (** Result of a phony rule. *) ]
 
   (** [checked pth] sets filepath [pth] as checked. *)
   let written : string -> [> `V_wfil of float] = fun pth -> `V_wfil(mtime pth)
@@ -141,7 +141,8 @@ let valid_stored : Key.t -> Value.t -> bool = fun k v -> match k, v with
 module Rule =
 struct
   (** [need pth] creates a rule that verifies if file [pth] exists. *)
-  let need : string -> (_, _) rule = fun pth ->
+  let need : string -> (Key.t, Value.t) rule =
+    fun pth ->
     let exists _ =
       if not (Sys.file_exists pth) then exit_with "missing %s" pth else
       Value.checked pth
