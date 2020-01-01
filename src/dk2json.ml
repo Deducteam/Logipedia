@@ -78,7 +78,7 @@ let _ =
   let build target =
     match build rules target with
     | Ok(_)    -> ()
-    | Error(k) -> Format.printf "No rule to make %a@." pp_key k
+    | Error(k) -> exit_with "No rule to make %a@." pp_key k
   in
   try want files |> List.iter build
   with e ->
