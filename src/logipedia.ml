@@ -93,7 +93,7 @@ Available options for the selected mode:"
       let module B = Build.Classic in
       (* Create the needed rules. *)
       let rules = rules_for files in
-      if !log_level > 0 then Format.printf "%a@." (B.pp_rules pp_key) rules;
+      if !Cli.write_depends then Format.printf "%a@." (B.pp_rules pp_key) rules;
       let build = B.build ~key_eq ~valid_stored in
       let build target =
         match build rules target with

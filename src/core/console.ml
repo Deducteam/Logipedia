@@ -62,11 +62,15 @@ struct
       uninitialised values. *)
   let outdir : string option ref = ref None
 
+  (** Whether to write the dependency schema of the build system into a '.d'
+      file. *)
+  let write_depends : bool ref = ref false
+
   (** A command line argument specification. *)
   type t = string * Arg.spec * string
 
   (** Common options. *)
-  let options : (string * Arg.spec * string) list =
+  let options : t list =
     [ ( "-I"
       , Arg.String Kernel.Basic.add_path
       , " Add folder to Dedukti path" )
@@ -76,6 +80,9 @@ struct
     ; ( "--debug"
       , Arg.Set_int log_level
       , " Enable debug mode" )
+    ; ( "--depends"
+      , Arg.Set write_depends
+      , " Write dependencies of computations into a .d file")
     ; ( "-o"
       , Arg.String (fun s -> outdir := Some(s))
       , " Set output directory" ) ]

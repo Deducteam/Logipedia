@@ -34,10 +34,7 @@ let options =
     , " Add folder to Json built files path" )
   ; ( "-m"
     , Arg.Set_string middleware
-    , m_doc )
-  ; ( "--debug"
-    , Arg.Set_int log_level
-    , " Enable debug mode" ) ] |>
+    , m_doc ) ] |>
   List.sort (fun (t,_,_) (u,_,_) -> String.compare t u)
 
 (** [anon f] adds file [f] to the list of input dedukti files {!val:infiles}. *)
@@ -72,7 +69,7 @@ let _ =
   in
   let module B = Build.Classic in
   let open Json.Makefile in
-  if !log_level > 0 then Format.printf "%a@\n" (B.pp_rules pp_key) rules;
+  if !Cli.write_depends then Format.printf "%a@\n" (B.pp_rules pp_key) rules;
   let build = B.build ~key_eq ~valid_stored in
   (* [build] is now memoized: rules are not run twice. *)
   let build target =
