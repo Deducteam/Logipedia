@@ -1,17 +1,21 @@
 (** Export to json files. *)
 
-open Core.Extras
+open Core
+open Extras
 module B = Kernel.Basic
 module D = Api.Dep
 module E = Parsing.Entry
 module F = Format
 module S = Kernel.Signature
 module T = Kernel.Term
-module U = Core.Uri
+module U = Uri
 module Jt = Json_types
-module Sy = Core.Systems
+module Sy = Systems
 
 let json_include : string ref = ref ""
+
+let log_jscomp = Console.new_logger "jscp"
+let log_jscomp = log_jscomp.logger
 
 module type S =
 sig
@@ -43,17 +47,17 @@ struct
       with Not_found ->
         (* Parse the correct json file *)
         (* Output file must be in the same dir than other jsons *)
-        let fname = B.md key |> B.string_of_mident in
+        let fullpath =
+          let fname = B.md key |> B.string_of_mident in
+          Filename.(!json_include </> (fname <.> "json"))
+        in
         let doc =
           try
-            let fullpath = Filename.concat !(json_include) (fname ^ ".json") in
             Yojson.Safe.from_file fullpath |> Jt.document_of_yojson
           with Sys_error(_) ->
             (* If the file has not been found, it is probably a theory file,
                lying in the [theory] subdirectory. *)
-            let fullpath = String.concat Filename.dir_sep
-                [ !json_include ; (fname ^ ".json") ] in
-            Format.printf "Searching in: %s\n" fullpath;
+            log_jscomp ~lvl:4 "reading json [%s]" fullpath;
             Yojson.Safe.from_file fullpath |> Jt.document_of_yojson
         in
         let f it =
@@ -64,30 +68,11 @@ struct
         in
         match doc with
         | Result.Error(s) ->
-          failwith
-            (Format.sprintf "Error parsing file at line %s (as dependency)" s)
-        | Result.Ok(doc) ->
+          Console.exit_with "error parsing file [%s] line [%s] (as dep)"
+            fullpath s
+        | Result.Ok(doc)  ->
           List.iter f doc;
           NameHashtbl.find taxons key
-
-  (** [find_deps m i e] computes the list of all direct down
-      dependencies of a Dedukti entry [e] with name [m.i] as a list of
-      Dedukti names. *)
-  let find_deps : B.mident -> E.entry -> B.name list = fun mid e ->
-    let id = match e with
-      | E.Decl(_,id,_,_)
-      | E.Def(_,id,_,_,_) -> id
-      | _                 -> assert false
-    in
-    D.compute_ideps := true; (* Compute dependencies of items *)
-    D.make mid [e];
-    let name = B.mk_name mid id in
-    match D.get_data name with
-    | exception D.Dep_error(D.NameNotFound(_)) -> []
-    | d ->
-      (* Remove some elements from dependencies and create a part of the uri. *)
-      let f n = B.string_of_mident (B.md n) <> M.theory in
-      List.filter f (D.NameSet.elements D.(d.down))
 
   (** {2 Loading from currently parsed file} *)
 
@@ -157,7 +142,10 @@ struct
         | E.Decl(_,id,_,_)
         | E.Def(_,id,_,_,_) ->
           let inm = B.mk_name mdl id in
-          let deps = find_deps mdl e in
+          let deps =
+            let f n = B.(string_of_mident (md n)) <> M.theory in
+            Deps.deps_of_entry mdl e |> List.filter f
+          in
           let acc =
             let ct_deps = NameMap.add inm deps acc.ct_deps in
             { acc with ct_deps }
@@ -228,6 +216,6 @@ struct
     in
     loop init entries
 
-  let print_document : Format.formatter -> Jt.document -> unit = fun fmt doc ->
+  let print_document : Jt.document pp = fun fmt doc ->
     Jt.document_to_yojson doc |> Yojson.Safe.pretty_print fmt
 end

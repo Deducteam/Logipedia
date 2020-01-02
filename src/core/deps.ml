@@ -3,6 +3,7 @@ open Kernel.Term
 open Parsing.Entry
 open Kernel.Rule
 
+module D = Api.Dep
 module E = Api.Env.Make(Kernel.Reduction.Default)
 module ErrorHandler = Api.Errors.Make(E)
 
@@ -55,6 +56,18 @@ let dep_of_entry = function
 let dep_of_entry (mds:mident list) e =
   List.fold_left (fun qset md -> QSet.remove (string_of_mident md) qset)
     (dep_of_entry e) mds
+
+let deps_of_entry : mident -> entry -> name list = fun mid e ->
+  let id = match e with
+    | Decl(_,id,_,_)
+    | Def(_,id,_,_,_) -> id
+    | _               -> assert false
+  in
+  D.compute_ideps := true; (* Compute dependencies of items *)
+  D.make mid [e];
+  let name = mk_name mid id in
+  try D.(NameSet.elements (get_data name).down)
+  with D.(Dep_error(NameNotFound(_))) -> []
 
 let deps_of_md : mident -> mident list = fun md ->
   let file = Api.Dep.get_file md in
