@@ -5,22 +5,17 @@ open Extras
 module B = Kernel.Basic
 module D = Api.Dep
 module E = Parsing.Entry
-module F = Format
-module S = Kernel.Signature
 module T = Kernel.Term
-module U = Uri
 module Jt = Json_types
-module Sy = Systems
 
 let json_include : string ref = ref ""
 
-let log_jscomp = Console.new_logger "jscp"
-let log_jscomp = log_jscomp.logger
+let log_jscomp = Console.(new_logger "jscp").logger
 
 module type S =
 sig
   val doc_of_entries : B.mident -> E.entry list -> Jt.document
-  val print_document : Format.formatter -> Jt.document -> unit
+  val print_document : Jt.document pp
 end
 
 module Make : functor (M:Middleware.S) -> S = functor (M:Middleware.S) ->
@@ -61,9 +56,9 @@ struct
             Yojson.Safe.from_file fullpath |> Jt.document_of_yojson
         in
         let f it =
-          let uri = U.of_string it.Jt.name in
-          let nm = U.name_of_uri uri in
-          let tx = U.ext_of_uri uri |> M.tx_of_string in
+          let uri = Uri.of_string it.Jt.name in
+          let nm = Uri.name_of_uri uri in
+          let tx = Uri.ext_of_uri uri |> M.tx_of_string in
           NameHashtbl.add taxons nm tx
         in
         match doc with
@@ -109,7 +104,7 @@ struct
         let cid = B.id name in
         let c_tx = find_taxon acc name in
         let tx = M.string_of_tx ~short:true c_tx in
-        U.of_dkname (B.mk_name cmd cid) M.theory tx |> U.to_string
+        Uri.of_dkname (B.mk_name cmd cid) M.theory tx |> Uri.to_string
       in
       Jt.Ppterm.Const { c_symb ; c_args }
     | T.App(t,u,vs) -> ppt_of_dkterm_args t (u :: vs @ stk)
@@ -152,7 +147,7 @@ struct
           in
           let deps =
             let fill n =
-              U.of_dkname n M.theory
+              Uri.of_dkname n M.theory
                 (M.string_of_tx ~short:true (find_taxon acc n))
             in
             List.map fill deps
@@ -165,23 +160,23 @@ struct
           in
           let label = M.label tx in
           let acc = { acc with ct_taxo = NameMap.add inm tx acc.ct_taxo } in
-          let uri = U.of_dkname (B.mk_name mdl id) M.theory
-              (M.string_of_tx ~short:true tx) |> U.to_string
+          let uri = Uri.of_dkname (B.mk_name mdl id) M.theory
+              (M.string_of_tx ~short:true tx) |> Uri.to_string
           in
           let item =
             if (B.string_of_mident mdl) = M.theory then None else
             Some(M.item_of_entry mdl e)
           in
           let art2exp (sys, pth) =
-            let ext = List.assoc sys Sy.sys_ext in
+            let ext = List.assoc sys Systems.sys_ext in
             let file =
-              Filename.concat pth (B.string_of_mident mdl ^ "." ^ ext)
+              Filename.(pth </> (B.string_of_mident mdl <.> ext))
             in
-            { Jt.system = Sy.string_of_system sys
+            { Jt.system = Systems.string_of_system sys
             ; file
             ; etype = Option.map (fun x -> M.string_of_item x sys) item }
           in
-          let exp = List.map art2exp !Sy.artefact_path in
+          let exp = List.map art2exp !Systems.artefact_path in
           begin match e with
             | E.Decl(_,_,_,t) ->
               let ppt_term =  ppt_of_dkterm mdl acc t in
@@ -190,7 +185,7 @@ struct
               ; term = ppt_term
               ; term_opt = None
               ; label
-              ; deps = List.map U.to_string deps
+              ; deps = List.map Uri.to_string deps
               ; theory = []
               ; exp } :: (loop acc tl)
             | E.Def(_,_,_,teo,te)  ->
@@ -207,7 +202,7 @@ struct
               ; term
               ; term_opt
               ; label
-              ; deps = List.map U.to_string deps
+              ; deps = List.map Uri.to_string deps
               ; theory = []
               ; exp } :: (loop acc tl)
             | _                     -> loop acc tl
