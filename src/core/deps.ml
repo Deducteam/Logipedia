@@ -71,7 +71,15 @@ let deps_of_entry : mident -> entry -> name list = fun mid e ->
   try D.(NameSet.elements (get_data name).down)
   with D.(Dep_error(NameNotFound(_))) -> []
 
-let deps_of_md : mident -> mident list = fun md ->
+let deps_of_md : mident -> mident list =
+  (* Some memoization *)
+  let module MdH = Hashtbl.Make(struct
+      type t = mident let equal = mident_eq let hash = Stdlib.Hashtbl.hash
+    end)
+  in
+  let memo : mident list MdH.t = MdH.create 19 in
+  fun md ->
+  try MdH.find memo md with Not_found ->
   log_dep ~lvl:4 "of [%a]" Api.Pp.Default.print_mident md;
   let file = Api.Dep.get_file md in
   let inchan = open_in file in
@@ -84,5 +92,9 @@ let deps_of_md : mident -> mident list = fun md ->
   end;
   try
     let deps = Hashtbl.find Api.Dep.deps md in
-    Api.Dep.MDepSet.to_seq deps.deps |> Seq.map fst |> List.of_seq
+    let r =
+      Api.Dep.MDepSet.to_seq deps.deps |> Seq.map fst |> List.of_seq
+    in
+    MdH.add memo md r;
+    r
   with Not_found -> assert false
