@@ -1,3 +1,6 @@
+open Core
+open Console
+open Extras
 open Ast
 open Sttfadk
 open Environ
@@ -5,8 +8,6 @@ open Environ
 module CType  = Compile_type
 module CTerm  = Compile_term
 module CProof = Compile_proof
-module PP = Api.Pp
-module Denv = Api.Env.Default
 module Term = Kernel.Term
 module Entry = Parsing.Entry
 
@@ -62,15 +63,21 @@ let compile_definition name ty term =
     else
       assert false
 
-(* NOTE [compile_entry] assumes that the signature already contains the item.
-   This is ensured by the dependency rules: any file having that need the symbol
-   in the signature should depend on [`Sign(md)] (this is set in the [rules_for]
-   functions in the [Makefile] modules). *)
-let compile_entry md e =
+let compile_entry : Basic.mident * Entry.entry -> item =
+  fun (md, e) ->
   let open Parsing.Entry in
+  let module Ev = Api.Env.Default in
   match e with
-  | Decl(_,id,_,ty)        -> compile_declaration (Basic.mk_name md id) ty
-  | Def(_,id,_,Some ty,te) -> compile_definition (Basic.mk_name md id) ty te
-  | Def(_)   -> failwith "Definition without types are not supported"
-  | Rules(_) -> failwith "Rules are not part of the sttforall logic"
-  | _        -> failwith "Dedukti Commands are not supported"
+  | Decl(l,id,s,ty)        ->
+    Ev.declare l id s ty;
+    compile_declaration (Basic.mk_name md id) ty
+  | Def(l,id,o,Some ty,te) ->
+    Ev.define l id o te (Some ty);
+    compile_definition (Basic.mk_name md id) ty te
+  | Def(_)   -> exit_with "Definition without types are not supported"
+  | Rules(_) -> exit_with "Rules are not part of the sttforall logic"
+  | _        -> exit_with "Dedukti Commands are not supported"
+
+(** Memoized [compile_entry]. *)
+let compile_entry : Basic.mident -> Entry.entry -> item =
+  let f = memoize compile_entry in fun m e -> f (m, e)

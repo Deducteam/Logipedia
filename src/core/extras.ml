@@ -69,3 +69,16 @@ module NameMap = Map.Make(struct
     type t = Api.Dep.NameSet.elt
     let compare : t -> t -> int = Pervasives.compare
   end)
+
+(** [memoize f] returns the function [f] memoized using pervasive equality. *)
+let memoize (type arg) : (arg -> 'b) -> arg -> 'b = fun f ->
+  let module ArH = Hashtbl.Make(struct
+      type t = arg let equal = Stdlib.(=) let hash = Stdlib.Hashtbl.hash
+    end)
+  in
+  let memo = ArH.create 19 in
+  fun x ->
+    try ArH.find memo x with Not_found ->
+    let r = f x in
+    ArH.add memo x r;
+    r
