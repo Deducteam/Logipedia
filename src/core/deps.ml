@@ -3,10 +3,6 @@ open Kernel.Term
 open Parsing.Entry
 open Kernel.Rule
 
-module D = Api.Dep
-module E = Api.Env.Make(Kernel.Reduction.Default)
-module ErrorHandler = Api.Errors.Make(E)
-
 let log_dep = (Console.new_logger "deps").logger
 
 (** {1 Dedukti dependency computation} *)
@@ -65,6 +61,7 @@ let deps_of_entry : mident -> entry -> name list = fun mid e ->
     | Def(_,id,_,_,_) -> id
     | _               -> assert false
   in
+  let module D = Api.Dep in
   D.compute_ideps := true; (* Compute dependencies of items *)
   D.make mid [e];
   let name = mk_name mid id in
@@ -86,8 +83,9 @@ let deps_of_md : mident -> mident list =
   Api.Dep.compute_ideps := false;
   let entries = Parsing.Parser.Parse_channel.parse md inchan in
   close_in inchan;
-  begin
-    try Api.Dep.make md entries
+  let module E = Api.Env.Make(Kernel.Reduction.Default) in
+  let module ErrorHandler = Api.Errors.Make(E) in
+  begin try Api.Dep.make md entries
     with e -> ErrorHandler.graceful_fail None e
   end;
   try
