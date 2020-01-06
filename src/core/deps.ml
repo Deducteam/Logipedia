@@ -1,3 +1,5 @@
+open Extras
+open Console
 open Kernel.Basic
 open Kernel.Term
 open Parsing.Entry
@@ -7,7 +9,8 @@ module D = Api.Dep
 module E = Api.Env.Make(Kernel.Reduction.Default)
 module ErrorHandler = Api.Errors.Make(E)
 
-let log_dep = (Console.new_logger "deps").logger
+let log_dep = new_logger "deps"
+let log_dep = log_dep.logger
 
 (** {1 Dedukti dependency computation} *)
 
@@ -72,14 +75,7 @@ let deps_of_entry : mident -> entry -> name list = fun mid e ->
   with D.(Dep_error(NameNotFound(_))) -> []
 
 let deps_of_md : mident -> mident list =
-  (* Some memoization *)
-  let module MdH = Hashtbl.Make(struct
-      type t = mident let equal = mident_eq let hash = Stdlib.Hashtbl.hash
-    end)
-  in
-  let memo : mident list MdH.t = MdH.create 19 in
   fun md ->
-  try MdH.find memo md with Not_found ->
   log_dep ~lvl:4 "of [%a]" Api.Pp.Default.print_mident md;
   let file = Api.Dep.get_file md in
   let inchan = open_in file in
@@ -90,11 +86,8 @@ let deps_of_md : mident -> mident list =
     try Api.Dep.make md entries
     with e -> ErrorHandler.graceful_fail None e
   end;
-  try
-    let deps = Hashtbl.find Api.Dep.deps md in
-    let r =
-      Api.Dep.MDepSet.to_seq deps.deps |> Seq.map fst |> List.of_seq
-    in
-    MdH.add memo md r;
-    r
-  with Not_found -> assert false
+  let deps = Hashtbl.find Api.Dep.deps md in
+  Api.Dep.MDepSet.to_seq deps.deps |> Seq.map fst |> List.of_seq
+
+let deps_of_md : mident -> mident list =
+  let eq = mident_eq in memoize ~eq deps_of_md
