@@ -71,9 +71,11 @@ module NameMap = Map.Make(struct
   end)
 
 (** [memoize f] returns the function [f] memoized using pervasive equality. *)
-let memoize (type arg) : (arg -> 'b) -> arg -> 'b = fun f ->
+let memoize (type arg) : ?eq:arg eq -> (arg -> 'b) -> arg -> 'b = fun ?eq f ->
   let module ArH = Hashtbl.Make(struct
-      type t = arg let equal = Stdlib.(=) let hash = Stdlib.Hashtbl.hash
+      type t = arg
+      let equal = match eq with None -> Stdlib.(=) | Some(eq) -> eq
+      let hash = Stdlib.Hashtbl.hash
     end)
   in
   let memo = ArH.create 19 in

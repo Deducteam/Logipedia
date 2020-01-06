@@ -80,4 +80,5 @@ let compile_entry : Basic.mident * Entry.entry -> item =
 
 (** Memoized [compile_entry]. *)
 let compile_entry : Basic.mident -> Entry.entry -> item =
-  let f = memoize compile_entry in fun m e -> f (m, e)
+  let eq (m, e) (m', e') = Kernel.Basic.mident_eq m m' && Stdlib.(=) e e' in
+  let f = memoize ~eq compile_entry in fun m e -> f (m, e)
