@@ -1,6 +1,7 @@
 (** Export to json files. *)
 
 open Core
+open Console
 open Extras
 module B = Kernel.Basic
 module D = Api.Dep
@@ -10,7 +11,8 @@ module Jt = Json_types
 
 let json_include : string ref = ref ""
 
-let log_jscomp = Console.(new_logger "jscp").logger
+let log_jscomp = new_logger "jscp"
+let log_jscomp = log_jscomp.logger
 
 module type S =
 sig
@@ -136,6 +138,7 @@ struct
         match e with
         | E.Decl(_,id,_,_)
         | E.Def(_,id,_,_,_) ->
+          log_jscomp ~lvl:5 "compiling [%a]" Api.Pp.Default.print_ident id;
           let inm = B.mk_name mdl id in
           let deps =
             let f n = B.(string_of_mident (md n)) <> M.theory in
@@ -163,11 +166,11 @@ struct
           let uri = Uri.of_dkname (B.mk_name mdl id) M.theory
               (M.string_of_tx ~short:true tx) |> Uri.to_string
           in
-          let item =
-            if (B.string_of_mident mdl) = M.theory then None else
-            Some(M.item_of_entry mdl e)
-          in
           let art2exp (sys, pth) =
+            let item =
+              if (B.string_of_mident mdl) = M.theory then None else
+              Some(M.item_of_entry mdl e)
+            in
             let ext = List.assoc sys Systems.sys_ext in
             let file =
               Filename.(pth </> (B.string_of_mident mdl <.> ext))
