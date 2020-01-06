@@ -7,6 +7,8 @@ module D = Api.Dep
 module E = Api.Env.Make(Kernel.Reduction.Default)
 module ErrorHandler = Api.Errors.Make(E)
 
+let log_dep = (Console.new_logger "deps").logger
+
 (** {1 Dedukti dependency computation} *)
 
 module QSet = Set.Make(String)
@@ -70,6 +72,7 @@ let deps_of_entry : mident -> entry -> name list = fun mid e ->
   with D.(Dep_error(NameNotFound(_))) -> []
 
 let deps_of_md : mident -> mident list = fun md ->
+  log_dep ~lvl:4 "of [%a]" Api.Pp.Default.print_mident md;
   let file = Api.Dep.get_file md in
   let inchan = open_in file in
   Api.Dep.compute_ideps := false;
