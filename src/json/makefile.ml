@@ -43,7 +43,8 @@ let json : (DkTools.mident -> DkTools.entry list pp) -> DkTools.mident ->
     close_out ochan;
     Value.written tg
   in
-  target (Key.create tg) |> (List.fold_right depends md_deps) |>
+  let obj = objectify (DkTools.get_file md) in
+  target (Key.create tg) +< Key.create obj |> (List.fold_right depends md_deps) |>
   assemble print
 
 (** [rules_for JsExp files mk_target] results in the rules needed to export
