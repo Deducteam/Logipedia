@@ -69,10 +69,11 @@ let compile_entry : Basic.mident * Entry.entry -> item =
   let module Ev = Api.Env.Default in
   match e with
   | Decl(l,id,s,ty)        ->
-    Ev.declare l id s ty;
+    (* FIXME fix where declaration should be done. *)
+    (try Ev.declare l id s ty with _ -> ());
     compile_declaration (Basic.mk_name md id) ty
   | Def(l,id,o,Some ty,te) ->
-    Ev.define l id o te (Some ty);
+    (try Ev.define l id o te (Some ty) with _ -> ());
     compile_definition (Basic.mk_name md id) ty te
   | Def(_)   -> exit_with "Definition without types are not supported"
   | Rules(_) -> exit_with "Rules are not part of the sttforall logic"
