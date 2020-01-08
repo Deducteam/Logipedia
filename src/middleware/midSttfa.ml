@@ -17,6 +17,8 @@ exception IllTaxon
 
 let theory = "sttfa"
 
+let encoding = [B.mk_mident "sttfa"]
+
 let tx_of_def = fun t _ ->
   match t with
   | Some(T.App(Const(_,name),_,_)) when

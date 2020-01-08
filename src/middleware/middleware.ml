@@ -5,6 +5,8 @@
     A middleware is defined by a module (e.g. {!module:MidSttfa})
     implementing the signature {!val:S} and exposed in this file. *)
 
+open Core
+open Extras
 module B = Kernel.Basic
 module D = Api.Dep
 module E = Parsing.Entry
@@ -25,6 +27,9 @@ module type S = sig
 
   val theory : string
   (** Name of the theory. *)
+
+  val encoding : B.mident list
+  (** List of modules that encode the theory. *)
 
   val tx_of_def : T.term option -> T.term -> tx
   (** [tx_of_def t u] returns a taxon of a term [t] with annotation [u] given
@@ -61,11 +66,11 @@ module type S = sig
   (** [label tx] returns labels for the fields {!Json_types.item.term} and
       {!Json_types.item.term_opt}. *)
 
-  val item_of_entry : Kernel.Basic.mident -> Parsing.Entry.entry -> item
+  val item_of_entry : B.mident -> Parsing.Entry.entry -> item
   (** [item_of_entry md entry] returns an item of the logic given an appropriate
       Dedukti entry [entry] of module [md]. *)
 
-  val string_of_item : item -> Core.Systems.system -> string
+  val string_of_item : item -> Systems.system -> string
   (** [string_of_item md item system] returns a string representation
       of [item] of module [md] in the export system [system]. This
       will be printed on the website in the export fields. *)
@@ -78,6 +83,7 @@ struct
   type tx = unit
   type item = unit
   let theory = "dummy"
+  let encoding = []
   exception IllTaxon
   let tx_of_def _ _ = ()
   let tx_of_decl _ = ()

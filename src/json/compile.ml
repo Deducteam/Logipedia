@@ -141,8 +141,8 @@ struct
           log_jscomp ~lvl:5 "compiling [%a]" Api.Pp.Default.print_ident id;
           let inm = B.mk_name mdl id in
           let deps =
-            let f n = B.(string_of_mident (md n)) <> M.theory in
-            Deps.deps_of_entry mdl e |> List.filter f
+            let keep n = not @@ B.(List.mem_eq mident_eq (md n)) M.encoding in
+            Deps.deps_of_entry mdl e |> List.filter keep
           in
           let acc =
             let ct_deps = NameMap.add inm deps acc.ct_deps in
@@ -168,7 +168,7 @@ struct
           in
           let art2exp (sys, pth) =
             let item =
-              if (B.string_of_mident mdl) = M.theory then None else
+              if List.mem_eq B.mident_eq mdl M.encoding then None else
               Some(M.item_of_entry mdl e)
             in
             let ext = List.assoc sys Systems.sys_ext in

@@ -18,6 +18,17 @@ struct
     | None    -> invalid_arg "Option.get"
 end
 
+module List = struct
+  include List
+
+  (** [mem_eq eq e l] is [List.mem e l] with equality function [eq]. *)
+  let rec mem_eq : 'a eq -> 'a -> 'a list -> bool = fun eq elt l ->
+    match l with
+    | []                 -> false
+    | x::_ when eq x elt -> true
+    | _::l               -> mem_eq eq elt l
+end
+
 module Unix =
 struct
   include Unix

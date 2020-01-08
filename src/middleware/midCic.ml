@@ -16,6 +16,7 @@ exception IllTaxon
 (** Exception raised when reading an ill formed taxon. *)
 
 let theory = "cic"
+let encoding = [B.mk_mident "cic"]
 
 let tx_of_def _ _ = TxDefinition
 
