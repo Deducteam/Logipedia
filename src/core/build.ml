@@ -70,6 +70,7 @@ struct
     key_eq:key eq -> string -> valid_stored:(key -> 'value -> bool) ->
     (key, 'value) rule list -> key ->
     ('value, key) result = fun ~key_eq dbfile ~valid_stored ->
+    let dbfile = Filename.(dbfile <.> "lpdb") in
     (* Counts build processes to timestamp builds. *)
     let time : int ref = ref 0 in
     (* Module of the database *)

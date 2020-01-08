@@ -70,8 +70,7 @@ let _ =
   let module B = Build.Classic in
   let open Json.Makefile in
   if !Cli.write_depends then Format.printf "%a@\n" (B.pp_rules pp_key) rules;
-  let build = B.build ~key_eq ".json.db" ~valid_stored in
-  (* [build] is now memoized: rules are not run twice. *)
+  let build = B.build ~key_eq ".json" ~valid_stored in
   let build target =
     match build rules target with
     | Ok(_)    -> ()

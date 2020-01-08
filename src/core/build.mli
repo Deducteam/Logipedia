@@ -51,8 +51,8 @@ sig
       [b] such that [b rules target] builds target [target] thanks to rules
       [rules] using function [key_eq] to find the appropriate rule. Returns
       [Ok(v)] if the value is computed successfully or [Error(t)] if there is no
-      rule to build target [t]. The function [b] uses a database file named [db]
-      to avoid recomputing targets. The function [valid_stored key value]
-      returns whether the value [value] of key [key] is up to date in the
-      database. *)
+      rule to build target [t]. The function [b] uses a database file
+      named [db.lpdb] to avoid recomputing targets. The function
+      [valid_stored key value] returns whether the value [value] of
+      key [key] is up to date in the database. *)
 end

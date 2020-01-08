@@ -192,7 +192,7 @@ $(PP):
 clean:
 	@dune clean
 	@$(RM) -r $(_depdir)
-	@$(RM) .logibuild.db
+	@$(RM) *.lpdb
 
 .PHONY: distclean
 distclean: clean

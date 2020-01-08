@@ -114,7 +114,7 @@ module Compute = struct
     in
     target md +> cp
 
-  let build = build ~key_eq ".logideps.db" ~valid_stored
+  let build = build ~key_eq ".deps" ~valid_stored
 
   let deps_of_md : mident -> mident list = fun md ->
     match build [compute md] md with

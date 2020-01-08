@@ -94,7 +94,7 @@ Available options for the selected mode:"
       (* Create the needed rules. *)
       let rules = rules_for files in
       if !Cli.write_depends then Format.printf "%a@." (B.pp_rules pp_key) rules;
-      let build = B.build ~key_eq ".sttfa2sys.db" ~valid_stored in
+      let build = B.build ~key_eq ".sttfaexp" ~valid_stored in
       let build target =
         match build rules target with
         | Ok(_)      -> ()
