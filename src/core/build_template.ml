@@ -141,7 +141,9 @@ struct
     let dkcheck _ =
       let incl = get_path () in
       let includes = List.map ((^) "-I ") incl |> String.concat " " in
-      let cmd = Format.sprintf "dkcheck -e %s -I %s %s" includes dir file in
+      let cmd =
+        Format.sprintf "dkcheck -e %s -I %s %s 2> /dev/null"
+          includes dir file in
       log_rule ~lvl:3 "%s" cmd;
       run0 cmd ();
       Value.written out
@@ -198,8 +200,8 @@ struct
     in
     target (Key.create tg) +< (Key.load md) +> print
 
-  (** [check cmd pth] creates a rule to check file [pth] with command [cmd] which
-      should return 0 in case of success. *)
+  (** [check cmd pth] creates a rule to check file [pth] with command
+      [cmd] which should return 0 in case of success. *)
   let check : string -> string -> (Key.t, Value.t) rule = fun cmd pth ->
     let check _ =
       log_rule ~lvl:3 "%s" cmd;
@@ -210,7 +212,8 @@ struct
 
   (** [sys cmd src tg] transforms file [src] into file [tg] using system command
       [cmd]. *)
-  let sys : string -> string -> string -> (Key.t, Value.t) rule = fun cmd src tg ->
+  let sys : string -> string -> string -> (Key.t, Value.t) rule =
+    fun cmd src tg ->
     let check _ =
       log_rule ~lvl:3 "sys [%s]" cmd;
       run0 cmd ();
