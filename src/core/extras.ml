@@ -60,6 +60,25 @@ struct
   let ( !/ ) : t -> t = fun t -> chop_extension t |> basename
 end
 
+(** [mtime p] returns the modification time of a file. *)
+let mtime : string -> float = fun string -> Unix.((stat string).st_mtime)
+
+(** [atime p] returns the modification time of a file. *)
+let atime : string -> float = fun string -> Unix.((stat string).st_atime)
+
+(** Some handy Dedukti functions or aliases. *)
+module DkTools = struct
+  type mident = Kernel.Basic.mident
+  let mident_eq : mident eq = Kernel.Basic.mident_eq
+  let pp_mident : mident pp = Api.Pp.Default.print_mident
+
+  let get_file : mident -> string = Api.Dep.get_file
+  let init : string -> mident = Api.Env.Default.init
+  type entry = Parsing.Entry.entry
+
+  let get_path : unit -> string list = Kernel.Basic.get_path
+end
+
 module NameHashtbl = Hashtbl.Make(struct
     type t = Kernel.Basic.name
     let equal = Kernel.Basic.name_eq

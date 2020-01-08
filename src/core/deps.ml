@@ -89,5 +89,41 @@ let deps_of_md : mident -> mident list =
   let deps = Hashtbl.find Api.Dep.deps md in
   Api.Dep.MDepSet.to_seq deps.deps |> Seq.map fst |> List.of_seq
 
-let deps_of_md : mident -> mident list =
-  let eq = mident_eq in memoize ~eq deps_of_md
+(** Use build system to compute dependencies. *)
+module Compute = struct
+  open Build.Classic
+
+  let log_rule = Build.log_rule.logger
+
+  type key = DkTools.mident
+  type value = DkTools.mident list * string * float
+
+  let key_eq = DkTools.mident_eq
+
+  let pp_key = DkTools.pp_mident
+
+  let valid_stored : key -> value -> bool = fun md (_,pth,t) ->
+    (* Assert that the path matches the module *)
+    Filename.(!/pth) = Kernel.Basic.string_of_mident md &&
+    let file_modif = mtime pth in
+    file_modif < t
+
+  let compute : key -> (key, value) rule = fun md ->
+    let cp _ =
+      log_rule ~lvl:4 "deps of [%a]" pp_key md;
+      let t = Unix.time () in
+      deps_of_md md, DkTools.get_file md, t
+    in
+    target md +> cp
+
+  let build = build ~key_eq ".logideps.db" ~valid_stored
+
+  let deps_of_md : mident -> mident list = fun md ->
+    match build [compute md] md with
+    | Ok(mds,_,_) -> mds
+    | Error(md) ->
+      exit_with "Couldn't compute dependencies of %a"
+        Api.Pp.Default.print_mident md
+end
+
+let deps_of_md = Compute.deps_of_md
