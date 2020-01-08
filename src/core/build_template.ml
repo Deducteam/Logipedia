@@ -4,19 +4,6 @@ open Extras
 open Console
 open Build.Classic
 
-(** All Dedukti functions needed. *)
-module DkTools =
-struct
-  type mident = Kernel.Basic.mident
-  let mident_eq : mident eq = Kernel.Basic.mident_eq
-  let pp_mident : mident pp = Api.Pp.Default.print_mident
-
-  let get_file : mident -> string = Api.Dep.get_file
-  let init : string -> mident = Api.Env.Default.init
-  type entry = Parsing.Entry.entry
-
-  let get_path : unit -> string list = Kernel.Basic.get_path
-end
 open DkTools
 
 (** A logger to be used in rules. *)
@@ -28,12 +15,6 @@ let log_rule = Build.log_rule.logger
 let objectify : string -> string = fun file ->
   if Filename.extension file <> ".dk" then invalid_arg "objectify";
   file ^ "o"
-
-(** [mtime p] returns the modification time of a file. *)
-let mtime : string -> float = fun string -> Unix.((stat string).st_mtime)
-
-(** [atime p] returns the modification time of a file. *)
-let atime : string -> float = fun string -> Unix.((stat string).st_atime)
 
 (** [run0 cmd] runs command [cmd] and logs an error if the result is not
     zero. *)

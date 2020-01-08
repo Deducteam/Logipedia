@@ -1,9 +1,12 @@
+open Extras
+open Console
 open Kernel.Basic
 open Kernel.Term
 open Parsing.Entry
 open Kernel.Rule
 
-let log_dep = (Console.new_logger "deps").logger
+let log_dep = new_logger "deps"
+let log_dep = log_dep.logger
 
 (** {1 Dedukti dependency computation} *)
 
@@ -69,14 +72,7 @@ let deps_of_entry : mident -> entry -> name list = fun mid e ->
   with D.(Dep_error(NameNotFound(_))) -> []
 
 let deps_of_md : mident -> mident list =
-  (* Some memoization *)
-  let module MdH = Hashtbl.Make(struct
-      type t = mident let equal = mident_eq let hash = Stdlib.Hashtbl.hash
-    end)
-  in
-  let memo : mident list MdH.t = MdH.create 19 in
   fun md ->
-  try MdH.find memo md with Not_found ->
   log_dep ~lvl:4 "of [%a]" Api.Pp.Default.print_mident md;
   let file = Api.Dep.get_file md in
   let inchan = open_in file in
@@ -88,11 +84,44 @@ let deps_of_md : mident -> mident list =
   begin try Api.Dep.make md entries
     with e -> ErrorHandler.graceful_fail None e
   end;
-  try
-    let deps = Hashtbl.find Api.Dep.deps md in
-    let r =
-      Api.Dep.MDepSet.to_seq deps.deps |> Seq.map fst |> List.of_seq
+  let deps = Hashtbl.find Api.Dep.deps md in
+  Api.Dep.MDepSet.to_seq deps.deps |> Seq.map fst |> List.of_seq
+
+(** Use build system to compute dependencies. *)
+module Compute = struct
+  open Build.Classic
+
+  let log_rule = Build.log_rule.logger
+
+  type key = DkTools.mident
+  type value = DkTools.mident list * string * float
+
+  let key_eq = DkTools.mident_eq
+
+  let pp_key = DkTools.pp_mident
+
+  let valid_stored : key -> value -> bool = fun md (_,pth,t) ->
+    (* Assert that the path matches the module *)
+    Filename.(!/pth) = Kernel.Basic.string_of_mident md &&
+    let file_modif = mtime pth in
+    file_modif < t
+
+  let compute : key -> (key, value) rule = fun md ->
+    let cp _ =
+      log_rule ~lvl:4 "deps of [%a]" pp_key md;
+      let t = Unix.time () in
+      deps_of_md md, DkTools.get_file md, t
     in
-    MdH.add memo md r;
-    r
-  with Not_found -> assert false
+    target md +> cp
+
+  let build = build ~key_eq ".logideps.db" ~valid_stored
+
+  let deps_of_md : mident -> mident list = fun md ->
+    match build [compute md] md with
+    | Ok(mds,_,_) -> mds
+    | Error(md) ->
+      exit_with "Couldn't compute dependencies of %a"
+        Api.Pp.Default.print_mident md
+end
+
+let deps_of_md = Compute.deps_of_md

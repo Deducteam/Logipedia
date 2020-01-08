@@ -60,6 +60,25 @@ struct
   let ( !/ ) : t -> t = fun t -> chop_extension t |> basename
 end
 
+(** [mtime p] returns the modification time of a file. *)
+let mtime : string -> float = fun string -> Unix.((stat string).st_mtime)
+
+(** [atime p] returns the modification time of a file. *)
+let atime : string -> float = fun string -> Unix.((stat string).st_atime)
+
+(** Some handy Dedukti functions or aliases. *)
+module DkTools = struct
+  type mident = Kernel.Basic.mident
+  let mident_eq : mident eq = Kernel.Basic.mident_eq
+  let pp_mident : mident pp = Api.Pp.Default.print_mident
+
+  let get_file : mident -> string = Api.Dep.get_file
+  let init : string -> mident = Api.Env.Default.init
+  type entry = Parsing.Entry.entry
+
+  let get_path : unit -> string list = Kernel.Basic.get_path
+end
+
 module NameHashtbl = Hashtbl.Make(struct
     type t = Kernel.Basic.name
     let equal = Kernel.Basic.name_eq
@@ -69,3 +88,18 @@ module NameMap = Map.Make(struct
     type t = Api.Dep.NameSet.elt
     let compare : t -> t -> int = Pervasives.compare
   end)
+
+(** [memoize f] returns the function [f] memoized using pervasive equality. *)
+let memoize (type arg) : ?eq:arg eq -> (arg -> 'b) -> arg -> 'b = fun ?eq f ->
+  let module ArH = Hashtbl.Make(struct
+      type t = arg
+      let equal = match eq with None -> Stdlib.(=) | Some(eq) -> eq
+      let hash = Stdlib.Hashtbl.hash
+    end)
+  in
+  let memo = ArH.create 19 in
+  fun x ->
+    try ArH.find memo x with Not_found ->
+    let r = f x in
+    ArH.add memo x r;
+    r
