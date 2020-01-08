@@ -26,7 +26,8 @@ let json : (DkTools.mident -> DkTools.entry list pp) -> DkTools.mident ->
   let tg_of_md md = Api.Dep.get_file md |> mk_target in
   let tg = tg_of_md md in
   let md_deps =
-    List.map (fun m -> Key.create (tg_of_md m)) (Deps.deps_of_md md)
+    List.map (fun m -> Key.create (tg_of_md m))
+      (Dependencies.deps_of_md md)
   in
   let pp_entries = pp_entries md in
   let print _ =

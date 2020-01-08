@@ -40,6 +40,38 @@ let atime : string -> float = fun string -> Unix.((stat string).st_atime)
 let run0 : string -> unit -> unit = fun cmd () ->
   if Sys.command cmd <> 0 then log_rule ~lvl:2 (red "command failed [%s]") cmd
 
+module Dependencies = struct
+  type key = DkTools.mident
+  type value = DkTools.mident list * string * float
+
+  let key_eq = DkTools.mident_eq
+
+  let pp_key = DkTools.pp_mident
+
+  let valid_stored : key -> value -> bool = fun md (_,pth,t) ->
+    let file_modif = mtime pth in
+    let r = file_modif < t in
+    if not r then log_rule ~lvl:6 (red "unvalid dep for [%a]") pp_key md;
+    r
+
+  let compute : key -> (key, value) rule = fun md ->
+    let cp _ =
+      let t = Unix.time () in
+      Format.printf "time %f@." t;
+      Deps.deps_of_md md, get_file md, t
+    in
+    target md +> cp
+
+  let build = build ~key_eq ".logideps.db" ~valid_stored
+
+  let deps_of_md : mident -> mident list = fun md ->
+    match build [compute md] md with
+    | Ok(mds,_,_) -> mds
+    | Error(md) ->
+      exit_with "Couldn't compute dependencies of %a"
+        Api.Pp.Default.print_mident md
+end
+
 (** Definition of keys used and helper functions. *)
 module Key =
 struct
@@ -153,7 +185,7 @@ struct
     let dir = Filename.dirname file in
     let out = objectify file in
     let o_deps =
-      Deps.deps_of_md (init file) |>
+      Dependencies.deps_of_md (init file) |>
       List.map (fun m -> get_file m |> objectify) |>
       List.map Key.create
     in
@@ -173,7 +205,7 @@ struct
       compute the entries of [md]. *)
   let load : mident -> (Key.t, Value.t) rule = fun md ->
     let file = get_file md in
-    let sigs = Deps.deps_of_md md |> List.map Key.load in
+    let sigs = Dependencies.deps_of_md md |> List.map Key.load in
     let action _ =
       log_rule ~lvl:3 "loading %s" file;
       let inchan = open_in file in

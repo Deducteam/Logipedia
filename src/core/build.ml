@@ -1,11 +1,9 @@
 open Console
 open Extras
 
-(** Directory where metadata are saved. *)
-let dbfile = ".logibuild.db"
-
 (** Define a logger. *)
-let log_build = (new_logger "buil").logger
+let log_build = new_logger "buil"
+let log_build = log_build.logger
 
 let log_rule = new_logger "rule"
 
@@ -68,9 +66,10 @@ struct
     in
     List.for_all skip rule.m_depends
 
-  let build (type key): key_eq:key eq -> valid_stored:(key -> 'value -> bool) ->
+  let build (type key):
+    key_eq:key eq -> string -> valid_stored:(key -> 'value -> bool) ->
     (key, 'value) rule list -> key ->
-    ('value, key) result = fun ~key_eq ~valid_stored ->
+    ('value, key) result = fun ~key_eq dbfile ~valid_stored ->
     (* Counts build processes to timestamp builds. *)
     let time : int ref = ref 0 in
     (* Module of the database *)
@@ -104,8 +103,8 @@ struct
       close_out ochan
     in
     at_exit save_db;
-    (* [ask key] returns the pre-computed result for key [key] in the database or
-       @raise Not_found. *)
+    (* [ask key] returns the pre-computed result for key [key] in the database
+       or @raise Not_found. *)
     let ask : key -> (key, 'value) build_res = fun target ->
       Db.find database target
     in

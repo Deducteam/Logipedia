@@ -44,15 +44,15 @@ sig
   (** [pp_rules fmt rules] pretty prints rules [rules] to formatter [fmt] using
       function [pp_key] to pretty print the keys. *)
 
-  val build : key_eq:'key eq -> valid_stored:('key -> 'value -> bool) ->
-    ('key, 'value) rule list -> 'key ->
-    ('value, 'key) result
-  (** [build ~key_eq ~valid_stored] returns a builder, that is, a function [b]
-      such that [b rules target] builds target [target] thanks to rules [rules]
-      using function [key_eq] to find the appropriate rule. Returns [Ok(v)] if
-      the value is computed successfully or [Error(t)] if there is no rule to
-      build target [t]. The function [b] uses a database (stored in folder
-      [.logibuild]) to avoid recomputing targets. The function [valid_stored key
-      value] returns whether the value [value] of key [key] is up to date in the
+  val build : key_eq:'key eq -> string ->
+    valid_stored:('key -> 'value -> bool) ->
+    ('key, 'value) rule list -> 'key -> ('value, 'key) result
+  (** [build ~key_eq db ~valid_stored] returns a builder, that is, a function
+      [b] such that [b rules target] builds target [target] thanks to rules
+      [rules] using function [key_eq] to find the appropriate rule. Returns
+      [Ok(v)] if the value is computed successfully or [Error(t)] if there is no
+      rule to build target [t]. The function [b] uses a database file named [db]
+      to avoid recomputing targets. The function [valid_stored key value]
+      returns whether the value [value] of key [key] is up to date in the
       database. *)
 end
