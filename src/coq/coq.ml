@@ -40,6 +40,7 @@ struct
     let vs = List.map mk_target fs in
     let outf = coqproject () in
     let write _ =
+      log_rule ~lvl:3 "coqproject [%s]" outf;
       let ochan = open_out outf in
       let fmt = Format.formatter_of_out_channel ochan in
       List.iter (fun v -> Format.fprintf fmt "%s@\n" (Filename.basename v)) vs;
