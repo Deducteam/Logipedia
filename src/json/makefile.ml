@@ -19,14 +19,16 @@ let want : string list -> Key.t list =
 (** [json f md] creates a rule that prints entries of module [md] to a
     file with pretty printer [pp_entries] obtained from [f md].
 
-    Denoting [ms] the dependencies of module [md], the target is the out json
-    file, it depends on the json files stemming from [ms]. *)
+    Denoting [ms] the (transitive closure of the) dependencies of
+    module [md], the target is the out json file, it depends on the
+    json files stemming from [ms]. *)
 let json : (DkTools.mident -> DkTools.entry list pp) -> DkTools.mident ->
   (Key.t, Value.t) rule = fun pp_entries md ->
   let tg_of_md md = Api.Dep.get_file md |> mk_target in
   let tg = tg_of_md md in
   let md_deps =
-    List.map (fun m -> Key.create (tg_of_md m)) (Deps.deps_of_md md)
+    List.map (fun m -> Key.create (tg_of_md m))
+      (Deps.deps_of_md ~transitive:true md)
   in
   let pp_entries = pp_entries md in
   let print _ =
@@ -70,9 +72,8 @@ let rules_for : DkTools.mident list -> (module Compile.S) -> string list ->
      built) *)
   let deps =
     (* FIXME Using sets would be much more efficient. *)
-    List.map E.init files |> List.map Deps.deps_of_md |> List.flatten |>
-    List.uniq_eq DkTools.mident_eq |>
-    clear_encoding |>
+    List.map E.init files |> List.map (Deps.deps_of_md ~transitive:true) |>
+    List.flatten |> List.uniq_eq DkTools.mident_eq |> clear_encoding |>
     List.map Api.Dep.get_file
   in
   List.map (fun t -> [filrule t; objrule t; json t]) (files @ deps) |>
