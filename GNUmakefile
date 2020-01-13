@@ -44,11 +44,11 @@ all: bin
 
 logipedia: bin
 	@echo "[BUILD EXECUTABLE] logipedia"
-	-$(RM) logipedia
+	@-$(RM) $@
 	@ln -s $(LOGIPEDIA) logipedia
 
 dk2json: bin
-	-$(RM) $@
+	@-$(RM) $@
 	@ln -s $(DK2JSON) $@
 
 bin: $(LOGIPEDIA) $(LOGIPEDIA) $(DK2JSON)
@@ -193,6 +193,8 @@ clean:
 	@dune clean
 	@$(RM) -r $(_depdir)
 	@$(RM) *.lpdb
+	@$(RM) dk2json
+	@$(RM) logipedia
 
 .PHONY: distclean
 distclean: clean
