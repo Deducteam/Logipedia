@@ -74,9 +74,9 @@ struct
   (** Values that can be requested from a build run. *)
   type t =
     | Wfil of float
-    (** The modification time of a written file. The 'intuitive' value, the
-        content of the file, is already saved on the filesystem, so we don't keep
-        it. *)
+    (** The modification time of a written file. The 'intuitive'
+        value, the content of the file, is already saved on the
+        filesystem, so we don't keep it. *)
     | Rfil of float
     (** The access time of a read file. *)
     | Sign of entry list

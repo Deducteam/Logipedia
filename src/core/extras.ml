@@ -27,6 +27,18 @@ module List = struct
     | []                 -> false
     | x::_ when eq x elt -> true
     | _::l               -> mem_eq eq elt l
+
+  let rec uniq_eq : 'a eq -> 'a list -> 'a list = fun eq l ->
+    match l with
+    | []                      -> []
+    | x::t when mem_eq eq x t -> uniq_eq eq t
+    | x::t                    -> x :: uniq_eq eq t
+
+  let rec remove_eq : 'a eq -> 'a -> 'a list -> 'a list = fun eq elt l ->
+    match l with
+    | []                 -> []
+    | x::t when eq x elt -> t
+    | x::t               -> x :: remove_eq eq elt t
 end
 
 module Unix =

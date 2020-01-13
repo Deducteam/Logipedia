@@ -65,7 +65,7 @@ let _ =
   let rules =
     let (module M) = Middleware.of_string !middleware in
     let module JsExp = Compile.Make(M) in
-    Makefile.rules_for (module JsExp: Json.Compile.S) files
+    Makefile.rules_for (M.encoding) (module JsExp: Json.Compile.S) files
   in
   let module B = Build.Classic in
   let open Json.Makefile in
