@@ -124,4 +124,8 @@ module Compute = struct
         Api.Pp.Default.print_mident md
 end
 
-let deps_of_md = Compute.deps_of_md
+let rec deps_of_md ?(transitive=false) md =
+  if not transitive then Compute.deps_of_md md else
+  match Compute.deps_of_md md with
+  | [] -> []
+  | d  -> d @ (List.map (deps_of_md ~transitive:true) d |> List.flatten)
