@@ -192,7 +192,8 @@ $(PP):
 clean:
 	@dune clean
 	@$(RM) -r $(_depdir)
-	@$(RM) *.lpdb
+	@$(RM) -f *.lpdb
+	@$(RM) -f .*.lpdb
 	@$(RM) dk2json
 	@$(RM) logipedia
 
