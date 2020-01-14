@@ -139,17 +139,16 @@ let deps_of_md ?(transitive=false) md =
   (* Modules whose dependencies have been computed *)
   let comp = ref MdS.empty in
   let rec loop mds =
-    match mds with
-    | []                          -> ()
-    | m::mds when MdS.mem m !comp -> loop mds
-    | m::mds                      ->
-      (* Dependencies of [m] are being computed. *)
-      comp := MdS.add m !comp;
-      let deps = Compute.deps_of_md m in
-      List.iter (fun m -> depr := MdS.add m !depr) deps;
-      (* Don't recompute values that have already been computed *)
-      let deps = List.filter (fun m -> not (MdS.mem m !comp)) deps in
-      loop (deps@mds)
+    if MdS.is_empty mds then () else
+    let m = MdS.choose mds in
+    let mds = MdS.remove m mds in
+    (* Dependencies of [m] are being computed. *)
+    comp := MdS.add m !comp;
+    let deps = Compute.deps_of_md m |> MdS.of_list in
+    depr := MdS.union !depr deps;
+    (* Don't recompute values that have already been computed *)
+    let deps = MdS.diff deps !comp in
+    loop (MdS.union mds deps)
   in
-  loop [md];
+  loop (MdS.singleton md);
   MdS.to_seq !depr |> List.of_seq
