@@ -124,8 +124,32 @@ module Compute = struct
         Api.Pp.Default.print_mident md
 end
 
-let rec deps_of_md ?(transitive=false) md =
+let deps_of_md ?(transitive=false) md =
   if not transitive then Compute.deps_of_md md else
-  match Compute.deps_of_md md with
-  | [] -> []
-  | d  -> d @ (List.map (deps_of_md ~transitive:true) d |> List.flatten)
+  let module MdS = Set.Make(struct
+      type t = mident
+      let compare t u =
+        let t = Kernel.Basic.string_of_mident t in
+        let u = Kernel.Basic.string_of_mident u in
+        String.compare t u
+    end)
+  in
+  (* Holds the result *)
+  let depr = ref MdS.empty in
+  (* Modules whose dependencies have been computed *)
+  let comp = ref MdS.empty in
+  let rec loop mds =
+    match mds with
+    | []                          -> ()
+    | m::mds when MdS.mem m !comp -> loop mds
+    | m::mds                      ->
+      (* Dependencies of [m] are being computed. *)
+      comp := MdS.add m !comp;
+      let deps = Compute.deps_of_md m in
+      List.iter (fun m -> depr := MdS.add m !depr) deps;
+      (* Don't recompute values that have already been computed *)
+      let deps = List.filter (fun m -> not (MdS.mem m !comp)) deps in
+      loop (deps@mds)
+  in
+  loop [md];
+  MdS.to_seq !depr |> List.of_seq
