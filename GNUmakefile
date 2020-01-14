@@ -137,6 +137,7 @@ _matitapath = $(EXPDIR)/matita
 _mafiles=$(addprefix $(_matitapath)/, $(addsuffix .ma, $(_srcbase)))
 
 $(_matitapath)/%.ma: $(_ipath)/%.dko .library_depend_ma $(LOGIPEDIA)
+	@mkdir -p $(_matitapath)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) matita $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
@@ -225,10 +226,10 @@ _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
 $(_jsonthpath)/%.json: $(_thdir)/%.dko $(DK2JSON)
 	@mkdir -p $(_jsonpath)/_theory
-	$(DK2JSON) --hollight $(EXPDIR)/hollight --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs  $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
+	$(DK2JSON) --hollight $(EXPDIR)/hollight --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs   --matita $(EXPDIR)/matita  --coq $(EXPDIR)/coq $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
 
 $(_jsonpath)/%.json: $(_ipath)/%.dko $(DK2JSON)
-	$(DK2JSON) --hollight $(EXPDIR)/hollight --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs  $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
+	$(DK2JSON) --hollight $(EXPDIR)/hollight --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs  --matita $(EXPDIR)/matita --coq $(EXPDIR)/coq $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
 json: $(addprefix $(_jsonthpath)/, $(_thfiles:=.json)) $(_jsonfiles)
