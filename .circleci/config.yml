@@ -180,13 +180,13 @@ workflows:
   build:
     jobs:
       - build_logipedia
-      - lean_export
+      - lean_export:
           requires:
             - build_logipedia
-      - pvs_export
+      - pvs_export:
           requires:
             - build_logipedia
-      - coq_export
+      - coq_export:
           requires:
             - build_logipedia
       - json_export:
