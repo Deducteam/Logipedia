@@ -1,4 +1,4 @@
-version: 2.1
+version: 2.0
 
 ocaml_img: &ocaml_img
     docker:
@@ -32,7 +32,8 @@ jobs:
 #      - run: opam install coq=8.9.1 -qy
       - checkout
       - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export coq
-      - run: cp -r export/coq /tmp
+      - run: pwd && ls export && ls export/coq
+      - run: cp -r export /tmp
       - store_artifacts:
           path: /tmp/export/coq
       - persist_to_workspace:
@@ -224,16 +225,16 @@ workflows:
       - hollight_export:
           requires:
             - build_logipedia
-      # - coq_export:
-      #     requires:
-      #       - build_logipedia
+      - coq_export:
+          requires:
+            - build_logipedia
       - json_export:
           requires:
             - lean_export
             - pvs_export
             - matita_export
             - hollight_export
-#            - coq_export
+            - coq_export
       - build_website:
           requires:
             - json_export
