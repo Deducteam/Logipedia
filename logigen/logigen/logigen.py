@@ -114,7 +114,7 @@ class Logigen:
         self._save_object_page(obj, page)
 
     def _ingest_db_objects(self):
-        for proof_object in tqdm(ProofObject.select()):
+        for proof_object in tqdm(ProofObject.select().iterator()):
             self._ingest_object(proof_object)
 
     def _create_static_website(self):
