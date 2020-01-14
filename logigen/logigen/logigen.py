@@ -117,8 +117,9 @@ class Logigen:
         for proof_object in tqdm(ProofObject.select().iterator()):
             self._ingest_object(proof_object)
 
-    def _create_static_website(self):
-        self._ingest_db_objects()
+    def _create_static_website(self, skip_objects):
+        if not skip_objects:
+            self._ingest_db_objects()
         module_index = self._create_module_index()
         mod_index_page = self._create_module_index_page(module_index)
         _save_page(mod_index_page, self.output_path / "module_index.html")
@@ -127,7 +128,7 @@ class Logigen:
         self._copy_static_resources()
 
     @classmethod
-    def create_static_website(cls, pp, input_path, output_path):
+    def create_static_website(cls, pp, input_path, output_path, skip_objects):
         """
         Create a static website from a Logipedia JSON export folder.
 
@@ -142,10 +143,10 @@ class Logigen:
         """
         with NamedTemporaryFile(prefix="logigen", suffix=".db") as dbfile:
             create_db(input_path, dbfile.name)
-            Logigen.create_static_website_from_db(pp, dbfile.name, output_path)
+            Logigen.create_static_website_from_db(pp, dbfile.name, output_path, skip_objects)
 
     @classmethod
-    def create_static_website_from_db(cls, pp, db_path, output_path):
+    def create_static_website_from_db(cls, pp, db_path, output_path, skip_objects):
         """
         Create a static website from a SQLite database.
 
@@ -157,4 +158,4 @@ class Logigen:
              Path to an output folder for the generated website.
              Will be created if needed
         """
-        cls(pp, db_path, output_path)._create_static_website()
+        cls(pp, db_path, output_path)._create_static_website(skip_objects)
