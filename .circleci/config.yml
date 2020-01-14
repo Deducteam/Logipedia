@@ -88,6 +88,38 @@ jobs:
           paths: 
             - export/pvs   
 
+  matita_export:
+    <<: *ocaml_img
+    steps:
+      - run: sudo apk add m4
+      - <<: *opam_deps
+#      - run: here install matita
+      - checkout
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export matita
+      - run: cp -r export /tmp
+      - store_artifacts:
+          path: /tmp/export/matita
+      - persist_to_workspace:
+          root: /tmp
+          paths: 
+            - export/matita
+
+  hollight_export:
+    <<: *ocaml_img
+    steps:
+      - run: sudo apk add m4
+      - <<: *opam_deps
+#      - run: here install hollight
+      - checkout
+      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export hollight
+      - run: cp -r export /tmp
+      - store_artifacts:
+          path: /tmp/export/hollight
+      - persist_to_workspace:
+          root: /tmp
+          paths: 
+            - export/hollight
+
             
   json_export:
     <<: *ocaml_img
@@ -186,14 +218,22 @@ workflows:
       - pvs_export:
           requires:
             - build_logipedia
-      - coq_export:
+      - matita_export:
           requires:
             - build_logipedia
+      - hollight_export:
+          requires:
+            - build_logipedia
+      # - coq_export:
+      #     requires:
+      #       - build_logipedia
       - json_export:
           requires:
             - lean_export
             - pvs_export
-            - coq_export
+            - matita_export
+            - hollight_export
+#            - coq_export
       - build_website:
           requires:
             - json_export
