@@ -125,9 +125,10 @@ $(_coqpath)/Makefile: $(_coqpath)/_CoqProject
 	@cd $(_coqpath) && coq_makefile -f _CoqProject -o Makefile
 
 .PHONY: coq
-coq: $(_coqpath)/Makefile $(_vfiles)
-	@cd $(_coqpath) && make
-	@echo "[COQ] CHECKED"
+coq: $(_vfiles)
+# coq: $(_coqpath)/Makefile $(_vfiles)
+# 	@cd $(_coqpath) && make
+# 	@echo "[COQ] CHECKED"
 
 
 #### Matita ########################################################
@@ -143,9 +144,10 @@ $(_matitapath)/root:
 	@echo "baseuri = cic:/matita" > $@
 
 .PHONY: matita
-matita: $(_mafiles) $(_matitapath)/root
-	@cd $(_matitapath) && $(MATITAC) *.ma
-	@echo "[MATITA] CHECKED"
+matita: $(_mafiles)
+# matita: $(_mafiles) $(_matitapath)/root
+# 	@cd $(_matitapath) && $(MATITAC) *.ma
+# 	@echo "[MATITA] CHECKED"
 
 #### Lean ##########################################################
 
@@ -174,9 +176,10 @@ $(_otpath)/%.art: $(_ipath)/%.dko .library_depend_art $(LOGIPEDIA)
 
 .PHONY: opentheory
 opentheory: $(_otfiles)
-	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
-	$(OT) info $(_thyfile) 2>/dev/null
-	@echo "[OT] CHECKED"
+# opentheory: $(_otfiles)
+# 	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
+# 	$(OT) info $(_thyfile) 2>/dev/null
+# 	@echo "[OT] CHECKED"
 
 #### HOL Light ######################################################
 
