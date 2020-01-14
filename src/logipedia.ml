@@ -75,10 +75,12 @@ let anon arg =
     identifier [sys]. *)
 let get_system : S.system -> (module Export.S) = fun sy ->
   match sy with
-  | `Pvs -> (module Pvs)
-  | `Hollight -> (module Hollight)
-  | `Lean -> (module Lean)
-  | _    -> failwith "Not yet implemented"
+  | `Pvs        -> (module Pvs)
+  | `Hollight   -> (module Hollight)
+  | `Lean       -> (module Lean)
+  | `Coq        -> (module Coq)
+  | `Matita     -> (module Matita)
+  | `OpenTheory -> (module Opentheory)
 
 let _ =
   let available_sys = List.map fst S.sys_spec |> String.concat ", " in
