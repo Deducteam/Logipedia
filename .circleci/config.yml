@@ -27,7 +27,7 @@ jobs:
   coq_export:
     <<: *ocaml_img
     steps:
-      - run: sudo apk add m4 git
+      - run: sudo apk add m4
       - <<: *opam_deps
 #      - run: opam install coq=8.9.1 -qy
       - checkout
@@ -36,9 +36,9 @@ jobs:
       - store_artifacts:
           path: /tmp/export/coq
       - persist_to_workspace:
-          root: /tmp/export
+          root: /tmp
           paths: 
-            - coq
+            - export/coq
 
   lean_export:
     <<: *ocaml_img
@@ -181,8 +181,14 @@ workflows:
     jobs:
       - build_logipedia
       - lean_export
+          requires:
+            - build_logipedia
       - pvs_export
+          requires:
+            - build_logipedia
       - coq_export
+          requires:
+            - build_logipedia
       - json_export:
           requires:
             - lean_export
