@@ -28,7 +28,7 @@ struct
   type t =
     | File of string
     (** A file to create. *)
-    | Sign of mident
+    | Sign of Mident.t
     (** The signature of a module. *)
     | Phon of string
     (** A phony rule with a name. *)
@@ -37,7 +37,7 @@ struct
   let eq k l = match k, l with
     | File(p), File(q)
     | Phon(p), Phon(q) -> String.equal p q
-    | Sign(m), Sign(n) -> mident_eq m n
+    | Sign(m), Sign(n) -> Mident.equal m n
     | _                -> false
 
   (** [pp fmt k] prints key [k] to formatter [fmt]. *)
@@ -45,7 +45,7 @@ struct
     let out ofmt = Format.fprintf fmt ofmt in
     match k with
     | File(p) -> out "File(%s)" p
-    | Sign(m) -> out "Load(%a)" pp_mident m
+    | Sign(m) -> out "Load(%a)" Mident.pp m
     | Phon(n) -> out "Phon(%s)" n
 
   (** [exists p] requires the existence of file [p]. *)
@@ -55,7 +55,7 @@ struct
   let create : string -> t = fun p -> File(p)
 
   (** [load m] requires to load module [m] into the signature. *)
-  let load : mident -> t = fun md -> Sign(md)
+  let load : Mident.t -> t = fun md -> Sign(md)
 
   (** [fake n] requires the phony rule of name [n]. *)
   let fake : string -> t = fun name -> Phon(name)
@@ -145,7 +145,7 @@ struct
 
   (** [load md] creates a rule to load module [md] into the signature and
       compute the entries of [md]. *)
-  let load : mident -> (Key.t, Value.t) rule = fun md ->
+  let load : Mident.t -> (Key.t, Value.t) rule = fun md ->
     let file = get_file md in
     let sigs = Deps.deps_of_md md |> List.map Key.load in
     let action _ =
@@ -175,7 +175,7 @@ struct
   (** [entry_printer target entries_pp md] creates a rule that prints entries of
       module [md] with [entries_pp md] into file [target]. The target depends on
       the signature of the module. *)
-  let entry_printer : string -> (mident -> entry list pp) -> mident ->
+  let entry_printer : string -> (Mident.t -> entry list pp) -> Mident.t ->
     (Key.t, Value.t) rule = fun tg pp_entries md ->
     let pp_entries = pp_entries md in
     let print entries =

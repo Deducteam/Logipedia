@@ -93,12 +93,12 @@ module Compute = struct
 
   let log_rule = Build.log_rule.logger
 
-  type key = DkTools.mident
-  type value = DkTools.mident list * string * float
+  type key = DkTools.Mident.t
+  type value = DkTools.Mident.t list * string * float
 
-  let key_eq = DkTools.mident_eq
+  let key_eq = DkTools.Mident.equal
 
-  let pp_key = DkTools.pp_mident
+  let pp_key = DkTools.Mident.pp
 
   let valid_stored : key -> value -> bool = fun md (_,pth,t) ->
     (* Assert that the path matches the module *)
@@ -116,7 +116,7 @@ module Compute = struct
 
   let build = build ~key_eq ".deps" ~valid_stored
 
-  let deps_of_md : mident -> mident list = fun md ->
+  let deps_of_md : key -> key list = fun md ->
     match build [compute md] md with
     | Ok(mds,_,_) -> mds
     | Error(md) ->
@@ -126,14 +126,7 @@ end
 
 let deps_of_md ?(transitive=false) md =
   if not transitive then Compute.deps_of_md md else
-  let module MdS = Set.Make(struct
-      type t = mident
-      let compare t u =
-        let t = Kernel.Basic.string_of_mident t in
-        let u = Kernel.Basic.string_of_mident u in
-        String.compare t u
-    end)
-  in
+  let module MdS = DkTools.MdSet in
   (* Holds the result *)
   let depr = ref MdS.empty in
   (* Modules whose dependencies have been computed *)
