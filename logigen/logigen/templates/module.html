@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Module {{module_name}}{% endblock %}
+{% block head %}
+    {{ super() }}
+{% endblock %}
+{% block content %}
+{% for row in module_contents %}
+  {% set taxonomy_open = (loop.previtem.taxonomy != row.taxonomy or
+  module_open) if loop.previtem else True %}
+  {% set taxonomy_close = (loop.nextitem.taxonomy != row.taxonomy or
+  module_close) if loop.nextitem else True %}
+    {% if taxonomy_open %}
+    <h2>{{ row.taxonomy }}</h2>
+      <ul>
+    {% endif %}
+        <li><a href="{{ filename(row.name) }}">{{ row.name }}</a></li>
+    {% if taxonomy_close %}
+      </ul>
+    {% endif %}
+{% endfor %}
+{% endblock %}
