@@ -57,7 +57,7 @@ let export_json file (module M : Middleware.S) =
   let entries = P.Parse_channel.parse md input in
   close_in input;
   let module JsExp = Json.Make(M) in
-  let document = JsExp.doc_of_entries md entries in
+  let document = JsExp.doc_of_entries !infile md entries in
   let fmt = match !output_file with
     | None    -> Format.std_formatter
     | Some(f) -> Format.formatter_of_out_channel (open_out f)

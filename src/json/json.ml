@@ -16,7 +16,7 @@ let basename : string ref = ref ""
 
 module type S = functor (M: Middleware.S) ->
 sig
-  val doc_of_entries : B.mident -> E.entry list -> Jt.document
+  val doc_of_entries : string -> B.mident -> E.entry list -> Jt.document
   val print_document : Format.formatter -> Jt.document -> unit
 end
 
@@ -143,8 +143,8 @@ struct
 
   (** {2 Exposed functions} *)
 
-  let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
-    fun mdl entries ->
+  let doc_of_entries : string -> B.mident -> E.entry list -> Jt.item list =
+    fun infile mdl entries ->
     let init = { ct_taxo = NameMap.empty
                ; ct_deps = NameMap.empty
                ; ct_thax = NameMap.empty }
@@ -189,7 +189,11 @@ struct
             ; file
             ; etype = Option.map (fun x -> M.string_of_item x sys) item }
           in
-          let exp = List.map art2exp !Sy.artefact_path in
+          let exp =
+            { Jt.system = "dedukti"
+            ; file = infile
+            ; etype = None }
+            :: (List.map art2exp !Sy.artefact_path) in
           begin match e with
             | E.Decl(_,_,_,t) ->
               let ppt_term =  ppt_of_dkterm mdl acc t in
