@@ -125,9 +125,9 @@ struct
     let dir = Filename.dirname file in
     let out = objectify file in
     let o_deps =
-      Deps.deps_of_md (init file) |>
-      List.map (fun m -> get_file m |> objectify) |>
-      List.map Key.create
+      Deps.deps_of_md (init file) |> DkTools.MdSet.to_seq |>
+      Seq.map (fun m -> get_file m |> objectify) |>
+      Seq.map Key.create |> List.of_seq
     in
     let dkcheck _ =
       let incl = get_path () in
@@ -147,7 +147,10 @@ struct
       compute the entries of [md]. *)
   let load : Mident.t -> (Key.t, Value.t) rule = fun md ->
     let file = get_file md in
-    let sigs = Deps.deps_of_md md |> List.map Key.load in
+    let sigs =
+      Deps.deps_of_md md |> DkTools.MdSet.to_seq |> Seq.map Key.load |>
+      List.of_seq
+    in
     let action _ =
       log_rule ~lvl:3 "loading %s" file;
       let inchan = open_in file in

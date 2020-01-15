@@ -71,7 +71,7 @@ let deps_of_entry : mident -> entry -> name list = fun mid e ->
   try D.(NameSet.elements (get_data name).down)
   with D.(Dep_error(NameNotFound(_))) -> []
 
-let deps_of_md : mident -> mident list =
+let deps_of_md : mident -> DkTools.MdSet.t =
   fun md ->
   log_dep ~lvl:4 "of [%a]" Api.Pp.Default.print_mident md;
   let file = Api.Dep.get_file md in
@@ -85,7 +85,8 @@ let deps_of_md : mident -> mident list =
     with e -> ErrorHandler.graceful_fail None e
   end;
   let deps = Hashtbl.find Api.Dep.deps md in
-  Api.Dep.MDepSet.to_seq deps.deps |> Seq.map fst |> List.of_seq
+  Api.Dep.MDepSet.fold (fun (m,_) acc -> DkTools.MdSet.add m acc)
+    deps.deps DkTools.MdSet.empty
 
 (** Use build system to compute dependencies. *)
 module Compute = struct
@@ -94,7 +95,7 @@ module Compute = struct
   let log_rule = Build.log_rule.logger
 
   type key = DkTools.Mident.t
-  type value = DkTools.Mident.t list * string * float
+  type value = DkTools.MdSet.t * string * float
 
   let key_eq = DkTools.Mident.equal
 
@@ -116,7 +117,7 @@ module Compute = struct
 
   let build = build ~key_eq ".deps" ~valid_stored
 
-  let deps_of_md : key -> key list = fun md ->
+  let deps_of_md : key -> DkTools.MdSet.t = fun md ->
     match build [compute md] md with
     | Ok(mds,_,_) -> mds
     | Error(md) ->
@@ -137,11 +138,11 @@ let deps_of_md ?(transitive=false) md =
     let mds = MdS.remove m mds in
     (* Dependencies of [m] are being computed. *)
     comp := MdS.add m !comp;
-    let deps = Compute.deps_of_md m |> MdS.of_list in
+    let deps = Compute.deps_of_md m in
     depr := MdS.union !depr deps;
     (* Don't recompute values that have already been computed *)
     let deps = MdS.diff deps !comp in
     loop (MdS.union mds deps)
   in
   loop (MdS.singleton md);
-  MdS.to_seq !depr |> List.of_seq
+  !depr

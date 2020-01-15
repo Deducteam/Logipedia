@@ -102,6 +102,7 @@ module DkTools = struct
 
   (** Functional sets of module identifiers. *)
   module MdSet = Set.Make(Mident)
+  (* TODO use Api.Dep.MDepSet everywhere? *)
 
   let get_file : Mident.t -> string = Api.Dep.get_file
   let init : string -> Mident.t = Api.Env.Default.init

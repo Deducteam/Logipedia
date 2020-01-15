@@ -27,9 +27,10 @@ let json : (DkTools.Mident.t -> DkTools.entry list pp) -> DkTools.Mident.t ->
   let tg_of_md md = Api.Dep.get_file md |> mk_target in
   let tg = tg_of_md md in
   let md_deps =
-    List.map (fun m -> Key.create (tg_of_md m))
-      (Deps.deps_of_md ~transitive:true md)
+    Deps.deps_of_md ~transitive:true md |> DkTools.MdSet.to_seq |>
+    List.of_seq
   in
+  let md_deps = List.map (fun m -> Key.create (tg_of_md m)) md_deps in
   let pp_entries = pp_entries md in
   let print _ =
     log_rule ~lvl:3 "json [%s]" tg;
@@ -62,19 +63,22 @@ let rules_for : DkTools.Mident.t list -> (module Compile.S) -> string list ->
   let json f = json pp_entries (E.init f) in
   let objrule f = Rule.dko f in
   let filrule f = Rule.need f in
-  (* Remove all modules related to encoding from the list. *)
+  (* Remove all modules related to encoding. *)
   let clear_encoding l =
-    let open List in
-    fold_right (fun e r -> remove_eq DkTools.Mident.equal e r) encoding l
+    let open DkTools.MdSet in
+    List.fold_right (fun e r -> remove e r) encoding l
   in
   (* Create the rules to create json files of dependencies, as they
      may be needed (to at list check that the json file is already
      built) *)
+  let open DkTools in
+  (* Set of modules corresponding to input files. *)
+  let mds = List.map E.init files |> MdSet.of_list in
+  (* Merge [s] and dependencies of [m]. *)
+  let add_of m s = MdSet.union (Deps.deps_of_md ~transitive:true m) s in
   let deps =
-    (* FIXME Using sets would be much more efficient. *)
-    List.map E.init files |> List.map (Deps.deps_of_md ~transitive:true) |>
-    List.flatten |> List.uniq_eq DkTools.Mident.equal |> clear_encoding |>
-    List.map Api.Dep.get_file
+    MdSet.fold add_of mds MdSet.empty |> clear_encoding |> MdSet.to_seq |>
+    Seq.map Api.Dep.get_file |> List.of_seq
   in
   List.map (fun t -> [filrule t; objrule t; json t]) (files @ deps) |>
   List.flatten
