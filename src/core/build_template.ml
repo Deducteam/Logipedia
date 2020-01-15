@@ -30,16 +30,13 @@ struct
     (** A file to create. *)
     | Sign of mident
     (** The signature of a module. *)
-    | Chck of string
-    (** A file to check. *)
     | Phon of string
     (** A phony rule with a name. *)
 
   (** [eq k l] is equality among keys. *)
   let eq k l = match k, l with
     | File(p), File(q)
-    | Phon(p), Phon(q)
-    | Chck(p), Chck(q) -> String.equal p q
+    | Phon(p), Phon(q) -> String.equal p q
     | Sign(m), Sign(n) -> mident_eq m n
     | _                -> false
 
@@ -48,15 +45,11 @@ struct
     let out ofmt = Format.fprintf fmt ofmt in
     match k with
     | File(p) -> out "File(%s)" p
-    | Chck(p) -> out "Chck(%s)" p
     | Sign(m) -> out "Load(%a)" pp_mident m
     | Phon(n) -> out "Phon(%s)" n
 
-  (** [check f] asks to check file [f]. *)
-  let check : string -> t = fun p -> Chck(p)
-
   (** [exists p] requires the existence of file [p]. *)
-  let exists = check
+  let exists : string -> t = fun p -> File(p)
 
   (** [create f] requires the creation of file [f]. *)
   let create : string -> t = fun p -> File(p)
@@ -69,8 +62,7 @@ struct
 end
 
 (** Definitions of values and helper functions. *)
-module Value =
-struct
+module Value = struct
   (** Values that can be requested from a build run. *)
   type t =
     | Wfil of float
@@ -112,8 +104,7 @@ let valid_stored : Key.t -> Value.t -> bool = fun k v ->
   let module K = Key in let module V = Value in
   match k, v with
   | K.File(p), V.Wfil(t) -> Sys.file_exists p && t >= mtime p
-  | K.File(p), V.Rfil(t)
-  | K.Chck(p), V.Rfil(t) -> Sys.file_exists p && t >= atime p
+  | K.File(p), V.Rfil(t) -> Sys.file_exists p && t >= atime p
   | K.Sign(_), V.Sign(_)
   | K.Phon(_), V.Phon(_) -> false
   | _                    -> invalid_arg "valid_stored"
@@ -199,16 +190,6 @@ struct
       | _                  -> assert false
     in
     target (Key.create tg) +< (Key.load md) +> print
-
-  (** [check cmd pth] creates a rule to check file [pth] with command
-      [cmd] which should return 0 in case of success. *)
-  let check : string -> string -> (Key.t, Value.t) rule = fun cmd pth ->
-    let check _ =
-      log_rule ~lvl:3 "%s" cmd;
-      run0 cmd();
-      Value.checked pth
-    in
-    target (Key.check pth) +< Key.create pth +> check
 
   (** [sys cmd src tg] transforms file [src] into file [tg] using system command
       [cmd]. *)
