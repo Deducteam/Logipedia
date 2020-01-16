@@ -47,8 +47,14 @@ def exe_name(opt):
     default=False,
     is_flag=True,
     help="Allow pretty-printer to fail")
-def create_static_website(input, database, output, verbose, pretty_printer,
-        pp_extra, pp_allow_failure):
+@click.option(
+    "--skip-objects",
+    "-s",
+    default=False,
+    is_flag=True,
+    help="Skip proof objects (generate indexes only)"
+)
+def create_static_website(input, database, output, verbose, pretty_printer, pp_extra, pp_allow_failure, skip_objects):
     if pp_extra is not None:
         pp_extra = shlex.split(pp_extra)
     pretty_printer = make_pp(exe_name(pretty_printer), pp_extra,
@@ -64,17 +70,26 @@ def create_static_website(input, database, output, verbose, pretty_printer,
     output_path = Path(output)
 
     if database:
-        Logigen.create_static_website_from_db(pretty_printer, database, output_path)
+        Logigen.create_static_website_from_db(pretty_printer, database, output_path, skip_objects)
     else:
         if not input_path.is_dir():
             raise NotADirectoryError("{} is not a directory".format(input_path))
-        Logigen.create_static_website(pretty_printer, input_path, output_path)
+        Logigen.create_static_website(pretty_printer, input_path, output_path, skip_objects)
 
 
 @click.command()
 @click.argument("input_dir", type=click.Path(exists=True))
 @click.argument("db_path", type=click.Path())
-def create_database(input_dir, db_path):
+@click.option(
+    "--verbose",
+    "-v",
+    default=False,
+    is_flag=True,
+    help="Print more diagnostic messages",
+)
+def create_database(input_dir, db_path, verbose):
+    if verbose:
+        logging.basicConfig(level=logging.INFO)
     input_dir = Path(input_dir)
     db_path = Path(db_path)
     if not input_dir.is_dir():

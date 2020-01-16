@@ -125,9 +125,10 @@ $(_coqpath)/Makefile: $(_coqpath)/_CoqProject
 	@cd $(_coqpath) && coq_makefile -f _CoqProject -o Makefile
 
 .PHONY: coq
-coq: $(_coqpath)/Makefile $(_vfiles)
-	@cd $(_coqpath) && make
-	@echo "[COQ] CHECKED"
+coq: $(_vfiles)
+# coq: $(_coqpath)/Makefile $(_vfiles)
+# 	@cd $(_coqpath) && make
+# 	@echo "[COQ] CHECKED"
 
 
 #### Matita ########################################################
@@ -136,6 +137,7 @@ _matitapath = $(EXPDIR)/matita
 _mafiles=$(addprefix $(_matitapath)/, $(addsuffix .ma, $(_srcbase)))
 
 $(_matitapath)/%.ma: $(_ipath)/%.dko .library_depend_ma $(LOGIPEDIA)
+	@mkdir -p $(_matitapath)
 	@echo "[EXPORT] $@"
 	@$(LOGIPEDIA) matita $(_logipediaopts) -f $(<:.dko=.dk) -o $@
 
@@ -143,9 +145,10 @@ $(_matitapath)/root:
 	@echo "baseuri = cic:/matita" > $@
 
 .PHONY: matita
-matita: $(_mafiles) $(_matitapath)/root
-	@cd $(_matitapath) && $(MATITAC) *.ma
-	@echo "[MATITA] CHECKED"
+matita: $(_mafiles)
+# matita: $(_mafiles) $(_matitapath)/root
+# 	@cd $(_matitapath) && $(MATITAC) *.ma
+# 	@echo "[MATITA] CHECKED"
 
 #### Lean ##########################################################
 
@@ -174,9 +177,10 @@ $(_otpath)/%.art: $(_ipath)/%.dko .library_depend_art $(LOGIPEDIA)
 
 .PHONY: opentheory
 opentheory: $(_otfiles)
-	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
-	$(OT) info $(_thyfile) 2>/dev/null
-	@echo "[OT] CHECKED"
+# opentheory: $(_otfiles)
+# 	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
+# 	$(OT) info $(_thyfile) 2>/dev/null
+# 	@echo "[OT] CHECKED"
 
 #### HOL Light ######################################################
 
@@ -222,10 +226,10 @@ _jsonfiles = $(addprefix $(_jsonpath)/, $(addsuffix .json, $(_srcbase)))
 
 $(_jsonthpath)/%.json: $(_thdir)/%.dko $(DK2JSON)
 	@mkdir -p $(_jsonpath)/_theory
-	$(DK2JSON) --hollight $(EXPDIR)/hollight --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs  $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
+	$(DK2JSON) --hollight $(EXPDIR)/hollight --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs   --matita $(EXPDIR)/matita  --coq $(EXPDIR)/coq $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
 
 $(_jsonpath)/%.json: $(_ipath)/%.dko $(DK2JSON)
-	$(DK2JSON) --hollight $(EXPDIR)/hollight --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs  $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
+	$(DK2JSON) --hollight $(EXPDIR)/hollight --lean $(EXPDIR)/lean --pvs $(EXPDIR)/pvs  --matita $(EXPDIR)/matita --coq $(EXPDIR)/coq $(_logipediaopts) -m $(MIDDLEWARE) -f $(<:.dko=.dk) -o $@
 
 .PHONY: json
 json: $(addprefix $(_jsonthpath)/, $(_thfiles:=.json)) $(_jsonfiles)
