@@ -1,22 +1,21 @@
 # Logipedia documentation
 
-- [[sections/manifesto.md][Manifesto]]
-- [[sections/use_cases.md][Use cases]]
+- [Manifesto](sections/manifesto.md)
 
 ## Importing
-- [[sections/import/what.md][What is Logipedia made of]]
-- [[sections/import/addition.md][Adding new libraries]]
+- [What is Logipedia made of](sections/import/what.md)
+- [Adding new libraries](sections/import/addition.md)
 
 ## Translating
 
 ## Exporting
-- [[sections/export/apropos.md][More precisions]]
-- [[sections/export/installation.md][Installing]]
-- [[sections/export/cli.md][Command line interface]]
-- [[sections/export/sources.md][Sources structure]]
+- [More precisions](sections/export/apropos.md)
+- [Installing](sections/export/installation.md)
+- [Command line interface](sections/export/cli.md)
+- [Sources structure](sections/export/sources.md)
 
 ## Publishing
-- [[sections/publication/overview.md][Overview]]
-- [[sections/publication/installation.md][Installing]]
-- [[sections/publication/architecture.md][Architecture]]
-- [[sections/publication/generation.md][Generating the web site]]
+- [Overview](sections/publication/overview.md)
+- [Installing](sections/publication/installation.md)
+- [Architecture](sections/publication/architecture.md)
+- [Generating the web site](sections/publication/generation.md)
