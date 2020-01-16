@@ -148,10 +148,9 @@ opentheory: $(LOGIPEDIA)
 
 #### HOL Light ######################################################
 _holpath = $(EXPDIR)/hollight
-hollight: $(_dkos) $(LOGIPEDIA)
+hollight: $(LOGIPEDIA)
 	$(LOGIPEDIA) hollight -I $(_thdir) -I $(_ipath) -o $(_holpath) \
 -d $(_ipath) $(LOGIPEDIAFLAGS)
-	@echo "[HOL] FILES TO BE CHECKED"
 
 ##### PVS ##########################################################
 _pvspath = $(EXPDIR)/pvs
@@ -161,7 +160,6 @@ _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 pvs: $(LOGIPEDIA)
 	$(LOGIPEDIA) pvs -I $(_thdir) -I $(_ipath) -o $(_pvspath) -d $(_ipath) \
 $(LOGIPEDIAFLAGS)
-	@echo "[PVS] CHECKED"
 
 #### Json ##########################################################
 _jsonpath = $(EXPDIR)/json
