@@ -179,7 +179,11 @@ struct
             ; file
             ; etype = Option.map (fun x -> M.string_of_item x sys) item }
           in
-          let exp = List.map art2exp !Systems.artefact_path in
+          let exp =
+            { Jt.system = "dedukti"
+            ; file = DkTools.get_file mdl
+            ; etype = None }
+            :: (List.map art2exp !Systems.artefact_path) in
           begin match e with
             | E.Decl(_,_,_,t) ->
               let ppt_term =  ppt_of_dkterm mdl acc t in

@@ -123,8 +123,6 @@ _matitapath = $(EXPDIR)/matita
 matita: $(LOGIPEDIA)
 	$(LOGIPEDIA) matita -I $(_thdir) -I $(_ipath) -o $(_matitapath) \
 -d $(_ipath) $(LOGIPEDIAFLAGS)
-	@cd $(_matitapath) && $(MATITAC) *.ma
-	@echo "[MATITA] CHECKED"
 
 #### Lean ##########################################################
 _leanpath = $(EXPDIR)/lean
@@ -144,8 +142,8 @@ _thyfile=$(_otpath)/$(PKG).thy
 opentheory: $(LOGIPEDIA)
 	$(LOGIPEDIA) opentheory -I $(_thdir) -I $(_ipath) -o $(_otpath) \
 -d $(_ipath) $(LOGIPEDIAFLAGS)
-	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
-	$(OT) info $(_thyfile) 2>/dev/null
+	# $(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
+	# $(OT) info $(_thyfile) 2>/dev/null
 	@echo "[OT] CHECKED"
 
 #### HOL Light ######################################################
@@ -167,7 +165,6 @@ $(LOGIPEDIAFLAGS)
 
 #### Json ##########################################################
 _jsonpath = $(EXPDIR)/json
-_thfiles = $(wildcard $(_thdir)/*.dk)
 
 .PHONY: json
 json: $(DK2JSON)
