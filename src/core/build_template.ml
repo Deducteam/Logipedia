@@ -28,19 +28,16 @@ struct
   type t =
     | File of string
     (** A file to create. *)
-    | Sign of mident
+    | Sign of Mident.t
     (** The signature of a module. *)
-    | Chck of string
-    (** A file to check. *)
     | Phon of string
     (** A phony rule with a name. *)
 
   (** [eq k l] is equality among keys. *)
   let eq k l = match k, l with
     | File(p), File(q)
-    | Phon(p), Phon(q)
-    | Chck(p), Chck(q) -> String.equal p q
-    | Sign(m), Sign(n) -> mident_eq m n
+    | Phon(p), Phon(q) -> String.equal p q
+    | Sign(m), Sign(n) -> Mident.equal m n
     | _                -> false
 
   (** [pp fmt k] prints key [k] to formatter [fmt]. *)
@@ -48,29 +45,24 @@ struct
     let out ofmt = Format.fprintf fmt ofmt in
     match k with
     | File(p) -> out "File(%s)" p
-    | Chck(p) -> out "Chck(%s)" p
-    | Sign(m) -> out "Load(%a)" pp_mident m
+    | Sign(m) -> out "Load(%a)" Mident.pp m
     | Phon(n) -> out "Phon(%s)" n
 
-  (** [check f] asks to check file [f]. *)
-  let check : string -> t = fun p -> Chck(p)
-
   (** [exists p] requires the existence of file [p]. *)
-  let exists = check
+  let exists : string -> t = fun p -> File(p)
 
   (** [create f] requires the creation of file [f]. *)
   let create : string -> t = fun p -> File(p)
 
   (** [load m] requires to load module [m] into the signature. *)
-  let load : mident -> t = fun md -> Sign(md)
+  let load : Mident.t -> t = fun md -> Sign(md)
 
   (** [fake n] requires the phony rule of name [n]. *)
   let fake : string -> t = fun name -> Phon(name)
 end
 
 (** Definitions of values and helper functions. *)
-module Value =
-struct
+module Value = struct
   (** Values that can be requested from a build run. *)
   type t =
     | Wfil of float
@@ -112,8 +104,7 @@ let valid_stored : Key.t -> Value.t -> bool = fun k v ->
   let module K = Key in let module V = Value in
   match k, v with
   | K.File(p), V.Wfil(t) -> Sys.file_exists p && t >= mtime p
-  | K.File(p), V.Rfil(t)
-  | K.Chck(p), V.Rfil(t) -> Sys.file_exists p && t >= atime p
+  | K.File(p), V.Rfil(t) -> Sys.file_exists p && t >= atime p
   | K.Sign(_), V.Sign(_)
   | K.Phon(_), V.Phon(_) -> false
   | _                    -> invalid_arg "valid_stored"
@@ -134,9 +125,9 @@ struct
     let dir = Filename.dirname file in
     let out = objectify file in
     let o_deps =
-      Deps.deps_of_md (init file) |>
-      List.map (fun m -> get_file m |> objectify) |>
-      List.map Key.create
+      Deps.deps_of_md (init file) |> DkTools.MdSet.to_seq |>
+      Seq.map (fun m -> get_file m |> objectify) |>
+      Seq.map Key.create |> List.of_seq
     in
     let dkcheck _ =
       let incl = get_path () in
@@ -154,9 +145,12 @@ struct
 
   (** [load md] creates a rule to load module [md] into the signature and
       compute the entries of [md]. *)
-  let load : mident -> (Key.t, Value.t) rule = fun md ->
+  let load : Mident.t -> (Key.t, Value.t) rule = fun md ->
     let file = get_file md in
-    let sigs = Deps.deps_of_md md |> List.map Key.load in
+    let sigs =
+      Deps.deps_of_md md |> DkTools.MdSet.to_seq |> Seq.map Key.load |>
+      List.of_seq
+    in
     let action _ =
       log_rule ~lvl:3 "loading %s" file;
       let inchan = open_in file in
@@ -184,7 +178,7 @@ struct
   (** [entry_printer target entries_pp md] creates a rule that prints entries of
       module [md] with [entries_pp md] into file [target]. The target depends on
       the signature of the module. *)
-  let entry_printer : string -> (mident -> entry list pp) -> mident ->
+  let entry_printer : string -> (Mident.t -> entry list pp) -> Mident.t ->
     (Key.t, Value.t) rule = fun tg pp_entries md ->
     let pp_entries = pp_entries md in
     let print entries =
@@ -199,16 +193,6 @@ struct
       | _                  -> assert false
     in
     target (Key.create tg) +< (Key.load md) +> print
-
-  (** [check cmd pth] creates a rule to check file [pth] with command
-      [cmd] which should return 0 in case of success. *)
-  let check : string -> string -> (Key.t, Value.t) rule = fun cmd pth ->
-    let check _ =
-      log_rule ~lvl:3 "%s" cmd;
-      run0 cmd();
-      Value.checked pth
-    in
-    target (Key.check pth) +< Key.create pth +> check
 
   (** [sys cmd src tg] transforms file [src] into file [tg] using system command
       [cmd]. *)

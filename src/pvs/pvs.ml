@@ -25,13 +25,7 @@ struct
 
   let rules_for files =
     let entries_pp md fmt ens = Ast.compile md ens |> export fmt in
-    let chk f =
-      let tg = mk_target f in
-      Rule.check
-      (Format.sprintf "proveit --importchain --scripts --force %s" tg) tg
-    in
-    rules_for (List.map (fun x -> x, mk_target x) files) entries_pp @
-    List.map chk files
+    rules_for (List.map (fun x -> x, mk_target x) files) entries_pp
 
-  let want = List.map (fun x -> Key.check @@ mk_target x)
+  let want = List.map (fun x -> Key.create @@ mk_target x)
 end

@@ -9,7 +9,7 @@ open Build_template
     using [entries_pp] to print entries. [entries_pp] is a function such that
     for any module [md], [entries_pp md] is a usable printer for entries. *)
 let rules_for : (string * string) list ->
-  (DkTools.mident -> DkTools.entry list pp) -> (Key.t, Value.t) rule list =
+  (DkTools.Mident.t -> DkTools.entry list pp) -> (Key.t, Value.t) rule list =
   fun files entries_pp ->
   let module B = Kernel.Basic in
   let module E = Api.Env.Default in

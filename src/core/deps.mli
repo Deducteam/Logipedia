@@ -1,3 +1,4 @@
+open Extras
 open Kernel
 open Parsing
 
@@ -13,7 +14,7 @@ val deps_of_entry : Basic.mident -> Entry.entry -> Basic.name list
     dependencies of a Dedukti entry [e] with name [m.i] as a list of
     Dedukti names. *)
 
-val deps_of_md : ?transitive:bool -> Basic.mident -> Basic.mident list
-(** [deps_of_md ?transitive md] returns the list of modules id on
-    which [md] from input. If [?transitive] is set to [true], the
+val deps_of_md : ?transitive:bool -> Basic.mident -> DkTools.MdSet.t
+(** [deps_of_md ?transitive md] returns the set of modules id on
+    which [md] depends. If [?transitive] is set to [true], the
     transitive closure is computed. *)

@@ -91,12 +91,21 @@ let atime : string -> float = fun string -> Unix.((stat string).st_atime)
 
 (** Some handy Dedukti functions or aliases. *)
 module DkTools = struct
-  type mident = Kernel.Basic.mident
-  let mident_eq : mident eq = Kernel.Basic.mident_eq
-  let pp_mident : mident pp = Api.Pp.Default.print_mident
+  module Mident = struct
+    open Kernel.Basic
+    type t = mident
+    let equal : t eq = mident_eq
+    let compare : t -> t -> int = fun m n ->
+      String.compare (string_of_mident m) (string_of_mident n)
+    let pp : t pp = Api.Pp.Default.print_mident
+  end
 
-  let get_file : mident -> string = Api.Dep.get_file
-  let init : string -> mident = Api.Env.Default.init
+  (** Functional sets of module identifiers. *)
+  module MdSet = Set.Make(Mident)
+  (* TODO use Api.Dep.MDepSet everywhere? *)
+
+  let get_file : Mident.t -> string = Api.Dep.get_file
+  let init : string -> Mident.t = Api.Env.Default.init
   type entry = Parsing.Entry.entry
 
   let get_path : unit -> string list = Kernel.Basic.get_path
