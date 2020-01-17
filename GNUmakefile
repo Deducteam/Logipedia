@@ -123,8 +123,6 @@ _matitapath = $(EXPDIR)/matita
 matita: $(LOGIPEDIA)
 	$(LOGIPEDIA) matita -I $(_thdir) -I $(_ipath) -o $(_matitapath) \
 -d $(_ipath) $(LOGIPEDIAFLAGS)
-	@cd $(_matitapath) && $(MATITAC) *.ma
-	@echo "[MATITA] CHECKED"
 
 #### Lean ##########################################################
 _leanpath = $(EXPDIR)/lean
@@ -144,16 +142,15 @@ _thyfile=$(_otpath)/$(PKG).thy
 opentheory: $(LOGIPEDIA)
 	$(LOGIPEDIA) opentheory -I $(_thdir) -I $(_ipath) -o $(_otpath) \
 -d $(_ipath) $(LOGIPEDIAFLAGS)
-	$(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
-	$(OT) info $(_thyfile) 2>/dev/null
+	# $(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
+	# $(OT) info $(_thyfile) 2>/dev/null
 	@echo "[OT] CHECKED"
 
 #### HOL Light ######################################################
 _holpath = $(EXPDIR)/hollight
-hollight: $(_dkos) $(LOGIPEDIA)
+hollight: $(LOGIPEDIA)
 	$(LOGIPEDIA) hollight -I $(_thdir) -I $(_ipath) -o $(_holpath) \
 -d $(_ipath) $(LOGIPEDIAFLAGS)
-	@echo "[HOL] FILES TO BE CHECKED"
 
 ##### PVS ##########################################################
 _pvspath = $(EXPDIR)/pvs
@@ -163,11 +160,9 @@ _pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
 pvs: $(LOGIPEDIA)
 	$(LOGIPEDIA) pvs -I $(_thdir) -I $(_ipath) -o $(_pvspath) -d $(_ipath) \
 $(LOGIPEDIAFLAGS)
-	@echo "[PVS] CHECKED"
 
 #### Json ##########################################################
 _jsonpath = $(EXPDIR)/json
-_thfiles = $(wildcard $(_thdir)/*.dk)
 
 .PHONY: json
 json: $(DK2JSON)

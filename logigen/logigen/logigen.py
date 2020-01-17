@@ -10,7 +10,7 @@ from sqlite_utils import Database
 from tempfile import NamedTemporaryFile
 from tqdm import tqdm
 
-from .filenames import fqn_to_object_filename
+from .filenames import fqn_to_object_filename, module_filename
 from .models import init_database, ProofObject
 from .object_view import make_view_object
 
@@ -95,18 +95,36 @@ class Logigen:
         filename = fqn_to_object_filename(obj.name)
         _save_page(page, self.output_path / filename)
 
-    def _create_module_index(self):
+    def _save_module_page(self, module_name, page):
+        filename = module_filename(module_name)
+        _save_page(page, self.output_path / filename)
+
+    def _list_modules(self):
+        return ProofObject.select(
+            fn.substr(ProofObject.name, 1, fn.instr(ProofObject.name, "/") - 1).alias(
+                "module"
+            )
+        ).distinct()
+
+    def _list_module_contents(self, module_name):
         return ProofObject.select(
             fn.substr(ProofObject.name, 1, fn.instr(ProofObject.name, "/") - 1).alias(
                 "module"
             ),
             ProofObject.name,
             ProofObject.taxonomy,
-        ).order_by(SQL("module"), ProofObject.taxonomy)
+        ).where(SQL("module") == module_name
+        ).order_by(ProofObject.taxonomy)
 
-    def _create_module_index_page(self, module_index):
+    def _create_module_index_page(self, module_list):
         template = self.env.get_template("module_index.html")
-        return template.render(index=module_index, filename=fqn_to_object_filename)
+        return template.render(module_list=module_list,
+                filename=module_filename)
+
+    def _create_module_page(self, module_name, module_contents):
+        template = self.env.get_template("module.html")
+        return template.render(module_name=module_name, module_contents=module_contents,
+                filename=fqn_to_object_filename)
 
     def _ingest_object(self, obj):
         # validate json object against schema?
@@ -114,20 +132,25 @@ class Logigen:
         self._save_object_page(obj, page)
 
     def _ingest_db_objects(self):
-        for proof_object in tqdm(ProofObject.select()):
+        for proof_object in tqdm(ProofObject.select().iterator()):
             self._ingest_object(proof_object)
 
-    def _create_static_website(self):
-        self._ingest_db_objects()
-        module_index = self._create_module_index()
-        mod_index_page = self._create_module_index_page(module_index)
+    def _create_static_website(self, skip_objects):
+        if not skip_objects:
+            self._ingest_db_objects()
+        mod_index_page = self._create_module_index_page(self._list_modules())
         _save_page(mod_index_page, self.output_path / "module_index.html")
+        for row in self._list_modules():
+            module_name = row.module
+            module_contents = self._list_module_contents(module_name)
+            module_page = self._create_module_page(module_name, module_contents) 
+            self._save_module_page(module_name, module_page)
         site_index = self._create_website_index()
         _save_page(site_index, self.output_path / "index.html")
         self._copy_static_resources()
 
     @classmethod
-    def create_static_website(cls, pp, input_path, output_path):
+    def create_static_website(cls, pp, input_path, output_path, skip_objects):
         """
         Create a static website from a Logipedia JSON export folder.
 
@@ -142,10 +165,10 @@ class Logigen:
         """
         with NamedTemporaryFile(prefix="logigen", suffix=".db") as dbfile:
             create_db(input_path, dbfile.name)
-            Logigen.create_static_website_from_db(pp, dbfile.name, output_path)
+            Logigen.create_static_website_from_db(pp, dbfile.name, output_path, skip_objects)
 
     @classmethod
-    def create_static_website_from_db(cls, pp, db_path, output_path):
+    def create_static_website_from_db(cls, pp, db_path, output_path, skip_objects):
         """
         Create a static website from a SQLite database.
 
@@ -157,4 +180,4 @@ class Logigen:
              Path to an output folder for the generated website.
              Will be created if needed
         """
-        cls(pp, db_path, output_path)._create_static_website()
+        cls(pp, db_path, output_path)._create_static_website(skip_objects)
