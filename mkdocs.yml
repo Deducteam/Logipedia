@@ -1,0 +1,7 @@
+site_name: Logipedia
+nav:
+  - Home: index.md
+  - Import: import.md
+  - Translation: translation.md
+  - Export: export.md
+    

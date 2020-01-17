@@ -65,7 +65,8 @@ install:
 
 .PHONY: doc
 doc:
-	@dune build @doc
+	dune build @doc
+	mkdocs build
 
 ## We untar the archive here to have the list of files available at first run of
 ## Make
