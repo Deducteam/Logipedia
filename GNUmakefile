@@ -169,7 +169,8 @@ _thfiles = $(wildcard $(_thdir)/*.dk)
 json: $(DK2JSON)
 	$(DK2JSON) -m $(MIDDLEWARE) -o $(_jsonpath) -J $(_jsonpath) \
 -I $(_ipath) -d $(_ipath) -I $(_thdir) $(_thfiles) \
---hollight $(_holpath) --pvs $(_pvspath) --lean $(_leanpath) $(LOGIPEDIAFLAGS)
+--hollight $(_holpath) --pvs $(_pvspath) --lean $(_leanpath) \
+--coq $(_coqpath) --matita $(_matitapath) $(LOGIPEDIAFLAGS)
 
 #### Pretty printer ################################################
 # FIXME logipp-latex definitve?
