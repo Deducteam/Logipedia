@@ -3,13 +3,13 @@
 - [Manifesto](sections/manifesto.md)
 
 ## Import
-- [What is Logipedia made of](import/apropos.md)
+- [Overview](import/apropos.md)
 - [Adding new libraries](import/contributing.md)
 
 ## Translation
 
 ## Export
-- [More precisions](export/apropos.md)
+- [Overview](export/apropos.md)
 - [Installation](export/installation.md)
 - [Command line interface](export/cli.md)
 - [Implementation concerns](export/implem.md)
