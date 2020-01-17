@@ -6,11 +6,6 @@
 * TODO Only Coq has been tested with Openstd lib
 * DONE [#A] Implement URI a la matita as identifiers
 * DONE [#A] Complete json semantics
-* TODO [#B] Set up ci with
-** DONE check dk files
-** TODO check coq
-** DONE pvs
-** DONE lean
 * TODO [#A] origin of entries, as a field or in another json file
 * TODO [#A] library in uris
 * DONE [#C] update json schema
