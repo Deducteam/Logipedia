@@ -164,7 +164,7 @@ $(LOGIPEDIAFLAGS)
 
 #### Json ##########################################################
 _jsonpath = $(EXPDIR)/json
-
+_thfiles = $(wildcard $(_thdir)/*.dk)
 .PHONY: json
 json: $(DK2JSON)
 	$(DK2JSON) -m $(MIDDLEWARE) -o $(_jsonpath) -J $(_jsonpath) \
