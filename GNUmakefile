@@ -63,7 +63,8 @@ install:
 
 .PHONY: doc
 doc:
-	@dune build @doc
+	dune build @doc
+	mkdocs build
 
 #### Producing the theory file #####################################
 
