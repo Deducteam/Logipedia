@@ -62,17 +62,18 @@ let _ =
   (* Create output dir if it does not exist. *)
   if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
   let module Denv = Api.Env.Default in
-  let rules =
+  let generators =
     let (module M) = Middleware.of_string !middleware in
     let module JsExp = Compile.Make(M) in
-    Makefile.rules_for (M.encoding) (module JsExp: Json.Compile.S) files
+    Makefile.make_rule_gen (module JsExp)
   in
   let module B = Build.Classic in
   let open Json.Makefile in
-  if !Cli.write_depends then Format.printf "%a@\n" (B.pp_rules pp_key) rules;
+  (* FIXME remove? *)
+  if !Cli.write_depends then Format.printf "%a@\n" (B.pp_rules pp_key) [];
   let build = B.build ~key_eq ".json" ~valid_stored in
   let build target =
-    match build rules target with
+    match build ~generators [] target with
     | Ok(_)    -> ()
     | Error(k) -> exit_with "No rule to make %a@." pp_key k
   in

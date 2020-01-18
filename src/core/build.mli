@@ -22,6 +22,9 @@ sig
   (** Type of a rule. The type ['key] is the type of keys and ['value] of
       values. *)
 
+  type ('k, 'v) generator = ('k -> ('k, 'v) rule option)
+  (** A shortcut for a rule generator. *)
+
   val target : 'key -> ('key, _) rule
   (** [target t] sets [t] as a target for a rule (without action yet). *)
 
@@ -46,6 +49,7 @@ sig
 
   val build : key_eq:'key eq -> string ->
     valid_stored:('key -> 'value -> bool) ->
+    ?generators:(('key, 'value) generator list) ->
     ('key, 'value) rule list -> 'key -> ('value, 'key) result
   (** [build ~key_eq db ~valid_stored] returns a builder, that is, a function
       [b] such that [b rules target] builds target [target] thanks to rules

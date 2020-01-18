@@ -13,8 +13,11 @@ let log_rule = Build.log_rule.logger
     [f.dk],
     @raise Invalid_argument *)
 let objectify : string -> string = fun file ->
-  if Filename.extension file <> ".dk" then invalid_arg "objectify";
-  file ^ "o"
+  let open Filename in
+  chop_extension file <.> "dko"
+
+let dk_of : string -> string = fun fp -> let open Filename in
+  (dirname fp) </> !/fp <.> "dk"
 
 (** [run0 cmd] runs command [cmd] and logs an error if the result is not
     zero. *)
@@ -115,17 +118,17 @@ struct
   (** [need pth] creates a rule that verifies if file [pth] exists. *)
   let need : string -> (Key.t, Value.t) rule = fun pth ->
     let exists _ =
-      if not (Sys.file_exists pth) then exit_with "missing %s" pth else
+      if not (Sys.file_exists pth) then exit_with "missing [%s]" pth else
       Value.checked pth
     in
     target (Key.create pth) +> exists
 
-  (** [dko f] creates a rule to create the Dedukti object file of [f]. *)
-  let dko : string -> (Key.t, Value.t) rule = fun file ->
-    let dir = Filename.dirname file in
-    let out = objectify file in
+  (** [dko f] creates a rule to create the Dedukti object file [f]. *)
+  let dko : string -> (Key.t, Value.t) rule = fun out ->
+    let dir = Filename.dirname out in
+    let src = dk_of out in
     let o_deps =
-      Deps.deps_of_md (init file) |> DkTools.MdSet.to_seq |>
+      Deps.deps_of_md (init src) |> DkTools.MdSet.to_seq |>
       Seq.map (fun m -> get_file m |> objectify) |>
       Seq.map Key.create |> List.of_seq
     in
@@ -134,12 +137,12 @@ struct
       let includes = List.map ((^) "-I ") incl |> String.concat " " in
       let cmd =
         Format.sprintf "dkcheck -e %s -I %s %s 2> /dev/null"
-          includes dir file in
+          includes dir src in
       log_rule ~lvl:3 "%s" cmd;
       run0 cmd ();
       Value.written out
     in
-    target (Key.create out) +< (Key.create file) |>
+    target (Key.create out) +< (Key.create src) |>
     List.fold_right depends o_deps |>
     assemble dkcheck
 

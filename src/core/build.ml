@@ -24,6 +24,8 @@ struct
     ; m_depends : 'key list
     ; m_action : 'value list -> 'value }
 
+  type ('k, 'v) generator = ('k -> ('k, 'v) rule option)
+
   (** [pp_rulse fmt rules] pretty prints rules [rules] to formatter
       [fmt] using function [pp_key] to pretty print the keys. *)
   let pp_rules : 'key pp -> ('key, 'value) rule list pp =
@@ -66,22 +68,21 @@ struct
     in
     List.for_all skip rule.m_depends
 
-  let build (type key):
-    key_eq:key eq -> string -> valid_stored:(key -> 'value -> bool) ->
-    (key, 'value) rule list -> key ->
-    ('value, key) result = fun ~key_eq dbfile ~valid_stored ->
+  let build (type k): key_eq:k eq -> string -> valid_stored:(k -> 'v -> bool) ->
+    ?generators:((k, 'v) generator list) -> (k, 'v) rule list -> k ->
+    ('v, k) result = fun ~key_eq dbfile ~valid_stored ->
     let dbfile = Filename.(dbfile <.> "lpdb") in
     (* Counts build processes to timestamp builds. *)
     let time : int ref = ref 0 in
     (* Module of the database *)
     let module Db = Hashtbl.Make(struct
-        type t = key
+        type t = k
         let equal = key_eq
         let hash = Stdlib.Hashtbl.hash
       end)
     in
     (* Global database file. *)
-    let database : (key, 'value) build_res Db.t =
+    let database : (k, 'v) build_res Db.t =
       if Sys.file_exists dbfile then
         let inchan = open_in dbfile in
         log_build ~lvl:2 "loading [%s]" dbfile;
@@ -100,28 +101,37 @@ struct
     (* Save database when closing *)
     let save_db () =
       let ochan = open_out dbfile in
-      Marshal.to_channel ochan database [];
+      log_build ~lvl:2 "saving to [%s]" dbfile;
+      Marshal.to_channel ochan database [Marshal.Closures];
       close_out ochan
     in
     at_exit save_db;
     (* [ask key] returns the pre-computed result for key [key] in the database
        or @raise Not_found. *)
-    let ask : key -> (key, 'value) build_res = fun target ->
+    let ask : k -> (k, 'v) build_res = fun target ->
       Db.find database target
     in
     (* [store key value] stores value [value] as computed from key [key]. *)
-    let store : key -> 'value -> unit = fun target value ->
+    let store : k -> 'v -> unit = fun target value ->
       Db.replace database target
         {r_created=target; r_value=value; r_built=(!time)}
     in
     (* The build algorithm. *)
-    fun rules target ->
-      let exception NoRule of key in
-      let rec build : key -> 'value = fun target ->
+    fun ?(generators=[]) rules target ->
+      let exception NoRule of k in
+      let rec build : k -> 'v = fun target ->
         incr time;
         let rule =
           try List.find (fun r -> key_eq r.m_creates target) rules
-          with Not_found -> raise (NoRule(target))
+          with Not_found ->
+            let rec trygen = function
+              | []   -> raise (NoRule(target))
+              | g::t ->
+                match g target with
+                | Some(r) -> r
+                | None    -> trygen t
+            in
+            trygen generators
         in
         let compute () =
           let value = rule.m_action (List.map build rule.m_depends) in

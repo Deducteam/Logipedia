@@ -27,8 +27,7 @@ let json : (DkTools.Mident.t -> DkTools.entry list pp) -> DkTools.Mident.t ->
   let tg_of_md md = Api.Dep.get_file md |> mk_target in
   let tg = tg_of_md md in
   let md_deps =
-    Deps.deps_of_md ~transitive:true md |> DkTools.MdSet.to_seq |>
-    List.of_seq
+    Deps.deps_of_md md |> DkTools.MdSet.to_seq |> List.of_seq
   in
   let md_deps = List.map (fun m -> Key.create (tg_of_md m)) md_deps in
   let pp_entries = pp_entries md in
@@ -51,34 +50,31 @@ let json : (DkTools.Mident.t -> DkTools.entry list pp) -> DkTools.Mident.t ->
   Key.create obj |> List.fold_right depends md_deps |>
   assemble print
 
-(** [rules_for encoding JsExp files] results in the rules needed to
-    export files [files] to json using Json exporter [JsExp] and
-    dedukti encoding [encoding]. *)
-let rules_for : DkTools.Mident.t list -> (module Compile.S) -> string list ->
-  (Key.t, Value.t) rule list = fun encoding (module JsExp) files ->
+(** [dkpth_for p] returns the Dedukti source file path of target [p] or
+
+    @raise Not_found *)
+let dkpth_for : string -> string = fun t ->
+  let module E = Api.Env.Default in
+  let open Filename in
+  let md = E.init (!/t <.> "dk") in
+  DkTools.get_file md
+
+let make_rule_gen : (module Compile.S) -> (_, _) generator list =
+  fun (module JsExp) ->
+  let lift : (string -> bool) -> (string -> 'a) -> Key.t -> 'a option =
+  fun filter f k ->
+    match k with
+    | File(p) when filter p -> Some(f p)
+    | File(_)
+    | Sign(_)
+    | Phon(_)               -> None
+  in
   let pp_entries md : DkTools.entry list pp = fun fmt ens ->
     JsExp.doc_of_entries md ens |> JsExp.print_document fmt
   in
   let module E = Api.Env.Default in
-  let json f = json pp_entries (E.init f) in
-  let objrule f = Rule.dko f in
-  let filrule f = Rule.need f in
-  (* Remove all modules related to encoding. *)
-  let clear_encoding l =
-    let open DkTools.MdSet in
-    List.fold_right (fun e r -> remove e r) encoding l
-  in
-  (* Create the rules to create json files of dependencies, as they
-     may be needed (to at list check that the json file is already
-     built) *)
-  let open DkTools in
-  (* Set of modules corresponding to input files. *)
-  let mds = List.map E.init files |> MdSet.of_list in
-  (* Merge [s] and dependencies of [m]. *)
-  let add_of m s = MdSet.union (Deps.deps_of_md ~transitive:true m) s in
-  let deps =
-    MdSet.fold add_of mds MdSet.empty |> clear_encoding |> MdSet.to_seq |>
-    Seq.map Api.Dep.get_file |> List.of_seq
-  in
-  List.map (fun t -> [filrule t; objrule t; json t]) (files @ deps) |>
-  List.flatten
+  let ext_is e s = (Filename.extension s) = e in
+  let json = lift (ext_is ".json") (fun f -> json pp_entries (E.init Filename.(!/f <.> "dk"))) in
+  let objrule = lift (ext_is ".dko") (fun f -> Rule.dko f) in
+  let filrule = lift (ext_is ".dk") (fun f -> Rule.need (dkpth_for f)) in
+  [json; objrule; filrule]
