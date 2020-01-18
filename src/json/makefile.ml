@@ -59,11 +59,12 @@ let dkpth_for : string -> string = fun t ->
   let md = E.init (!/t <.> "dk") in
   DkTools.get_file md
 
-let make_rule_gen : (module Compile.S) -> (_, _) generator list =
+let mk_generators : (module Compile.S) -> (Key.t, Value.t) generator list =
   fun (module JsExp) ->
+  (** [lift filter f k] lifts function [f] to operate on {!type:Key.t} with
+      [f k] returns [None] or [Some(v)] if [filter k] is true. *)
   let lift : (string -> bool) -> (string -> 'a) -> Key.t -> 'a option =
-  fun filter f k ->
-    match k with
+  fun filter f k -> match k with
     | File(p) when filter p -> Some(f p)
     | File(_)
     | Sign(_)

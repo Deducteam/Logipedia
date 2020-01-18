@@ -65,7 +65,7 @@ let _ =
   let generators =
     let (module M) = Middleware.of_string !middleware in
     let module JsExp = Compile.Make(M) in
-    Makefile.make_rule_gen (module JsExp)
+    Makefile.mk_generators (module JsExp)
   in
   let module B = Build.Classic in
   let open Json.Makefile in
