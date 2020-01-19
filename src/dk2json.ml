@@ -26,7 +26,7 @@ let options =
       , Arg.String (fun s -> S.artefact_path := (system, s) :: !S.artefact_path)
       , Format.sprintf " Output folder of system %s" name)
     in
-    List.map f S.sys_spec
+    List.map f S.spec
   in
   Arg.align @@ Cli.options @ sys_exps @
   [ ( "-J"

@@ -44,10 +44,6 @@ sig
   (** [want p] creates targets out of paths [p]. Used to declare initial
       targets. *)
 
-  (* val rules_for : string list -> (key, value) rule list *)
-  (** [rules_for pth] creates the rules to export files in [pth]. The files
-      [pth] are the Dedukti files selected from the command line. *)
-
   val rules : (key, value) rule list
   (** Static rules. *)
 
@@ -67,8 +63,8 @@ sig
   module Makefile : MAKEFILE
   (** Defines the rules to build targets. *)
 
-  val file_ext : string
-  (** Extension of files (without the dot). *)
+  val system : Systems.t
+  (** Which system it is. *)
 
   val export : Ast.t pp
   (** [export fmt ast] exports abstract syntax tree [ast] to formatter

@@ -7,11 +7,11 @@ module Ast : AST with type t = Sttfa.Ast.ast = Ast
 
 module Mid : Middleware.S = Middleware.Sttfa
 
-let export : Ast.t pp = fun fmt ast ->
-  let (module M:Sttfa.Export.E) = Sttfa.Export.of_system `OpenTheory in
-  M.print_ast fmt ast
+let system : Systems.t = `OpenTheory
 
-let file_ext = "ot"
+let export : Ast.t pp = fun fmt ast ->
+  let (module M:Sttfa.Export.E) = Sttfa.Export.of_system system in
+  M.print_ast fmt ast
 
 module Makefile : MAKEFILE =
 struct
@@ -19,6 +19,8 @@ struct
   open Sttfa.Makefile
   open Filename
   include Basis
+
+  let file_ext = List.assoc system Systems.exts
 
   let mk_target f = (Option.get !Cli.outdir) </> !/f <.> file_ext
 

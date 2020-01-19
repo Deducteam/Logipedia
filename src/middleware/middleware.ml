@@ -70,7 +70,7 @@ module type S = sig
   (** [item_of_entry md entry] returns an item of the logic given an appropriate
       Dedukti entry [entry] of module [md]. *)
 
-  val string_of_item : item -> Systems.system -> string
+  val string_of_item : item -> Systems.t -> string
   (** [string_of_item md item system] returns a string representation
       of [item] of module [md] in the export system [system]. This
       will be printed on the website in the export fields. *)

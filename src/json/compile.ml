@@ -171,11 +171,11 @@ struct
               if List.mem_eq B.mident_eq mdl M.encoding then None else
               Some(M.item_of_entry mdl e)
             in
-            let ext = List.assoc sys Systems.sys_ext in
+            let ext = List.assoc sys Systems.exts in
             let file =
               Filename.(pth </> (B.string_of_mident mdl <.> ext))
             in
-            { Jt.system = Systems.string_of_system sys
+            { Jt.system = Systems.to_string sys
             ; file
             ; etype = Option.map (fun x -> M.string_of_item x sys) item }
           in

@@ -4,11 +4,11 @@ module D = Core.Deps
 module E = Parsing.Entry
 module Denv = Api.Env.Default
 module P = Parsing.Parser
-open Core.Systems
+open Core
 
 module type E =
 sig
-  val system         : system
+  val system         : Systems.t
   val extension      : string
   val print_ast      : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit
   val string_of_item : Ast.item -> string
@@ -56,7 +56,7 @@ struct
   let extension = "ml"
 end
 
-let of_system : system -> (module E) = fun sys ->
+let of_system : Systems.t -> (module E) = fun sys ->
   match sys with
   | `Coq        -> (module COQ)
   | `Matita     -> (module MATITA)

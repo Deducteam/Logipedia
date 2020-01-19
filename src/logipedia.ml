@@ -10,7 +10,7 @@ let infiles : string list ref = ref []
 let options : (string * Arg.spec * string) list ref = ref []
 
 (** Which system to export to. *)
-let export_mode : Systems.system option ref = ref None
+let export_mode : Systems.t option ref = ref None
 
 (** Options for any system export. --fast : does ont compute trace *)
 let sys_opts =
@@ -29,7 +29,7 @@ let pvs_opts =
 
 (** [get_additional_opts sy] returns additional cli options for a
     system [sy]. *)
-let get_additional_opts : Systems.system -> (string * Arg.spec * string) list =
+let get_additional_opts : Systems.t -> (string * Arg.spec * string) list =
   function
   | `Pvs -> pvs_opts
   | _    -> sys_opts
@@ -42,7 +42,7 @@ let anon arg =
   | None    ->
     (* Export mode is not set: set it. *)
     try
-      let sy = Systems.system_of_string arg in
+      let sy = Systems.of_string arg in
       export_mode := Some(sy);
       let sys_opts = get_additional_opts sy in
       options := Arg.align (sys_opts @ Cli.options)
@@ -52,7 +52,7 @@ let anon arg =
 
 (** [get_system sys] returns the system module from a system
     identifier [sys]. *)
-let get_system : Systems.system -> (module Export.S) = fun sy ->
+let get_system : Systems.t -> (module Export.S) = fun sy ->
   match sy with
   | `Pvs        -> (module Pvs)
   | `Hollight   -> (module Hollight)
@@ -62,7 +62,7 @@ let get_system : Systems.system -> (module Export.S) = fun sy ->
   | `OpenTheory -> (module Opentheory)
 
 let _ =
-  let available_sys = List.map fst Systems.sys_spec |> String.concat ", " in
+  let available_sys = List.map fst Systems.spec |> String.concat ", " in
   let usage = Format.sprintf
       "Usage: %s EXPORT [OPTIONS]...\n\
 \twith EXPORT being one of: %s\n\
