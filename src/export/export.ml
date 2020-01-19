@@ -1,4 +1,8 @@
-(** Signature of a system. *)
+(** Signature of a system. Any export system must comply with the signature
+    {!val:S} defined here. *)
+
+open Core
+open Extras
 
 (** Ast and interactions with Dk files that a system must provide. *)
 module type AST =
@@ -14,15 +18,55 @@ sig
       ast [ast]. *)
 end
 
-(** Type of a system. *)
+(** Build rules for the system. Provides the rules, keys and values to use the
+    build system {!module:Build.Classic}. *)
+module type MAKEFILE =
+sig
+  open Build.Classic
+
+  type key
+  (** Keys or targets. *)
+
+  type value
+  (** Values are either the created files or the loaded signatures. *)
+
+  val key_eq : key eq
+  (** Equality on keys. *)
+
+  val pp_key : key pp
+  (** [pp_key fmt k] prints key [k] to formatter [fmt]. *)
+
+  val valid_stored : key -> value -> bool
+  (** [valid_stored k v] returns whether value [v] stored in the database is a
+      valid value of key [k]. *)
+
+  val want : string list -> key list
+  (** [want p] creates targets out of paths [p]. Used to declare initial
+      targets. *)
+
+  val rules : (key, value) rule list
+  (** Static rules. *)
+
+  val generators : (key, value) generator list
+  (** Dynamic rules generators used *)
+end
+
+(** Type of a system. An export system must have this signature. *)
 module type S =
 sig
   module Ast : AST
+  (** Representation of the Ast. *)
 
   module Mid : Middleware.S
   (** Middleware used for the json export. *)
 
-  val export : Ast.t -> Format.formatter -> unit
-  (** [export ast fmt] exports abstract syntax tree [ast] to formatter
+  module Makefile : MAKEFILE
+  (** Defines the rules to build targets. *)
+
+  val system : Systems.t
+  (** Which system it is. *)
+
+  val export : Ast.t pp
+  (** [export fmt ast] exports abstract syntax tree [ast] to formatter
       [fmt] in the syntax of the system. *)
 end

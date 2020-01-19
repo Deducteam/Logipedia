@@ -1,37 +1,16 @@
-module B = Kernel.Basic
-module D = Core.Deps
-module P = Parsing.Parser
-module S = Core.Systems
-
-module Denv = Api.Env.Default
-module Derr = Api.Errors.Make(Denv)
-
-(** System to which we export proofs. *)
-let system : S.system ref = ref (`Coq)
-
-(** File into which exported file are written. *)
-let output_file = ref None
+(** Export Dedukti encoded in STTfa to systems. *)
+open Core
+open Console
+open Extras
 
 (** Input dedukti files. *)
-let infile : string ref = ref ""
+let infiles : string list ref = ref []
 
 (** Options list, redefined according to first argument. *)
 let options : (string * Arg.spec * string) list ref = ref []
 
 (** Which system to export to. *)
-let export_mode : S.system option ref = ref None
-
-(** Options common to both modes. *)
-let common_opts =
-  [ ( "-I"
-    , Arg.String B.add_path
-    , " Add folder to Dedukti path" )
-  ; ( "-f"
-    , Arg.Set_string infile
-    , " Input Dedukti file" )
-  ; ( "-o"
-    , Arg.String (fun s -> output_file := Some(s))
-    , " Set output file" ) ]
+let export_mode : Systems.t option ref = ref None
 
 (** Options for any system export. --fast : does ont compute trace *)
 let sys_opts =
@@ -50,7 +29,7 @@ let pvs_opts =
 
 (** [get_additional_opts sy] returns additional cli options for a
     system [sy]. *)
-let get_additional_opts : S.system -> (string * Arg.spec * string) list =
+let get_additional_opts : Systems.t -> (string * Arg.spec * string) list =
   function
   | `Pvs -> pvs_opts
   | _    -> sys_opts
@@ -59,21 +38,21 @@ let get_additional_opts : S.system -> (string * Arg.spec * string) list =
     supposed to be the export mode. *)
 let anon arg =
   match !export_mode with
-  | Some(_) -> raise (Arg.Bad "Too many anonymous arguments provided")
+  | Some(_) -> infiles := !infiles @ [arg]
   | None    ->
     (* Export mode is not set: set it. *)
     try
-      let sy = S.system_of_string arg in
+      let sy = Systems.of_string arg in
       export_mode := Some(sy);
       let sys_opts = get_additional_opts sy in
-      options := Arg.align (sys_opts @ common_opts)
-    with S.UnsupportedSystem(s) ->
+      options := Arg.align (sys_opts @ Cli.options)
+    with Systems.UnsupportedSystem(s) ->
       let msg = Format.sprintf "Can't export to %s: system not supported" s in
       raise (Arg.Bad msg)
 
 (** [get_system sys] returns the system module from a system
     identifier [sys]. *)
-let get_system : S.system -> (module Export.S) = fun sy ->
+let get_system : Systems.t -> (module Export.S) = fun sy ->
   match sy with
   | `Pvs        -> (module Pvs)
   | `Hollight   -> (module Hollight)
@@ -83,7 +62,7 @@ let get_system : S.system -> (module Export.S) = fun sy ->
   | `OpenTheory -> (module Opentheory)
 
 let _ =
-  let available_sys = List.map fst S.sys_spec |> String.concat ", " in
+  let available_sys = List.map fst Systems.spec |> String.concat ", " in
   let usage = Format.sprintf
       "Usage: %s EXPORT [OPTIONS]...\n\
 \twith EXPORT being one of: %s\n\
@@ -94,28 +73,31 @@ Available options for the selected mode:"
   try
     Arg.parse_dynamic options anon usage;
     match !export_mode with
-    | None    -> raise @@ Arg.Bad "Missing export"
-    | Some(s) ->
-      let outfmt, ochan =
-        match !output_file with
-        | None    -> Format.std_formatter, None
-        | Some(f) ->
-          let ochan = open_out f in
-          Format.formatter_of_out_channel ochan, Some(ochan)
+    | None       -> raise @@ Arg.Bad "Missing export"
+    | Some(syst) ->
+      (* Get all the input files. *)
+      let files =
+        !infiles @
+        if !Cli.indir <> "" then Cli.dks_in !Cli.indir else []
       in
-      if !infile = "" then raise (Arg.Bad "Input file required");
-      let (module Sys) = get_system s in
-      let md = Denv.init !infile in
-      let input = open_in !infile in
-      let entries = P.Parse_channel.parse md input in
-      close_in input;
-      let ast = Sys.Ast.compile md entries in
-      Sys.export ast outfmt;
-      match ochan with
-      | None     -> ()
-      | Some(oc) -> close_out oc
+      let outdir = Option.get !Cli.outdir in
+      (* Create output dir if it does not exist. *)
+      if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
+      let (module Syst) = get_system syst in
+      let open Syst.Makefile in
+      let module B = Build.Classic in
+      let build = B.build ~key_eq ".sttfaexp" ~valid_stored in
+      let build target =
+        match build ~generators [] target with
+        | Ok(_)      -> ()
+        | Error(key) -> Format.printf "No rule to make %a@." pp_key key
+      in
+      want files |> List.iter build
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;
-    Arg.usage (Arg.align common_opts) usage
-  | e          -> raise e
+    Arg.usage (Arg.align Cli.options) usage
+  | e          ->
+    let module Denv = Api.Env.Default in
+    let module Derr = Api.Errors.Make(Denv) in
+    raise (Derr.graceful_fail None e)

@@ -17,22 +17,24 @@ exception IllTaxon
 
 let theory = "sttfa"
 
+let encoding = [B.mk_mident "sttfa"]
+
 let tx_of_def = fun t _ ->
   match t with
   | Some(T.App(Const(_,name),_,_)) when
-      (B.id name = B.mk_ident "etap" && B.md name = B.mk_mident "sttfa") ->
+      (B.id name = B.mk_ident "etap" && B.md name = B.mk_mident theory) ->
     TxDef
   | Some(App(Const(_,name),_,_)) when
-      (B.id name = B.mk_ident "eps" && B.md name = B.mk_mident "sttfa") ->
+      (B.id name = B.mk_ident "eps" && B.md name = B.mk_mident theory) ->
     TxThm
   | _ -> TxDef
 
 let tx_of_decl = function
   | T.App(Const(_,name),_,_) when
-      (B.id name = B.mk_ident "etap" && B.md name = B.mk_mident "sttfa") ->
+      (B.id name = B.mk_ident "etap" && B.md name = B.mk_mident theory) ->
     TxCst
   | App(Const(_,name),_,_) when
-      (B.id name = B.mk_ident "eps" && B.md name = B.mk_mident "sttfa") ->
+      (B.id name = B.mk_ident "eps" && B.md name = B.mk_mident theory) ->
     TxAxm
   | _ -> TxCst
 
@@ -69,30 +71,8 @@ let label = function
   | TxDef -> ("body", Some("type_annotation"))
   | TxThm -> ("statement", None)
 
-
-(*let string_of_error = function
-  | Api.Env.EnvErrorType _ -> "enverrortype"
-  | Api.Env.EnvErrorSignature(e) ->
-    (match e with
-       SymbolNotFound _ -> "symbolnotfound"
-     | CouldNotExportModule _ -> "exportmodule"
-     | AlreadyDefinedSymbol _ -> "alreadydefinedsymbol"
-     | _ -> "enverrorsignature")
-  | Api.Env.EnvErrorRule _ -> "enverrorrule"
-  | Api.Env.EnvErrorDep  _ -> "enverrordep"
-  | Api.Env.NonLinearRule _ -> "nonlinearrule"
-  | Api.Env.NotEnoughArguments _ -> "notenougharguments"
-  | Api.Env.KindLevelDefinition _ -> "kindleveldefinition"
-  | Api.Env.ParseError _ -> "parse"
-  | Api.Env.BracketScopingError -> "bracketscoping"
-  | Api.Env.AssertError -> "assert"*)
-
-
-let item_of_entry mident entry =
-  Sttfa__Compile.compile_entry (B.mk_mident mident) entry
+let item_of_entry mident entry = Sttfa__Compile.compile_entry mident entry
 
 let string_of_item item system =
-  try
-    let (module ES) = Sttfa.Export.of_system system in
-    ES.string_of_item item
-  with Sttfa.Export.Pvs -> "FIXME: printing not yet available for PVS"
+  let (module ES) = Sttfa.Export.of_system system in
+  ES.string_of_item item

@@ -11,10 +11,4 @@
   (name dk2json)
   (public_name dk2json)
   (modules dk2json)
-  (libraries logipedia.json))
-
-;(executable
-;  (name sttfa2pvs)
-;  (public_name sttfa2pvs)
-;  (modules pvs sttfa2pvs)
-;  (libraries logipedia.core logipedia.sttfa))
+  (libraries logipedia.json logipedia.core))

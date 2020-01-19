@@ -4,11 +4,11 @@ module D = Core.Deps
 module E = Parsing.Entry
 module Denv = Api.Env.Default
 module P = Parsing.Parser
-open Core.Systems
+open Core
 
 module type E =
 sig
-  val system         : system
+  val system         : Systems.t
   val extension      : string
   val print_ast      : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit
   val string_of_item : Ast.item -> string
@@ -56,10 +56,7 @@ struct
   let extension = "ml"
 end
 
-(* FIXME *)
-exception Pvs
-
-let of_system : system -> (module E) = fun sys ->
+let of_system : Systems.t -> (module E) = fun sys ->
   match sys with
   | `Coq        -> (module COQ)
   | `Matita     -> (module MATITA)
@@ -68,7 +65,6 @@ let of_system : system -> (module E) = fun sys ->
   | `Hollight   -> (module HOLLIGHT)
   | `Pvs        -> (module PVS)
 
-(* FIXME: this function is sttfa specific *)
 (** [mk_ast md es] creates the STTfa ast of entries [es] from dedukti module
     [md] *)
 let mk_ast : B.mident -> E.entry list -> A.ast = fun md entries ->
@@ -78,7 +74,6 @@ let mk_ast : B.mident -> E.entry list -> A.ast = fun md entries ->
   let dep = List.fold_left fold_entry_dep D.QSet.empty entries in
   { Ast.md = B.string_of_mident md; Ast.dep; items }
 
-(* FIXME put in a sttfa module *)
 let export_system : (module E) -> string -> Format.formatter -> unit =
   fun (module M:E) infile outfmt ->
   let md = Denv.init infile in

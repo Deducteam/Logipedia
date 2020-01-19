@@ -1,10 +1,11 @@
 (** Functions to write files in a foreign system.  Available systems
     are the ones described by the type {!type:Systems.system}. *)
+open Core
 
 (** E is the signature for an exporting system. *)
 module type E =
 sig
-  val system            : Core.Systems.system
+  val system            : Systems.t
   (** System identifier. *)
 
   val extension         : string
@@ -19,7 +20,7 @@ sig
   val string_of_item : Ast.item -> string
 end
 
-val of_system : Core.Systems.system -> (module E)
+val of_system : Systems.t -> (module E)
 (** [of_system s] returns the module associated to system id [s]. *)
 
 val mk_ast : Kernel.Basic.mident -> Parsing.Entry.entry list -> Ast.ast
@@ -27,5 +28,3 @@ val mk_ast : Kernel.Basic.mident -> Parsing.Entry.entry list -> Ast.ast
 val export_system : (module E) -> string -> Format.formatter -> unit
 (** [export_system Exp f out] exports file [f] using module [Exp] to format
     [out]. *)
-
-exception Pvs
