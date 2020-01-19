@@ -65,7 +65,6 @@ let mk_generators : (module Compile.S) -> (Key.t, Value.t) generator list =
   fun filter f k -> match k with
     | File(p) when filter p -> Some(f p)
     | File(_)
-    | Sign(_)
     | Phon(_)               -> None
   in
   let pp_entries md : DkTools.entry list pp = fun fmt ens ->

@@ -31,8 +31,6 @@ struct
   type t =
     | File of string
     (** A file to create. *)
-    | Sign of Mident.t
-    (** The signature of a module. *)
     | Phon of string
     (** A phony rule with a name. *)
 
@@ -40,7 +38,6 @@ struct
   let eq k l = match k, l with
     | File(p), File(q)
     | Phon(p), Phon(q) -> String.equal p q
-    | Sign(m), Sign(n) -> Mident.equal m n
     | _                -> false
 
   (** [pp fmt k] prints key [k] to formatter [fmt]. *)
@@ -48,7 +45,6 @@ struct
     let out ofmt = Format.fprintf fmt ofmt in
     match k with
     | File(p) -> out "File(%s)" p
-    | Sign(m) -> out "Load(%a)" Mident.pp m
     | Phon(n) -> out "Phon(%s)" n
 
   (** [exists p] requires the existence of file [p]. *)
@@ -56,9 +52,6 @@ struct
 
   (** [create f] requires the creation of file [f]. *)
   let create : string -> t = fun p -> File(p)
-
-  (** [load m] requires to load module [m] into the signature. *)
-  let load : Mident.t -> t = fun md -> Sign(md)
 
   (** [fake n] requires the phony rule of name [n]. *)
   let fake : string -> t = fun name -> Phon(name)
@@ -74,31 +67,17 @@ module Value = struct
         filesystem, so we don't keep it. *)
     | Rfil of float
     (** The access time of a read file. *)
-    | Sign of entry list
-    (** The content of a signature, that is, the entries. *)
     | Phon of unit
     (** Result of a phony rule. *)
 
   (** [checked pth] sets filepath [pth] as checked. *)
   let written : string -> t = fun pth -> Wfil(mtime pth)
 
-  (** [loaded e] returns the value containing entries [e]. *)
-  let loaded : entry list -> t = fun ens -> Sign(ens)
-
   (** [checked pth] sets filepath [pth] as checked. *)
   let checked : string -> t = fun pth -> Rfil(atime pth)
 
   (** [faked ()] returns the value for a phony target. *)
   let faked : unit -> t = fun () -> Phon(())
-
-  let is_vsign : t -> bool = function
-    | Sign(_) -> true
-    | _       -> false
-
-  let to_entries : t -> entry list = function
-    | Sign(x) -> x
-    | _       -> invalid_arg "to_entries"
-
 end
 
 (** [valid_store key value] tells whether value [value] computed from key [key]
@@ -108,7 +87,6 @@ let valid_stored : Key.t -> Value.t -> bool = fun k v ->
   match k, v with
   | K.File(p), V.Wfil(t) -> Sys.file_exists p && t >= mtime p
   | K.File(p), V.Rfil(t) -> Sys.file_exists p && t >= atime p
-  | K.Sign(_), V.Sign(_)
   | K.Phon(_), V.Phon(_) -> false
   | _                    -> invalid_arg "valid_stored"
 
