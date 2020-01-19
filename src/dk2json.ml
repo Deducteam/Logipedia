@@ -49,14 +49,7 @@ let _ =
       Arg.usage options usage
   end;
   let files =
-    !infiles @
-    if !Cli.indir <> "" then
-      let open Filename in
-      Sys.readdir !Cli.indir |> Array.to_seq |>
-      Seq.filter (fun f -> String.equal (extension f) ".dk") |>
-      Seq.map (fun f -> !Cli.indir </> f) |>
-      List.of_seq
-    else []
+    !infiles @ if !Cli.indir <> "" then Cli.dks_in !Cli.indir else []
   in
   let outdir = Option.get !Cli.outdir in
   (* Create output dir if it does not exist. *)

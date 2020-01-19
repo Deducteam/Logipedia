@@ -69,6 +69,12 @@ struct
   (** A command line argument specification. *)
   type t = string * Arg.spec * string
 
+  (** [dks_in dir] returns the path of dk files in directory [dir]. *)
+  let dks_in : string -> string list = fun dir ->
+    Sys.readdir dir |> Array.to_seq |>
+    Seq.filter (fun f -> String.equal (Filename.extension f) ".dk") |>
+    Seq.map (Filename.concat dir) |> List.of_seq
+
   (** Common options. *)
   let options : t list =
     [ ( "-I"

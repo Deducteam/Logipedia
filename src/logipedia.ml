@@ -78,11 +78,7 @@ Available options for the selected mode:"
       (* Get all the input files. *)
       let files =
         !infiles @
-        if !Cli.indir <> "" then
-          Sys.readdir !Cli.indir |> Array.to_seq |>
-          Seq.filter (fun f -> String.equal (Filename.extension f) ".dk") |>
-          Seq.map (Filename.concat !Cli.indir) |> List.of_seq
-        else []
+        if !Cli.indir <> "" then Cli.dks_in !Cli.indir else []
       in
       let outdir = Option.get !Cli.outdir in
       (* Create output dir if it does not exist. *)

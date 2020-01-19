@@ -81,14 +81,14 @@ struct
 
   (** [ppt_of_dkterm md tx te] converts Dedukti term [te] from Dedukti
       module [md] into a JSON ppterm of taxonomy [tx]. *)
-  let rec ppt_of_dkterm : B.mident -> content -> T.term -> Jt.Ppterm.t =
+  let rec ppt_of_dkterm : DkTools.Mident.t -> content -> T.term -> Jt.Ppterm.t =
     fun md acc t ->
     ppt_of_dkterm_args md acc t []
 
   (** [ppt_of_dkterm_args md tx te stk] converts Dedukti term [te] from
       module [md] applied to stack of arguments [stk].  [tx] is the taxon of
       [te]. *)
-  and ppt_of_dkterm_args : B.mident -> content -> T.term -> T.term list
+  and ppt_of_dkterm_args : DkTools.Mident.t -> content -> T.term -> T.term list
     -> Jt.Ppterm.t =
     fun md acc t stk ->
     let ppt_of_dkterm = ppt_of_dkterm md acc in
@@ -98,7 +98,7 @@ struct
     | T.Type(_) -> Jt.Ppterm.Const { c_symb = "Type" ; c_args = [] }
     | T.DB(_,id,_) ->
       let v_args = List.map ppt_of_dkterm stk in
-      Jt.Ppterm.Var { v_symb = B.string_of_ident id ; v_args}
+      Jt.Ppterm.Var { v_symb = B.string_of_ident id ; v_args }
     | T.Const(_,name) ->
       let c_args = List.map ppt_of_dkterm stk in
       let c_symb =
@@ -125,7 +125,7 @@ struct
 
   (** {2 Exposed functions} *)
 
-  let doc_of_entries : B.mident -> E.entry list -> Jt.item list =
+  let doc_of_entries : DkTools.Mident.t -> E.entry list -> Jt.item list =
     fun mdl entries ->
     let init = { ct_taxo = NameMap.empty
                ; ct_deps = NameMap.empty
@@ -138,7 +138,7 @@ struct
         match e with
         | E.Decl(_,id,_,_)
         | E.Def(_,id,_,_,_) ->
-          log_jscomp ~lvl:5 "compiling [%a]" Api.Pp.Default.print_ident id;
+          log_jscomp ~lvl:6 "compiling [%a]" Api.Pp.Default.print_ident id;
           let inm = B.mk_name mdl id in
           let deps =
             let keep n = not @@ B.(List.mem_eq mident_eq (md n)) M.encoding in
@@ -179,6 +179,7 @@ struct
             ; file
             ; etype = Option.map (fun x -> M.string_of_item x sys) item }
           in
+          (* Add section to download Dedukti file *)
           let exp =
             { Jt.system = "dedukti"
             ; file = DkTools.get_file mdl
@@ -197,7 +198,7 @@ struct
               ; exp } :: (loop acc tl)
             | E.Def(_,_,_,teo,te)  ->
               (* We use lazy to remap the computation, and avoid computing the
-                 ppterm then discard it. *)
+                 ppterm to finally discard it. *)
               let lppt = lazy (ppt_of_dkterm mdl acc te) in
               let lppto = Option.map
                   (fun t -> lazy (ppt_of_dkterm mdl acc t)) teo
