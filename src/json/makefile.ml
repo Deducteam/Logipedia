@@ -16,20 +16,27 @@ let mk_target f =
 let want : string list -> Key.t list =
   List.map (fun x -> Key.create (mk_target x))
 
-(** [json f md] creates a rule that prints entries of module [md] to a
-    file with pretty printer [pp_entries] obtained from [f md].
+(** [json f p] creates a rule creating file [q.json] where [p = q.json]
+    containing entries that are in [q.dk] file with pretty printer [pp_entries]
+    obtained from [f md].
 
+    FIXME no transitive closure anymore
     Denoting [ms] the (transitive closure of the) dependencies of
     module [md], the target is the out json file, it depends on the
     json files stemming from [ms]. *)
-let json : (DkTools.Mident.t -> DkTools.entry list pp) -> DkTools.Mident.t ->
-  (Key.t, Value.t) rule = fun pp_entries md ->
-  let tg_of_md md = Api.Dep.get_file md |> mk_target in
-  let tg = tg_of_md md in
+let json : (DkTools.Mident.t -> DkTools.entry list pp) -> string ->
+  (Key.t, Value.t) rule = fun pp_entries tg ->
+  let module E = Api.Env.Default in
+  let md = E.init Filename.(dirname tg </> !/tg <.> "dk") in
   let md_deps =
     Deps.deps_of_md md |> DkTools.MdSet.to_seq |> List.of_seq
   in
-  let md_deps = List.map (fun m -> Key.create (tg_of_md m)) md_deps in
+  let tg_of_md m =
+    let open Filename in
+    let p = DkTools.get_file m in
+    Key.create ((Option.get !Cli.outdir) </> !/p <.> "json")
+  in
+  let md_deps = List.map tg_of_md md_deps in
   let pp_entries = pp_entries md in
   let print _ =
     log_rule ~lvl:3 "json [%s]" tg;
@@ -50,15 +57,6 @@ let json : (DkTools.Mident.t -> DkTools.entry list pp) -> DkTools.Mident.t ->
   Key.create obj |> List.fold_right depends md_deps |>
   assemble print
 
-(** [dkpth_for p] returns the Dedukti source file path of target [p] or
-
-    @raise Not_found *)
-let dkpth_for : string -> string = fun t ->
-  let module E = Api.Env.Default in
-  let open Filename in
-  let md = E.init (!/t <.> "dk") in
-  DkTools.get_file md
-
 let mk_generators : (module Compile.S) -> (Key.t, Value.t) generator list =
   fun (module JsExp) ->
   (** [lift filter f k] lifts function [f] to operate on {!type:Key.t} with
@@ -73,9 +71,8 @@ let mk_generators : (module Compile.S) -> (Key.t, Value.t) generator list =
   let pp_entries md : DkTools.entry list pp = fun fmt ens ->
     JsExp.doc_of_entries md ens |> JsExp.print_document fmt
   in
-  let module E = Api.Env.Default in
   let ext_is e s = (Filename.extension s) = e in
-  let json = lift (ext_is ".json") (fun f -> json pp_entries (E.init Filename.(!/f <.> "dk"))) in
-  let objrule = lift (ext_is ".dko") (fun f -> Rule.dko f) in
-  let filrule = lift (ext_is ".dk") (fun f -> Rule.need (dkpth_for f)) in
+  let json = lift (ext_is ".json") (json pp_entries) in
+  let objrule = lift (ext_is ".dko") Rule.dko in
+  let filrule = lift (ext_is ".dk") Rule.need in
   [json; objrule; filrule]

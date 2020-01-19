@@ -140,9 +140,11 @@ struct
           includes dir src in
       log_rule ~lvl:3 "%s" cmd;
       run0 cmd ();
+      (* NOTE [init] actually loads [src] into signature *)
+      ignore @@ Api.Env.Default.init src;
       Value.written out
     in
-    target (Key.create out) +< (Key.create src) |>
+    target (Key.create out) +< Key.create src |>
     List.fold_right depends o_deps |>
     assemble dkcheck
 
