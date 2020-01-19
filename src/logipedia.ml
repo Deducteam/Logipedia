@@ -70,8 +70,6 @@ Use %s EXPORT --help for help on an export command\n\
 Available options for the selected mode:"
       Sys.argv.(0) available_sys Sys.argv.(0)
   in
-  let module Denv = Api.Env.Default in
-  Api.Env.set_debug_mode "o";
   try
     Arg.parse_dynamic options anon usage;
     match !export_mode with
@@ -104,5 +102,6 @@ Available options for the selected mode:"
     Format.printf "%s\n" s;
     Arg.usage (Arg.align Cli.options) usage
   | e          ->
+    let module Denv = Api.Env.Default in
     let module Derr = Api.Errors.Make(Denv) in
     raise (Derr.graceful_fail None e)

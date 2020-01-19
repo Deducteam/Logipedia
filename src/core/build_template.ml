@@ -153,7 +153,6 @@ struct
       the signature of the module. *)
   let entry_printer : string -> (Mident.t -> entry list pp) -> Mident.t ->
     (Key.t, Value.t) rule = fun tg pp_entries md ->
-    Api.Env.set_debug_mode "o";
     let pp_entries = pp_entries md in
     let deps = Deps.deps_of_md md in
     let src = DkTools.get_file md in
