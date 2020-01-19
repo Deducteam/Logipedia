@@ -148,56 +148,37 @@ struct
     List.fold_right depends o_deps |>
     assemble dkcheck
 
-  (** [load md] creates a rule to load module [md] into the signature and
-      compute the entries of [md]. *)
-  let load : Mident.t -> (Key.t, Value.t) rule = fun md ->
-    let file = get_file md in
-    let sigs =
-      Deps.deps_of_md md |> DkTools.MdSet.to_seq |> Seq.map Key.load |>
-      List.of_seq
-    in
-    let action _ =
-      log_rule ~lvl:3 "loading %s" file;
-      let inchan = open_in file in
-      let entries = Parsing.Parser.Parse_channel.parse md inchan in
-      close_in inchan;
-      let declare e =
-        let open Parsing.Entry in
-        let module Denv = Api.Env.Default in
-        let module S = Kernel.Signature in
-        let module E = Api.Env in
-        try
-          begin match e with
-            | Decl(lc,id,st,ty)         -> Denv.declare lc id st ty
-            | Def(lc,id,op,Some(ty),te) -> Denv.define lc id op te (Some ty)
-            | _                         -> ()
-          end
-        with E.EnvError(_,_,EnvErrorSignature(S.AlreadyDefinedSymbol(_))) -> ()
-      in
-      List.iter declare entries;
-      Value.loaded entries
-    in
-    target (Key.load md) +< Key.create (objectify file) |>
-    List.fold_right depends sigs |> assemble action
-
   (** [entry_printer target entries_pp md] creates a rule that prints entries of
       module [md] with [entries_pp md] into file [target]. The target depends on
       the signature of the module. *)
   let entry_printer : string -> (Mident.t -> entry list pp) -> Mident.t ->
     (Key.t, Value.t) rule = fun tg pp_entries md ->
+    Api.Env.set_debug_mode "o";
     let pp_entries = pp_entries md in
-    let print entries =
+    let deps = Deps.deps_of_md md in
+    let src = DkTools.get_file md in
+    let print _ =
       log_rule ~lvl:3 "printing [%s]" tg;
       let ochan = open_out tg in
       let ofmt = Format.formatter_of_out_channel ochan in
-      match entries with
-      | [x] ->
-        Value.to_entries x |> pp_entries ofmt;
-        close_out ochan;
-        Value.written tg
-      | _                  -> assert false
+      let entries =
+        let inchan = open_in src in
+        let e = Parsing.Parser.Parse_channel.parse md inchan in
+        close_in inchan;
+        e
+      in
+      pp_entries ofmt entries;
+      close_out ochan;
+      Value.written tg
     in
-    target (Key.create tg) +< (Key.load md) +> print
+    let deps =
+      let mds = DkTools.MdSet.to_seq deps in
+      let srco = Seq.map DkTools.get_file mds |> Seq.map objectify in
+      Seq.map Key.create srco |> List.of_seq
+    in
+    let obj = Key.create (src |> objectify) in
+    target (Key.create tg) +< obj |> List.fold_right depends deps |>
+    assemble print
 
   (** [sys cmd src tg] transforms file [src] into file [tg] using system command
       [cmd]. *)

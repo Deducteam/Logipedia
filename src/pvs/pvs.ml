@@ -23,9 +23,9 @@ struct
     let open Filename in
     (Option.get !Cli.outdir) </> !/f <.> file_ext
 
-  let rules_for files =
+  let generators =
     let entries_pp md fmt ens = Ast.compile md ens |> export fmt in
-    rules_for (List.map (fun x -> x, mk_target x) files) entries_pp
+    mk_generators ("." ^ file_ext) entries_pp
 
   let want = List.map (fun x -> Key.create @@ mk_target x)
 end

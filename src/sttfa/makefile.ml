@@ -4,27 +4,31 @@ open Extras
 open Build.Classic
 open Build_template
 
-(** [rules_for files entries_pp] yields all the rules necessary to export source
-    files (first elements of [files]) to targets (second elements of) [files]
-    using [entries_pp] to print entries. [entries_pp] is a function such that
-    for any module [md], [entries_pp md] is a usable printer for entries. *)
-let rules_for : (string * string) list ->
-  (DkTools.Mident.t -> DkTools.entry list pp) -> (Key.t, Value.t) rule list =
-  fun files entries_pp ->
-  let module B = Kernel.Basic in
-  let module E = Api.Env.Default in
-  let sigrule (s,_) = Rule.load (E.init s) in
-  let sysrule (s,t) = Rule.entry_printer t entries_pp (E.init s) in
-  let objrule (s,_) = Rule.dko s in
-  let filrule (s,_) = Rule.need s in
-  let logic_rules =
-    let sttfamd = B.mk_mident "sttfa" in
-    let sttfafile = DkTools.get_file sttfamd in
-    Rule.[need sttfafile; load sttfamd; dko sttfafile]
+let mk_generators : string -> (DkTools.Mident.t -> DkTools.entry list pp) ->
+  (Key.t, Value.t) generator list = fun ext entries_pp ->
+  (* Format.(printf "paths [%a]@." (pp_print_list ~pp_sep:pp_print_space
+   *   pp_print_string)) (Kernel.Basic.get_path ());
+   * begin
+   *   let md = Kernel.Basic.mk_mident "sttfa" in
+   *   let s = Api.Env.Default.get_signature () in
+   *   let open Kernel.Signature in
+   *   import s Kernel.Basic.dloc md
+   * end; *)
+  let sysrule = function
+    | Key.File(p) when Filename.extension p = ext ->
+      let srcmd = dk_of p |> Api.Env.Default.init in
+      Some(Rule.entry_printer p entries_pp srcmd)
+    | _                                           -> None
   in
-  logic_rules @
-  (List.map (fun t -> [filrule t; objrule t; sigrule t; sysrule t]) files |>
-   List.flatten)
+  let objrule = function
+    | Key.File(p) when Filename.extension p = ".dko" -> Some(Rule.dko p)
+    | _                                              -> None
+  in
+  let filrule = function
+    | Key.File(p) when Filename.extension p = ".dk" -> Some(Rule.need p)
+    | _                                             -> None
+  in
+  [sysrule; objrule; filrule]
 
 (** A basis for sttfa makefiles. *)
 module Basis =
@@ -34,4 +38,5 @@ struct
   let pp_key = Key.pp
   type nonrec value = Value.t
   let valid_stored = valid_stored
+  let rules = []
 end

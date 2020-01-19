@@ -25,10 +25,9 @@ struct
 
   let want = List.map (fun x -> Key.create @@ mk_target x)
 
-  let rules_for files =
+  let generators =
     let entries_pp md fmt ens = Ast.compile md ens |> export fmt in
-    let fts = List.map (fun x -> x, mk_target x) files in
-    rules_for fts entries_pp
+    mk_generators file_ext entries_pp
 
   let want files = want files
 end

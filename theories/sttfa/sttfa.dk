@@ -1,3 +1,5 @@
+#NAME sttfa.
+
 type : Type.
 
 arrow : type -> type -> type.

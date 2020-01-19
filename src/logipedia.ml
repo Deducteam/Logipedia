@@ -71,6 +71,7 @@ Available options for the selected mode:"
       Sys.argv.(0) available_sys Sys.argv.(0)
   in
   let module Denv = Api.Env.Default in
+  Api.Env.set_debug_mode "o";
   try
     Arg.parse_dynamic options anon usage;
     match !export_mode with
@@ -91,12 +92,9 @@ Available options for the selected mode:"
       let (module Syst) = get_system syst in
       let open Syst.Makefile in
       let module B = Build.Classic in
-      (* Create the needed rules. *)
-      let rules = rules_for files in
-      if !Cli.write_depends then Format.printf "%a@." (B.pp_rules pp_key) rules;
       let build = B.build ~key_eq ".sttfaexp" ~valid_stored in
       let build target =
-        match build rules target with
+        match build ~generators [] target with
         | Ok(_)      -> ()
         | Error(key) -> Format.printf "No rule to make %a@." pp_key key
       in

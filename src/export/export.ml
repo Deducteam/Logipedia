@@ -44,9 +44,15 @@ sig
   (** [want p] creates targets out of paths [p]. Used to declare initial
       targets. *)
 
-  val rules_for : string list -> (key, value) rule list
+  (* val rules_for : string list -> (key, value) rule list *)
   (** [rules_for pth] creates the rules to export files in [pth]. The files
       [pth] are the Dedukti files selected from the command line. *)
+
+  val rules : (key, value) rule list
+  (** Static rules. *)
+
+  val generators : (key, value) generator list
+  (** Dynamic rules generators used *)
 end
 
 (** Type of a system. An export system must have this signature. *)
