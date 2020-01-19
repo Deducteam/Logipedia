@@ -115,7 +115,6 @@ _coqpath = $(EXPDIR)/coq
 coq: $(LOGIPEDIA)
 	$(LOGIPEDIA) coq -I $(_thdir) -I $(_ipath) -o $(_coqpath) \
 -d $(_ipath) $(LOGIPEDIAFLAGS)
-	@echo "[COQ] CHECKED"
 
 
 #### Matita ########################################################
@@ -132,8 +131,6 @@ _leanpath = $(EXPDIR)/lean
 lean: $(LOGIPEDIA)
 	$(LOGIPEDIA) lean -I $(_thdir) -I $(_ipath) -o $(_leanpath) -d $(_ipath) \
 $(LOGIPEDIAFLAGS)
-	@cd $(_leanpath) && $(LEAN) *.lean
-	@echo "[LEAN] CHECKED"
 
 #### OpenTheory ####################################################
 _otpath = $(EXPDIR)/opentheory
@@ -143,9 +140,6 @@ _thyfile=$(_otpath)/$(PKG).thy
 opentheory: $(LOGIPEDIA)
 	$(LOGIPEDIA) opentheory -I $(_thdir) -I $(_ipath) -o $(_otpath) \
 -d $(_ipath) $(LOGIPEDIAFLAGS)
-	# $(PYTHON) bin/gen-thy-file.py $(DKDEP) $(_ipath) $(PKG) > $(_thyfile)
-	# $(OT) info $(_thyfile) 2>/dev/null
-	@echo "[OT] CHECKED"
 
 #### HOL Light ######################################################
 _holpath = $(EXPDIR)/hollight
@@ -169,8 +163,11 @@ _thfiles = $(wildcard $(_thdir)/*.dk)
 json: $(DK2JSON)
 	$(DK2JSON) -m $(MIDDLEWARE) -o $(_jsonpath) -J $(_jsonpath) \
 -I $(_ipath) -d $(_ipath) -I $(_thdir) $(_thfiles) \
---hollight $(_holpath) --pvs $(_pvspath) --lean $(_leanpath) \
---coq $(_coqpath) --matita $(_matitapath) $(LOGIPEDIAFLAGS)
+--hollight $(_holpath) \
+--pvs $(_pvspath) \
+--lean $(_leanpath) \
+--coq $(_coqpath) \
+--matita $(_matitapath) $(LOGIPEDIAFLAGS)
 
 #### Pretty printer ################################################
 # FIXME logipp-latex definitve?
