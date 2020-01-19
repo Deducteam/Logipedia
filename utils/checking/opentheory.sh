@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
-usage="Coq checker: $0 -d <dir>"
+DIR="${0%/*}"
+usage="OpenTheory checker: $0 -d DIR -I DIR -p PKG
+\td\tDirectory with files to check
+\tI\tDirectory with Dedukti files
+\tp\tName of library"
 
-while getopts 'hd:' arg; do
+while getopts 'hI:p:d:' arg; do
     case "$arg" in
         d)
             indir=$OPTARG
@@ -20,11 +24,4 @@ then
     echo -e "$usage"
     exit 1
 fi
-# Sanitize names
-rename 's:-:_:g' "${indir}/*.v"
-rename 's:\.:_:g' "${indir}/*.v" 2> /dev/null
-cd "$indir"
-ls *.v > _CoqProject
-coq_makefile -f _CoqProject -o Makefile
-make
-cd -
+# TODO
