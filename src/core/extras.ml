@@ -75,6 +75,10 @@ struct
   (** [t <.> u] returns path [t.u]. *)
   let ( <.> ) : t -> t -> t = fun t u -> t ^ "." ^ u
 
+  (** [~. t] prefixes [t] with a dot if it does not begin with one. *)
+  let ( ~. ) : t -> t = fun t ->
+    if String.get t 0 = '.' then t else "." ^ t
+
   (** [t </> u] is an alias for [concat]. *)
   let ( </> ) : t -> t -> t = concat
 
