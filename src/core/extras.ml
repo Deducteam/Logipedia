@@ -110,7 +110,7 @@ module NameHashtbl = Hashtbl.Make(struct
   end)
 module NameMap = Map.Make(struct
     type t = Api.Dep.NameSet.elt
-    let compare : t -> t -> int = Pervasives.compare
+    let compare : t -> t -> int = Stdlib.compare
   end)
 
 (** [memoize f] returns the function [f] memoized using pervasive equality. *)
