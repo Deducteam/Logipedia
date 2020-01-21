@@ -30,7 +30,6 @@ then
 fi
 cd -
 
-set -x
 out="export/${exp}"
 thdir="theories/${thy}"
 srcdir="import/dedukti/${thy}/${pkg}"
