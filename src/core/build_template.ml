@@ -101,8 +101,9 @@ struct
     in
     target (Key.create pth) +> exists
 
-  (** [dko f] creates a rule to create the Dedukti object file [f]. *)
-  let dko : string -> (Key.t, Value.t) rule = fun out ->
+  (** [dko ?opt f] creates a rule to create the Dedukti object file
+      [f]. The string [?opt] contains arguments passed to Dedukti. *)
+  let dko : ?opt:string -> string -> (Key.t, Value.t) rule = fun ?opt out ->
     let dir = Filename.dirname out in
     let src = dk_of out in
     let o_deps =
@@ -114,8 +115,10 @@ struct
       let incl = get_path () in
       let includes = List.map ((^) "-I ") incl |> String.concat " " in
       let cmd =
-        Format.sprintf "dkcheck -e %s -I %s %s 2> /dev/null"
-          includes dir src in
+        let opt = match opt with Some(s) -> s | None -> "" in
+        Format.sprintf "dkcheck -e %s -I %s %s %s 2> /dev/null"
+          includes dir src opt
+      in
       log_rule ~lvl:3 "%s" cmd;
       run0 cmd ();
       (* NOTE [init] actually loads [src] into signature *)
