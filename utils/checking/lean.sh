@@ -19,7 +19,8 @@ then
 fi
 
 cd ${indir}
-for f in "*.lean"
+ls
+for f in *
 do
     lean "$f"
 done
