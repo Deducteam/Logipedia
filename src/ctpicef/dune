@@ -2,4 +2,4 @@
   (name ctpicef)
   (public_name logipedia.ctpicef)
   (synopsis "Export Logipedia libraries in the ctpicef system.")
-  (libraries logipedia.core logipedia.export))
+  (libraries dedukti.api logipedia.core logipedia.export))
