@@ -56,7 +56,7 @@ jobs:
             popd
       - checkout
       - run: eval $(opam env) && ./export.sh -e lean -t sttfa -p arith_fermat
-      - run: utils/checking/lean.sh -d export/pvs
+      - run: utils/checking/lean.sh -d export/lean
       - run: cp -r export /tmp
       - store_artifacts:
           path: /tmp/export/lean
