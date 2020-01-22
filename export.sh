@@ -37,9 +37,11 @@ srcdir="import/dedukti/${thy}/${pkg}"
 if [[ "$exp" == "json" ]]
 then
     middleware=${mid:-"$thy"}
+    make dk2json
     ./dk2json -m "$middleware" -o "$out" -J "$out"\
               -I "$thdir" -I "$srcdir" -d "$srcdir"\
               --dkopts "'${dkopts:-''}'"
 else
+    make logipedia
     ./logipedia "$exp" -I "$thdir" -I "$srcdir" -o "$out" -d "$srcdir"
 fi
