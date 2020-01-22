@@ -18,8 +18,6 @@ then
 fi
 
 cd ${indir}
-for f in *
-do
-    lean "$f"
-done
+ret=$(lean *.lean)
 cd -
+exit $ret
