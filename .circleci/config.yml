@@ -79,6 +79,7 @@ jobs:
             tar zxf pvs-6.0-ix86_64-Linux-sbclisp.tgz
             ./bin/relocate
             sudo ln -s /tmp/pvs/pvs /usr/bin/pvs
+            sudo ln -s /tmp/pvs/proveit /usr/bin/proveit
             popd
       - checkout
       - run: eval $(opam env) && ./export.sh -e pvs -t sttfa -p arith_fermat

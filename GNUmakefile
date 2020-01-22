@@ -43,7 +43,6 @@ DK2JSON = _build/install/default/bin/dk2json
 all: bin
 
 logipedia: bin
-	@echo "[BUILD EXECUTABLE] logipedia"
 	@-$(RM) $@
 	@ln -s $(LOGIPEDIA) logipedia
 
@@ -51,7 +50,7 @@ dk2json: bin
 	@-$(RM) $@
 	@ln -s $(DK2JSON) $@
 
-bin: $(LOGIPEDIA) $(LOGIPEDIA) $(DK2JSON)
+bin: $(LOGIPEDIA) $(DK2JSON)
 
 .PHONY: $(LOGIPEDIA) $(LOGIPEDIA) $(DK2JSON)
 $(LOGIPEDIA):
