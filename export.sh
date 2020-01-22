@@ -43,6 +43,6 @@ then
               --dkopts "'${dkopts:-''}'"
 else
     make logipedia
-    ./logipedia "$exp" -m "$middleware" -I "$thdir" -I "$srcdir" -o "$out"\
+    ./logipedia "$exp" -I "$thdir" -I "$srcdir" -o "$out"\
                 -d "$srcdir"
 fi
