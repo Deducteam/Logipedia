@@ -55,7 +55,7 @@ sig
   (** Dynamic rules generators used *)
 end
 
-module Make(E:Export.EXPORTER) : MAKEFILE =
+module Make(E:Export.S) : MAKEFILE =
 struct
   open Build_template
   open Filename

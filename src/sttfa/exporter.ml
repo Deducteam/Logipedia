@@ -37,7 +37,7 @@ let mk_ast : B.mident -> E.entry list -> A.ast = fun md entries ->
   let dep = List.fold_left fold_entry_dep D.QSet.empty entries in
   { Ast.md = B.string_of_mident md; Ast.dep; items }
 
-let get_sttfa_exporter : Systems.t -> (module Export.EXPORTER) = fun target ->
+let get_sttfa_exporter : Systems.t -> (module Export.S) = fun target ->
   (module struct
     type ast = Ast.ast
     let target = target

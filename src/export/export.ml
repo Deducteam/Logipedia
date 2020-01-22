@@ -1,11 +1,11 @@
-(** Signature of a system. Any export system must comply with the signature
+(** Signature of an export system must comply with the signature
     {!val:S} defined here. *)
 
 open Core
 open Extras
 
-(** Type of a system. An export system must have this signature. *)
-module type EXPORTER =
+(** Export system must have this signature. *)
+module type S =
 sig
   type ast
 

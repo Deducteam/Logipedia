@@ -70,12 +70,18 @@ module type S = sig
   (** [item_of_entry md entry] returns an item of the logic given an appropriate
       Dedukti entry [entry] of module [md]. *)
 
+  (** Note:
+      The export section of the website will
+      - Display the output of {!val:string_of_item} for all statements
+      - Offer to download the whole file processed with {!val:get_exporter}
+  *)
+
   val string_of_item : Systems.t -> item -> string
   (** [string_of_item system item ] returns a string representation
       of [item] in the export system [system].
       This will be printed on the website in the export fields. *)
 
-  val get_exporter : Systems.t -> (module Export.EXPORTER)
+  val get_exporter : Systems.t -> (module Export.S)
   (** [get_exporter system] Generate an Exporter module to the given system.
       This allows to handle export through the Makefile system. *)
 end

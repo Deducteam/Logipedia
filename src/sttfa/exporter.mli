@@ -7,4 +7,4 @@ val export_to_system_as_string : Systems.t -> Ast.item -> string
 
 (** Generate an Exporter module from STTfa to the given system.
     This allows to handle export through the Makefile system. *)
-val get_sttfa_exporter : Systems.t -> (module Export.EXPORTER)
+val get_sttfa_exporter : Systems.t -> (module Export.S)
