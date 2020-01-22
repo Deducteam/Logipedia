@@ -31,7 +31,7 @@ let pvs_opts =
     system [sy]. *)
 let get_additional_opts : Systems.t -> (string * Arg.spec * string) list =
   function
-  | `Pvs -> pvs_opts
+  | Pvs -> pvs_opts
   | _    -> sys_opts
 
 (** [anon arg] process anonymous argument [arg]. The first anonymous argument is
@@ -50,16 +50,17 @@ let anon arg =
       let msg = Format.sprintf "Can't export to %s: system not supported" s in
       raise (Arg.Bad msg)
 
-(** [get_system sys] returns the system module from a system
-    identifier [sys]. *)
-let get_system : Systems.t -> (module Export.S) = fun sy ->
-  match sy with
-  | `Pvs        -> (module Pvs)
-  | `Hollight   -> (module Hollight)
-  | `Lean       -> (module Lean)
-  | `Coq        -> (module Coq)
-  | `Matita     -> (module Matita)
-  | `OpenTheory -> (module Opentheory)
+let get_system : Systems.t -> (module Export.S) = fun sys ->
+  (module struct
+    type ast = Sttfa.Ast.ast
+    let system = sys
+    let compile = Sttfa.Export.mk_ast
+    let decompile _ = assert false
+    module Mid : Middleware.S = Middleware.Sttfa
+    include Sttfa.Makefile.Basis
+    let export : ast pp = fun fmt ast->
+      Sttfa.Export.export_to_system_as_ast sys fmt ast
+  end)
 
 let _ =
   let available_sys = List.map fst Systems.spec |> String.concat ", " in
@@ -83,16 +84,21 @@ Available options for the selected mode:"
       let outdir = Option.get !Cli.outdir in
       (* Create output dir if it does not exist. *)
       if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
-      let (module Syst) = get_system syst in
-      let open Syst.Makefile in
+      let (module S) = get_system syst in
+      let module M = Export.Make(S) in
+      (* This used to be Makefile *)
       let module B = Build.Classic in
-      let build = B.build ~key_eq ".sttfaexp" ~valid_stored in
+      let build =
+        B.build
+          ~key_eq:M.key_eq
+          ".sttfaexp"
+          ~valid_stored:M.valid_stored in
       let build target =
-        match build ~generators [] target with
+        match build ~generators:M.generators M.rules target with
         | Ok(_)      -> ()
-        | Error(key) -> Format.printf "No rule to make %a@." pp_key key
+        | Error(key) -> Format.printf "No rule to make %a@." M.pp_key key
       in
-      want files |> List.iter build
+      M.want files |> List.iter build
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;

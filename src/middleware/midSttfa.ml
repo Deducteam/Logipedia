@@ -74,5 +74,4 @@ let label = function
 let item_of_entry mident entry = Sttfa__Compile.compile_entry mident entry
 
 let string_of_item item system =
-  let (module ES) = Sttfa.Export.of_system system in
-  ES.string_of_item item
+  Sttfa.Export.export_to_system_as_string system item

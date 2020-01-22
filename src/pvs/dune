@@ -1,5 +1,0 @@
-(library
-  (name pvs)
-  (public_name logipedia.pvs)
-  (synopsis "PVS into Logipedia.")
-  (libraries logipedia.export logipedia.core logipedia.sttfa))

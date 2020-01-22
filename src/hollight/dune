@@ -1,5 +1,0 @@
-(library
-   (name hollight)
-   (public_name logipedia.hollight)
-   (synopsis "HOL Light into Logipedia.")
-   (libraries logipedia.export logipedia.core logipedia.sttfa))

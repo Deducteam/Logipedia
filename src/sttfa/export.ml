@@ -6,64 +6,26 @@ module Denv = Api.Env.Default
 module P = Parsing.Parser
 open Core
 
-module type E =
-sig
-  val system         : Systems.t
-  val extension      : string
-  val print_ast      : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit
-  val string_of_item : Ast.item -> string
-end
-
-module PVS : E =
-struct
-  include Pvs
-  let system = `Pvs
-  let extension = "pvs"
-end
-
-module COQ : E =
-struct
-  include Coq
-  let system    = `Coq
-  let extension = "v"
-end
-
-module MATITA : E =
-struct
-  include Matita
-  let system    = `Matita
-  let extension = "ma"
-end
-
-module OPENTHEORY : E =
-struct
-  include Opentheory
-  let system    = `OpenTheory
-  let extension = "art"
-end
-
-module LEAN : E =
-struct
-  include Lean
-  let system    = `Lean
-  let extension = "lean"
-end
-
-module HOLLIGHT : E =
-struct
-  include Hollight
-  let system = `Hollight
-  let extension = "ml"
-end
-
-let of_system : Systems.t -> (module E) = fun sys ->
+let export_to_system_as_string : Systems.t -> Ast.item -> string = fun sys ->
   match sys with
-  | `Coq        -> (module COQ)
-  | `Matita     -> (module MATITA)
-  | `OpenTheory -> (module OPENTHEORY)
-  | `Lean       -> (module LEAN)
-  | `Hollight   -> (module HOLLIGHT)
-  | `Pvs        -> (module PVS)
+  | Coq        -> Coq.string_of_item
+  | Matita     -> Matita.string_of_item
+  | OpenTheory -> Opentheory.string_of_item
+  | Lean       -> Lean.string_of_item
+  | Hollight   -> Hollight.string_of_item
+  | Pvs        -> Pvs.string_of_item
+  | _ -> assert false
+
+let export_to_system_as_ast : Systems.t -> Format.formatter ->
+  ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun sys ->
+  match sys with
+  | Coq        -> Coq.print_ast
+  | Matita     -> Matita.print_ast
+  | OpenTheory -> Opentheory.print_ast
+  | Lean       -> Lean.print_ast
+  | Hollight   -> Hollight.print_ast
+  | Pvs        -> Pvs.print_ast
+  | _ -> assert false
 
 (** [mk_ast md es] creates the STTfa ast of entries [es] from dedukti module
     [md] *)
@@ -74,6 +36,7 @@ let mk_ast : B.mident -> E.entry list -> A.ast = fun md entries ->
   let dep = List.fold_left fold_entry_dep D.QSet.empty entries in
   { Ast.md = B.string_of_mident md; Ast.dep; items }
 
+(*
 let export_system : (module E) -> string -> Format.formatter -> unit =
   fun (module M:E) infile outfmt ->
   let md = Denv.init infile in
@@ -82,3 +45,4 @@ let export_system : (module E) -> string -> Format.formatter -> unit =
   close_in input;
   let sttfa_ast = mk_ast md entries in
   M.print_ast outfmt sttfa_ast
+*)

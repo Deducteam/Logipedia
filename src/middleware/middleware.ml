@@ -98,8 +98,11 @@ end
 
 (** {1 Bindings of available middlewares} *)
 
-(** Coq and the Calculus of Inductive Construction. *)
-module Cic : S = MidCic
+(** Calculus of Universe Polymorphic Inductive Constructions with Eta and Fixpoints. *)
+module Cupicef : S = MidCupicef
+
+(** Calculus of Template Polymorphic Inductive Constructions with Eta and Fixpoints. *)
+module Ctpicef : S = MidCtpicef
 
 (** Simple Type Theory forall. *)
 module Sttfa : S = MidSttfa
@@ -108,8 +111,9 @@ module Sttfa : S = MidSttfa
     {!val:of_string}, it defines by which identifier any middleware is
     available. *)
 let spec : (string * (module S)) list =
-  [ ( "sttfa", (module Sttfa) )
-  ; ( "cic"  , (module Cic  ) ) ]
+  [ ( "sttfa"  , (module Sttfa  ) )
+  ; ( "cupicef", (module Cupicef) )
+  ; ( "ctpicef", (module Ctpicef) )  ]
 
 (** [of_string s] returns the middleware associated to string [s]. *)
 let of_string : string -> (module S) = fun s ->
