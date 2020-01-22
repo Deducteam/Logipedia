@@ -17,4 +17,9 @@ then
     exit 1
 fi
 
-lean "${indir}/*.lean"
+cd ${indir}
+for f in "*.lean"
+do
+    lean "$f"
+done
+cd -
