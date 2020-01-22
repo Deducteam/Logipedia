@@ -131,7 +131,8 @@ jobs:
       - <<: *opam_deps
       - checkout
       - run: cp -r /tmp/workspace/export ./
-      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat EXPDIR=export json
+      - run: eval $(opam env) && ./export.sh -e json -p arith_fermat -t sttfa
+      - run: eval $(opam env) && ./export.sh -e json -p std -t cupicef -m cic -k '--eta'
       - run: cp -r export/json /tmp
       - store_artifacts:
           path: /tmp/json
