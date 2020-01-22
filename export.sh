@@ -15,6 +15,7 @@ do
     esac
 done
 
+set -x
 if [[ -z ${exp:-''} ]]
 then
     echo 'Export mode not specified'
@@ -43,5 +44,5 @@ then
               --dkopts "'${dkopts:-''}'"
 else
     make logipedia
-    ./logipedia "$exp" -I "$thdir" -I "$srcdir" -o "$out" -d "$srcdir"
+    ./logipedia "$exp" -I "$thdir" -I "$srcdir" -o "$out" -d "$srcdir" --debug 5
 fi
