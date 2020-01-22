@@ -2,7 +2,7 @@
   (name logipedia)
   (public_name logipedia)
   (modules logipedia)
-  (libraries logipedia.export logipedia.core logipedia.sttfa))
+  (libraries logipedia.export logipedia.makefile logipedia.core logipedia.sttfa))
 
 (executable
   (name dk2json)

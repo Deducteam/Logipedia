@@ -3,4 +3,4 @@
   (name sttfa)
   (public_name logipedia.sttfa)
   (synopsis "Export Logipedia libraries in the STTfa system.")
-  (libraries logipedia.core))
+  (libraries logipedia.core logipedia.export))

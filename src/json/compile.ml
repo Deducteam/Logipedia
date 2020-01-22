@@ -20,7 +20,7 @@ sig
   val print_document : Jt.document pp
 end
 
-module Make : functor (M:Middleware.S) -> S = functor (M:Middleware.S) ->
+module Make (M:Middleware.S) : S =
 struct
 
   (** Information collected in the current time. *)

@@ -5,6 +5,7 @@ module E = Parsing.Entry
 module Denv = Api.Env.Default
 module P = Parsing.Parser
 open Core
+open Extras
 
 let export_to_system_as_string : Systems.t -> Ast.item -> string = fun sys ->
   match sys with
@@ -17,7 +18,7 @@ let export_to_system_as_string : Systems.t -> Ast.item -> string = fun sys ->
   | _ -> assert false
 
 let export_to_system_as_ast : Systems.t -> Format.formatter ->
-  ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun sys ->
+  ?mdeps:A.mdeps -> Ast.ast -> unit = fun sys ->
   match sys with
   | Coq        -> Coq.print_ast
   | Matita     -> Matita.print_ast
@@ -36,13 +37,13 @@ let mk_ast : B.mident -> E.entry list -> A.ast = fun md entries ->
   let dep = List.fold_left fold_entry_dep D.QSet.empty entries in
   { Ast.md = B.string_of_mident md; Ast.dep; items }
 
-(*
-let export_system : (module E) -> string -> Format.formatter -> unit =
-  fun (module M:E) infile outfmt ->
-  let md = Denv.init infile in
-  let input = open_in infile in
-  let entries = P.Parse_channel.parse md input in
-  close_in input;
-  let sttfa_ast = mk_ast md entries in
-  M.print_ast outfmt sttfa_ast
-*)
+(** [get_sttfa_exporter sys] return a module processing  *)
+let get_sttfa_exporter : Systems.t -> (module Export.Exporter) = fun target ->
+  (module struct
+    type ast = Ast.ast
+    let target = target
+    let compile = mk_ast
+    let decompile _ = assert false
+    let export : ast pp = fun fmt ast->
+      export_to_system_as_ast target fmt ast
+  end)
