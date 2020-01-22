@@ -1,10 +1,6 @@
 DKCHECK = dkcheck
 DKDEP   = dkdep
-MATITAC = matitac
-LEAN    = lean
 PYTHON  = python3
-OT      = opentheory
-PROVEIT = proveit
 
 ## In uppercase are variables that can be modified by the user, in lowercase
 ## with _ are variables that are not supposed to be chosen by the user.
@@ -12,14 +8,8 @@ PROVEIT = proveit
 THEORY ?= sttfa
 # Name of the package used
 PKG ?= arith_fermat
-# Directory where files are exported
-EXPDIR ?= export
-# Additional flags passed to Dedukti (--eta)
-DKFLAGS =
 # Additional flags passed to Logipedia
 LOGIPEDIAFLAGS =
-# Which ocaml middleware module to use (for json export)
-MIDDLEWARE = sttfa
 
 # Directory containing theory files
 _thdir = theories/$(THEORY)
@@ -31,8 +21,6 @@ _dkimp = import/dedukti
 _ipath = $(_dkimp)/$(THEORY)/$(PKG)
 # Directory to store dependencies
 _depdir = .depends
-# Most used logipedia options
-_logipediaopts = -I $(_ipath) -I $(_thdir)
 
 #### Logipedia binary ##############################################
 
@@ -43,7 +31,6 @@ DK2JSON = _build/install/default/bin/dk2json
 all: bin
 
 logipedia: bin
-	@echo "[BUILD EXECUTABLE] logipedia"
 	@-$(RM) $@
 	@ln -s $(LOGIPEDIA) logipedia
 
@@ -51,9 +38,9 @@ dk2json: bin
 	@-$(RM) $@
 	@ln -s $(DK2JSON) $@
 
-bin: $(LOGIPEDIA) $(LOGIPEDIA) $(DK2JSON)
+bin: $(LOGIPEDIA) $(DK2JSON)
 
-.PHONY: $(LOGIPEDIA) $(LOGIPEDIA) $(DK2JSON)
+.PHONY: $(LOGIPEDIA) $(DK2JSON)
 $(LOGIPEDIA):
 	@dune build
 $(DK2JSON):
@@ -108,66 +95,6 @@ ifeq ($(MAKECMDGOALS), dedukti)
 -include $(addprefix $(_thdepdir)/, $(_thfiles).d)
 -include $(depfiles)
 endif
-
-#### Coq ###########################################################
-_coqpath = $(EXPDIR)/coq
-.PHONY: coq
-coq: $(LOGIPEDIA)
-	$(LOGIPEDIA) coq -I $(_thdir) -I $(_ipath) -o $(_coqpath) \
--d $(_ipath) $(LOGIPEDIAFLAGS)
-
-
-#### Matita ########################################################
-_matitapath = $(EXPDIR)/matita
-.PHONY: matita
-matita: $(LOGIPEDIA)
-	$(LOGIPEDIA) matita -I $(_thdir) -I $(_ipath) -o $(_matitapath) \
--d $(_ipath) $(LOGIPEDIAFLAGS)
-
-#### Lean ##########################################################
-_leanpath = $(EXPDIR)/lean
-
-.PHONY: lean
-lean: $(LOGIPEDIA)
-	$(LOGIPEDIA) lean -I $(_thdir) -I $(_ipath) -o $(_leanpath) -d $(_ipath) \
-$(LOGIPEDIAFLAGS)
-
-#### OpenTheory ####################################################
-_otpath = $(EXPDIR)/opentheory
-_thyfile=$(_otpath)/$(PKG).thy
-
-.PHONY: opentheory
-opentheory: $(LOGIPEDIA)
-	$(LOGIPEDIA) opentheory -I $(_thdir) -I $(_ipath) -o $(_otpath) \
--d $(_ipath) $(LOGIPEDIAFLAGS)
-
-#### HOL Light ######################################################
-_holpath = $(EXPDIR)/hollight
-hollight: $(LOGIPEDIA)
-	$(LOGIPEDIA) hollight -I $(_thdir) -I $(_ipath) -o $(_holpath) \
--d $(_ipath) $(LOGIPEDIAFLAGS)
-
-##### PVS ##########################################################
-_pvspath = $(EXPDIR)/pvs
-_pvssum=$(addprefix $(_pvspath)/,$(addsuffix .summary,$(_srcbase)))
-
-.PHONY: pvs
-pvs: $(LOGIPEDIA)
-	$(LOGIPEDIA) pvs -I $(_thdir) -I $(_ipath) -o $(_pvspath) -d $(_ipath) \
-$(LOGIPEDIAFLAGS)
-
-#### Json ##########################################################
-_jsonpath = $(EXPDIR)/json
-_thfiles = $(wildcard $(_thdir)/*.dk)
-.PHONY: json
-json: $(DK2JSON)
-	$(DK2JSON) -m $(MIDDLEWARE) -o $(_jsonpath) -J $(_jsonpath) \
--I $(_ipath) -d $(_ipath) -I $(_thdir) $(_thfiles) \
---hollight $(_holpath) \
---pvs $(_pvspath) \
---lean $(_leanpath) \
---coq $(_coqpath) \
---matita $(_matitapath) $(LOGIPEDIAFLAGS)
 
 #### Pretty printer ################################################
 # FIXME logipp-latex definitve?

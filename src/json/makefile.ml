@@ -72,6 +72,6 @@ let mk_generators : (module Compile.S) -> (Key.t, Value.t) generator list =
   in
   let ext_is e s = (Filename.extension s) = e in
   let json = lift (ext_is ".json") (json pp_entries) in
-  let objrule = lift (ext_is ".dko") Rule.dko in
+  let objrule = lift (ext_is ".dko") (Rule.dko ~opt:(!Cli.dkopts)) in
   let filrule = lift (ext_is ".dk") Rule.need in
   [json; objrule; filrule]
