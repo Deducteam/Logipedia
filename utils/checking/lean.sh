@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 usage="Lean checker: $0 -d <dir>"
 
+set -x
 while getopts 'hd:' arg; do
     case "$arg" in
         d) indir=$OPTARG ;;
