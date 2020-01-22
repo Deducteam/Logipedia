@@ -40,7 +40,12 @@ then
     make dk2json
     ./dk2json -m "$middleware" -o "$out" -J "$out"\
               -I "$thdir" -I "$srcdir" -d "$srcdir"\
-              --dkopts "'${dkopts:-''}'"
+              --dkopts "'${dkopts:-''}'"\
+              --hollight "export/hollight"\
+              --pvs "export/pvs"\
+              --lean "export/lean"\
+              --coq "export/coq"\
+              --matita "export/matita"
 else
     make logipedia
     ./logipedia "$exp" -I "$thdir" -I "$srcdir" -o "$out"\
