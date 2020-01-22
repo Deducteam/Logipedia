@@ -5,7 +5,7 @@ open Core
 open Extras
 
 (** Type of a system. An export system must have this signature. *)
-module type Exporter =
+module type EXPORTER =
 sig
   type ast
 

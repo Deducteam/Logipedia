@@ -177,7 +177,7 @@ struct
             in
             { Jt.system = Systems.to_string sys
             ; file
-            ; etype = Option.map (fun x -> M.string_of_item x sys) item }
+            ; etype = Option.map (fun x -> M.string_of_item sys x) item }
           in
           (* Add section to download Dedukti file *)
           let exp =

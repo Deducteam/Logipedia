@@ -66,6 +66,8 @@ let label = function
    depending on the export system *)
 type item = Kernel.Basic.mident * Parsing.Entry.entry
 let item_of_entry md e = (md,e)
-let string_of_item (_,_) = function
+let string_of_item target (_,_) = match target with
   | Core.Systems.Latex -> "Not implemented yet."
   | sys -> raise (Core.Systems.UnsupportedSystem ("Cupicef doesn't support: " ^ (Core.Systems.to_string sys)))
+
+let get_exporter _ = assert false

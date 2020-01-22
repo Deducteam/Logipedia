@@ -4,7 +4,6 @@
 
     A middleware is defined by a module (e.g. {!module:MidSttfa})
     implementing the signature {!val:S} and exposed in this file. *)
-
 open Core
 open Extras
 module B = Kernel.Basic
@@ -70,11 +69,14 @@ module type S = sig
   (** [item_of_entry md entry] returns an item of the logic given an appropriate
       Dedukti entry [entry] of module [md]. *)
 
-  val string_of_item : item -> Systems.t -> string
-  (** [string_of_item md item system] returns a string representation
-      of [item] of module [md] in the export system [system]. This
-      will be printed on the website in the export fields. *)
+  val string_of_item : Systems.t -> item -> string
+  (** [string_of_item system item ] returns a string representation
+      of [item] in the export system [system].
+      This will be printed on the website in the export fields. *)
 
+  val get_exporter : Systems.t -> (module Export.EXPORTER)
+  (** [get_exporter system] Generate an Exporter module to the given system.
+      This allows to handle export through the Makefile system. *)
 end
 
 (** A dummy middleware. *)
@@ -94,6 +96,7 @@ struct
   let label _ = "dummy",None
   let item_of_entry _ _ = ()
   let string_of_item _ _ = "dummy"
+  let get_exporter _ = assert false
 end
 
 (** {1 Bindings of available middlewares} *)
