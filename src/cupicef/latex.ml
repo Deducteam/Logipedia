@@ -5,6 +5,18 @@ open Format
 
 let enc_md = mk_mident "cupicef"
 
+let escape_underscore =
+  let regexp = Str.regexp "_" in
+  fun s -> Str.global_replace regexp "\\_" s
+
+let pp_ident fmt id = fprintf fmt "%s"
+    (escape_underscore (Kernel.Basic.string_of_ident id))
+
+let pp_mident fmt id = fprintf fmt "%s"
+    (escape_underscore (Kernel.Basic.string_of_mident id))
+
+let pp_name fmt name = fprintf fmt "%a.%a" pp_mident (md name) pp_ident (id name)
+
 let rec pp_term fmt = function
   | Const (_,name) when mident_eq (md name) enc_md ->
     pp_const fmt (string_of_ident (id name)) []
@@ -14,8 +26,8 @@ let rec pp_term fmt = function
 
   | Kind -> assert false
   | Type _             -> fprintf fmt "\\mathbb{T}"
-  | DB (_,id,_)        -> Kernel.Basic.pp_ident fmt id
-  | Const (_,name)     -> fprintf fmt "\\text{%a}" Kernel.Basic.pp_name name
+  | DB (_,id,_)        -> pp_ident fmt id
+  | Const (_,name)     -> pp_name fmt name
   | App (f,a,args)     -> pp_list "\\ " pp_term_wp fmt (f::a::args)
   | Lam (_,x,None  ,t) -> fprintf fmt "\\lambda %a.%a" pp_ident x pp_term t
   | Lam (_,x,Some a,t) -> fprintf fmt "\\lambda %a:%a.%a" pp_ident x pp_term_wp a pp_term t
@@ -28,7 +40,7 @@ and pp_term_wp fmt = function
 and pp_const fmt i args = match i, args with
   | "Sort" , []         -> fprintf fmt "\\mathbb{S}"
   | "sup"  , [s1; s2]   -> fprintf fmt "\\textbf{sup}(%a,%a)" pp_term s1 pp_term s2
-  | "Univ" , [s]        -> fprintf fmt "\\text{Type}_{%a}" pp_term s
+  | "Univ" , [u]        -> pp_term fmt u
   | "Term" , [_; a]     -> pp_term fmt a
   | "Bool" , []         -> fprintf fmt "\\mathbb{B}"
   | "eps"  , [b]        -> fprintf fmt "[%a]" pp_term b
@@ -40,8 +52,15 @@ and pp_const fmt i args = match i, args with
   | "Cumul", [s1;s2]    -> fprintf fmt "\\mathcal{C}_{%a, %a}" pp_term s1 pp_term s2
   | "Eq", [s1;s2]       -> fprintf fmt "%a = %a" pp_term s1 pp_term s2
   | "and", [c1;c2]      -> fprintf fmt "%a \\wedge %a" pp_term c1 pp_term c2
-  | c, [] -> fprintf fmt "\\textbf{%s}" c
-  | c, l -> fprintf fmt "\\textbf{%s}\\ %a" c (pp_list "\\ " pp_term_wp) l
+
+  | "univ" , [u;_;_]    -> pp_term fmt u
+  | "prod" , [_;_;_;_;a;Lam (_,x,_,b)]
+                        -> fprintf fmt "\\Pi %a:%a.%a"     pp_ident x pp_term_wp a pp_term b
+  | "cast" , [_;_;_;_;_;t] -> pp_term fmt t
+
+  | "type" , [s]        -> fprintf fmt "\\text{Type}_{%a}" pp_term s
+  | c, []               -> fprintf fmt "\\textbf{%s}" c
+  | c, l                -> fprintf fmt "\\textbf{%s}\\ %a" c (pp_list "\\ " pp_term_wp) l
 
 let pp_entry fmt = function
   | Decl  (_,_,_, ty)
