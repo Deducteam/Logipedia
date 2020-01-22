@@ -6,18 +6,8 @@ open Json
 (** Input Dedukti files. *)
 let infiles : string list ref = ref []
 
-(** The middleware used. *)
-let middleware : string ref = ref ""
-
 (** Options of command line. *)
 let options =
-  let m_doc =
-    (* Documentation string for middlewares. *)
-    let available_mid =
-      "dummy" :: List.map fst Middleware.spec |> String.concat ", "
-    in
-    Format.sprintf " Middleware to use, one of %s" available_mid
-  in
   let sys_exps =
     (* Spec list for export systems. *)
     let module S = Systems in
@@ -28,14 +18,12 @@ let options =
     in
     List.map f S.spec
   in
-  Arg.align @@ Cli.options @ sys_exps @
-  [ ( "-J"
-    , Arg.Set_string Compile.json_include
-    , " Add folder to Json built files path" )
-  ; ( "-m"
-    , Arg.Set_string middleware
-    , m_doc ) ] |>
-  List.sort (fun (t,_,_) (u,_,_) -> String.compare t u)
+  Cli.options @ sys_exps @
+  ( "-J"
+  , Arg.Set_string Compile.json_include
+  , " Add folder to Json built files path" ) :: Middleware.options
+  |> List.sort (fun (t,_,_) (u,_,_) -> String.compare t u)
+  |> Arg.align
 
 (** [anon f] adds file [f] to the list of input dedukti files {!val:infiles}. *)
 let anon : string -> unit = fun f -> infiles := !infiles @ [f]
@@ -56,7 +44,7 @@ let _ =
   if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
   let module Denv = Api.Env.Default in
   let generators =
-    let (module M) = Middleware.of_string !middleware in
+    let (module M) = Middleware.of_string !Cli.middleware in
     let module JsExp = Compile.Make(M) in
     Makefile.mk_generators (module JsExp)
   in

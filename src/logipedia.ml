@@ -50,9 +50,6 @@ let anon arg =
       let msg = Format.sprintf "Can't export to %s: system not supported" s in
       raise (Arg.Bad msg)
 
-(* FIXME: This should be set with an option *)
-let middleware = ref "sttfa"
-
 let _ =
   let available_sys = List.map fst Systems.spec |> String.concat ", " in
   let usage = Format.sprintf
@@ -75,7 +72,7 @@ Available options for the selected mode:"
       let outdir = Option.get !Cli.outdir in
       (* Create output dir if it does not exist. *)
       if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
-      let (module Mid) = Middleware.of_string !middleware in
+      let (module Mid) = Middleware.of_string !Cli.middleware in
       let (module E) = Mid.get_exporter targetsys in
       let module M = Makefile.Make(E) in
       (* This used to be Makefile *)

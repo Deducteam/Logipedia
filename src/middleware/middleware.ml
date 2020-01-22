@@ -6,6 +6,7 @@
     implementing the signature {!val:S} and exposed in this file. *)
 open Core
 open Extras
+open Console
 module B = Kernel.Basic
 module D = Api.Dep
 module E = Parsing.Entry
@@ -114,11 +115,19 @@ module Sttfa : S = MidSttfa
     {!val:of_string}, it defines by which identifier any middleware is
     available. *)
 let spec : (string * (module S)) list =
-  [ ( "sttfa"  , (module Sttfa  ) )
+  [ ( "dummy"  , (module Dummy  ) )
+  ; ( "sttfa"  , (module Sttfa  ) )
   ; ( "cupicef", (module Cupicef) )
   ; ( "ctpicef", (module Ctpicef) )  ]
 
 (** [of_string s] returns the middleware associated to string [s]. *)
 let of_string : string -> (module S) = fun s ->
   try List.assoc (String.lowercase_ascii s) spec
-  with Not_found -> (module Dummy)
+  with Not_found -> exit_with "Middleware not found: %s" s
+
+let options : Cli.t list =
+  (* Documentation string for middlewares. *)
+  let available_mid = List.map fst spec |> String.concat ", " in
+  [ ( "-m"
+    , Arg.Set_string Cli.middleware
+    , Format.sprintf " Middleware to use, one of %s" available_mid ) ]

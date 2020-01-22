@@ -57,7 +57,7 @@ end
 
 module Make(E:Export.EXPORTER) : MAKEFILE =
 struct
-open Build_template
+  open Build_template
   open Filename
   open Console
 
