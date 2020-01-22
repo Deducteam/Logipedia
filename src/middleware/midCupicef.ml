@@ -1,3 +1,4 @@
+open Core
 module B = Kernel.Basic
 module D = Api.Dep
 module T = Kernel.Term
@@ -68,6 +69,6 @@ type item = Kernel.Basic.mident * Parsing.Entry.entry
 let item_of_entry md e = (md,e)
 let string_of_item target (_,_) = match target with
   | Core.Systems.Latex -> "Not implemented yet."
-  | sys -> raise (Core.Systems.UnsupportedSystem ("Cupicef doesn't support: " ^ (Core.Systems.to_string sys)))
+  | sys -> Console.exit_with "Cupicef doesn't support: %s" (Core.Systems.to_string sys)
 
 let get_exporter _ = assert false
