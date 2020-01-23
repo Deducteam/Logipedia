@@ -1,10 +1,8 @@
 (executable
-  (name logipedia)
-  (public_name logipedia)
-  (modules logipedia)
-  (libraries
-    logipedia.hollight logipedia.pvs logipedia.lean logipedia.coq
-    logipedia.matita logipedia.opentheory logipedia.export logipedia.core
+  (name eksporti)
+  (public_name eksporti)
+  (modules eksporti)
+  (libraries logipedia.export logipedia.middleware logipedia.core
     logipedia.sttfa))
 
 (executable

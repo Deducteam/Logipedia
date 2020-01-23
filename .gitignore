@@ -1,6 +1,7 @@
 # Dune generated files
 .merlin
-logipedia
+eksporti
+dk2json
 
 # OCamlbuild files.
 _build/
@@ -56,6 +57,7 @@ export/matita/root
 
 # BDD files
 *.bson
+*.lpdb
 
 # MAKEFILE temporary files
 .library_depend*

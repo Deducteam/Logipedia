@@ -15,8 +15,8 @@ type tx =
 exception IllTaxon
 (** Exception raised when reading an ill formed taxon. *)
 
-let theory = "cic"
-let encoding = [B.mk_mident "cic"]
+let theory = "ctpicef"
+let encoding = [B.mk_mident "ctpicef"]
 
 let tx_of_def _ _ = TxDefinition
 
@@ -64,6 +64,10 @@ let label = function
 
 (* TODO: Define cic items, and how to print them on the website
    depending on the export system *)
-type item = unit
-let item_of_entry _ _ = ()
-let string_of_item _ _ = ""
+type item = Kernel.Basic.mident * Parsing.Entry.entry
+let item_of_entry md e = (md,e)
+let string_of_item target (_,_) = match target with
+  | Core.Systems.Latex -> "Not implemented yet."
+  | sys -> raise (Core.Systems.UnsupportedSystem ("Cupicef doesn't support: " ^ (Core.Systems.to_string sys)))
+
+let get_exporter _ = assert false

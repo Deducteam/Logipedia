@@ -24,27 +24,25 @@ _depdir = .depends
 
 #### Logipedia binary ##############################################
 
-LOGIPEDIA = _build/install/default/bin/logipedia
+EKSPORTI = _build/install/default/bin/eksporti
 DK2JSON = _build/install/default/bin/dk2json
 
 .PHONY: all
 all: bin
 
-logipedia: bin
-	@-$(RM) $@
-	@ln -s $(LOGIPEDIA) logipedia
+bin: eksporti dk2json
 
-dk2json: bin
-	@-$(RM) $@
-	@ln -s $(DK2JSON) $@
-
-bin: $(LOGIPEDIA) $(DK2JSON)
-
-.PHONY: $(LOGIPEDIA) $(DK2JSON)
-$(LOGIPEDIA):
+.PHONY: $(EKSPORTI) $(DK2JSON)
+$(EKSPORTI):
 	@dune build
 $(DK2JSON):
 	@dune build
+
+eksporti: $(EKSPORTI)
+	@ln -sf $< eksporti
+
+dk2json: $(DK2JSON)
+	@ln -sf $< $@
 
 .PHONY: install
 install:
@@ -115,8 +113,8 @@ clean:
 	@$(RM) -r $(_depdir)
 	@$(RM) -f *.lpdb
 	@$(RM) -f .*.lpdb
-	@$(RM) dk2json
-	@$(RM) logipedia
+	@$(RM) $(DK2JSON)
+	@$(RM) $(EKSPORTI)
 
 .PHONY: distclean
 distclean: clean

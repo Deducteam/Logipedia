@@ -21,14 +21,3 @@ let mk_generators : string -> (DkTools.Mident.t -> DkTools.entry list pp) ->
     | _                                             -> None
   in
   [sysrule; objrule; filrule]
-
-(** A basis for sttfa makefiles. *)
-module Basis =
-struct
-  type nonrec key = Key.t
-  let key_eq = Key.eq
-  let pp_key = Key.pp
-  type nonrec value = Value.t
-  let valid_stored = valid_stored
-  let rules = []
-end

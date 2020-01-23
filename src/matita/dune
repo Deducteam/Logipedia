@@ -1,5 +1,0 @@
-(library
-  (name matita)
-  (public_name logipedia.matita)
-  (synopsis "Matita into and out of Logipedia")
-  (libraries logipedia.export logipedia.core logipedia.sttfa))

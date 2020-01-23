@@ -66,6 +66,9 @@ struct
       file. *)
   let write_depends : bool ref = ref false
 
+  (** The middleware used. Cli.t to set it is in Middleware. *)
+  let middleware : string ref = ref ""
+
   (** Options passed to dedukti. *)
   let dkopts : string ref = ref ""
 

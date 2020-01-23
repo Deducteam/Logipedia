@@ -4,14 +4,10 @@
 
     A middleware is defined by a module (e.g. {!module:MidSttfa})
     implementing the signature {!val:S} and exposed in this file. *)
-
 open Core
 open Extras
-module B = Kernel.Basic
-module D = Api.Dep
-module E = Parsing.Entry
+open Console
 module T = Kernel.Term
-module U = Core.Uri
 
 (** Specification of a middleware. *)
 module type S = sig
@@ -28,7 +24,7 @@ module type S = sig
   val theory : string
   (** Name of the theory. *)
 
-  val encoding : B.mident list
+  val encoding : DkTools.Mident.t list
   (** List of modules that encode the theory. *)
 
   val tx_of_def : T.term option -> T.term -> tx
@@ -66,15 +62,22 @@ module type S = sig
   (** [label tx] returns labels for the fields {!Json_types.item.term} and
       {!Json_types.item.term_opt}. *)
 
-  val item_of_entry : B.mident -> Parsing.Entry.entry -> item
+  val item_of_entry : DkTools.Mident.t -> DkTools.entry -> item
   (** [item_of_entry md entry] returns an item of the logic given an appropriate
       Dedukti entry [entry] of module [md]. *)
 
-  val string_of_item : item -> Systems.t -> string
-  (** [string_of_item md item system] returns a string representation
-      of [item] of module [md] in the export system [system]. This
-      will be printed on the website in the export fields. *)
+  (** {b NOTE} The export section of the website will
+      - Display the output of {!val:string_of_item} for all statements
+      - Offer to download the whole file processed with {!val:get_exporter}. *)
 
+  val string_of_item : Systems.t -> item -> string
+  (** [string_of_item system item] returns a string representation
+      of [item] in the export system [system].
+      This will be printed on the website in the export fields. *)
+
+  val get_exporter : Systems.t -> (module Export.S)
+  (** [get_exporter system] Generate an Exporter module to the given system.
+      This allows to handle export through the Makefile system. *)
 end
 
 (** A dummy middleware. *)
@@ -94,24 +97,41 @@ struct
   let label _ = "dummy",None
   let item_of_entry _ _ = ()
   let string_of_item _ _ = "dummy"
+  let get_exporter _ = assert false
 end
 
 (** {1 Bindings of available middlewares} *)
 
-(** Coq and the Calculus of Inductive Construction. *)
-module Cic : S = MidCic
+(** Calculus of Universe Polymorphic Inductive Constructions with Eta and
+    Fixpoints. *)
+module Cupicef : S = MidCupicef
 
-(** Simple Type Theory forall. *)
+(** Calculus of Template Polymorphic Inductive Constructions with Eta and
+    Fixpoints. *)
+module Ctpicef : S = MidCtpicef
+
+(** Simple Type Theory ∀. *)
 module Sttfa : S = MidSttfa
 
 (** An association list mapping strings to the modules. Along with
     {!val:of_string}, it defines by which identifier any middleware is
     available. *)
 let spec : (string * (module S)) list =
-  [ ( "sttfa", (module Sttfa) )
-  ; ( "cic"  , (module Cic  ) ) ]
+  [ ( "dummy"  , (module Dummy  ) )
+  ; ( "sttfa"  , (module Sttfa  ) )
+  ; ( "cupicef", (module Cupicef) )
+  ; ( "ctpicef", (module Ctpicef) )  ]
 
 (** [of_string s] returns the middleware associated to string [s]. *)
 let of_string : string -> (module S) = fun s ->
   try List.assoc (String.lowercase_ascii s) spec
-  with Not_found -> (module Dummy)
+  with Not_found -> exit_with "Middleware not found: %s" s
+
+(** Command line options to select middleware. It appears in this
+    module rather than {!module:Console.Cli} to avoid cyclic
+    dependencies. *)
+let options : Cli.t list =
+  let available_mid = List.map fst spec |> String.concat ", " in
+  [ ( "-m"
+    , Arg.Set_string Cli.middleware
+    , Format.sprintf " Middleware to use; one of %s" available_mid ) ]

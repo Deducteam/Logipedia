@@ -20,7 +20,7 @@ sig
   val print_document : Jt.document pp
 end
 
-module Make : functor (M:Middleware.S) -> S = functor (M:Middleware.S) ->
+module Make (M:Middleware.S) : S =
 struct
 
   (** Information collected in the current time. *)
@@ -177,7 +177,7 @@ struct
             in
             { Jt.system = Systems.to_string sys
             ; file
-            ; etype = Option.map (fun x -> M.string_of_item x sys) item }
+            ; etype = Option.map (M.string_of_item sys) item }
           in
           (* Add section to download Dedukti file *)
           let exp =

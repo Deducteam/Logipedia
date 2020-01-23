@@ -31,8 +31,8 @@ let pvs_opts =
     system [sy]. *)
 let get_additional_opts : Systems.t -> (string * Arg.spec * string) list =
   function
-  | `Pvs -> pvs_opts
-  | _    -> sys_opts
+  | Pvs -> pvs_opts
+  | _   -> sys_opts
 
 (** [anon arg] process anonymous argument [arg]. The first anonymous argument is
     supposed to be the export mode. *)
@@ -45,21 +45,10 @@ let anon arg =
       let sy = Systems.of_string arg in
       export_mode := Some(sy);
       let sys_opts = get_additional_opts sy in
-      options := Arg.align (sys_opts @ Cli.options)
+      options := Arg.align (sys_opts @ Middleware.options @ Cli.options)
     with Systems.UnsupportedSystem(s) ->
       let msg = Format.sprintf "Can't export to %s: system not supported" s in
       raise (Arg.Bad msg)
-
-(** [get_system sys] returns the system module from a system
-    identifier [sys]. *)
-let get_system : Systems.t -> (module Export.S) = fun sy ->
-  match sy with
-  | `Pvs        -> (module Pvs)
-  | `Hollight   -> (module Hollight)
-  | `Lean       -> (module Lean)
-  | `Coq        -> (module Coq)
-  | `Matita     -> (module Matita)
-  | `OpenTheory -> (module Opentheory)
 
 let _ =
   let available_sys = List.map fst Systems.spec |> String.concat ", " in
@@ -73,8 +62,8 @@ Available options for the selected mode:"
   try
     Arg.parse_dynamic options anon usage;
     match !export_mode with
-    | None       -> raise @@ Arg.Bad "Missing export"
-    | Some(syst) ->
+    | None            -> raise (Arg.Bad "Missing export")
+    | Some(targetsys) ->
       (* Get all the input files. *)
       let files =
         !infiles @
@@ -83,16 +72,17 @@ Available options for the selected mode:"
       let outdir = Option.get !Cli.outdir in
       (* Create output dir if it does not exist. *)
       if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
-      let (module Syst) = get_system syst in
-      let open Syst.Makefile in
-      let module B = Build.Classic in
-      let build = B.build ~key_eq ".sttfaexp" ~valid_stored in
+      let (module Mid) = Middleware.of_string !Cli.middleware in
+      let (module E) = Mid.get_exporter targetsys in
+      (* Setting up build system. *)
+      let module M = Export.GenBuildSys(E) in
+      let build = M.(Build.Classic.build ~key_eq ".sttfaexp" ~valid_stored) in
       let build target =
-        match build ~generators [] target with
+        match build ~generators:M.generators M.rules target with
         | Ok(_)      -> ()
-        | Error(key) -> Format.printf "No rule to make %a@." pp_key key
+        | Error(key) -> Format.printf "No rule to make %a@." M.pp_key key
       in
-      want files |> List.iter build
+      M.want files |> List.iter build
   with
   | Arg.Bad(s) ->
     Format.printf "%s\n" s;
