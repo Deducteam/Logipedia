@@ -45,7 +45,7 @@ let anon arg =
       let sy = Systems.of_string arg in
       export_mode := Some(sy);
       let sys_opts = get_additional_opts sy in
-      options := Arg.align (sys_opts @ Cli.options)
+      options := Arg.align (sys_opts @ Middleware.options @ Cli.options)
     with Systems.UnsupportedSystem(s) ->
       let msg = Format.sprintf "Can't export to %s: system not supported" s in
       raise (Arg.Bad msg)
