@@ -75,7 +75,7 @@ Available options for the selected mode:"
       let (module Mid) = Middleware.of_string !Cli.middleware in
       let (module E) = Mid.get_exporter targetsys in
       (* Setting up build system. *)
-      let module M = Makefile.Make(E) in
+      let module M = Export.GenBuildSys(E) in
       let build = M.(Build.Classic.build ~key_eq ".sttfaexp" ~valid_stored) in
       let build target =
         match build ~generators:M.generators M.rules target with

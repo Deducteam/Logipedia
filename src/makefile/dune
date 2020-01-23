@@ -1,6 +1,0 @@
-(library
-   (name makefile)
-   (public_name logipedia.makefile)
-   (synopsis "Makefile for build systems.")
-   (modules makefile)
-   (libraries logipedia.core logipedia.export))
