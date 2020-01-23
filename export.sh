@@ -35,9 +35,9 @@ thdir="theories/${thy}"
 srcdir="import/dedukti/${thy}/${pkg}"
 middleware=${mid:-"$thy"}
 
+make
 if [[ "$exp" == "json" ]]
 then
-    make dk2json
     ./dk2json -m "$middleware" -o "$out" -J "$out"\
               -I "$thdir" -I "$srcdir" -d "$srcdir"\
               --dkopts "'${dkopts:-''}'"\
@@ -47,7 +47,6 @@ then
               --coq "export/coq"\
               --matita "export/matita"
 else
-    make logipedia
-    ./logipedia "$exp" -I "$thdir" -I "$srcdir" -o "$out"\
-                -d "$srcdir" -m "$middleware"
+    ./eksporti "$exp" -I "$thdir" -I "$srcdir" -o "$out"\
+               -d "$srcdir" -m "$middleware"
 fi

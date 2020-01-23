@@ -1,7 +1,7 @@
 (executable
-  (name logipedia)
-  (public_name logipedia)
-  (modules logipedia)
+  (name eksporti)
+  (public_name eksporti)
+  (modules eksporti)
   (libraries logipedia.export logipedia.middleware logipedia.core
     logipedia.sttfa))
 
