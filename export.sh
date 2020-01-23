@@ -49,5 +49,5 @@ then
 else
     make logipedia
     ./logipedia "$exp" -I "$thdir" -I "$srcdir" -o "$out"\
-                -d "$srcdir"
+                -d "$srcdir" -m "$middleware"
 fi
