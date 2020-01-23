@@ -69,6 +69,9 @@ struct
   (** The middleware used. Cli.t to set it is in Middleware. *)
   let middleware : string ref = ref ""
 
+  (** Options passed to dedukti. *)
+  let dkopts : string ref = ref ""
+
   (** A command line argument specification. *)
   type t = string * Arg.spec * string
 
@@ -91,7 +94,10 @@ struct
       , " Enable debug mode" )
     ; ( "--depends"
       , Arg.Set write_depends
-      , " Write dependencies of computations into a .d file")
+      , " Write dependencies of computations into a .d file" )
+    ; ( "--dkopts"
+      , Arg.Set_string dkopts
+      , " Options passed to dedukti (to produce dko files)" )
     ; ( "-o"
       , Arg.String (fun s -> outdir := Some(s))
       , " Set output directory" ) ]

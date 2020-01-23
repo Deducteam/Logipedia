@@ -32,7 +32,7 @@ let pvs_opts =
 let get_additional_opts : Systems.t -> (string * Arg.spec * string) list =
   function
   | Pvs -> pvs_opts
-  | _    -> sys_opts
+  | _   -> sys_opts
 
 (** [anon arg] process anonymous argument [arg]. The first anonymous argument is
     supposed to be the export mode. *)
@@ -45,7 +45,7 @@ let anon arg =
       let sy = Systems.of_string arg in
       export_mode := Some(sy);
       let sys_opts = get_additional_opts sy in
-      options := Arg.align (sys_opts @ Cli.options)
+      options := Arg.align (sys_opts @ Middleware.options @ Cli.options)
     with Systems.UnsupportedSystem(s) ->
       let msg = Format.sprintf "Can't export to %s: system not supported" s in
       raise (Arg.Bad msg)
@@ -62,7 +62,7 @@ Available options for the selected mode:"
   try
     Arg.parse_dynamic options anon usage;
     match !export_mode with
-    | None       -> raise @@ Arg.Bad "Missing export"
+    | None            -> raise (Arg.Bad "Missing export")
     | Some(targetsys) ->
       (* Get all the input files. *)
       let files =
@@ -74,13 +74,9 @@ Available options for the selected mode:"
       if not (Sys.file_exists outdir) then Unix.mkdir_rec outdir 0o755;
       let (module Mid) = Middleware.of_string !Cli.middleware in
       let (module E) = Mid.get_exporter targetsys in
-      let module M = Makefile.Make(E) in
-      (* This used to be Makefile *)
-      let build =
-        Build.Classic.build
-          ~key_eq:M.key_eq
-          ".sttfaexp"
-          ~valid_stored:M.valid_stored in
+      (* Setting up build system. *)
+      let module M = Export.GenBuildSys(E) in
+      let build = M.(Build.Classic.build ~key_eq ".sttfaexp" ~valid_stored) in
       let build target =
         match build ~generators:M.generators M.rules target with
         | Ok(_)      -> ()

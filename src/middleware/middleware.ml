@@ -7,11 +7,7 @@
 open Core
 open Extras
 open Console
-module B = Kernel.Basic
-module D = Api.Dep
-module E = Parsing.Entry
 module T = Kernel.Term
-module U = Core.Uri
 
 (** Specification of a middleware. *)
 module type S = sig
@@ -28,7 +24,7 @@ module type S = sig
   val theory : string
   (** Name of the theory. *)
 
-  val encoding : B.mident list
+  val encoding : DkTools.Mident.t list
   (** List of modules that encode the theory. *)
 
   val tx_of_def : T.term option -> T.term -> tx
@@ -66,18 +62,16 @@ module type S = sig
   (** [label tx] returns labels for the fields {!Json_types.item.term} and
       {!Json_types.item.term_opt}. *)
 
-  val item_of_entry : B.mident -> Parsing.Entry.entry -> item
+  val item_of_entry : DkTools.Mident.t -> DkTools.entry -> item
   (** [item_of_entry md entry] returns an item of the logic given an appropriate
       Dedukti entry [entry] of module [md]. *)
 
-  (** Note:
-      The export section of the website will
+  (** {b NOTE} The export section of the website will
       - Display the output of {!val:string_of_item} for all statements
-      - Offer to download the whole file processed with {!val:get_exporter}
-  *)
+      - Offer to download the whole file processed with {!val:get_exporter}. *)
 
   val string_of_item : Systems.t -> item -> string
-  (** [string_of_item system item ] returns a string representation
+  (** [string_of_item system item] returns a string representation
       of [item] in the export system [system].
       This will be printed on the website in the export fields. *)
 
@@ -108,13 +102,15 @@ end
 
 (** {1 Bindings of available middlewares} *)
 
-(** Calculus of Universe Polymorphic Inductive Constructions with Eta and Fixpoints. *)
+(** Calculus of Universe Polymorphic Inductive Constructions with Eta and
+    Fixpoints. *)
 module Cupicef : S = MidCupicef
 
-(** Calculus of Template Polymorphic Inductive Constructions with Eta and Fixpoints. *)
+(** Calculus of Template Polymorphic Inductive Constructions with Eta and
+    Fixpoints. *)
 module Ctpicef : S = MidCtpicef
 
-(** Simple Type Theory forall. *)
+(** Simple Type Theory ∀. *)
 module Sttfa : S = MidSttfa
 
 (** An association list mapping strings to the modules. Along with
@@ -131,9 +127,11 @@ let of_string : string -> (module S) = fun s ->
   try List.assoc (String.lowercase_ascii s) spec
   with Not_found -> exit_with "Middleware not found: %s" s
 
+(** Command line options to select middleware. It appears in this
+    module rather than {!module:Console.Cli} to avoid cyclic
+    dependencies. *)
 let options : Cli.t list =
-  (* Documentation string for middlewares. *)
   let available_mid = List.map fst spec |> String.concat ", " in
   [ ( "-m"
     , Arg.Set_string Cli.middleware
-    , Format.sprintf " Middleware to use, one of %s" available_mid ) ]
+    , Format.sprintf " Middleware to use; one of %s" available_mid ) ]

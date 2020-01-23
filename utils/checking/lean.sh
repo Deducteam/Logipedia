@@ -17,4 +17,7 @@ then
     exit 1
 fi
 
-lean "${indir}/*.lean"
+cd ${indir}
+ret=$(lean *.lean)
+cd -
+exit $ret
