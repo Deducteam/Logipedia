@@ -131,91 +131,109 @@ struct
                ; ct_deps = NameMap.empty
                ; ct_thax = NameMap.empty }
     in
+    let get_id_of_entry = function
+      | E.Decl(_,id,_,_) -> id
+      | E.Def(_,id,_,_,_) -> id
+      | E.Rules(_,r::_) ->
+	 begin
+	   match r.pat with
+	   | Pattern(_,n,_) -> B.id n
+	   | _ -> assert false (* the head of a rule should be a symbol *)
+	 end
+      | _ -> assert false (* tx_of_entry should be defined for more than Def, Decl and Rules *)
+    in
     let rec loop : content -> E.entry list -> Jt.item list = fun acc ens ->
       match ens with
       | []      -> []
       | e :: tl ->
-        match e with
-        | E.Decl(_,id,_,_)
-        | E.Def(_,id,_,_,_) ->
-          log_jscomp ~lvl:6 "compiling [%a]" Api.Pp.Default.print_ident id;
-          let inm = B.mk_name mdl id in
-          let deps =
-            let keep n = not @@ B.(List.mem_eq mident_eq (md n)) M.encoding in
-            Deps.deps_of_entry mdl e |> List.filter keep
-          in
-          let acc =
-            let ct_deps = NameMap.add inm deps acc.ct_deps in
-            { acc with ct_deps }
-          in
-          let deps =
-            let fill n =
-              Uri.of_dkname n M.theory
-                (M.string_of_tx ~short:true (find_taxon acc n))
+	 match M.tx_of_entry e with
+	 | None -> loop acc tl
+	 | Some tx ->
+	    let id = get_id_of_entry e in
+            log_jscomp ~lvl:6 "compiling [%a]" Api.Pp.Default.print_ident id;
+            let inm = B.mk_name mdl id in
+            let deps =
+              let keep n = not @@ B.(List.mem_eq mident_eq (md n)) M.encoding in
+              Deps.deps_of_entry mdl e |> List.filter keep
             in
-            List.map fill deps
-          in
-          let tx =
-            match e with
-            | E.Decl(_,_,_,t)  -> M.tx_of_decl t
-            | E.Def(_,_,_,t,u) -> M.tx_of_def t u
-            | _                -> assert false
-          in
-          let label = M.label tx in
-          let acc = { acc with ct_taxo = NameMap.add inm tx acc.ct_taxo } in
-          let uri = Uri.of_dkname (B.mk_name mdl id) M.theory
+            let acc =
+              let ct_deps = NameMap.add inm deps acc.ct_deps in
+              { acc with ct_deps }
+            in
+            let deps =
+              let fill n =
+		Uri.of_dkname n M.theory
+                  (M.string_of_tx ~short:true (find_taxon acc n))
+              in
+              List.map fill deps
+            in
+            let label = M.label tx in
+            let acc = { acc with ct_taxo = NameMap.add inm tx acc.ct_taxo } in
+            let uri = Uri.of_dkname (B.mk_name mdl id) M.theory
               (M.string_of_tx ~short:true tx) |> Uri.to_string
-          in
-          let art2exp (sys, pth) =
-            let item =
-              if List.mem_eq B.mident_eq mdl M.encoding then None else
-              Some(M.item_of_entry mdl e)
             in
-            let ext = List.assoc sys Systems.exts in
-            let file =
-              Filename.(pth </> (B.string_of_mident mdl <.> ext))
+            let art2exp (sys, pth) =
+              let item =
+		if List.mem_eq B.mident_eq mdl M.encoding then None else
+		  Some(M.item_of_entry mdl e)
+              in
+              let ext = List.assoc sys Systems.exts in
+              let file =
+		Filename.(pth </> (B.string_of_mident mdl <.> ext))
+              in
+              { Jt.system = Systems.to_string sys
+              ; file
+              ; etype = Option.map (M.string_of_item sys) item }
             in
-            { Jt.system = Systems.to_string sys
-            ; file
-            ; etype = Option.map (M.string_of_item sys) item }
-          in
-          (* Add section to download Dedukti file *)
-          let exp =
-            { Jt.system = "dedukti"
-            ; file = DkTools.get_file mdl
-            ; etype = None }
-            :: (List.map art2exp !Systems.artefact_path) in
-          begin match e with
+            (* Add section to download Dedukti file *)
+            let exp =
+              { Jt.system = "dedukti"
+              ; file = DkTools.get_file mdl
+              ; etype = None }
+              :: (List.map art2exp !Systems.artefact_path)
+	    in
+            begin match e with
             | E.Decl(_,_,_,t) ->
-              let ppt_term =  ppt_of_dkterm mdl acc t in
-              { name = uri
-              ; taxonomy = M.string_of_tx tx
-              ; term = ppt_term
-              ; term_opt = None
-              ; label
-              ; deps = List.map Uri.to_string deps
-              ; theory = []
-              ; exp } :: (loop acc tl)
+               let ppt_term =  ppt_of_dkterm mdl acc t in
+               { name = uri
+               ; taxonomy = M.string_of_tx tx
+               ; term = ppt_term
+               ; term_opt = None
+               ; label
+               ; deps = List.map Uri.to_string deps
+               ; theory = []
+               ; exp } :: (loop acc tl)
             | E.Def(_,_,_,teo,te)  ->
               (* We use lazy to remap the computation, and avoid computing the
                  ppterm to finally discard it. *)
-              let lppt = lazy (ppt_of_dkterm mdl acc te) in
-              let lppto = Option.map
-                  (fun t -> lazy (ppt_of_dkterm mdl acc t)) teo
-              in
-              let (lazy term, term_opt) = M.fields_of_def tx lppto lppt in
-              let term_opt = Option.map Lazy.force term_opt in
-              { name = uri
-              ; taxonomy = M.string_of_tx tx
-              ; term
-              ; term_opt
-              ; label
-              ; deps = List.map Uri.to_string deps
-              ; theory = []
-              ; exp } :: (loop acc tl)
-            | _                     -> loop acc tl
-          end
-        | _ -> loop acc tl
+               let lppt = lazy (ppt_of_dkterm mdl acc te) in
+               let lppto = Option.map
+                 (fun t -> lazy (ppt_of_dkterm mdl acc t)) teo
+               in
+               let (lazy term, term_opt) = M.fields_of_def tx lppto lppt in
+               let term_opt = Option.map Lazy.force term_opt in
+               { name = uri
+               ; taxonomy = M.string_of_tx tx
+               ; term
+               ; term_opt
+               ; label
+               ; deps = List.map Uri.to_string deps
+               ; theory = []
+               ; exp } :: (loop acc tl)
+	    | E.Rules(_,rul_list) ->
+	       let rule_to_item : Kernel.Rule.partially_typed_rule -> Jt.item = fun r ->
+		 { name = uri
+		 ; taxonomy = M.string_of_tx tx
+		 ; term = ppt_of_dkterm mdl acc (Kernel.Rule.pattern_to_term r.pat)
+		 ; term_opt = Some (ppt_of_dkterm mdl acc (r.Kernel.Rule.rhs))
+		 ; label
+		 ; deps = List.map Uri.to_string deps
+		 ; theory = []
+		 ; exp }
+	       in
+	       (List.map rule_to_item rul_list) @ (loop acc tl)
+            | _                     -> assert false
+            end
     in
     loop init entries
 

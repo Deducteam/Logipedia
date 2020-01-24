@@ -1,5 +1,6 @@
 module B = Kernel.Basic
 module D = Api.Dep
+module E = Parsing.Entry
 module T = Kernel.Term
 module U = Core.Uri
 
@@ -18,9 +19,10 @@ exception IllTaxon
 let theory = "cupicef"
 let encoding = [B.mk_mident "cupicef"]
 
-let tx_of_def _ _ = TxDefinition
-
-let tx_of_decl _ = TxAxiom
+let tx_of_entry = function
+  | E.Def(_,_,_,_,_) -> Some TxDefinition
+  | E.Decl(_,_,_,_)  -> Some TxAxiom
+  | _                -> None
 
 let string_of_tx ?(short=false) = function
   | TxAxiom          -> if short then "axm" else "axiom"
