@@ -1,6 +1,7 @@
 module B = Kernel.Basic
 module D = Api.Dep
 module E = Parsing.Entry
+module R = Kernel.Rule
 module T = Kernel.Term
 module U = Core.Uri
 
@@ -63,8 +64,19 @@ let tx_of_entry = function
 	  then TxProj
 	  else TxFun
      end
-  | E.Rules(_,_)      -> Some TxRule
-  | _ -> None
+  | E.Rules(_,r::[])  ->
+     begin
+       match r.R.pat with
+       | R.Pattern(_,cst,_) when
+	   (B.id cst = B.mk_ident "Term" && B.md cst = B.mk_mident theory) ->
+	  None
+       | R.Pattern(_,cst,_) when
+	   (B.id cst = B.mk_ident "etaExpand" && B.md cst = B.mk_mident theory) ->
+	  None
+       | _ -> Some TxRule
+     end
+  | E.Rules(_,_)      -> assert false (* All rule should be on its own entry. *)
+  | _                 -> None
 
 let string_of_tx ?(short=false) = function
   | TxFun  -> if short then "fun"  else "function"
