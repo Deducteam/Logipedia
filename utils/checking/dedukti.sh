@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-usage="Dk checker: $0 -p PKG -t THY -- [Dk options]"
+usage="Check dk files of a Logipedia library
+Usage: $0 -p PKG -t THY -- [Dk options]"
 
 dir="${0%/*}"
 root="$(realpath ${dir}/../../)"
@@ -16,14 +17,16 @@ do
             ;;
     esac
 done
-
-src="${dkimp}/${thy}/${pkg}/"
-# Download package and theory if it doesn't exist
-if [[ ! -d "${dkimp}/${thy}" ]]
+if [[ -z "$pkg" ]] || [[ -z "$thy" ]]
 then
-    curl "http://www.lsv.fr/~hondet/logipedia/${thy}.tar.bz2" | tar xj
+    echo -e "Package or theory not given"
+    echo "$usage"
+    exit 1
 fi
 
+$($root/utils/download.sh -p "$pkg" -t "$thy")
+
+src="${dkimp}/${thy}/${pkg}/"
 thdir="${root}/theories/${thy}"
 fls="$(dkdep -s -I ${thdir} -I ${src} ${thdir}/*.dk ${src}/*.dk)"
 for f in ${fls}
