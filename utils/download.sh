@@ -19,6 +19,14 @@ do
     esac
 done
 
+if [[ -z "$pkg" ]] || [[ -z "$thy" ]]
+then
+    echo "Package or theory not provided"
+    echo ""
+    echo "$usage"
+    exit 1
+fi
+
 rootadd="http://www.lsv.fr/~hondet/logipedia/"
 ext=".tar.bz2"
 if [[ ! -d "${dkimp}/${thy}" ]]
