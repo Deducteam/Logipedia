@@ -72,4 +72,4 @@ let string_of_item target (md,e) = match target with
   | sys -> Console.exit_with "Encoding cupicef doesn't support target: %s"
              (Systems.to_string sys)
 
-let get_exporter _ = assert false
+let get_exporter = Cupicef.Latex.get_exporter

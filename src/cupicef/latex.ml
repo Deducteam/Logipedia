@@ -2,6 +2,7 @@ open Parsing.Entry
 open Kernel.Term
 open Kernel.Basic
 open Format
+open Core
 
 let enc_md = mk_mident "cupicef"
 
@@ -71,3 +72,15 @@ let pp_entry fmt = function
   | _ -> assert false
 
 let export_to_string _ e = asprintf "$$%a$$" pp_entry e
+
+let get_exporter target : (module Export.S) = match target with
+  | Systems.Latex ->
+     (module struct
+        type ast = unit
+        let target = Systems.Latex
+        let compile _ _ = ()
+        let decompile _ = assert false
+        let export _ () = ()
+      end)
+  | sys -> Console.exit_with
+             "Encoding cupicef doesn't support target: %s" (Systems.to_string sys)
