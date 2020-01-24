@@ -22,7 +22,10 @@ jobs:
       - run: sudo apk add m4 git
       - <<: *opam_deps
       - checkout
-      - run: eval $(opam env) && make THEORY=sttfa PKG=arith_fermat dedukti
+      - run: |
+          eval $(opam env)
+          utils/download.sh -p arith_fermat -t sttfa
+          utils/checking/dedukti.sh -p arith_fermat -t sttfa
 
   coq_export:
     <<: *ocaml_img

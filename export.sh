@@ -22,13 +22,7 @@ then
     exit 1
 fi
 
-# Download library
-cd "import/dedukti"
-if [[ ! -d "$thy" ]]
-then
-    curl "http://www.lsv.fr/~hondet/logipedia/${thy}.tar.bz2" | tar xj
-fi
-cd -
+$(utils/download.sh -p "$pkg" -t "$thy")
 
 out="export/${exp}"
 thdir="theories/${thy}"
