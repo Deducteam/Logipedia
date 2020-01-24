@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 usage="Dk checker: $0 -p PKG -t THY -- [Dk options]"
 
-set -x
-
 dir="${0%/*}"
 root="$(realpath ${dir}/../../)"
 dkimp="${root}/import/dedukti/"
