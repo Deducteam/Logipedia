@@ -30,21 +30,19 @@ DK2JSON = _build/install/default/bin/dk2json
 .PHONY: all
 all: bin
 
-eksporti: bin
-	@-$(RM) $@
-	@ln -s $(EKSPORTI) eksporti
-
-dk2json: bin
-	@-$(RM) $@
-	@ln -s $(DK2JSON) $@
-
-bin: $(EKSPORTI) $(DK2JSON)
+bin: eksporti dk2json
 
 .PHONY: $(EKSPORTI) $(DK2JSON)
 $(EKSPORTI):
 	@dune build
 $(DK2JSON):
 	@dune build
+
+eksporti: $(EKSPORTI)
+	@ln -sf $< eksporti
+
+dk2json: $(DK2JSON)
+	@ln -sf $< $@
 
 .PHONY: install
 install:
