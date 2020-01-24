@@ -3,6 +3,7 @@ usage="Check dk files of a Logipedia library
 Usage: $0 -p PKG -t THY -- [Dk options]"
 
 dir="${0%/*}"
+. "${dir}/../lib.sh"
 root="$(realpath ${dir}/../../)"
 dkimp="${root}/import/dedukti/"
 
@@ -17,9 +18,10 @@ do
             ;;
     esac
 done
-if [[ -z "$pkg" ]] || [[ -z "$thy" ]]
+check_not_null "$pkg" "$thy"
+if [[ "$?" == "1" ]]
 then
-    echo -e "Package or theory not given"
+    echo -e "Package or theory not given\n"
     echo "$usage"
     exit 1
 fi

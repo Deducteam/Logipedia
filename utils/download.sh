@@ -4,6 +4,7 @@ usage="Download Logipedia packages
 Usage: $0 -p PKG -t THY"
 
 dir="${0%/*}"
+. "${dir}/lib.sh"
 root="$(realpath ${dir}/../)"
 dkimp="${root}/import/dedukti/"
 
@@ -19,10 +20,10 @@ do
     esac
 done
 
-if [[ -z "$pkg" ]] || [[ -z "$thy" ]]
+check_not_null "$pkg" "$thy"
+if [[ $? == "1" ]]
 then
-    echo "Package or theory not provided"
-    echo ""
+    echo -e "Missing argument\n"
     echo "$usage"
     exit 1
 fi
