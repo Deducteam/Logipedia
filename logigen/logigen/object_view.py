@@ -20,14 +20,22 @@ def make_view_object(obj, pp):
     """
     deps = [{"name": name} for name in obj.deps]
     deps = _with_object_url(deps)
+    pp_term=pp.pretty_print(obj.term)
     pp_opt = pp.pretty_print(obj.term_opt) if obj.term_opt else None
+
+    for e in obj.exp:
+        if e['system'] == "latex":
+            if pp_opt:
+                pp_opt=e['etype']
+            else:
+                pp_term=e['etype']
 
     return dict(
         name=obj.name,
         taxonomy=obj.taxonomy,
         term_label=obj.label[0],
         term_opt_label=obj.label[1],
-        pp=pp.pretty_print(obj.term),
+        pp=pp_term,
         pp_opt=pp_opt,
         deps=deps,
         theory=obj.theory,
