@@ -22,7 +22,7 @@ then
     exit 1
 fi
 
-$(utils/download.sh -p "$pkg" -t "$thy")
+setup "$pkg" "$thy"
 
 out="export/${exp}"
 thdir="theories/${thy}"

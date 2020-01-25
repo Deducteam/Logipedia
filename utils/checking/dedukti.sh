@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # TODO add the parsing of Dedukti options
 usage="Check dk files of a Logipedia library
-Usage: $0 -p PKG -t THY -- [Dk options]"
+Usage: $(basename $0) -p PKG -t THY -- [Dk options]"
 
 source "${0%/*}/../lib.sh"
 while getopts 'p:t:h' arg
@@ -15,9 +15,8 @@ do
             ;;
     esac
 done
-check_not_null "$pkg" "$thy" || exit_with "$LINENO: Missing argument"
 
-$(${root}/utils/download.sh -p "$pkg" -t "$thy")
+setup "$pkg" "$thy"
 
 src="${dkimp}/${thy}/${pkg}/"
 thdir="${root}/theories/${thy}"

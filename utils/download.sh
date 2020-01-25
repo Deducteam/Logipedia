@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-progname="$(basename $0)"
 usage="Download Logipedia packages
-Usage: $progname -p PKG -t THY"
+Usage: $(basename $0) -p PKG -t THY"
 
 source "${0%/*}/lib.sh"
 
@@ -11,14 +10,13 @@ do
     case "$arg" in
         p) pkg="$OPTARG" ;;
         t) thy="$OPTARG" ;;
-        h)
-            echo "$usage"
-            exit 0
-            ;;
+	h) echo "$usage"
+           exit 0
+           ;;
     esac
 done
 
-check_not_null "$pkg" "$thy" || exit_with "$LINENO: Missing argument"
+check_req_args "$pkg" "$thy"
 
 rootdl="http://www.lsv.fr/~hondet/logipedia/"
 ext=".tar.bz2"
