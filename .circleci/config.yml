@@ -174,7 +174,7 @@ jobs:
       - run: pip install --user ./logigen
       - run: logigen -i /tmp/workspace/json --pp-extra "--uriconv /tmp/LogiPPedia/scheme/uri2syms/sttfa-latex.scm"
       - run: cp -r /tmp/workspace/export gen_website/
-      - run: cp -r import gen_website/
+      - run: cp -r /tmp/workspace/import gen_website/
       - run: cp -r gen_website /tmp/
       - store_artifacts:
           path: /tmp/gen_website
