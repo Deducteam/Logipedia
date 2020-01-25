@@ -26,6 +26,7 @@ jobs:
           eval $(opam env)
           utils/download.sh -p arith_fermat -t sttfa
           utils/checking/dedukti.sh -p arith_fermat -t sttfa
+     - run: cp import /tmp
 
   coq_export:
     <<: *ocaml_img
