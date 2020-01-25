@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+# Any script can source this one to init environment
+
+root="$(realpath ${0%/*}/../)"
+dkimp="${root}/import/dedukti"
+mkdir -p "$dkimp"
 
 # checks that all values passed as parameters are not empty
 check_not_null () {
@@ -16,4 +21,9 @@ check_not_null () {
         fi
     done
     return 0
+}
+
+exit_with () {
+    echo "${0:-'Unknown error'}" 1>&2
+    exit 1
 }
