@@ -28,8 +28,8 @@ check_req_args () {
     done
 }
 
-# Call with package as first arg and theory as snd to set up environment
+# Call with theory as first arg and package as snd to set up environment
 setup () {
     check_req_args "$1" "$2"
-    ${root}/utils/download.sh "$1" "$2"
+    ${root}/utils/download.sh -t "$1" -p "$2"
 }

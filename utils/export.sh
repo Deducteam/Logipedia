@@ -1,6 +1,7 @@
 #!/bin/bash
 
-usage="Usage: $0 -e EXP -p PKG -t THY [-m MID] [-k DKOPT]"
+source "${0%/*}/lib.sh"
+usage="Usage: $(basename $0) -e EXP -t THY -p PKG [-m MID] [-k DKOPT]"
 while getopts 'e:p:t:d:m:k:h' arg
 do
     case "$arg" in
@@ -22,11 +23,11 @@ then
     exit 1
 fi
 
-setup "$pkg" "$thy"
+setup "$thy" "$pkg"
 
-out="export/${exp}"
-thdir="theories/${thy}"
-srcdir="import/dedukti/${thy}/${pkg}"
+out="${root}/export/${exp}"
+thdir="${root}/theories/${thy}"
+srcdir="${root}/import/dedukti/${thy}/${pkg}"
 middleware=${mid:-"$thy"}
 
 make
