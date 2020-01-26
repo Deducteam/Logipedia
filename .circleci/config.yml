@@ -27,6 +27,12 @@ jobs:
           utils/download.sh -p arith_fermat -t sttfa
           utils/checking/dedukti.sh -p arith_fermat -t sttfa
       - run: cp -r import /tmp
+      - store_artifacts:
+          path: /tmp/import/dedukti/sttfa/arith_fermat
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - import/dedukti/sttfa/arith_fermat
 
   coq_export:
     <<: *ocaml_img
