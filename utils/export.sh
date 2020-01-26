@@ -25,15 +25,15 @@ fi
 
 setup "$thy" "$pkg"
 
-out="${root}/export/${exp}"
-thdir="${root}/theories/${thy}"
-srcdir="${root}/import/dedukti/${thy}/${pkg}"
+# Use relative paths for ocaml
+out="export/${exp}"
+thdir="theories/${thy}"
+srcdir="import/dedukti/${thy}/${pkg}"
 middleware=${mid:-"$thy"}
 
-make
 if [[ "$exp" == "json" ]]
 then
-    ./dk2json -m "$middleware" -o "$out" -J "$out"\
+    dune exec -- dk2json -m "$middleware" -o "$out" -J "$out"\
               -I "$thdir" -I "$srcdir" -d "$srcdir"\
               --dkopts "'${dkopts:-''}'"\
               --hollight "export/hollight"\
@@ -42,6 +42,6 @@ then
               --coq "export/coq"\
               --matita "export/matita"
 else
-    ./eksporti "$exp" -I "$thdir" -I "$srcdir" -o "$out"\
+    dune exec -- eksporti "$exp" -I "$thdir" -I "$srcdir" -o "$out"\
                -d "$srcdir" -m "$middleware"
 fi
