@@ -20,6 +20,12 @@ utils/export.sh -e pvs -p arith_fermat -t sttfa
 Bash scripts allow to preset many options. `export.sh` uses the binary
 `eksporti` which comes with many more options,
 
+- `-I` add a folder containing Dedukti source files,
+- `-d` add a directory containing Dedukti files to export,
+- `--debug N` with `0 <= n <= 7` enables debugging, the lower the quieter,
+- `--dkopts OPTS` pass options to Dedukti to produce `dko` files,
+- `-o` set output directory
+
 *Note* that each system may come with its own options;
 to know more about the export options of any system `sys`:
 ```bash
