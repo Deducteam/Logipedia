@@ -1,6 +1,7 @@
 #!/bin/bash
 
-source "${0%/*}/lib.sh"
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+source "${dir}/lib.sh"
 usage="Usage: $(basename $0) -e EXP -t THY -p PKG [-m MID] [-k DKOPT]"
 while getopts 'e:p:t:d:m:k:h' arg
 do

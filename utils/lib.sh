@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Any script can source this one to init environment
 
-root="$(realpath ${0%/*}/../)"
+dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)"
+root="$(realpath ${dir}/../)"
 dkimp="${root}/import/dedukti"
 mkdir -p "$dkimp"
 

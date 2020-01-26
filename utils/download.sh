@@ -3,7 +3,8 @@
 usage="Download Logipedia packages
 Usage: $(basename $0) -p PKG -t THY"
 
-source "${0%/*}/lib.sh"
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+source "${dir}/lib.sh"
 
 while getopts 'p:t:h' arg
 do
