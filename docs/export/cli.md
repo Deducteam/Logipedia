@@ -8,21 +8,24 @@ Exporting a library requires
 - dedukti files of the library encoded in the STTfa logic in `import/sttfa/lib`
 
 ### TL;DR
-To export to the system `sys` into directory `export/sys`,
-```sh
-./logipedia sys -I import/sttfa/lib -I theories/sttfa -d
-import/sttfa/lib -o export/sys
+To export the package `arith_fermat` using theory `sttfa` to PVS,
+```bash
+utils/export.sh -e pvs -p arith_fermat -t sttfa
 ```
 ### Options
-- `-I` add a folder containing Dedukti files that are needed
-- `-d` add a directory containing Dedukti files to convert
-- `-o` output directory
-- `--debug n` print debugging message with `0 <= n <= 7`, the lower
-  the quieter
+- `-m` specify the middleware used
+- `-k` specify other Dedukti options
 
-*Note* that with STTfa, the available exports are Coq, HolLight, Lean,
-Matita, OpenTheory and PVS. Each system may come with its own options;
-to know more:
-```sh
-./logipedia sys --help
+## For developers
+Bash scripts allow to preset many options. `export.sh` uses the binary
+`eksporti` which comes with many more options,
+
+*Note* that each system may come with its own options;
+to know more about the export options of any system `sys`:
+```bash
+dune exec -- eksporti sys --help
+```
+and to list available systems,
+```bash
+dune exec -- eksporti --help
 ```

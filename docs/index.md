@@ -1,6 +1,7 @@
 # Logipedia documentation
 
-- [Manifesto](sections/manifesto.md)
+- [Manifesto](manifesto.md)
+- [Structure](structure.md)
 
 ## Import
 - [Overview](import/apropos.md)
