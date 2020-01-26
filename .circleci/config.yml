@@ -26,6 +26,13 @@ jobs:
           eval $(opam env)
           utils/download.sh -p arith_fermat -t sttfa
           utils/checking/dedukti.sh -p arith_fermat -t sttfa
+      - run: cp -r import /tmp
+      - store_artifacts:
+          path: /tmp/import/dedukti/sttfa/arith_fermat
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - import/dedukti/sttfa/arith_fermat
 
   coq_export:
     <<: *ocaml_img
@@ -34,7 +41,7 @@ jobs:
       - <<: *opam_deps
 #      - run: opam install coq=8.9.1 -qy
       - checkout
-      - run: eval $(opam env) && ./export.sh -e coq -t sttfa -p arith_fermat
+      - run: eval $(opam env) && utils/export.sh -e coq -t sttfa -p arith_fermat
       - run: pwd && ls export && ls export/coq
       - run: cp -r export /tmp
       - store_artifacts:
@@ -58,7 +65,7 @@ jobs:
             sudo ln -s /tmp/lean-3.4.2-linux/bin/lean /usr/bin/lean
             popd
       - checkout
-      - run: eval $(opam env) && ./export.sh -e lean -t sttfa -p arith_fermat
+      - run: eval $(opam env) && utils/export.sh -e lean -t sttfa -p arith_fermat
       - run: utils/checking/lean.sh -d export/lean
       - run: cp -r export /tmp
       - store_artifacts:
@@ -85,7 +92,7 @@ jobs:
             sudo ln -s /tmp/pvs/proveit /usr/bin/proveit
             popd
       - checkout
-      - run: eval $(opam env) && ./export.sh -e pvs -t sttfa -p arith_fermat
+      - run: eval $(opam env) && utils/export.sh -e pvs -t sttfa -p arith_fermat
       - run: utils/checking/pvs.sh -d export/pvs
       - run: cp -r export /tmp
       - store_artifacts:
@@ -102,7 +109,7 @@ jobs:
       - <<: *opam_deps
 #      - run: here install matita
       - checkout
-      - run: eval $(opam env) && ./export.sh -e matita -p arith_fermat -t sttfa
+      - run: eval $(opam env) && utils/export.sh -e matita -p arith_fermat -t sttfa
       - run: cp -r export /tmp
       - store_artifacts:
           path: /tmp/export/matita
@@ -118,7 +125,7 @@ jobs:
       - <<: *opam_deps
 #      - run: here install hollight
       - checkout
-      - run: eval $(opam env) && ./export.sh -e hollight -t sttfa -p arith_fermat
+      - run: eval $(opam env) && utils/export.sh -e hollight -t sttfa -p arith_fermat
       - run: cp -r export /tmp
       - store_artifacts:
           path: /tmp/export/hollight
@@ -139,7 +146,7 @@ jobs:
       - run: cp -r /tmp/workspace/export ./
       - run: |
               eval $(opam env)
-              ./export.sh -e json -p arith_fermat -t sttfa
+              utils/export.sh -e json -p arith_fermat -t sttfa
       - run: cp -r export/json /tmp
       - store_artifacts:
           path: /tmp/json
@@ -173,7 +180,7 @@ jobs:
       - run: pip install --user ./logigen
       - run: logigen -i /tmp/workspace/json --pp-extra "--uriconv /tmp/LogiPPedia/scheme/uri2syms/sttfa-latex.scm"
       - run: cp -r /tmp/workspace/export gen_website/
-      - run: cp -r import gen_website/
+      - run: cp -r /tmp/workspace/import gen_website/
       - run: cp -r gen_website /tmp/
       - store_artifacts:
           path: /tmp/gen_website
