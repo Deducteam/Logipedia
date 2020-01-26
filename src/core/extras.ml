@@ -42,7 +42,7 @@ struct
         if not (Sys.file_exists dir) then Unix.mkdir dir perm;
         loop tl (Filename.concat dir p)
     in
-    loop reps "."
+    if Filename.is_relative pth then loop reps "." else loop reps "/"
 end
 
 module String =
