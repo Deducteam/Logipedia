@@ -1,22 +1,9 @@
-EKSPORTI = _build/install/default/bin/eksporti
-DK2JSON = _build/install/default/bin/dk2json
-
 .PHONY: all
 all: bin
 
-bin: eksporti dk2json
-
-.PHONY: $(EKSPORTI) $(DK2JSON)
-$(EKSPORTI):
+.PHONY: bin
+bin:
 	@dune build
-$(DK2JSON):
-	@dune build
-
-eksporti: $(EKSPORTI)
-	@ln -sf $< eksporti
-
-dk2json: $(DK2JSON)
-	@ln -sf $< $@
 
 .PHONY: install
 install:
@@ -27,26 +14,16 @@ doc:
 	dune build @doc
 	mkdocs build
 
-#### Pretty printer ################################################
 # FIXME logipp-latex definitve?
-PP ?= /usr/local/bin/logipp-latex
-
 .PHONY: pp
-install_pp: $(PP)
-
-.PHONY: $(PP)
-$(PP):
-	$(shell utils/install-pp.sh)
-
-#### Cleaning targets ##############################################
+install_pp:
+	utils/install-pp.sh
 
 .PHONY: clean
 clean:
 	@dune clean
 	@$(RM) -f *.lpdb
 	@$(RM) -f .*.lpdb
-	@$(RM) $(DK2JSON)
-	@$(RM) $(EKSPORTI)
 
 .PHONY: distclean
 distclean: clean
