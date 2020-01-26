@@ -2,4 +2,5 @@
   (name middleware)
   (public_name logipedia.middleware)
   (synopsis "Middleware between logics and json export for Logipedia.")
-  (libraries logipedia.core dedukti.api logipedia.export logipedia.sttfa))
+  (libraries logipedia.core dedukti.api logipedia.export
+   logipedia.sttfa logipedia.cupicef logipedia.ctpicef))

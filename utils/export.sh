@@ -1,6 +1,8 @@
 #!/bin/bash
 
-usage="Usage: $0 -e EXP -p PKG -t THY [-m MID] [-k DKOPT]"
+dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+source "${dir}/lib.sh"
+usage="Usage: $(basename $0) -e EXP -t THY -p PKG [-m MID] [-k DKOPT]"
 while getopts 'e:p:t:d:m:k:h' arg
 do
     case "$arg" in
@@ -22,23 +24,18 @@ then
     exit 1
 fi
 
-# Download library
-cd "import/dedukti"
-if [[ ! -d "$thy" ]]
-then
-    curl "http://www.lsv.fr/~hondet/logipedia/${thy}.tar.bz2" | tar xj
-fi
-cd -
+setup "$thy" "$pkg"
 
-out="export/${exp}"
-thdir="theories/${thy}"
-srcdir="import/dedukti/${thy}/${pkg}"
+# Use relative paths for ocaml
+out="${root}/export/${exp}"
+thdir="${root}/theories/${thy}"
+srcdir="${root}/import/dedukti/${thy}/${pkg}"
 middleware=${mid:-"$thy"}
 
-make
+cd "$root"
 if [[ "$exp" == "json" ]]
 then
-    ./dk2json -m "$middleware" -o "$out" -J "$out"\
+    dune exec -- dk2json -m "$middleware" -o "$out" -J "$out"\
               -I "$thdir" -I "$srcdir" -d "$srcdir"\
               --dkopts "'${dkopts:-''}'"\
               --hollight "export/hollight"\
@@ -47,6 +44,7 @@ then
               --coq "export/coq"\
               --matita "export/matita"
 else
-    ./eksporti "$exp" -I "$thdir" -I "$srcdir" -o "$out"\
+    dune exec -- eksporti "$exp" -I "$thdir" -I "$srcdir" -o "$out"\
                -d "$srcdir" -m "$middleware"
 fi
+cd -
