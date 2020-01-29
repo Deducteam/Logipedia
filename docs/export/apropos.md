@@ -1,4 +1,5 @@
 # Exporting proofs from Logipedia to systems
+
 Exporting proofs in Logipedia requires first to translate your proofs in a very
 weak logic called STTfa.  Once expressed in this logic, a proof can be exported
 to any system supported by Logipedia.
@@ -17,3 +18,11 @@ email!
 
 On the long run, we plan also to support other logics than STTfa, but no
 concrete plan has been made so far.
+
+## Supported systems for export
+- Coq
+- Lean
+- Matita
+- OpenTheory
+- HolLight
+- PVS
