@@ -52,18 +52,15 @@ let contain_proj_prod : T.term -> bool = fun ty ->
 
 let tx_of_entry = function
   | E.Def(_,_,_,_,_)  -> assert false (* The encoding of Agda do not produce any definition *)
-  | E.Decl(_,_,st,ty) -> Some
-     begin
-       match st with
-       | Kernel.Signature.Static ->
-	  if is_univ (right_most ty)
-	  then TxInd
-	  else TxCons
-       | Kernel.Signature.Definable _ ->
-	  if contain_proj_prod ty
-	  then TxProj
-	  else TxFun
-     end
+  | E.Decl(_,_,st,ty) ->
+    let tx =
+      match st with
+      | Kernel.Signature.Static ->
+        if is_univ (right_most ty) then TxInd else TxCons
+      | Kernel.Signature.Definable ->
+        if contain_proj_prod ty then TxProj else TxFun
+    in
+    Some(tx)
   | E.Rules(_,r::[])  ->
      begin
        match r.R.pat with
