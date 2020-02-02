@@ -27,13 +27,9 @@ module type S = sig
   val encoding : DkTools.Mident.t list
   (** List of modules that encode the theory. *)
 
-  val tx_of_def : T.term option -> T.term -> tx
-  (** [tx_of_def t u] returns a taxon of a term [t] with annotation [u] given
-      that [t] and [u] come from a definition. *)
-
-  val tx_of_decl : T.term -> tx
-  (** [tx_of_def t] returns a taxon of a term [t] given that [t] comes
-      from a declaration. *)
+  val tx_of_entry : Parsing.Entry.entry -> tx option
+  (** [tx_of_entry e] returns a taxon of an entry [e], if it is
+      taxon-associated entry (ie. a declaration, not a command). *)
 
   val string_of_tx : ?short:bool -> tx -> string
   (** [string_of_tx ?(short=false) tx] makes a long or [short] string out of
@@ -88,8 +84,7 @@ struct
   let theory = "dummy"
   let encoding = []
   exception IllTaxon
-  let tx_of_def _ _ = ()
-  let tx_of_decl _ = ()
+  let tx_of_entry _ = None
   let string_of_tx ?short:_ _ = "dummy"
   let tx_of_string _ = ()
   let is_axiomatic _ = false

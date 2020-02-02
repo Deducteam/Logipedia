@@ -101,6 +101,21 @@ module DkTools = struct
   type entry = Parsing.Entry.entry
 
   let get_path : unit -> string list = Kernel.Basic.get_path
+
+  let id_of_entry : Parsing.Entry.entry -> Kernel.Basic.ident =
+    let open Parsing.Entry in
+    function
+    | Decl(_,id,_,_)  -> id
+    | Def(_,id,_,_,_) -> id
+    | Rules(_,r::_)   ->
+      begin
+        match r.pat with
+        | Pattern(_,n,_) -> Kernel.Basic.id n
+        | _              -> assert false
+        (* the head of a rule should be a symbol *)
+      end
+    | _               -> assert false
+    (* tx_of_entry should be defined for more than Def, Decl and Rules *)
 end
 
 module NameHashtbl = Hashtbl.Make(struct
