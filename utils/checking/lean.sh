@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 usage="Lean checker: $0 -d <dir>"
 
 while getopts 'hd:' arg; do
@@ -17,7 +17,5 @@ then
     exit 1
 fi
 
-cd ${indir}
-ret=$(lean *.lean)
-cd -
-exit $ret
+(cd "${indir}" || exit
+ lean ./*.lean)

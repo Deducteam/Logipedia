@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 usage="Download Logipedia packages
-Usage: $(basename $0) -p PKG -t THY"
+Usage: $(basename "$0") -p PKG -t THY"
 
 dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 source "${dir}/lib.sh"
@@ -12,8 +12,12 @@ do
         p) pkg="$OPTARG" ;;
         t) thy="$OPTARG" ;;
 	h) echo "$usage"
-           exit 0
-           ;;
+       exit 0
+       ;;
+    *) echo "Invalid argument"
+       echo "$usage"
+       exit 1
+       ;;
     esac
 done
 

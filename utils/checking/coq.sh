@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 usage="Coq checker: $0 -d <dir>"
 
@@ -23,8 +23,7 @@ fi
 # Sanitize names
 rename 's:-:_:g' "${indir}/*.v"
 rename 's:\.:_:g' "${indir}/*.v" 2> /dev/null
-cd "$indir"
-ls *.v > _CoqProject
-coq_makefile -f _CoqProject -o Makefile
-make
-cd -
+(cd "$indir" || exit
+ ls ./*.v > _CoqProject
+ coq_makefile -f _CoqProject -o Makefile
+ make)

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 usage="HolLight checker: $0 -d <dir>"
 
