@@ -1,0 +1,5 @@
+(library
+  (name ctpicef)
+  (public_name logipedia.ctpicef)
+  (synopsis "Export Logipedia libraries in the ctpicef system.")
+  (libraries dedukti.api logipedia.core logipedia.export))

@@ -1,8 +1,9 @@
+open Core
 module B = Kernel.Basic
 module D = Api.Dep
 module E = Parsing.Entry
 module T = Kernel.Term
-module U = Core.Uri
+module U = Uri
 
 type tx =
   | TxAxiom          (** Axiom *)
@@ -68,8 +69,9 @@ let label = function
    depending on the export system *)
 type item = Kernel.Basic.mident * Parsing.Entry.entry
 let item_of_entry md e = (md,e)
-let string_of_item target (_,_) = match target with
-  | Core.Systems.Latex -> "Not implemented yet."
-  | sys -> raise (Core.Systems.UnsupportedSystem ("Cupicef doesn't support: " ^ (Core.Systems.to_string sys)))
+let string_of_item target (md,e) = match target with
+  | Systems.Latex -> Ctpicef.Latex.export_to_string md e
+  | sys -> Console.exit_with "Encoding ctpicef doesn't support target: %s"
+             (Systems.to_string sys)
 
 let get_exporter _ = assert false

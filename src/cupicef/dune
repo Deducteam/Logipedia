@@ -1,0 +1,5 @@
+(library
+  (name cupicef)
+  (public_name logipedia.cupicef)
+  (synopsis "Export Logipedia libraries in the cupicef system.")
+  (libraries dedukti.api logipedia.core logipedia.export))
