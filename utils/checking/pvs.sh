@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 usage="PVS checker: $0 -d <dir>"
 
@@ -21,9 +21,8 @@ then
     exit 1
 fi
 
-cd "$indir"
-for s in *.pvs
-do
-    proveit --importchain --scripts --force "$s"
-done
-cd -
+(cd "$indir" || exit
+ for s in *.pvs
+ do
+     proveit --importchain --scripts --force "$s"
+ done)

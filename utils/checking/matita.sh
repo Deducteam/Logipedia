@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 usage="Matita checker: $0 -d <dir>"
 
 while getopts 'hd:' arg; do
@@ -18,6 +18,5 @@ then
 fi
 
 echo "baseuri = cic:/matita" > "${indir}/root"
-cd "$indir"
-matita *.ma
-cd -
+(cd "$indir" || exit
+ matita ./*.ma)

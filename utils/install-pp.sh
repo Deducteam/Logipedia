@@ -7,13 +7,13 @@ _logipp="logipp-latex"
 
 ### Check for dependencies
 
-if [[ -e "$(which ${_logipp})" ]]
+if [[ -e "$(command -v ${_logipp})" ]]
 then
     exit 0
 fi
 
 ## Check for guile
-if [[ -z "$(which guile)" ]]
+if [[ -z "$(command -v guile)" ]]
 then
     echo "Guile scheme required"
     echo "I won't install it for you"
@@ -22,11 +22,11 @@ fi
 
 ## guile json
 guile -c '(use-modules (json))'
-if [[ "$?" -ne 0 ]]
+if [[ "$(guile -c '(use-modules (json))')" -ne 0 ]]
 then
     echo "Guile json required"
-    read -p "Install guile-json (from sources)? [y/N]" answer
-    if [[ ! "$answer" -eq "y" ]]
+    read -rp "Install guile-json (from sources)? [y/N]" answer
+    if [[ ! "$answer" -eq 'y' ]]
     then
         exit 1
     fi
@@ -38,33 +38,31 @@ _wd=$(pwd)
 echo "Installing guile json..."
 tmpd="$(mktemp -d)"
 repo="https://git.savannah.nongnu.org/git/guile-json.git"
-cd "$tmpd"
-git clone "$repo" --branch 3.1.0 --quiet . > /dev/null
-autoreconf -if > /dev/null
-# FIXME get prefix from guile %site-dir?
-./configure --prefix=/usr > /dev/null
-make
-sudo make install
-cd -
+(cd "$tmpd" || exit
+ git clone "$repo" --branch 3.1.0 --quiet . > /dev/null
+ autoreconf -if > /dev/null
+ # FIXME get prefix from guile %site-dir?
+ ./configure --prefix=/usr > /dev/null
+ make
+ sudo make install)
 rm -rf "$tmpd"
 
 ### Installing the pretty printer
 echo "Installing the pretty printer"
 tmpd="$(mktemp -d)"
 repo="https://github.com/gabrielhdt/logippedia.git"
-cd "$tmpd"
-git clone "$repo" --quiet . > /dev/null
-cd 'scheme'
-sudo make install
-cd "$_wd"
+(cd "$tmpd" || exit
+ git clone "$repo" --quiet . > /dev/null
+ cd 'scheme' || exit
+ sudo make install)
 rm -rf "$tmpd"
 
-if [[ -z "$(which ${_logipp})" ]]
+if [[ -z "$(command -v ${_logipp})" ]]
 then
     echo "Installation error"
     echo "You might want to check your paths"
     exit 1
 else
-    echo "Installation succeeded: $(which ${_logipp})"
+    echo "Installation succeeded: $(command -v ${_logipp})"
     exit 0
 fi

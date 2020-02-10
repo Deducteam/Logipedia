@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Any script can source this one to init environment
+set -euf -o pipefail
 
 dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)"
-root="$(realpath ${dir}/../)"
+root="$(realpath "${dir}/../")"
 dkimp="${root}/import/dedukti"
 mkdir -p "$dkimp"
 
@@ -32,5 +33,5 @@ check_req_args () {
 # Call with theory as first arg and package as snd to set up environment
 setup () {
     check_req_args "$1" "$2"
-    ${root}/utils/download.sh -t "$1" -p "$2"
+    "${root}/utils/download.sh" -t "$1" -p "$2"
 }
