@@ -4,11 +4,29 @@ Logipedia is a project that aims to share formal proofs between several systems.
 The website displaying all available proofs can be reached at
 http://logipedia.science.
 
+## Installation
+### Dependencies
+- Dedukti commit `5990bc6`
+  ```shell
+  git clone https://github.com/deducteam/dedukti.git
+  git checkout 5990bc6
+  make install
+  ```
+- `ppx_deriving_yojson`
+- `dune`
+
+### Build & install
+
+``` bash
+make install
+```
+
 ## Documentation
 ### Project documentation
 The source of the project documentation can be found in [`docs`](docs). The
 documentation can be browsed at https://deducteam.github.io/Logipedia or it
-can be built locally and then browsed using [`mkdocs`](https://www.mkdocs.org/) with
+can be built locally and then browsed using [`mkdocs`](https://www.mkdocs.org/) 
+with
 
 ``` bash
 mkdocs build
