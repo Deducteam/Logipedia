@@ -20,7 +20,7 @@ let theory = "sttfa"
 let encoding = [B.mk_mident "sttfa"]
 
 let tx_of_entry = function
-  | E.Def(_,_,_,ty,_) ->
+  | E.Def(_,_,_,_,ty,_) ->
      begin
        match ty with
        | Some(T.App(Const(_,name),_,_)) when
@@ -31,7 +31,7 @@ let tx_of_entry = function
 	  Some TxThm
        | _ -> Some TxDef
      end
-  | E.Decl(_,_,_,ty) ->
+  | E.Decl(_,_,_,_,ty) ->
      begin
        match ty with
        | T.App(Const(_,name),_,_) when

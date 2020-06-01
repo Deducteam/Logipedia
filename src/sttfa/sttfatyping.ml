@@ -1,3 +1,4 @@
+open Core.Extras
 open Ast
 open Kernel.Basic
 open Environ
@@ -133,7 +134,7 @@ struct
 
   let is_defined cst =
     let name = name_of cst in
-    not (Denv.is_static dloc name)
+    not (DkTools.is_static (Denv.get_signature ()) dloc name)
 
 
   let rec is_redexable _te =

@@ -133,8 +133,8 @@ pp_term
 
 
 let pp_entry md fmt = function
-  | Decl  (_,_,_, ty)
-  | Def   (_,_, _,Some ty,_) -> pp_term md fmt ty
+  | Decl  (_,_,_,_, ty)
+  | Def   (_,_,_, _,Some ty,_) -> pp_term md fmt ty
   | _ -> assert false
 
 let export_to_string md e = asprintf "%a" (pp_entry md) e

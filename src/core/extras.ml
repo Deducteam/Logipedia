@@ -105,9 +105,9 @@ module DkTools = struct
   let id_of_entry : Parsing.Entry.entry -> Kernel.Basic.ident =
     let open Parsing.Entry in
     function
-    | Decl(_,id,_,_)  -> id
-    | Def(_,id,_,_,_) -> id
-    | Rules(_,r::_)   ->
+    | Decl(_,id,_,_,_) -> id
+    | Def(_,id,_,_,_,_) -> id
+    | Rules(_,r::_) ->
       begin
         match r.pat with
         | Pattern(_,n,_) -> Kernel.Basic.id n
@@ -116,6 +116,10 @@ module DkTools = struct
       end
     | _               -> assert false
     (* tx_of_entry should be defined for more than Def, Decl and Rules *)
+
+  let is_static : Kernel.Signature.t -> Kernel.Basic.loc -> Kernel.Basic.name ->
+    bool = fun sign l n ->
+    Kernel.Signature.get_staticity sign l n = Kernel.Signature.Static
 end
 
 module NameHashtbl = Hashtbl.Make(struct

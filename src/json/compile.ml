@@ -183,7 +183,7 @@ struct
         :: (List.map art2exp !Systems.artefact_path)
       in
       match e with
-      | E.Decl(_,_,_,t)      ->
+      | E.Decl(_,_,_,_,t)      ->
         let ppt_term =  ppt_of_dkterm mdl acc t in
         { name = uri
         ; taxonomy = M.string_of_tx tx
@@ -193,7 +193,7 @@ struct
         ; deps = List.map Uri.to_string deps
         ; theory = []
         ; exp } :: (loop acc tl)
-      | E.Def(_,_,_,teo,te)  ->
+      | E.Def(_,_,_,_,teo,te)  ->
         (* We use lazy to remap the computation, and avoid computing the
            ppterm to finally discard it. *)
         let lppt = lazy (ppt_of_dkterm mdl acc te) in

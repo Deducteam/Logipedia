@@ -41,9 +41,9 @@ let rec mk_pattern p =
 let mk_rule r = QSet.union (mk_pattern r.pat) (mk_term r.rhs)
 
 let dep_of_entry = function
-  | Decl (_, _, _, te) -> mk_term te
-  | Def (_, _, _, None, te) -> mk_term te
-  | Def (_, _, _, Some ty, te) -> QSet.union (mk_term ty) (mk_term te)
+  | Decl (_,_,_,_,te) -> mk_term te
+  | Def (_,_,_,_,None,te) -> mk_term te
+  | Def (_,_,_,_,Some ty,te) -> QSet.union (mk_term ty) (mk_term te)
   | Rules (_, rs) -> qset_of_list mk_rule rs
   | Eval (_, _, te) -> mk_term te
   | Infer (_, _, te) -> mk_term te
@@ -60,8 +60,8 @@ let dep_of_entry (mds:mident list) e =
 
 let deps_of_entry : mident -> entry -> name list = fun mid e ->
   let id = match e with
-    | Decl(_,id,_,_)
-    | Def(_,id,_,_,_) -> id
+    | Decl(_,id,_,_,_)
+    | Def(_,id,_,_,_,_) -> id
     | _               -> assert false
   in
   let module D = Api.Dep in

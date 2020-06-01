@@ -1,5 +1,6 @@
 module D = Core.Deps
 open Ast
+open Core.Extras
 
 module Denv = Api.Env.Default
 module Basic = Kernel.Basic
@@ -133,7 +134,7 @@ let rec is__computable (_te:_te) =
      let ty = Denv.get_type dloc name in
      let ty' = CType.compile_wrapped_type Environ.empty_env ty in
      is_prop ty' ||
-       not @@ Signature.is_static (Denv.get_signature ()) dloc name
+       not @@ DkTools.is_static (Denv.get_signature ()) dloc name
 
 let rec is_computable te =
   match te with

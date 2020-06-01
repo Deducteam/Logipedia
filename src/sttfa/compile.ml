@@ -70,12 +70,12 @@ let compile_entry : Basic.mident * Entry.entry -> item =
   let module Ev = Api.Env.Default in
   let module Pp = Api.Pp.Default in
   match e with
-  | Decl(l,id,s,ty)        ->
-    Ev.declare l id s ty;
+  | Decl(l,id,sc,st,ty) ->
+    Ev.declare l id sc st ty;
     log_sttfa ~lvl:6 "compiling decl [%a]" Pp.print_ident id;
     compile_declaration (Basic.mk_name md id) ty
-  | Def(l,id,f,Some ty,te) ->
-    Ev.define l id f te (Some ty);
+  | Def(l,id,sc,f,Some ty,te) ->
+    Ev.define l id sc f te (Some ty);
     log_sttfa ~lvl:6 "compiling def [%a]" Pp.print_ident id;
     compile_definition (Basic.mk_name md id) ty te
   | Def(_)   -> exit_with "Definition without types are not supported"
