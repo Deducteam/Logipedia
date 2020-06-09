@@ -10,11 +10,11 @@ file into several web pages.
 
 Translating proofs from one logic to another is quite complicated and requires a
 lot of Dedukti knowledge. Currently, only the translation from HOL to STTfa has
-ben fully automatized. On the short run, it will be possible to have a partial
+been fully automatized. On the short run, it will be possible to have a partial
 translation from Matita to STTfa also.
 
-If you are interested in creating a new (partial) translation, please send us an
-email!
+If you are interested in creating a new (partial) translation, please an
+email to dedukti-dev @ inria . fr!
 
 On the long run, we plan also to support other logics than STTfa, but no
 concrete plan has been made so far.
