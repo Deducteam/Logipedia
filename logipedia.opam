@@ -1,20 +1,22 @@
 synopsis: "An interoperability tool between several proof systems"
 description:
 """
-Logipedia is a tool based upon the logical framework that translates proof from one system to another.
+Logipedia is a toolkit from translating proofs from one system to another (currently HOL-Light, Coq, Matita, Lean and PVS), based on the logical framework Dedukti.
 """
 opam-version: "0.1"
-maintainer: "francois.thire@lsv.fr"
-bug-reports: "https://github.com/francoisthire/logipedia/issues"
-homepage: "https://github.com/francoisthire/logipedia"
-dev-repo: "git+https://github.com/francoisthire/logipedia.git"
-authors: [ "François Thiré <francois.thire@lsv.fr>" ]
+maintainer: "dedukti-dev@inria.fr"
+bug-reports: "https://github.com/Deducteam/Logipedia/issues"
+homepage: "http://logipedia.inria.fr"
+dev-repo: "git+https://github.com/Deducteam/Logipedia"
+authors: [
+  "François Thiré <francois.thire@lsv.fr>"
+  "Gabriel Hondet <gabriel.hondet@inria.fr>"
+  "Emilie Grienenberger <emilie.grienenberger@lsv.fr>"
+]
 license: "CeCILL"
-
 depends: [
   "ocaml"        { >= "4.04.0" }
   "mongo"
   "dedukti"
 ]
-
 build: [ [ "dune" "build" "-p" name "-j" jobs ] ]

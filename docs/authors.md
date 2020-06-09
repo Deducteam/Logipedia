@@ -1,13 +1,13 @@
-# Maintainers
+# Authors
 
 ## Logipedia
-- François Thiré <francois.thire@lsv.fr>
-- Gabriel Hondet <gabriel.hondet@lsv.fr>
-- Emilie Grienenberger <emilie.grienenberger@lsv.fr>
+- [François Thiré](http://www.lsv.ens-cachan.fr/~fthire/)
+- [Gabriel Hondet](http://www.lsv.fr/~hondet/)
+- [Emilie Grienenberger(http://www.lsv.fr/~grienenberger/)
 
 ## Export systems
-- Lean/Coq/Matita/OpenTheory: François Thiré <francois.thire@lsv.fr>
-- PVS: Gilles Dowek <gilles.dowek@lsv.fr>
+- Lean/Coq/Matita/OpenTheory: [François Thiré](http://www.lsv.ens-cachan.fr/~fthire/)
+- PVS: [Gilles Dowek](http://www.lsv.fr/~dowek/)
 
 ## Translations
-- HOL to STTfa: Chantal Keller <Chantal.Keller@lri.fr>
+- HOL to STTfa: [Chantal Keller](https://www.lri.fr/~keller/)

@@ -13,8 +13,8 @@ lot of Dedukti knowledge. Currently, only the translation from HOL to STTfa has
 been fully automatized. On the short run, it will be possible to have a partial
 translation from Matita to STTfa also.
 
-If you are interested in creating a new (partial) translation, please an
-email to dedukti-dev @ inria . fr!
+If you are interested in creating a new (partial) translation, please send an
+email to <dedukti-dev@inria.fr>!
 
 On the long run, we plan also to support other logics than STTfa, but no
 concrete plan has been made so far.
