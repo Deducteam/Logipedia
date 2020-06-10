@@ -14,17 +14,16 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 title: Logipedia
-email: your-email@example.com
+email: dedukti-dev@inria.fr
 description: >- # this means to ignore newlines until "baseurl:"
   Proof interoperability encyclopedia Logipedia documentation.
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
-# twitter_username: jekyllrb
+baseurl: "/Logipedia" # the subpath of your site, e.g. /blog
+# url: "" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  deducteam
 
 # Build settings
-markdown: kramdown
-theme: jekyll-theme-midnight
+# markdown: kramdown
+# theme: jekyll-theme-midnight
 # plugins:
 #   - jekyll-feed
 
@@ -39,4 +38,4 @@ theme: jekyll-theme-midnight
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
-github: [metadata]
+# github: [metadata]
