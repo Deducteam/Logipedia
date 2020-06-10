@@ -1,11 +1,13 @@
-# Generating the website
-
-## TL;DR
+---
+layout: default
+title: Generating the website
+---
+# TL;DR
 ```sh
 logigen -i <input> -o <output> -p <pretty-printer>
 ```
 
-## The HTML files
+# The HTML files
 Once all the json files are generated, the website can be created. To
 do so, the `logigen` program in python must be invoked.
 
@@ -15,7 +17,7 @@ be in `web`,
 logigen -i export/json -o json
 ```
 
-## Being pretty
+# Pretty printing
 The previous procedure yields HTML files with extracts from the JSON
 files for the mathematical content. These extracts can be processed
 during the conversion by an external program to yield pleasant
@@ -32,7 +34,6 @@ option (assuming `$args` contains the arguments):
 logigen -i export/json -o json --pretty-printer pretty --pp-extra "$args"
 ```
 
-### Entrance of Guile Scheme
 Such a pretty printer has been developed in Guile Scheme at
 <https://github.com/gabrielhdt/LogiPPedia>. Refer to its manual page
 for more information.

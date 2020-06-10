@@ -1,22 +1,24 @@
-# Export command line interface
-
-## Exporting from STTfa files
+---
+layout: default
+title: Command line interface for export
+---
+# Exporting from STTfa files
 *NOTE* currently, only the export from STTfa files is available.
 
 Exporting a library requires
 - a logic encoded in one or more dedukti files, those files are in `theories/sttfa`;
 - dedukti files of the library encoded in the STTfa logic in `import/sttfa/lib`
 
-### TL;DR
+## TL;DR
 To export the package `arith_fermat` using theory `sttfa` to PVS,
 ```bash
 utils/export.sh -e pvs -p arith_fermat -t sttfa
 ```
-### Options
+## Options
 - `-m` specify the middleware used
 - `-k` specify other Dedukti options
 
-## For developers
+# For developers
 Bash scripts allow to preset many options. `export.sh` uses the binary
 `eksporti` which comes with many more options,
 

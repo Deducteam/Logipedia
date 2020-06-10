@@ -1,5 +1,7 @@
-# File structure
-
+---
+layout: default
+title: File structure
+---
 - `src` contains the Ocaml API
 - `import` contains libraries translated into Dedukti,
 - `theory` contains Dedukti encodings of logics needed by files in `import`

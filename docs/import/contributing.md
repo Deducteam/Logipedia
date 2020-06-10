@@ -1,12 +1,14 @@
-# Adding new libraries to Logipedia
-
+---
+layout: default
+title: Adding imported libraries to Logipedia
+---
 A library in Logipedia is made of two elements:
 - the encoding of the theory in which the library is expressed;
 - the library itself;
 - some Ocaml code to interpret faithfully the elements encoded so that
   the original structure remains.
 
-## Some Ocaml?
+**Some Ocaml?**
 The Ocaml code is used to, for instance, distinguish a lemma from a
 theorem. More generally, the structure of the input library can be
 found back thanks to term analysis.
