@@ -84,7 +84,7 @@ struct
   (** Common options. *)
   let options : t list =
     [ ( "-I"
-      , Arg.String Kernel.Basic.add_path
+      , Arg.String Api.Files.add_path
       , " Add folder to Dedukti path" )
     ; ( "-d"
       , Arg.Set_string indir

@@ -8,7 +8,7 @@ let mk_generators : string -> (DkTools.Mident.t -> DkTools.entry list pp) ->
   (Key.t, Value.t) generator list = fun ext entries_pp ->
   let sysrule = function
     | Key.File(p) when Filename.extension p = ext ->
-      let srcmd = dk_of p |> Api.Env.Default.init in
+      let srcmd = dk_of p |> Kernel.Basic.mk_mident in
       Some(Rule.entry_printer p entries_pp srcmd)
     | _                                           -> None
   in

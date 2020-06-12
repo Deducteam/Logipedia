@@ -2,7 +2,7 @@ open Extras
 open Console
 open Kernel.Basic
 open Kernel.Term
-open Parsing.Entry
+open Parsers.Entry
 open Kernel.Rule
 
 let log_dep = new_logger "deps"
@@ -65,7 +65,7 @@ let deps_of_entry : mident -> entry -> name list = fun mid e ->
     | _               -> assert false
   in
   let module D = Api.Dep in
-  D.compute_ideps := true; (* Compute dependencies of items *)
+  D.compute_all_deps := true; (* Compute dependencies of items *)
   D.make mid [e];
   let name = mk_name mid id in
   try D.(NameSet.elements (get_data name).down)
@@ -74,18 +74,11 @@ let deps_of_entry : mident -> entry -> name list = fun mid e ->
 let deps_of_md : mident -> DkTools.MdSet.t =
   fun md ->
   log_dep ~lvl:4 "of [%a]" Api.Pp.Default.print_mident md;
-  let file = Api.Dep.get_file md in
-  let inchan = open_in file in
-  Api.Dep.compute_ideps := false;
-  let entries = Parsing.Parser.Parse_channel.parse md inchan in
-  close_in inchan;
-  let module E = Api.Env.Make(Kernel.Reduction.Default) in
-  let module ErrorHandler = Api.Errors.Make(E) in
-  begin try Api.Dep.make md entries
-    with e -> ErrorHandler.graceful_fail None e
-  end;
-  let deps = Hashtbl.find Api.Dep.deps md in
-  Api.Dep.MDepSet.fold (fun (m,_) acc -> DkTools.MdSet.add m acc)
+  let file = Api.Files.get_file md in
+  Api.Dep.compute_all_deps := false;
+  let deps = Api.Processor.handle_files [file] Api.Processor.Dependencies in
+  let deps = Hashtbl.find deps md in
+  Kernel.Basic.MidentSet.fold (fun m acc -> DkTools.MdSet.add m acc)
     deps.deps DkTools.MdSet.empty
 
 (** Use build system to compute dependencies. *)
