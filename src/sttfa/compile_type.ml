@@ -2,7 +2,7 @@ open Sttfadk
 open Environ
 open Ast
 
-module Denv = Api.Env.Default
+module Denv = Api.Env
 module Dpp = Api.Pp.Default
 
 module Reduction = Kernel.Reduction

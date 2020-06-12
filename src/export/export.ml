@@ -12,11 +12,11 @@ sig
   val target : Systems.t
   (** Which target system to export to. *)
 
-  val compile : Kernel.Basic.mident -> Parsing.Entry.entry list -> ast
+  val compile : Kernel.Basic.mident -> Parsers.Entry.entry list -> ast
   (** [compile md es] builds an ast out of a list of Dedukti entries
       [es] coming from module [md]. *)
 
-  val decompile : ast -> Parsing.Entry.entry list
+  val decompile : ast -> Parsers.Entry.entry list
   (** [decompile ast] returns the list of Dedukti entries coming from
       ast [ast]. *)
 
@@ -47,7 +47,7 @@ module GenBuildSys (E:S) : Makefile.S = struct
     (Key.t, Value.t) generator list = fun ext entries_pp ->
     let sysrule = function
       | Key.File(p) when Filename.extension p = ext ->
-        let srcmd = dk_of p |> Api.Env.Default.init in
+        let srcmd = dk_of p |> Kernel.Basic.mk_mident in
         Some(Rule.entry_printer p entries_pp srcmd)
       | _                                           -> None
     in

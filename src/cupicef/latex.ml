@@ -1,4 +1,4 @@
-open Parsing.Entry
+open Parsers.Entry
 open Kernel.Term
 open Kernel.Basic
 open Format
