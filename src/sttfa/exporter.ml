@@ -15,6 +15,7 @@ let export_to_system_as_string : Systems.t -> Ast.item -> string = fun sys ->
   | Lean       -> Lean.string_of_item
   | Hollight   -> Hollight.string_of_item
   | Pvs        -> Pvs.string_of_item
+  | Agda       -> Agda.string_of_item
   | _ -> assert false
 
 let export_to_system_as_ast : Systems.t -> Format.formatter ->
@@ -26,6 +27,7 @@ let export_to_system_as_ast : Systems.t -> Format.formatter ->
   | Lean       -> Lean.print_ast
   | Hollight   -> Hollight.print_ast
   | Pvs        -> Pvs.print_ast
+  | Agda       -> Agda.print_ast
   | _ -> assert false
 
 (** [mk_ast md es] creates the STTfa ast of entries [es] from dedukti module

@@ -46,7 +46,8 @@ middleware=${mid:-"$thy"}
      --pvs "export/pvs"\
      --lean "export/lean"\
      --coq "export/coq"\
-     --matita "export/matita"
+     --matita "export/matita"\
+     --agda "export/agda"
  else
    dune exec -- eksporti "$exp" -I "$thdir" -I "$srcdir" -o "$out"\
      -d "$srcdir" -m "$middleware"
