@@ -1,6 +1,6 @@
 module B = Kernel.Basic
 module D = Api.Dep
-module E = Parsing.Entry
+module E = Parsers.Entry
 module R = Kernel.Rule
 module T = Kernel.Term
 module U = Core.Uri
@@ -12,7 +12,7 @@ type tx =
   | TxCons (** Constructor of a type *)
   | TxProj (** Projection *)
 
-type item = Parsing.Entry.entry
+type item = Parsers.Entry.entry
 
 exception IllTaxon
 (** Exception raised when reading an ill formed taxon. *)

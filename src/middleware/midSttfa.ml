@@ -1,6 +1,6 @@
 module B = Kernel.Basic
 module D = Api.Dep
-module E = Parsing.Entry
+module E = Parsers.Entry
 module T = Kernel.Term
 module U = Core.Uri
 
@@ -77,9 +77,9 @@ let label = function
   | TxDef -> ("body", Some("type_annotation"))
   | TxThm -> ("statement", None)
 
-let item_of_entry mident entry = Sttfa__Compile.compile_entry mident entry
+let item_of_entry denv mident entry = Sttfa__Compile.compile_entry denv mident entry
 
-let string_of_item target =
-  Sttfa.Exporter.export_to_system_as_string target
+let string_of_item denv target =
+  Sttfa.Exporter.export_to_system_as_string denv target
 
 let get_exporter = Sttfa.Exporter.get_sttfa_exporter

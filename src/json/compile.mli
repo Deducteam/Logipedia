@@ -1,5 +1,5 @@
 open Kernel
-open Parsing
+open Parsers
 
 val json_include : string ref
 (** Directory containing json files. Allows to read back already created json

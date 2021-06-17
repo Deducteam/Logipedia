@@ -27,7 +27,7 @@ module type S = sig
   val encoding : DkTools.Mident.t list
   (** List of modules that encode the theory. *)
 
-  val tx_of_entry : Parsing.Entry.entry -> tx option
+  val tx_of_entry : Parsers.Entry.entry -> tx option
   (** [tx_of_entry e] returns a taxon of an entry [e], if it is
       taxon-associated entry (ie. a declaration, not a command). *)
 
@@ -58,7 +58,7 @@ module type S = sig
   (** [label tx] returns labels for the fields {!Json_types.item.term} and
       {!Json_types.item.term_opt}. *)
 
-  val item_of_entry : DkTools.Mident.t -> DkTools.entry -> item
+  val item_of_entry : Api.Env.t -> DkTools.Mident.t -> DkTools.entry -> item
   (** [item_of_entry md entry] returns an item of the logic given an appropriate
       Dedukti entry [entry] of module [md]. *)
 
@@ -66,12 +66,12 @@ module type S = sig
       - Display the output of {!val:string_of_item} for all statements
       - Offer to download the whole file processed with {!val:get_exporter}. *)
 
-  val string_of_item : Systems.t -> item -> string
+  val string_of_item : Api.Env.t -> Systems.t -> item -> string
   (** [string_of_item system item] returns a string representation
       of [item] in the export system [system].
       This will be printed on the website in the export fields. *)
 
-  val get_exporter : Systems.t -> (module Export.S)
+  val get_exporter : Api.Env.t -> Systems.t -> (module Export.S)
   (** [get_exporter system] Generate an Exporter module to the given system.
       This allows to handle export through the Makefile system. *)
 end
@@ -90,8 +90,8 @@ struct
   let is_axiomatic _ = false
   let fields_of_def _ _ t = t,None
   let label _ = "dummy",None
-  let item_of_entry _ _ = ()
-  let string_of_item _ _ = "dummy"
+  let item_of_entry _ _ _ = ()
+  let string_of_item _ _ _ = "dummy"
   let get_exporter _ = assert false
 end
 

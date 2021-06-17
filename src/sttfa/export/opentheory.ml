@@ -3,7 +3,7 @@ open Compile
 open Openstt
 open Environ
 
-module Denv = Api.Env.Default
+module Env = Api.Env
 
 (* The memoization of Openstt is not efficient and can be highly increased. For that, the memoization of openstt should be turned off and the memoization should be done in this module. One may also want to handle alpha-renaming *)
 
@@ -51,7 +51,7 @@ let mk__ty =
         mk_def ty' !counter
       end
 *)
-let rec mk__te ctx = function
+let rec mk__te denv ctx = function
   | TeVar(var) ->
     let _ty = List.assoc var ctx.te in
     let _ty' = mk__ty _ty in
@@ -60,23 +60,23 @@ let rec mk__te ctx = function
     let ctx' = add_te_var ctx var _ty in
     let _ty' = mk__ty _ty in
     let var' = mk_var (mk_id var) _ty' in
-    let _te' = mk__te ctx' _te in
+    let _te' = mk__te denv ctx' _te in
     mk_abs_term var' _te'
   | App(_tel,_ter) ->
-    let _tel' = mk__te ctx _tel in
-    let _ter' = mk__te ctx _ter in
+    let _tel' = mk__te denv ctx _tel in
+    let _ter' = mk__te denv ctx _ter in
     mk_app_term _tel' _ter'
   | Forall(var,_ty,_te) ->
     let _ty' = mk__ty _ty in
-    let f' = mk__te ctx (Abs(var,_ty,_te)) in
+    let f' = mk__te denv ctx (Abs(var,_ty,_te)) in
     mk_forall_term f' _ty'
   | Impl(_tel,_ter) ->
-    let _tel' = mk__te ctx _tel in
-    let _ter' = mk__te ctx _ter in
+    let _tel' = mk__te denv ctx _tel in
+    let _ter' = mk__te denv ctx _ter in
     mk_impl_term _tel' _ter'
   | AbsTy(var, _te) ->
     let ctx' = add_ty_var ctx var in
-    mk__te ctx' _te
+    mk__te denv ctx' _te
   | Cst(cst, _tys) ->
     let open Basic in
     let name = name_of cst in
@@ -86,17 +86,17 @@ let rec mk__te ctx = function
       | [] -> Term.mk_Const dloc name
       | x::t -> Term.mk_App (Term.mk_Const dloc name) x t
     in
-    let _ty = Denv.infer ~ctx:ctx.dk cst' in
-    let _ty' = CType.compile_wrapped__type ctx
-        (Denv.unsafe_reduction ~red:Conv.beta_only _ty)
+    let _ty = Env.infer denv ~ctx:ctx.dk cst' in
+    let _ty' = CType.compile_wrapped__type denv ctx
+        (Env.unsafe_reduction denv ~red:Conv.beta_only _ty)
     in
     term_of_const (const_of_name (mk_qid cst)) (mk__ty _ty')
 
-let rec mk_te ctx = function
+let rec mk_te denv ctx = function
   | ForallP(var,te) ->
     let ctx' = add_ty_var ctx var in
-    mk_te ctx' te
-  | Te(_te) -> mk__te ctx _te
+    mk_te denv ctx' te
+  | Te(_te) -> mk__te denv ctx _te
 
 (* FIXME: buggy don't know why
 let memoization_te = Hashtbl.create 101
@@ -115,17 +115,17 @@ let mk__te =
         mk_def te' !counter
       end
 *)
-let thm_of_const cst =
+let thm_of_const denv cst =
   try
     thm_of_const_name (mk_qid cst)
   with Failure _ ->
     let name = Environ.name_of cst in
     let term = Term.mk_Const Basic.dloc name in
-    let te = Denv.unsafe_reduction ~red:(Conv.delta name) (term) in
-    let te' = CTerm.compile_term Environ.empty_env te in
-    let te' = mk_te empty_env te' in
-    let ty = Denv.infer term in
-    let ty' = CType.compile_wrapped_type Environ.empty_env ty in
+    let te = Env.unsafe_reduction denv ~red:(Conv.delta name) (term) in
+    let te' = CTerm.compile_term denv Environ.empty_env te in
+    let te' = mk_te denv empty_env te' in
+    let ty = Env.infer denv term in
+    let ty' = CType.compile_wrapped_type denv Environ.empty_env ty in
     let ty' = mk_ty ty' in
     let const = const_of_name (mk_qid cst) in
     let constterm = term_of_const const ty' in
@@ -143,35 +143,35 @@ let rec get_vars = function
   | Ty _ -> []
   | ForallK(var, ty) -> var::(get_vars ty)
 
-let mk_rewrite ctx r =
+let mk_rewrite denv ctx r =
   let open Basic in
   match r with
   | Beta(t) ->
-    let t' = mk__te ctx t in
+    let t' = mk__te denv ctx t in
     mk_betaConv t'
   | Delta((md,id),_tys) ->
     let cst = mk_name (mk_mident md) (mk_ident id) in
-    let ty = Denv.get_type dloc cst in
-    let ty' = CType.compile_type ctx ty in
+    let ty = Env.get_type denv dloc cst in
+    let ty' = CType.compile_type denv ctx ty in
     let vars = get_vars ty' in
     assert (List.length vars = List.length _tys);
     let vars' = List.map mk_id vars in
     let _tys' = List.map mk__ty _tys in
-    let thm = thm_of_const (md,id) in
+    let thm = thm_of_const denv (md,id) in
     mk_subst thm (List.combine vars' _tys') []
 
-let mk_beta env _te =
-  let _te' = mk__te env _te in
+let mk_beta denv env _te =
+  let _te' = mk__te denv env _te in
   mk_betaConv _te'
 
-let mk_delta ctx cst _tys =
+let mk_delta denv ctx cst _tys =
   let open Basic in
-  let thm = thm_of_const cst in
+  let thm = thm_of_const denv cst in
   let term =
     Term.mk_Const dloc (mk_name (mk_mident (fst cst)) (mk_ident (snd cst)))
   in
-  let ty = Denv.infer ~ctx:[] term in
-  let ty' = CType.compile_wrapped_type ctx ty in
+  let ty = Env.infer denv ~ctx:[] term in
+  let ty' = CType.compile_wrapped_type denv ctx ty in
   let vars = get_vars ty' in
   let vars' = List.map mk_id vars in
   let _tys' = List.map mk__ty _tys in
@@ -179,102 +179,102 @@ let mk_delta ctx cst _tys =
   let subst = List.combine vars' _tys' in
   mk_subst thm subst []
 
-let rec mk__ctx env thm ctx left right =
+let rec mk__ctx denv env thm ctx left right =
   match ctx,left,right with
   | [], _ , _-> thm
   | CAbsTy::ctx, AbsTy(_,_te), AbsTy(_,_te') ->
-    mk__ctx env thm ctx _te _te'
+    mk__ctx denv env thm ctx _te _te'
   | CAbs::ctx, Abs(var,_ty,_te), Abs(var',_ty',_te') ->
     assert (var = var');
     assert (_ty = _ty');
     let env' = add_te_var env var _ty in
     let var = mk_var (mk_id var) (mk__ty _ty) in
-    let thm = mk__ctx env' thm ctx _te _te' in
+    let thm = mk__ctx denv env' thm ctx _te _te' in
     mk_absThm var thm
   | CForall::ctx, Forall(var,_ty,_tel), Forall(var',_ty',_ter) ->
     assert (var = var');
     assert (_ty = _ty');
     let env' = add_te_var env var _ty in
-    let _tel' = mk__te env' _tel in
-    let _ter' = mk__te env' _ter in
-    let thm = mk__ctx env' thm ctx _tel _ter in
+    let _tel' = mk__te denv env' _tel in
+    let _ter' = mk__te denv env' _ter in
+    let thm = mk__ctx denv env' thm ctx _tel _ter in
     mk_forall_equal thm (mk_id var) _tel' _ter' (mk__ty _ty)
   | CAppL::ctx, App(_tel,_ter), App(_tel',_ter') ->
-    let thm = mk__ctx env thm ctx _tel _tel' in
-    mk_appThm thm (mk_refl (mk__te env _ter))
+    let thm = mk__ctx denv env thm ctx _tel _tel' in
+    mk_appThm thm (mk_refl (mk__te denv env _ter))
   | CAppR::ctx, App(_tel,_ter), App(_tel',_ter') ->
-    let thm = mk__ctx env thm ctx _ter _ter' in
-     mk_appThm (mk_refl (mk__te env _tel)) thm
+    let thm = mk__ctx denv env thm ctx _ter _ter' in
+     mk_appThm (mk_refl (mk__te denv env _tel)) thm
   | CImplL::ctx, Impl(_tel1, _ter1), Impl(_tel2, _ter2) ->
-    let _tel1' = mk__te env _tel1 in
-    let _ter1' = mk__te env _ter1 in
-    let _tel2' = mk__te env _tel2 in
-    let _ter2' = mk__te env _ter2 in
-    let thm = mk__ctx env thm ctx _tel1 _tel2 in
+    let _tel1' = mk__te denv env _tel1 in
+    let _ter1' = mk__te denv env _ter1 in
+    let _tel2' = mk__te denv env _tel2 in
+    let _ter2' = mk__te denv env _ter2 in
+    let thm = mk__ctx denv env thm ctx _tel1 _tel2 in
     mk_impl_equal thm (mk_refl _ter1') _tel1' _ter1' _tel2' _ter2'
   | CImplR::ctx, Impl(_tel1, _ter1), Impl(_tel2, _ter2) ->
-    let _tel1' = mk__te env _tel1 in
-    let _ter1' = mk__te env _ter1 in
-    let _tel2' = mk__te env _tel2 in
-    let _ter2' = mk__te env _ter2 in
-    let thm = mk__ctx env thm ctx _ter1 _ter2 in
+    let _tel1' = mk__te denv env _tel1 in
+    let _ter1' = mk__te denv env _ter1 in
+    let _tel2' = mk__te denv env _tel2 in
+    let _ter2' = mk__te denv env _ter2 in
+    let thm = mk__ctx denv env thm ctx _ter1 _ter2 in
     mk_impl_equal (mk_refl _tel1') thm _tel1' _ter1' _tel2' _ter2'
   | _ -> assert false
 
-let rec mk_ctx env thm ctx left right =
+let rec mk_ctx denv env thm ctx left right =
   match ctx, left,right with
   | CForallP::ctx, ForallP(var,_te) , ForallP(_,_te') ->
     let env' = add_ty_var env var in
-    let thm = mk_ctx env' thm ctx _te _te' in
+    let thm = mk_ctx denv env' thm ctx _te _te' in
     thm
-  | _, Te _te, Te _te' -> mk__ctx env thm ctx  _te _te'
+  | _, Te _te, Te _te' -> mk__ctx denv env thm ctx  _te _te'
   | _, _,_ -> assert false
 
-let mk_rewrite_step env term (redex,ctx) =
+let mk_rewrite_step denv env term (redex,ctx) =
   let env' = Sttfatyping.Tracer.env_of_redex env ctx term in
-  let term' = Sttfatyping.Tracer.reduce env' ctx redex term in
+  let term' = Sttfatyping.Tracer.reduce denv env' ctx redex term in
   let thm = match redex with
-    | Delta(name,_tys) -> mk_delta env' name _tys
-    | Beta(_te) -> mk_beta env' _te
+    | Delta(name,_tys) -> mk_delta denv env' name _tys
+    | Beta(_te) -> mk_beta denv env' _te
   in
-  let thm =  mk_ctx env thm ctx term term' in
+  let thm =  mk_ctx denv env thm ctx term term' in
   term',thm
 
-let mk_rewrite_seq env term rws =
+let mk_rewrite_seq denv env term rws =
   match rws with
-  | [] -> term, mk_refl (mk_te env term)
-  | [rw] ->  mk_rewrite_step env term rw
+  | [] -> term, mk_refl (mk_te denv env term)
+  | [rw] ->  mk_rewrite_step denv env term rw
   | rw::rws ->
-    let term',rw = mk_rewrite_step env term rw in
+    let term',rw = mk_rewrite_step denv env term rw in
     List.fold_left (fun (term,thm) rw ->
-        let term', thm' = (mk_rewrite_step env term rw) in
+        let term', thm' = (mk_rewrite_step denv env term rw) in
         term', mk_trans thm thm') (term',rw) rws
 
-let mk_trace env left right trace =
-  let _,thml = mk_rewrite_seq env left trace.left in
-  let _,thmr = mk_rewrite_seq env right trace.right in
+let mk_trace denv env left right trace =
+  let _,thml = mk_rewrite_seq denv env left trace.left in
+  let _,thmr = mk_rewrite_seq denv env right trace.right in
   let thmr' = mk_sym thmr in
   mk_trans thml thmr'
 
-let rec mk_proof env =
+let rec mk_proof denv env =
   let open Basic in
   function
-  | Assume(j,_) -> mk_assume (mk_te env j.thm)
+  | Assume(j,_) -> mk_assume (mk_te denv env j.thm)
   | Lemma(cst,_) ->
     begin
       try thm_of_lemma (mk_qid cst)
       with _ ->
-        let te = Denv.get_type dloc (name_of cst) in
-        mk_axiom (mk_hyp []) (mk_te empty_env (CTerm.compile_wrapped_term empty_env te))
+        let te = Env.get_type denv dloc (name_of cst) in
+        mk_axiom (mk_hyp []) (mk_te denv empty_env (CTerm.compile_wrapped_term denv empty_env te))
     end
   | ForallE(_,proof, u) ->
     begin
       match (judgment_of proof).thm with
       | Te(Forall(var,_ty,_te)) ->
-        let f' = mk__te env (Abs(var,_ty,_te)) in
-        let u' = mk__te env u in
+        let f' = mk__te denv env (Abs(var,_ty,_te)) in
+        let u' = mk__te denv env u in
         let _ty' = mk__ty _ty in
-        let proof' = mk_proof env proof in
+        let proof' = mk_proof denv env proof in
         mk_rule_elim_forall proof' f' _ty' u'
       | _ -> assert false
     end
@@ -282,50 +282,50 @@ let rec mk_proof env =
     let j' = judgment_of proof in
     let _,_ty = List.find (fun (x,_ty) -> if x = var then true else false) j'.te in
     let env' = add_te_var env var _ty in
-    let proof' = mk_proof env' proof in
+    let proof' = mk_proof denv env' proof in
     let _ty' = mk__ty _ty in
-    let thm' = mk_te env' j'.thm in
+    let thm' = mk_te denv env' j'.thm in
     mk_rule_intro_forall (mk_id var) _ty' thm' proof'
   | ImplE(j,prfpq,prfp) ->
     let p = (judgment_of prfp).thm in
     let q = j.thm in
-    let p' = mk_te env p in
-    let q' = mk_te env q in
-    let prfp' = mk_proof env prfp in
-    let prfpq' = mk_proof env prfpq in
+    let p' = mk_te denv env p in
+    let q' = mk_te denv env q in
+    let prfp' = mk_proof denv env prfp in
+    let prfpq' = mk_proof denv env prfpq in
     mk_rule_elim_impl prfp' prfpq' p' q'
   | ImplI(_,proof,var) ->
     let j' = judgment_of proof in
     let _,p = TeSet.choose (TeSet.filter (fun (x,_ty) -> if x = var then true else false) j'.hyp) in
     let q = j'.thm in
     let env' = add_prf_ctx env var (Decompile.decompile__term env.dk p) p in
-    let p' = mk__te env p in
-    let q' = mk_te env q in
-    let proof' = mk_proof env' proof in
+    let p' = mk__te denv env p in
+    let q' = mk_te denv env q in
+    let proof' = mk_proof denv env' proof in
     mk_rule_intro_impl proof' p' q'
   | ForallPE(_,proof,_ty) ->
     begin
       match (judgment_of proof).thm with
       | ForallP(var,_) ->
         let subst = [(mk_id var, mk__ty _ty)] in
-        let proof' = mk_proof env proof in
+        let proof' = mk_proof denv env proof in
         mk_subst proof' subst []
       | _ -> assert false
     end
   | ForallPI(_,proof,var) ->
     let env' = add_ty_var env var in
-    mk_proof env' proof
+    mk_proof denv env' proof
   | Conv(j,proof,trace) ->
     let right = j.thm in
     let left = (judgment_of proof).thm in
-    let proof = mk_proof env proof in
-    let mp = mk_eqMp proof (mk_trace env left right trace) in
+    let proof = mk_proof denv env proof in
+    let mp = mk_eqMp proof (mk_trace denv env left right trace) in
     mp
 
 let content = ref ""
 
 let string_of_item _ = "Printing for OpenTheory is not supported right now." (*
-  let print_item fmt = function
+  let print_item denv fmt = function
     | Parameter(name,ty) ->
       let ty' = mk_ty ty in
       let name' = mk_qid name in
@@ -334,14 +334,14 @@ let string_of_item _ = "Printing for OpenTheory is not supported right now." (*
       mk_thm name' eq (mk_hyp []) (mk_refl lhs)
     | Definition(cst,ty,te) ->
       let cst' = mk_qid cst in
-      let te' = mk_te Environ.empty_env te in
+      let te' = mk_te denv Environ.empty_env te in
       let ty' = mk_ty ty in
       let eq = mk_equal_term (term_of_const (const_of_name cst') ty') te' ty' in
-      let thm = thm_of_const cst in
+      let thm = thm_of_const denv cst in
       mk_thm cst' eq (mk_hyp []) thm
   | Theorem(cst,te,_)
   | Axiom(cst,te) ->
-    let te' = mk_te empty_env te in
+    let te' = mk_te denv empty_env te in
     let hyp = mk_hyp [] in
     mk_thm (mk_qid cst)  te' hyp (mk_axiom hyp te')
   | TyOpDef(tyop,arity) ->
@@ -358,7 +358,7 @@ let string_of_item _ = "Printing for OpenTheory is not supported right now." (*
   set_oc str_fmt;
   let length = Buffer.length Format.stdbuf in
   version ();
-  print_item str_fmt item;
+  print_item denv str_fmt item;
   clean ();
   let length' = Buffer.length Format.stdbuf in
   content := Buffer.sub Format.stdbuf length (length'-length);
@@ -366,36 +366,36 @@ let string_of_item _ = "Printing for OpenTheory is not supported right now." (*
   !content
 *)
 
-let print_item _ =
+let print_item denv _ =
   function
   | Parameter _ -> ()
   | Definition(cst,ty,te) ->
     (*    let te' = mk_te empty_env te in *)
     let cst' = mk_qid cst in
-    let te' = mk_te Environ.empty_env te in
+    let te' = mk_te denv Environ.empty_env te in
     let ty' = mk_ty ty in
     let eq = mk_equal_term (term_of_const (const_of_name cst') ty') te' ty' in
-    let thm = thm_of_const cst in
+    let thm = thm_of_const denv cst in
     mk_thm cst' eq (mk_hyp []) thm
   | Axiom(cst,te) ->
-    let te' = mk_te empty_env te in
+    let te' = mk_te denv empty_env te in
     let hyp = mk_hyp [] in
     mk_thm (mk_qid cst)  te' hyp (mk_axiom hyp te')
   | Theorem(cst,te,proof) ->
-    let te' = mk_te empty_env te in
+    let te' = mk_te denv empty_env te in
     let hyp' = mk_hyp [] in
-    let proof' = mk_proof empty_env proof in
+    let proof' = mk_proof denv empty_env proof in
     mk_thm (mk_qid cst) te' hyp' proof'
   | TypeDecl _ -> ()
   | TypeDef _ -> failwith "[OpenTheory] Type definitions not handled right now"
 
-let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
+let print_ast denv : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
   Buffer.clear Format.stdbuf;
   reset ();
   let oc_tmp = Format.str_formatter in
   set_oc oc_tmp;
   version ();
-  List.iter (fun item -> print_item oc_tmp item) ast.items;
+  List.iter (fun item -> print_item denv oc_tmp item) ast.items;
   clean ();
   content := Buffer.contents Format.stdbuf;
   Format.fprintf fmt "%s" !content

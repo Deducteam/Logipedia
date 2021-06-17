@@ -3,7 +3,7 @@ open Compile
 open Holstt.HolSTT
 open Environ
 
-module Denv = Api.Env.Default
+module Env = Api.Env
 
 (* The memoization of Openstt is not efficient and can be highly increased. For that, the memoization of openstt should be turned off and the memoization should be done in this module. One may also want to handle alpha-renaming *)
 
@@ -39,7 +39,7 @@ let rec mk_ty = function
     mk_ty ty
   | Ty(_ty) -> mk__ty _ty
 
-let rec mk__te ctx conflicts avoid ?(total=false) =
+let rec mk__te denv ctx conflicts avoid ?(total=false) =
   (*let () = (if total then Printf.printf "Entering mk__te, total is true.\n") in*)
   function
   | TeVar(var) ->
@@ -60,31 +60,31 @@ let rec mk__te ctx conflicts avoid ?(total=false) =
       let ctx' = add_te_var ctx (string_of_ident new_var) _ty in
       let _ty' = mk__ty _ty in
       let new_var' = mk_var (mk_id false (string_of_ident new_var)) _ty' in
-      let _te' = mk__te ctx' ((var,string_of_ident new_var)::conflicts) avoid _te in
+      let _te' = mk__te denv ctx' ((var,string_of_ident new_var)::conflicts) avoid _te in
       mk_abs_term new_var' _te'
     else
       let ctx' = add_te_var ctx var _ty in
       let _ty' = mk__ty _ty in
       let var' = mk_var (mk_id false var) _ty' in
-      let _te' = mk__te ctx' conflicts avoid ~total:total _te in
+      let _te' = mk__te denv ctx' conflicts avoid ~total:total _te in
       mk_abs_term var' _te'
   | App(_tel,_ter) ->
-    let _tel' = mk__te ctx conflicts avoid ~total:total _tel in
-    let _ter' = mk__te ctx conflicts avoid ~total:total _ter in
+    let _tel' = mk__te denv ctx conflicts avoid ~total:total _tel in
+    let _ter' = mk__te denv ctx conflicts avoid ~total:total _ter in
     mk_app_term _tel' _ter'
   | Forall(var,_ty,_te) ->
     let _ty' = mk__ty _ty in
    (* let () = (if List.mem (mk_id var) avoid then Printf.printf "Conflict in a forall: variable %s\n" var
              else Printf.printf "No conflict: var %s not in %s\n" var (String.concat "," avoid)) in*)
-    let f' = mk__te ctx conflicts avoid (Abs(var,_ty,_te)) in
+    let f' = mk__te denv ctx conflicts avoid (Abs(var,_ty,_te)) in
     mk_forall_term f' _ty'
   | Impl(_tel,_ter) ->
-    let _tel' = mk__te ctx conflicts avoid ~total:total _tel in
-    let _ter' = mk__te ctx conflicts avoid ~total:total _ter in
+    let _tel' = mk__te denv ctx conflicts avoid ~total:total _tel in
+    let _ter' = mk__te denv ctx conflicts avoid ~total:total _ter in
     mk_impl_term _tel' _ter'
   | AbsTy(var, _te) ->
     let ctx' = add_ty_var ctx var in
-    mk__te ctx' conflicts avoid ~total:total _te
+    mk__te denv ctx' conflicts avoid ~total:total _te
   | Cst(cst, _tys) ->
     let open Basic in
     let name = name_of cst in
@@ -94,19 +94,19 @@ let rec mk__te ctx conflicts avoid ?(total=false) =
       | [] -> Term.mk_Const dloc name
       | x::t -> Term.mk_App (Term.mk_Const dloc name) x t
     in
-    let _ty = Denv.infer ~ctx:ctx.dk cst' in
-    let _ty' = CType.compile_wrapped__type ctx
-        (Denv.unsafe_reduction ~red:Conv.beta_only _ty) in
+    let _ty = Env.infer denv ~ctx:ctx.dk cst' in
+    let _ty' = CType.compile_wrapped__type denv ctx
+        (Env.unsafe_reduction denv ~red:Conv.beta_only _ty) in
     let cst'' = sanitize true (snd cst) in
     if total || not (Vars.is_empty (frees_ty _ty'))
     then mk_var_term (mk_var (sanitize true (snd(cst))) (mk__ty _ty'))
     else term_of_const (const_of_name cst'') (mk__ty _ty')
 
-let rec mk_te ctx avoid ?(total=false) = function
+let rec mk_te denv ctx avoid ?(total=false) = function
   | ForallP(var,te) ->
     let ctx' = add_ty_var ctx var in
-    mk_te ctx' avoid ~total:total te
-  | Te(_te) -> mk__te ctx [] avoid ~total:total _te
+    mk_te denv ctx' avoid ~total:total te
+  | Te(_te) -> mk__te denv ctx [] avoid ~total:total _te
 
 let rec app__te f ctx = function
   | ForallP(var,te) ->
@@ -118,18 +118,18 @@ let rec _ty_of_ty = function
     ForallK(_,t) -> _ty_of_ty t
   | Ty(t) -> t
 
-let thm_of_const cst =
+let thm_of_const denv cst =
   let cst_name = sanitize true (snd cst) in
   try
     thm_of_const_name cst_name
   with Failure _ ->
     let name = Environ.name_of cst in
     let term = Term.mk_Const Basic.dloc name in
-    let te = Denv.unsafe_reduction ~red:(Conv.delta name) (term) in
-    let te' = CTerm.compile_term Environ.empty_env te in
-    let te' = mk_te empty_env [] te' in
-    let ty = Denv.infer term in
-    let ty' = CType.compile_wrapped_type Environ.empty_env ty in
+    let te = Env.unsafe_reduction denv ~red:(Conv.delta name) (term) in
+    let te' = CTerm.compile_term denv Environ.empty_env te in
+    let te' = mk_te denv empty_env [] te' in
+    let ty = Env.infer denv term in
+    let ty' = CType.compile_wrapped_type denv Environ.empty_env ty in
     let ty' = mk_ty ty' in
     let const = const_of_name cst_name in
     let constterm = term_of_const const ty' in
@@ -173,8 +173,8 @@ let rec is_in_var ty = function
 let issue_tyvar u _ty =
   Vars.exists (fun tyvar -> not (is_in_var tyvar u)) (frees_ty _ty)
 
-let rec mk_proof env = function
-  | Assume(j,_) -> (mk_assume (mk_te env [] j.thm),Vars.empty)
+let rec mk_proof denv env = function
+  | Assume(j,_) -> (mk_assume (mk_te denv env [] j.thm),Vars.empty)
   | Lemma(cst,_) ->
     let thm_name = sanitize true (snd cst) in (Thm(thm_name),Vars.empty)
   | ForallE(_,proof, u) ->
@@ -185,11 +185,11 @@ let rec mk_proof env = function
        (* let () = Vars.iter (fun x -> Printf.printf "%s; " x) frees_u in*)
         (* let () = Printf.printf "\n" in*)
         (*let frees_ty = frees_ty _ty in*)
-        let u' = mk__te env [] [] u in
+        let u' = mk__te denv env [] [] u in
           (*(Vars.exists (fun tyvar -> not (is_in_var tyvar u')) frees_ty)*)
-        let u'' = if issue_tyvar u' _ty then mk__te env [] [] ~total:true u else u' in
+        let u'' = if issue_tyvar u' _ty then mk__te denv env [] [] ~total:true u else u' in
         let _ty' = mk__ty _ty in
-        let proof',pc = mk_proof env proof in
+        let proof',pc = mk_proof denv env proof in
         (mk_rule_elim_forall "" u'' proof',Vars.union frees_u pc)
       | _ -> assert false
     end
@@ -197,51 +197,51 @@ let rec mk_proof env = function
     let j' = judgment_of proof in
     let _,_ty = List.find (fun (x,_ty) -> x = var) j'.te in
     let env' = add_te_var env var _ty in
-    let proof',pc = mk_proof env' proof in
+    let proof',pc = mk_proof denv env' proof in
     let _ty' = mk__ty _ty in
     (mk_rule_intro_forall (mk_id false var) _ty' proof',pc)
   | ImplE(_,prfpq,prfp) ->
-    let prfp',pcp = mk_proof env prfp in
-    let prfpq',pcpq = mk_proof env prfpq in
+    let prfp',pcp = mk_proof denv env prfp in
+    let prfpq',pcpq = mk_proof denv env prfpq in
     (mk_rule_elim_impl prfpq' prfp',Vars.union pcp pcpq)
   | ImplI(_,proof,var) ->
     let j' = judgment_of proof in
     let _,p = TeSet.choose (TeSet.filter (fun (x,_ty) -> x = var) j'.hyp) in
     let env' = add_prf_ctx env var (Decompile.decompile__term env.dk p) p in
-    let p' = mk__te env [] [] p in
-    let proof',pc = mk_proof env' proof in
+    let p' = mk__te denv env [] [] p in
+    let proof',pc = mk_proof denv env' proof in
     (mk_rule_intro_impl p' proof',pc)
   | ForallPE(_,proof,_ty) ->
     begin
       match (judgment_of proof).thm with
       | ForallP(var,_) ->
         let subst = [(mk__ty (TyVar(mk_id false var)), mk__ty _ty)] in
-        let proof',pc = mk_proof env proof in
+        let proof',pc = mk_proof denv env proof in
         (mk_subst subst [] proof',pc)
       | _ -> assert false
     end
   | ForallPI(_,proof,var) ->
     let env' = add_ty_var env var in
-    mk_proof env' proof
+    mk_proof denv env' proof
   | Conv(j,proof,trace) ->
     let right = j.thm in
     let n1 = List.length trace.left in
     let n2 = List.length trace.right in
     let (n1',n2',proof') = depth_convs n1 n2 proof in
-    let proof'',pc = mk_proof env proof' in
+    let proof'',pc = mk_proof denv env proof' in
     if n1' = 0 && n2' = 0
     then
       proof'',pc
     else
       let avoid = Vars.elements pc in
-      let _ty = app__te Sttfatyping._infer env right in
-      let right' = mk_te env avoid right in
+      let _ty = app__te (Sttfatyping._infer denv) env right in
+      let right' = mk_te denv env avoid right in
       let right'' = if issue_tyvar right' _ty
-        then mk_te env avoid ~total:true right
+        then mk_te denv env avoid ~total:true right
         else right' in
       mk_conv "" right'' proof'',pc
 
-let print_item ?(short=false) =
+let print_item denv ?(short=false) =
   function
   | Parameter(cst,ty) ->
     begin
@@ -257,17 +257,17 @@ let print_item ?(short=false) =
     begin
       try
         (let cst' = sanitize true (snd cst) in
-         let te' = mk_te Environ.empty_env [] te in
+         let te' = mk_te denv Environ.empty_env [] te in
          let ty' = mk_ty ty in
          let eq = mk_equal_term (term_of_const (const_of_name cst') ty') te' ty' in
-         let Sequent(_,_,_,pi) = thm_of_const cst in
+         let Sequent(_,_,_,pi) = thm_of_const denv cst in
          if short
          then print_term false !oc eq
          else mk_thm cst' eq (mk_hyp []) (pi))
       with _ -> assert false
     end
   | Axiom(cst,te) ->
-    let te' = mk_te empty_env [] te in
+    let te' = mk_te denv empty_env [] te in
     let hyp = mk_hyp [] in
     let Sequent(_,_,_,pi) = mk_axiom (sanitize true (snd cst)) hyp te' in
     (* Axioms just have conclusions in STT and HOL Light *)
@@ -278,13 +278,13 @@ let print_item ?(short=false) =
   | Theorem(cst,te,proof) ->
     begin
       try
-        (let te' = mk_te empty_env [] te in
+        (let te' = mk_te denv empty_env [] te in
          let hyp' = mk_hyp [] in
          let cst' = sanitize true (snd cst) in
          if short
          then print_thm_debug !oc (Sequent(cst',hyp',te',dummy_proof))
          else
-           let proof',_ = mk_proof empty_env proof in
+           let proof',_ = mk_proof denv empty_env proof in
            mk_thm cst' te' hyp' proof')
       with _ -> assert false
     end
@@ -300,16 +300,16 @@ let print_item ?(short=false) =
 
 let content = ref ""
 
-let string_of_item item =
+let string_of_item denv item =
   let str_fmt = Format.str_formatter in
   set_oc str_fmt;
-  print_item ~short:true item;
+  print_item denv ~short:true item;
   Format.flush_str_formatter ()
 
-let print_ast : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
+let print_ast denv : Format.formatter -> ?mdeps:Ast.mdeps -> Ast.ast -> unit = fun fmt ?mdeps:_ ast ->
   Buffer.clear Format.stdbuf;
   let oc_tmp = Format.str_formatter in
   set_oc oc_tmp;
-  List.iter (fun item -> print_item item) ast.items;
+  List.iter (fun item -> print_item denv item) ast.items;
   content := Buffer.contents Format.stdbuf;
   Format.fprintf fmt "%s" !content
