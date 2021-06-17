@@ -5,7 +5,7 @@ open Console
 open Extras
 module B = Kernel.Basic
 module D = Api.Dep
-module E = Parsing.Entry
+module E = Parsers.Entry
 module T = Kernel.Term
 module Jt = Json_types
 
@@ -165,7 +165,7 @@ struct
       let art2exp (sys, pth) =
         let item =
           if List.mem_eq B.mident_eq mdl M.encoding then None else
-            Some(M.item_of_entry mdl e)
+            Some (M.item_of_entry denv mdl e)
         in
         let ext = List.assoc sys Systems.exts in
         let file =
@@ -173,7 +173,7 @@ struct
         in
         { Jt.system = Systems.to_string sys
         ; file
-        ; etype = Option.map (M.string_of_item sys) item }
+        ; etype = Option.map (M.string_of_item denv sys) item }
       in
       (* Add section to download Dedukti file *)
       let exp =

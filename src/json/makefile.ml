@@ -26,8 +26,7 @@ let want : string list -> Key.t list =
     json files stemming from [ms]. *)
 let json : (DkTools.Mident.t -> DkTools.entry list pp) -> string ->
   (Key.t, Value.t) rule = fun pp_entries tg ->
-  let module E = Api.Env.Default in
-  let md = E.init Filename.(dirname tg </> !/tg <.> "dk") in
+  let md = DkTools.init Filename.(dirname tg </> !/tg <.> "dk") in
   let md_deps =
     Deps.deps_of_md md |> DkTools.MdSet.to_seq |> List.of_seq
   in
@@ -43,9 +42,10 @@ let json : (DkTools.Mident.t -> DkTools.entry list pp) -> string ->
     let ochan = open_out tg in
     let ofmt = Format.formatter_of_out_channel ochan in
     let entries =
-      let inchan = open_in (Api.Dep.get_file md) in
-      let r = Parsing.Parser.Parse_channel.parse md inchan in
-      close_in inchan;
+      let open Parsers.Parser in
+      let input = input_from_file (DkTools.get_file md) in
+      let r = parse input in
+      Parsers.Parser.close input;
       r
     in
     pp_entries ofmt entries;

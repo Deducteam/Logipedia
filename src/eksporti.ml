@@ -88,6 +88,4 @@ Available options for the selected mode:"
     Format.printf "%s\n" s;
     Arg.usage (Arg.align Cli.options) usage
   | e          ->
-    let module Denv = Api.Env.Default in
-    let module Derr = Api.Errors.Make(Denv) in
-    raise (Derr.graceful_fail None e)
+    raise Api.Env.(fail_env_error (dummy ()) Kernel.Basic.dloc e)
