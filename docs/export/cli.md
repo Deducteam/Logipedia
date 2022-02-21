@@ -5,7 +5,8 @@ title: Command line interface for export
 # Exporting from STTfa files
 *NOTE* currently, only the export from STTfa files is available.
 
-Exporting a library requires
+Exporting a library requires:
+
 - a logic encoded in one or more dedukti files, those files are in `theories/sttfa`;
 - dedukti files of the `lib` library encoded in the STTfa logic in `import/dedukti/sttfa/lib`
 

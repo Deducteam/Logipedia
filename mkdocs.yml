@@ -3,15 +3,20 @@ nav:
   - Home: index.md
 
   - Structure: structure.md
+
+  - Import:
+      - Overview:     import/apropos.md
+      - Contributing: import/contributing.md
+
+  - Export:
+      - Overview:               export/apropos.md
+      - Command Line Interface: export/cli.md
+      - Installation:           export/installation.md
+
+
+  - Publication:
+      - Installation:              publication/installation.md
+      - Generating the web site:   publication/generation.md
+
   - Authors:   authors.md
   - Erratum:   erratum.md
-
-  - Export_home:    export/apropos.md
-  - Export_CLI:     export/cli.md
-  - Export_install: export/installation.md
-
-  - Import_home:   import/apropos.md
-  - Import_contri: import/contributing.md
-
-  - Publi_generation: publication/generation.md
-  - Publi_install:    publication/installation.md

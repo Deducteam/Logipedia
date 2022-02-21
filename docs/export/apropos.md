@@ -22,6 +22,7 @@ On the long run, we plan also to support other logics than STTfa, but no
 concrete plan has been made so far.
 
 **Supported systems for export:**
+
 - Coq
 - Lean
 - Matita
