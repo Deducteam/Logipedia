@@ -1,7 +1,22 @@
 site_name: Logipedia
 nav:
   - Home: index.md
-  - Import: import.md
-  - Translation: translation.md
-  - Export: export.md
-    
+
+  - Structure: structure.md
+
+  - Import:
+      - Overview:     import/apropos.md
+      - Contributing: import/contributing.md
+
+  - Export:
+      - Overview:               export/apropos.md
+      - Command Line Interface: export/cli.md
+      - Installation:           export/installation.md
+
+
+  - Publication:
+      - Installation:              publication/installation.md
+      - Generating the web site:   publication/generation.md
+
+  - Authors:   authors.md
+  - Erratum:   erratum.md

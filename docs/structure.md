@@ -10,5 +10,3 @@ title: File structure
 - `logigen` contains the software that build the website
 - `interoperability` contains software to translate proofs
 - `export` contains the translated files
-
-
