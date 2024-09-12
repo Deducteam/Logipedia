@@ -1,6 +1,6 @@
-type t = Coq | Matita | Pvs | OpenTheory | Lean | Hollight | Latex
+type t = Coq | Matita | Pvs | OpenTheory | Lean | Hollight | Latex | Agda
 
-let systems = [Coq ; Matita ; Pvs ; OpenTheory ; Lean ; Hollight ; Latex]
+let systems = [Coq ; Matita ; Pvs ; OpenTheory ; Lean ; Hollight ; Latex ; Agda]
 
 exception UnsupportedSystem of string
 
@@ -23,7 +23,8 @@ let spec : spec list =
   ; ( "pvs"       , Pvs        )
   ; ( "lean"      , Lean       )
   ; ( "hollight"  , Hollight   )
-  ; ( "latex"     , Latex      )] |>
+  ; ( "latex"     , Latex      )
+  ; ( "agda"      , Agda       )] |>
   List.sort (fun (s,_) (t,_) -> String.compare s t)
 
 (** Maps system to their extension. *)
@@ -34,7 +35,8 @@ let exts : (t * string) list =
   ; ( OpenTheory, "ot"   )
   ; ( Lean      , "lean" )
   ; ( Hollight  , "ml"   )
-  ; ( Latex     , "tex"  ) ]
+  ; ( Latex     , "tex"  )
+  ; ( Agda      , "agda"  ) ]
 
 (** [of_string str] returns the system associated to the string [str]. *)
 let of_string : string -> t = fun s ->
@@ -49,3 +51,4 @@ let to_string : t -> string = function
   | Pvs        -> "pvs"
   | Lean       -> "lean"
   | Latex      -> "latex"
+  | Agda       -> "agda"
