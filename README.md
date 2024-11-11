@@ -2,7 +2,7 @@
 
 Logipedia is a project that aims to translate and share formal proofs between several systems.
 The website displaying all available proofs can be reached at
-http://logipedia.science.
+http://logipedia.inria.fr/
 
 ## Installation
 ### Dependencies
