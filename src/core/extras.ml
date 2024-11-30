@@ -96,14 +96,15 @@ module DkTools = struct
   module MdSet = Set.Make(Mident)
   (* TODO use Api.Dep.MDepSet everywhere? *)
 
-  let get_file : Mident.t -> string = Api.Dep.get_file
-  let init : string -> Mident.t = Api.Env.Default.init
-  type entry = Parsing.Entry.entry
+  let get_file : Mident.t -> string = Api.Files.get_file
+  let init : string -> Mident.t = Kernel.Basic.mk_mident
 
-  let get_path : unit -> string list = Kernel.Basic.get_path
+  type entry = Parsers.Entry.entry
 
-  let id_of_entry : Parsing.Entry.entry -> Kernel.Basic.ident =
-    let open Parsing.Entry in
+  let get_path : unit -> string list = Api.Files.get_path
+
+  let id_of_entry : Parsers.Entry.entry -> Kernel.Basic.ident =
+    let open Parsers.Entry in
     function
     | Decl(_,id,_,_,_) -> id
     | Def(_,id,_,_,_,_) -> id
@@ -128,7 +129,7 @@ module NameHashtbl = Hashtbl.Make(struct
     let hash = Hashtbl.hash
   end)
 module NameMap = Map.Make(struct
-    type t = Api.Dep.NameSet.elt
+    type t = Kernel.Basic.NameSet.elt
     let compare : t -> t -> int = Stdlib.compare
   end)
 

@@ -1,6 +1,6 @@
 open Extras
 open Kernel
-open Parsing
+open Parsers
 
 module QSet : Set.S with type elt = string
 (** Sets of strings. *)

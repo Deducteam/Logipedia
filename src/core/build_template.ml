@@ -122,7 +122,7 @@ struct
       log_rule ~lvl:3 "%s" cmd;
       run0 cmd ();
       (* NOTE [init] actually loads [src] into signature *)
-      ignore @@ Api.Env.Default.init src;
+      (* ignore @@ Api.Env.Default.init src; *) (* FIXME: Why this line is useful? *)
       Value.written out
     in
     target (Key.create out) +< Key.create src |>
@@ -142,9 +142,10 @@ struct
       let ochan = open_out tg in
       let ofmt = Format.formatter_of_out_channel ochan in
       let entries =
-        let inchan = open_in src in
-        let e = Parsing.Parser.Parse_channel.parse md inchan in
-        close_in inchan;
+        let open Parsers.Parser in
+        let input = input_from_file src in
+        let e = parse input in
+        Parsers.Parser.close input;
         e
       in
       pp_entries ofmt entries;

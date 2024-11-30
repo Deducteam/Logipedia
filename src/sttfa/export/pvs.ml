@@ -3,7 +3,7 @@ module D = Core.Deps
 module Basic = Kernel.Basic
 module Signature = Kernel.Signature
 module F = Format
-module Denv = Api.Env.Default
+module Denv = Api.Env
 
 let extension = "pvs"
 
@@ -307,8 +307,14 @@ let remove_transitive_deps mdeps deps =
   let remove_dep dep deps =
     let md = Basic.mk_mident dep in
     let deps_from_signature md =
-      let deps = Signature.get_md_deps Basic.dloc md in
-      (D.QSet.of_list (List.map Basic.string_of_mident deps))
+      match Api.Files.(find_dk ~ignore:false md (get_path ())) with
+      | None -> failwith "PVS EXPORT: Internal error, please report"
+      | Some file ->
+        let input = Parsers.Parser.input_from_file file in
+        let md = Parsers.Parser.md_of_input input in
+        Parsers.Parser.handle input (fun entry -> Api.Dep.make md [entry]);
+        let file_deps = Hashtbl.find Api.Dep.deps md in
+        Kernel.Basic.(MidentSet.fold (fun m md_deps -> D.QSet.add (string_of_mident m) md_deps) file_deps.deps) D.QSet.empty
     in
     let md_deps =
       match mdeps with
